@@ -1,0 +1,315 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://192.168.7.147:3306/srm?useUnicode=true&characterEncoding=utf-8&useSSL=false&autoReconnect=true&failOverReadOnly=false}
+    username: ${SPRING_DATASOURCE_USERNAME:srm}
+    password: ${SPRING_DATASOURCE_PASSWORD:NS#vp733g#tJ6pfX}
+    hikari:
+      # 连接池最小空闲连接数
+      minimum-idle: ${SPRING_DATASOURCE_MINIMUM_IDLE:20}
+      # 连接池允许的最大连接数
+      maximum-pool-size: ${SPRING_DATASOURCE_MAXIMUM_POOL_SIZE:200}
+      # 等待连接池分配连接的最大时长（毫秒）
+      connection-timeout: ${SPRING_DATASOURCE_CONNECTION_TIMEOUT:30000}
+  cloud:
+    consul:
+      enabled: ${CLOUD_CONSULE_ENABLE:false}
+    stream:
+      rocketmq:
+        binder:
+          namesrv-addr: ${ROCKETMQ_NAMESRV_ADDR:192.168.3.213:9876}   #【替换成自己项目上rocketmq namesrv】
+      event-topic: ${EVENT_TOPIC:EVENT_MESSAGE_DEV}  #【destination 开发环境为EVENT_MESSAGE_DEV,测试环境为EVENT_MESSAGE_UAT】
+      record-event-data: true
+      bindings:
+        input:
+          destination: ${EVENT_TOPIC:EVENT_MESSAGE_DEV}  #【destination 开发环境为EVENT_MESSAGE_DEV,测试环境为EVENT_MESSAGE_UAT】
+          group: ${CONSUMER_GROUP:srm-purchase-cooperation}    #【group 改为自己的服务名】
+      default-binder: rocketmq
+  redis:
+    host: ${SPRING_REDIS_HOST:192.168.3.154}
+    port: ${SPRING_REDIS_PORT:6379}
+    database: ${SPRING_REDIS_DATABASE:1}
+    password: ${SPRING_REDIS_PASSWORD:Zyun1234}
+    jedis:
+      pool:
+        # 资源池中最大连接数
+        # 默认8，-1表示无限制；可根据服务并发redis情况及服务端的支持上限调整
+        max-active: ${SPRING_REDIS_POOL_MAX_ACTIVE:50}
+        # 资源池运行最大空闲的连接数
+        # 默认8，-1表示无限制；可根据服务并发redis情况及服务端的支持上限调整，一般建议和max-active保持一致，避免资源伸缩带来的开销
+        max-idle: ${SPRING_REDIS_POOL_MAX_IDLE:50}
+        # 当资源池连接用尽后，调用者的最大等待时间(单位为毫秒)
+        # 默认 -1 表示永不超时，设置5秒
+        max-wait: ${SPRING_REDIS_POOL_MAX_WAIT:5000}
+  servlet:
+    multipart:
+      max-file-size: ${SPRING_SEVLET_MULTIPART_MAX_FILE_SIZE:10Mb}
+      max-request-size: ${SPRING_SEVLET_MULTIPART_MAX_REQUEST_SIZE:100Mb}
+
+feign:
+  hystrix:
+    enabled: true
+
+hystrix:
+  threadpool:
+    default:
+      # 执行命令线程池的核心线程数，也是命令执行的最大并发量
+      # 默认10
+      core-size: #${HYSTRIX_THREADPOOL_DEFAULT_CORE_SIZE:1000}
+      # 最大执行线程数
+      maximum-size: ${HYSTRIX_THREADPOOL_DEFAULT_MAXMUM_SIZE:1000}
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          thread:
+            timeoutInMilliseconds: ${HYSTRIX_COMMAND_TIMEOUT_IN_MILLISECONDS:90000}
+ribbon:
+  ReadTimeout: ${RIBBON_READ_TIMEOUT:120000}
+  ConnectTimeout: ${RIBBON_CONNECT_TIMEOUT:120000}
+  eureka:
+    enabled: ${RIBBON_EUREKA_ENABLE:true}
+
+mybatis:
+  mapper-locations:
+    - classpath*:/mapper/*Mapper.xml
+    - classpath*:/mapper/*/*Mapper.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-statement-timeout: ${MYBATIS_DEFAULT_STATEMENT_TIMEOUT:120}
+    call-setters-on-nulls: true
+
+logging:
+  level:
+    # 这个日志不再打印
+    org.hzero.boot.platform.lov: info
+    com.netflix.discovery: ${LOG_LEVEL:warn}
+    org.apache.ibatis: ${LOG_LEVEL:debug}
+    io.choerodon: ${LOG_LEVEL:debug}
+    org.hzero: ${LOG_LEVEL:debug}
+    org.srm: debug
+    org.srm.mq: info
+
+
+hzero:
+  actuator:
+    permission:
+      duplicatedCodeCheck: false
+  scheduler:
+    executor-code: SFIN.EXECUTOR
+  data:
+    permission:
+      db-owner: ${HZERO_DB_OWNER:}
+    # 审计数据变化监听
+    change:
+      enable: ${HZERO_AUDIT_DATA_CHANGE_ENABLE:true}
+  # saga 单节点模式
+  lock:
+    pattern: single
+    single-server:
+      address: ${SPRING_REDIS_HOST:192.168.3.154}
+      port: ${SPRING_REDIS_PORT:6379}
+      database: ${SPRING_REDIS_DATABASE:1}
+      password: ${SPRING_REDIS_PASSWORD:Zyun1234}
+  cache-value:
+    enable: true
+  platform:
+    regist-entity:
+      enable: true
+  export:
+    enable-async: true
+  import:
+    init-table: false
+  #审计相关配置
+  audit:
+    # 操作审计
+    operation:
+      # 审计开关，默认 false
+      enable: ${HZERO_AUDIT_OPERATION_ENABLE:true}
+      # API 审计开关，默认 true，如果全局开关关闭，此值无效
+      api-audit:
+        enable: ${HZERO_AUDIT_API_ENABLE:true}
+      # 注解审计（在Bean的方法上添加@OperationalAudit）开关，默认 true，如果全局开关关闭，此值无效
+      annotation-audit:
+        enable: ${HZERO_AUDIT_ANNOTATION_ENABLE:true}
+    # 数据审计
+    data:
+      enable: ${HZERO_AUDIT_DATA_ENABLE:true}
+
+  # 配置hzero各个服务redis db
+  service:
+    # 注册中心
+    register:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 网关
+    gateway:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 配置中心
+    config:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 认证服务
+    oauth:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 用户身份服务
+    iam:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # swagger
+    swagger:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # admin
+    admin:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 平台服务
+    platform:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 文件服务
+    file:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 消息服务
+    message:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 调度服务
+    scheduler:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 导入服务
+    import:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 报表服务
+    report:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 工作流
+    workflow-plus:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 监控服务
+    monitor:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 支付
+    pay:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+# srm各个服务redisDB
+srm:
+  service:
+    # srm 平台服务
+    platform:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 供应商服务
+    supplier:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 接口服务
+    interface:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 订单服务
+    order:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 接口配置中心
+    interface-config:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 商城
+    catalogue:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 商城接口
+    catalogue-interface:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 物料
+    mdm:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 寻源
+    source:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 接收服务
+    receiver:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 质量管理
+    quality:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+    # 采购协议
+    purchase:
+      redis-db: ${SPRING_REDIS_DATABASE:1}
+  mq:
+    # 开启异步消息推送
+    open-async-message-send: true
+    # 环境变量
+    env: ${SRM_MQ_ENV:dev}
+    # topic配置
+    topic-config-ref:
+      sprm_pr_relation_push: ${SPRM_PR_RELATION_PUSH:SPRM_PR_RELATION_PUSH_DEV}
+      sprm-message-topic: ${SPRM_MESSAGE_TOPIC:SPRM_MESSAGE_TOPIC_DEV}
+      smodr-message-topic: ${SMODR_MESSAGE_TOPIC:SMODR_MESSAGE_TOPIC_DEV}
+      sinv-message-topic: ${SINV_MESSAGE_TOPIC:SINV_MESSAGE_TOPIC_DEV}
+      smodr-asn-group: ${SMODR_MESSAGE_TOPIC:SMODR_MESSAGE_TOPIC_DEV}
+      smail-to-sinv-message-topic: ${SMODR_MESSAGE_TOPIC:SMODR_MESSAGE_TOPIC_DEV}
+      ssta-message-topic: ${SSTA_MESSAGE_TOPIC:SSSTA_MESSAGE_TOPIC_DEV}
+      sodr-message-topic: ${SODR_MESSAGE_TOPIC:SODR_MESSAGE_TOPIC_DEV}
+      smodr-sodr-gorup:   ${SMODR_MESSAGE_TOPIC:SMODR_MESSAGE_TOPIC_DEV}
+      ssta-sodr-gorup:   ${SSTA_MESSAGE_TOPIC:SSSTA_MESSAGE_TOPIC_DEV}
+      srm-purchase-cooperation-topic: ${SPUC_MESSAGE_TOPIC:SPUC_MESSAGE_TOPIC_DEV}
+      smal-order-confirm: ${SMAL_ORDER_CONFIRM_TOPIC:SMAL_OMS_ORDER_DEV}
+
+server:
+  undertow:
+    # 允许url中存在特殊字符
+    allow-unescaped-characters-in-url: true
+    io-threads: 8
+    worker-threads: ${SERVER_UNDERTOW_WORKER_THREADS:256}
+
+service:
+  register-url: ${SUPPLIER_INVITE_REGISTER_URL:http://srm.dev.isrm.going-link.com/oauth/public/default/register.html}
+  home-url: ${HOME_URL:http://srm.dev.isrm.going-link.com/app}
+  srm-domain-url: ${SRM_DOMAIN_NAME:https://srm.dev.isrm.going-link.com}
+  comfirm-url: /sodr/confirm-order/detail/
+  review-url: /sodr/delivery-date-review/detail/
+  cancel-url: /sodr/received-order/list
+  overdue-url: /sodr/send-order/list
+  publish-url: /sodr/confirm-order/list
+  reject-url: /sprm/purchase-requisition-creation/list
+  od-url: /sodr/confirm-order/detail/
+  invoice-url: /sfin/invoice-supplier/detail/supplier/
+  bill-url: /sfin/sales-bill/detail/
+  payment-url: /sfin/payment-header/detail/
+  pr-non-erp-url: /sprm/purchase-requisition-approval/detail-non-erp/
+  pr-erp-url: /sprm/purchase-requisition-approval/detail-erp/
+  # 送货单创建地址
+  asn-create-url: /sinv/delivery-creation/list
+  # 采购方审批开票申请详情地址
+  purchase-approval-bill-url: /sfin/bill-audit/detail/
+  # 采购方审核应付发票地址
+  purchase-approval-invoice-url: /sfin/invoice-approve/detail/
+  # 供应方确认开票通知地址
+  supplier-confirm-bill-url: /sfin/confirm-invoice-notification/detail/
+  # 采购方修改开票申请单地址 (供应商退回开票通知单)
+  purchase-maintain-bill-url: /sfin/maintain-invoice-notification/detail/
+  # 需求查询-明细页地址
+  demand-query-detail: /sprm/purchase-requisition-inquiry/not-erp-detail/
+
+amkt:
+  gateway:
+    url: ${AMKT_GATEWAY_URL:http://dev.market-gateway.going-link.com}
+  oauth:
+    clientId: ${AMKT_OAUTH_CLIENT_ID:g21xWQfQyOII}
+    clientSecret: ${AMKT_OAUTH_CLIENT_SECRET:4iApyLk6n0lWv4aI}
+  schedule:
+    cron: '0 0/30 * * * ? '  #（根据项目需求配置定时任务执行时间，默认每隔5分钟）
+    enabled: false            # (是否开启定时任务，默认为false)
+  feign:
+    name: srm-supplier-lifecycle  #(配置客户端feign调用的服务名称)
+  client:
+    code: ${AMKT_CLIENT_CODE:DEV_CLIENT}
+    publicKey: ${AMKT_CLIENT_PUBLIC_KEY:MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLx08UNFU2SRlSNucqRUbYGFykA6ti6nngH7pqu/jxXVrCCfZYqHlIqzD20thC+G4aqIgoZCV/6Eyt3i6pwQ7d3Hf52uQIcxS4bYVw/yWQVsuYJmDFAtLiJJZMeqlc/qYkgGPFq1jhofr0A6YsfXUxbcwnWiTT9cBRp0paa9LqwQIDAQAB}
+    privateKey: ${AMKT_CLIENT_PRIVATE_KEY:MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAIvHTxQ0VTZJGVI25ypFRtgYXKQDq2LqeeAfumq7+PFdWsIJ9lioeUirMPbS2EL4bhqoiChkJX/oTK3eLqnBDt3cd/na5AhzFLhthXD/JZBWy5gmYMUC0uIklkx6qVz+piSAY8WrWOGh+vQDpix9dTFtzCdaJNP1wFGnSlpr0urBAgMBAAECgYBuBGbysSosuyZp9nrGY5aaObqZAaZhCcr5pB93KRKM73yi43J5X8lucAfvDg9Xzu/inanlmMWHQlEwPIOf6yuGNse6tYT4IWBtHZHHhbFg3U5esZ16deOl8AkLQ1Oi0Ngk8SyjZQ9K3XPm743r69pcZaRw1gRZ1jvtSbFwrzBAAQJBAOdzePTozd9PJbyKcG8Sif8nEQTyvzkews2UDbbnblSkGSvtqnM+c5IQng66VCB3u63KdJ9lAMA8xTACJKuUnQECQQCamq19Ep7eya9OqpuuGacEWsO/Sb5dhvsgmdHgmi8Ub+I4iY7XPAOa09E47F0pNgQBgKQkLgGtsi6nk8DDT43BAkB5sEujMJe1Vi64D22H6I5neYnIOTzy8kpnvfTr+ogWtmSJpR6eEvK+lEAV7D95BprFiBGDEJ6xdAIU+LuA/tUBAkADlygESZRq9CAgIZIv/uSEE1+MZ7gGEAZxAWGAZ9REEz0btwYcNYaX5+dp/QNE275IEqa9OFxNnl+7AJFvd7+BAkAGSztfaOzAZbxrv8N4wGxYoIeIRAAZohp1z3eK+eE+gQ39ZUHZSZAVggS8X5HEthSKiMNEyxcSLnL2Jg521xqn}
+    protocol: ${AMKT_HTTP_TYPE:}
+alpha:
+  cluster:
+    register:
+      type: ${ALPHA_CLUSTER_REGISTER_TYPE:eureka} #标识注册中心是eureka
+    address:
+    serviceId: ${ALPHA_CLUSTER_SERVICEID:srm-saga} # alpha服务名
+
+omega:
+  enabled: ${OMEGA_ENABLED:true} #作为omega端，启用标识
+  connection:
+    sending:
+      timeout: ${OMEGA_ENABLED_CONNECTION_SENDING_TIMEOUT:8}
+
+invoice:
+  enabled-server: ${INVOICE_ENABLED_SERVER:true} #直连开票是否启用服务器的标识（true为开启，false为税控盘，默认为false）
