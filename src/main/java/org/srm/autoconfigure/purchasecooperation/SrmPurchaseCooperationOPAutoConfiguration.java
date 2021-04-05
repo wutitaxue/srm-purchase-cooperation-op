@@ -12,7 +12,7 @@ import org.srm.purchasecooperation.autoconfigure.EnableSrmPurchaseCooperation;
  */
 @Configuration
 @EnableFeignClients("org.srm.purchasecooperation.cux")
-@ComponentScan("org.srm.purchasecooperation.cux")
+@ComponentScan({"org.srm.purchasecooperation.cux","org.srm.purchasecooperation.cux.infra.mapper"})
 @EnableSrmPurchaseCooperation
 public class SrmPurchaseCooperationOPAutoConfiguration {
 }
