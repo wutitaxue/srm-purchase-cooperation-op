@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.order.infra.mapper.RCWLPoHeaderMapper">
+    <select id="selectCategoryCode" resultType="java.lang.String">
+         select h.category_code from smdm_item_category h
+         where h.category_id = #{categoryId} and h.tenant_id = #{tenantId}
+    </select>
+</mapper>
