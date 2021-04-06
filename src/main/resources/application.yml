@@ -106,7 +106,6 @@ hzero:
       enable: ${HZERO_AUDIT_DATA_CHANGE_ENABLE:true}
   # saga 单节点模式
   lock:
-    sslEnableEndpointIdentification: ${SPRING_REDIS_SSL:false}
     pattern: single
     single-server:
       address: ${SPRING_REDIS_HOST:192.168.3.154}
@@ -307,7 +306,7 @@ alpha:
     serviceId: ${ALPHA_CLUSTER_SERVICEID:srm-saga} # alpha服务名
 
 omega:
-  enabled: ${OMEGA_ENABLED:false} #作为omega端，启用标识
+  enabled: ${OMEGA_ENABLED:true} #作为omega端，启用标识
   connection:
     sending:
       timeout: ${OMEGA_ENABLED_CONNECTION_SENDING_TIMEOUT:8}
