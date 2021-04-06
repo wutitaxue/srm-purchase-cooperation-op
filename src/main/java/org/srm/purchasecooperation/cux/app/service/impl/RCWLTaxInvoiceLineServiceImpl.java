@@ -21,7 +21,8 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
     private RCWLTaxInvoiceLineRepository rcwlTaxInvoiceLineRepository;
 
     @Override
-    public int InvoiceSynchronization(Long tenantId, List<InvoiceData> invoiceDataList) {
+    public ResponseData InvoiceSynchronization(Long tenantId, List<InvoiceData> invoiceDataList) {
+        ResponseData responseData =  new ResponseData();
         try {
             InvoiceHeader invoiceHeader = new InvoiceHeader();
             TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
@@ -40,11 +41,17 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 taxInvoiceLine.setValidateStatusCode(invoiceLine.getValidateStatus());
             }
             taxInvoiceLineService.batchAddOrUpdateTaxInvoiceLine(taxInvoiceLineList, tenantId);
-            return 200;
+            responseData.setState("1");
+            responseData.setMessage("操作成功！");
+            responseData.setCode("200");
+            return responseData;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return 0;
+        responseData.setState("0");
+        responseData.setMessage("操作失败！");
+        responseData.setCode("201");
+        return responseData;
     }
 
     @Override

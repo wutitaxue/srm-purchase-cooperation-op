@@ -13,7 +13,7 @@ public interface RCWLTaxInvoiceLineService {
      * @param tenantId
      * @param invoiceDataList
      */
-    int InvoiceSynchronization(Long tenantId, List<InvoiceData> invoiceDataList);
+    ResponseData InvoiceSynchronization(Long tenantId, List<InvoiceData> invoiceDataList);
 
     int ResponseData(ResponseData responseData);
 }

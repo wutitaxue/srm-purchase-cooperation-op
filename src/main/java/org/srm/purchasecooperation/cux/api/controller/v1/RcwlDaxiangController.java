@@ -26,9 +26,11 @@ public class RcwlDaxiangController {
             permissionPublic = true
     )
 
-    public Integer InvoiceSynchronization(
+    public ResponseData InvoiceSynchronization(
                                          @RequestBody List<InvoiceData> invoiceDataList) {
-        return rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, invoiceDataList);
+        ResponseData responseData = new ResponseData();
+        responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, invoiceDataList);
+        return responseData;
 //        return rcwlTaxInvoiceLineService.ResponseData(new ResponseData());
     }
 }
