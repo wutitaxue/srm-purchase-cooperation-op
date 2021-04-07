@@ -21,10 +21,11 @@ import org.srm.purchasecooperation.cux.asn.domain.entity.RcwlAsnHeader;
 import org.srm.purchasecooperation.asn.domain.repository.AsnHeaderRepository;
 import org.srm.purchasecooperation.cux.asn.domain.repository.RcwlAsnHeaderRepository;
 import org.srm.purchasecooperation.cux.asn.domain.vo.RcwlAsnHeaderVO;
+import org.srm.purchasecooperation.cux.asn.infra.constant.Constants;
 import org.srm.web.annotation.Tenant;
 
 @Api(
-        tags = {"Sinv Asn Header (Org Level)"}
+        tags = {Constants.API_TAGS}
 )
 @RestController("RcwlAsnHeaderController.v1")
 @RequestMapping({"/v1/{organizationId}/asn-header"})
