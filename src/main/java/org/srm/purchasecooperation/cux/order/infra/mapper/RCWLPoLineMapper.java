@@ -1,21 +1,18 @@
-package org.srm.purchasecooperation.order.infra.mapper;
+package org.srm.purchasecooperation.cux.order.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
-import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
-import org.srm.purchasecooperation.order.api.dto.RCWLPoLineDetailDTO;
-import org.srm.web.annotation.Tenant;
+import org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
 /**
- * @author bin.zhang
+ * @author 15640
  */
 
 public interface RCWLPoLineMapper{
     /**
-     * 新加字段需求物料描述查询
+     * 需求物料描述 二开字段查询
      * @param tenantId
      * @param poHeaderId
      * @param nowDate

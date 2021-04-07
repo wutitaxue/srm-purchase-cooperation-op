@@ -1,10 +1,7 @@
-package org.srm.purchasecooperation.order.app.service;
+package org.srm.purchasecooperation.cux.order.app.service;
 
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 
-/**
- * @author bin.zhang
- */
 public interface RCWLPoHeaderService {
     /**
      * 自动生成物料编码

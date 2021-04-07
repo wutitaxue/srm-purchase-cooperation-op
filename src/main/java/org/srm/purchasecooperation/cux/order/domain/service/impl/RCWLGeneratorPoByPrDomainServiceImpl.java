@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.order.domain.service.impl;
+package org.srm.purchasecooperation.cux.order.domain.service.impl;
 
 import org.hzero.boot.file.FileClient;
 import org.hzero.boot.file.dto.FileParamsDTO;
@@ -20,8 +20,8 @@ import org.srm.purchasecooperation.order.domain.repository.OrderTypeRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.service.GeneratorPoByPcDomainService;
-import org.srm.purchasecooperation.order.domain.service.GeneratorPoByPrDomainService;
 import org.srm.purchasecooperation.order.domain.service.PoDomainService;
+import org.srm.purchasecooperation.order.domain.service.impl.GeneratorPoByPrDomainServiceImpl;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
 import org.srm.purchasecooperation.order.infra.mapper.PoLineMapper;
@@ -36,9 +36,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * @author bin.zhang
- */
 @Component
 @Tenant("SRM-RCWL")
 public class RCWLGeneratorPoByPrDomainServiceImpl extends GeneratorPoByPrDomainServiceImpl {

@@ -1,6 +1,7 @@
-package org.srm.purchasecooperation.order.api.dto;
+package org.srm.purchasecooperation.cux.order.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
 
 /**
  * @author bin.zhang

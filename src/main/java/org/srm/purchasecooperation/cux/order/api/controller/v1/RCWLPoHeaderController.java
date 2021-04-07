@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.order.api.controller.v1;
+package org.srm.purchasecooperation.cux.order.api.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.iam.ResourceLevel;
@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.order.app.service.RCWLPoHeaderService;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
 import org.srm.purchasecooperation.order.app.service.PoChangeByContractService;
 import org.srm.purchasecooperation.order.app.service.PoHeaderService;
 import org.srm.purchasecooperation.order.app.service.PoLineService;
-import org.srm.purchasecooperation.order.app.service.RCWLPoHeaderService;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
 import org.srm.purchasecooperation.order.domain.repository.PoCreatingRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
@@ -44,8 +44,8 @@ import java.util.List;
         tags = {"Po Header"}
 )
 @Tenant("SRM-RCWL")
-public class RCWLPoHeaderController  {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RCWLPoHeaderController.class);
+public class RCWLPoHeaderController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.api.controller.v1.RCWLPoHeaderController.class);
     @Autowired
     private PoHeaderService poHeaderService;
     @Autowired
@@ -69,9 +69,9 @@ public class RCWLPoHeaderController  {
     @Value("${service.od-url}")
     private String odUrl;
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
     @Autowired
-    RCWLPoHeaderService rcwlPoHeaderService;
+    private RCWLPoHeaderService rcwlPoHeaderService;
 
     @ApiOperation("手工审批通过采购订单")
     @Permission(
@@ -84,18 +84,19 @@ public class RCWLPoHeaderController  {
     @PurchaserPowerCron
     public ResponseEntity<List<PoDTO>> poApproveDetail(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PoOrderSaveDTO> poOrderSavaDTOList) {
         List<PoDTO> poDTOList = this.poHeaderService.poApprove(PoHeader.convertSaveDetailToPoDtoList(poOrderSavaDTOList, tenantId));
-        String approvalStatusReturn = this.customizeSettingHelper.queryBySettingCode(((PoDTO)poDTOList.get(0)).getTenantId(), "010212");
+        String approvalStatusReturn = this.customizeSettingHelper.queryBySettingCode(((PoDTO) poDTOList.get(0)).getTenantId(), "010212");
         poDTOList.stream().forEach((poDTO) -> {
             String manualPublicFlag = this.poHeaderRepository.getPoConfigCodeValue(poDTO.getTenantId(), poDTO.getPoHeaderId(), "SITE.SPUC.PO.MANUAL_PUBLISH");
             List<PoDTO> singletonList = Collections.singletonList(poDTO);
             if (String.valueOf(BaseConstants.Flag.YES).equals(approvalStatusReturn)) {
                 this.poHeaderService.erpPoApproveStatusReturn(singletonList, !String.valueOf(BaseConstants.Flag.YES).equals(manualPublicFlag), DetailsHelper.getUserDetails().getUserId());
             }
-              //融创新增 自动生成物料编码RCWLPoHeaderController
-            this.rcwlPoHeaderService.insertItemCode(poDTO,tenantId);
+            //融创新增 自动生成物料编码RCWLPoHeaderController
+            this.rcwlPoHeaderService.insertItemCode(poDTO, tenantId);
         });
         return Results.success(poDTOList);
     }
+
     @ApiOperation("批量审批通过采购订单")
     @Permission(
             level = ResourceLevel.ORGANIZATION
@@ -118,7 +119,7 @@ public class RCWLPoHeaderController  {
                 this.poHeaderService.erpPoApproveStatusReturn(singletonList, !String.valueOf(BaseConstants.Flag.YES).equals(manualPublicFlag), DetailsHelper.getUserDetails().getUserId());
             }
             //融创新增 自动生成物料编码RCWLPoHeaderController
-            this.rcwlPoHeaderService.insertItemCode(poDTO,tenantId);
+            this.rcwlPoHeaderService.insertItemCode(poDTO, tenantId);
         });
         return Results.success(poDTOList);
     }
