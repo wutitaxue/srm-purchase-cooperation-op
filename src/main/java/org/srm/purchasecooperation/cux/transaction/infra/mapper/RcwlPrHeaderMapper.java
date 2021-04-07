@@ -5,4 +5,5 @@ import org.srm.purchasecooperation.sinv.app.service.dto.PcHeaderDetailDTO;
 
 public interface RcwlPrHeaderMapper extends PrHeaderMapper {
     PcHeaderDetailDTO selectPcHeaderDetailByPcNum(String pcNum, Long tenantId);
+
 }

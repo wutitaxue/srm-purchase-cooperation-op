@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface RCWLAcceptListHeaderRepository {
+
     /**
      * 查询验收单明细
      * 
