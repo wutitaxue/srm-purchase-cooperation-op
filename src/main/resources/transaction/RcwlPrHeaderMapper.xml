@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlPrHeaderMapper">
+
+    <select id="selectPcHeaderDetailByPcNum"
+            resultType="org.srm.purchasecooperation.sinv.app.service.dto.PcHeaderDetailDTO">
+        select * from spcm_pc_header where pc_num = #{pcNum} AND tenant_id = #{tenantId}
+    </select>
+</mapper>
