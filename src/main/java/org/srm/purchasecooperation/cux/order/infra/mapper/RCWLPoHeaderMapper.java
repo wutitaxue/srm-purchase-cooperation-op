@@ -26,13 +26,7 @@ public interface RCWLPoHeaderMapper {
      */
     void batchInsertItem(@Param("rcwlItemInfoVOList") List<RCWLItemInfoVO> rcwlItemInfoVOList);
 
-    /**
-     * 通过订单行号查找item_id
-     * @param poLineId
-     * @param tenantId
-     * @return
-     */
-    Long selectItemIdByPoLineId(@Param("poLineId") Long poLineId, @Param("tenantId") Long tenantId);
+
 
     /**
      * 查询出需要封装的item category assign list

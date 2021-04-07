@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class RCWLPoHeaderRepositoryImpl  implements RCWLPoHeaderRepository {
     @Autowired
-    RCWLPoHeaderMapper rcwlPoHeaderMapper;
+    private RCWLPoHeaderMapper rcwlPoHeaderMapper;
 
 
     /**
@@ -36,17 +36,7 @@ public class RCWLPoHeaderRepositoryImpl  implements RCWLPoHeaderRepository {
         this.rcwlPoHeaderMapper.batchInsertItem(rcwlItemInfoVOList);
     }
 
-    /**
-     * 通过订单行号查找item_id
-     *
-     * @param poLineId
-     * @param tenantId
-     * @return
-     */
-    @Override
-    public Long selectItemIdByPoLineId(Long poLineId, Long tenantId) {
-        return rcwlPoHeaderMapper.selectItemIdByPoLineId(poLineId,tenantId);
-    }
+
 
     /**
      * 查询出需要封装的item category assign list

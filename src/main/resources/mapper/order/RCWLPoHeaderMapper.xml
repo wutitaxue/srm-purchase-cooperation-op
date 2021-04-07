@@ -22,9 +22,6 @@
         and srpl.item_id is null and sic.tenant_id = #{tenantId}
     </select>
 
-    <select id="selectItemIdByPoLineId" resultType="java.lang.Long">
-        select h.item_id from smdm_item h where h.
-    </select>
 
     <select id="selectItemCategoryListByPoLineIdList"
             resultType="org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO">
