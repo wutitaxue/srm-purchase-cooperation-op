@@ -11,7 +11,7 @@ import java.util.List;
  * @version:1.0
  */
 @JsonInclude
-public class ActListHeaderDto26422 {
+public class ActListHeaderDto {
     /*验收单标题*/
     private String acceptListNum;
     /*验收人*/
@@ -32,18 +32,18 @@ public class ActListHeaderDto26422 {
     /**
      * 验收行数据
      */
-    private List<ActListLinesDto26422> YSDDH;
+    private List<ActListLinesDto> YSDDH;
 
     /**
      * 附件链接
      */
     private List<ActListFilesDto> URL;
 
-    public List<ActListLinesDto26422> getYSDDH() {
+    public List<ActListLinesDto> getYSDDH() {
         return YSDDH;
     }
 
-    public void setYSDDH(List<ActListLinesDto26422> YSDDH) {
+    public void setYSDDH(List<ActListLinesDto> YSDDH) {
         this.YSDDH = YSDDH;
     }
 

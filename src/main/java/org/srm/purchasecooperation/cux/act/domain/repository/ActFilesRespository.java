@@ -2,7 +2,7 @@ package org.srm.purchasecooperation.cux.act.domain.repository;
 
 
 import org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto;
-import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto;
 
 import java.util.List;
 

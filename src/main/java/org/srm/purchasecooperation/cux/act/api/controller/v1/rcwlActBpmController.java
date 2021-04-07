@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422;
-import org.srm.purchasecooperation.cux.act.app.service.ActService26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
+import org.srm.purchasecooperation.cux.act.app.service.ActService;
 import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
 import org.srm.purchasecooperation.finance.api.dto.InvoiceTransactionSearchDTO;
 import org.srm.web.annotation.Tenant;
@@ -36,11 +36,11 @@ import java.util.logging.Logger;
  * @version:1.0
  */
 @Tenant(rcwlActConstant.TENANT_NUMBER)
-@RestController("rcwlActBpmController26422.v1")
+@RestController("rcwlActBpmController.v1")
 @RequestMapping("/v1/{organizationId}/act")
-public class rcwlActBpmController26422 {
+public class rcwlActBpmController {
     @Autowired
-    private ActService26422 actService26422;
+    private ActService actService;
     private Logger logger;
 
     /**
@@ -53,7 +53,7 @@ public class rcwlActBpmController26422 {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/getAct")
     @ProcessLovValue
-    public ResponseEntity<ActListHeaderDto26422> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) {
-        return Results.success(actService26422.actQuery(acceptListHeaderId,organizationId));
+    public ResponseEntity<ActListHeaderDto> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) {
+        return Results.success(actService.actQuery(acceptListHeaderId,organizationId));
     }
 }

@@ -4,7 +4,7 @@ import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
 import org.srm.purchasecooperation.cux.act.domain.repository.ActHeaderRespository;
 import org.srm.purchasecooperation.cux.act.infra.mapper.ActHeaderMapper;
 import org.srm.purchasecooperation.cux.act.infra.mapper.ActLineMapper;
@@ -25,11 +25,17 @@ public class ActHeaderRespositoryImpl implements ActHeaderRespository {
     @Autowired
     private ActHeaderMapper actHeaderMapper;
 
+    /**
+     * 验收单头信息查询
+     * @param acceptListHeaderId 验收单头id
+     * @param organizationId 租户id
+     * @return ActListHeaderDto
+     */
     @Override
     @ProcessLovValue
-    public ActListHeaderDto26422 actQuery(Long acceptListHeaderId,Long organizationId) {
-        ActListHeaderDto26422 actListHeaderDto26422 = actHeaderMapper.actListHeaderQuery(acceptListHeaderId,organizationId);
-//        actListHeaderDto26422.setActListLinesDto26422List(actLineMapper.actListLineQuery(acceptListHeaderId,organizationId));
-        return actListHeaderDto26422;
+    public ActListHeaderDto actQuery(Long acceptListHeaderId,Long organizationId) {
+        ActListHeaderDto actListHeaderDto = actHeaderMapper.actListHeaderQuery(acceptListHeaderId,organizationId);
+//        actListHeaderDto.setActListLinesDtoList(actLineMapper.actListLineQuery(acceptListHeaderId,organizationId));
+        return actListHeaderDto;
     }
 }

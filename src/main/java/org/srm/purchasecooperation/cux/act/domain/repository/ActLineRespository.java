@@ -1,7 +1,7 @@
 package org.srm.purchasecooperation.cux.act.domain.repository;
 
 
-import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ import java.util.List;
  * @version:1.0
  */
 public interface ActLineRespository {
-    List<ActListLinesDto26422> actQuery(Long acceptListHeaderId, Long organizationId);
+    List<ActListLinesDto> actQuery(Long acceptListHeaderId, Long organizationId);
 }

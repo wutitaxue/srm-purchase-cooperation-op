@@ -14,7 +14,7 @@ import javax.validation.constraints.NotBlank;
  * @version:1.0
  */
 @JsonInclude
-public class ActListLinesDto26422 {
+public class ActListLinesDto {
     /*订单号*/
     private String poHeaderNum;
     /*订单行号*/

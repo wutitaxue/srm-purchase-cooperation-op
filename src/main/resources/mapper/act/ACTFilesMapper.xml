@@ -4,12 +4,13 @@
     <select id="actListFilseQuery"
             parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto">
-           select (@i := @i + 1) file_number,
+/*@file_number 相当于sql中的自定义变量，效果为给查询出来的结果自动编号，可以不用到list里面给每条数据去编号*/
+           select (@file_number := @file_number + 1) file_number,
        hf.file_name,
        hf.file_size,
        hf.file_url url_mx
 from hfle_file hf,
-     (SELECT @i := 0) as i
+     (SELECT @file_number := 0) as file_number
 where hf.tenant_id = #{organizationId}
   and exists((select 1
               from spuc_accept_list_header h
@@ -20,7 +21,7 @@ where hf.tenant_id = #{organizationId}
              (select 1
               from spuc_accept_list_line l
               where l.attachment_uuid = hf.attachment_uuid
-                and l.accept_list_header_id = #{acceptListHeaderId}));
+                and l.accept_list_header_id = #{acceptListHeaderId}))
     </select>
 
 </mapper>

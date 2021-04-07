@@ -1,6 +1,6 @@
 package org.srm.purchasecooperation.cux.act.domain.repository;
 
-import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
 
 /**
  * @author lu.cheng01@hand-china.com
@@ -9,5 +9,5 @@ import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422;
  * @version:1.0
  */
 public interface ActHeaderRespository {
-    ActListHeaderDto26422 actQuery(Long acceptListHeaderId,Long organizationId);
+    ActListHeaderDto actQuery(Long acceptListHeaderId,Long organizationId);
 }

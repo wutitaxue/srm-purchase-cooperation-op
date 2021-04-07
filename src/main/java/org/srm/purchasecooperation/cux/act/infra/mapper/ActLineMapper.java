@@ -1,8 +1,8 @@
 package org.srm.purchasecooperation.cux.act.infra.mapper;
 
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
-import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422;
-import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto;
 
 import java.util.List;
 
@@ -13,5 +13,5 @@ import java.util.List;
  * @version:1.0
  */
 public interface ActLineMapper {
-    List<ActListLinesDto26422> actListLineQuery(Long acceptListHeaderId, Long organizationId);
+    List<ActListLinesDto> actListLineQuery(Long acceptListHeaderId, Long organizationId);
 }

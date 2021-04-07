@@ -4,8 +4,8 @@ import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422;
-import org.srm.purchasecooperation.cux.act.app.service.ActService26422;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
+import org.srm.purchasecooperation.cux.act.app.service.ActService;
 import org.srm.purchasecooperation.cux.act.domain.repository.ActFilesRespository;
 import org.srm.purchasecooperation.cux.act.domain.repository.ActHeaderRespository;
 import org.srm.purchasecooperation.cux.act.domain.repository.ActLineRespository;
@@ -21,7 +21,7 @@ import org.srm.web.annotation.Tenant;
  */
 @Service
 @Tenant(rcwlActConstant.TENANT_NUMBER)
-public class ActServiceImpl26422 implements ActService26422 {
+public class ActServiceImpl implements ActService {
 
     @Autowired
     private ActHeaderRespository actHeaderRespository;
@@ -31,17 +31,17 @@ public class ActServiceImpl26422 implements ActService26422 {
     private ActFilesRespository actFilesRespository;
 
     /**
-     * 验收单查询
-     * @param acceptListHeaderId
-     * @param organizationId
-     * @return
+     * 验收单查询，
+     * @param acceptListHeaderId 验收单头id
+     * @param organizationId 租户id
+     * @return ActListHeaderDto
      */
     @Override
     @ProcessLovValue
-    public ActListHeaderDto26422 actQuery(Long acceptListHeaderId, Long organizationId) {
-        ActListHeaderDto26422 actListHeaderDto26422 = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
-        actListHeaderDto26422.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
-        actListHeaderDto26422.setURL(actFilesRespository.actFilesQuery(acceptListHeaderId,organizationId));
-        return actListHeaderDto26422;
+    public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) {
+        ActListHeaderDto actListHeaderDto = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
+        actListHeaderDto.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
+        actListHeaderDto.setURL(actFilesRespository.actFilesQuery(acceptListHeaderId,organizationId));
+        return actListHeaderDto;
     }
 }

@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActHeaderMapper">
     <select id="actListHeaderQuery"
-            parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422"
-            resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto26422">
+            parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto"
+            resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto">
             SELECT
 	h.title accept_list_num,
 	(
