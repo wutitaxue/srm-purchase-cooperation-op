@@ -14,7 +14,7 @@ import java.util.List;
 public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
 
     @Autowired
-    RcwlAsnInterfaceMapper rcwlAsnInterfaceMapper;
+    private RcwlAsnInterfaceMapper rcwlAsnInterfaceMapper;
 
     /**
     * 构建返回报文实体
