@@ -10,11 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.asn.api.dto.RcwlAsnAcceptOrRcvDTO;
 import org.srm.purchasecooperation.cux.asn.domain.service.RcwlAsnInterfaceService;
+import org.srm.purchasecooperation.cux.infra.constant.Constants;
 
 import java.util.List;
 
 @Api(
-        tags = {"eas-return"}
+        tags = {Constants.API_TAGS}
 )
 @RestController("RcwlAsnInterfaceController.v1")
 //@Tenant("SRM-RCWL")

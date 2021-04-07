@@ -16,11 +16,17 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
     @Autowired
     RcwlAsnInterfaceMapper rcwlAsnInterfaceMapper;
 
+    /**
+    * 构建返回报文实体
+    * */
     public void addList(List<RcwlAsnAcceptOrRcvDTO> returnlist, Integer errorFlag, String errorMsg, String returnFlag){
         RcwlAsnAcceptOrRcvDTO rcwlAsnAcceptOrRcvDTO = new RcwlAsnAcceptOrRcvDTO(null,errorFlag,errorMsg,null,returnFlag);
         returnlist.add(rcwlAsnAcceptOrRcvDTO);
     }
 
+    /**
+     * 根据业务逻辑判断返回不同的信息
+     * */
     @Override
     public List<RcwlAsnAcceptOrRcvDTO> returnAcceptOrRcvBack(List<RcwlAsnAcceptOrRcvDTO> list) {
         List<RcwlAsnAcceptOrRcvDTO> returnlist = new ArrayList<RcwlAsnAcceptOrRcvDTO>();
