@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlAsnInterfaceMapper">
+    <update id="updateSinvLineReturn">
+        update sinv_rcv_trx_line t
+        set     t.attribute_bigint1 = #{sinv.inventoryQuantity},
+                t.attribute_varchar1 = #{sinv.receiptNo},
+                t.attribute_varchar2 = #{sinv.purchaseOrderNo}
+        where t.rcv_trx_line_id =
+               (select a.rcv_trx_line_id from (select
+                srtl.rcv_trx_line_id
+                from
+                sinv_rcv_trx_line srtl
+                left join sinv_rcv_trx_header srth on srth.rcv_trx_header_id = srtl.rcv_trx_header_id
+                where srtl.trx_line_num = #{sinv.lineNumber}
+                and srth.trx_num = #{sinv.acceptanceNumber}) a)
+    </update>
+    <update id="updateSpucLineReturn">
+        update spuc_accept_list_line t
+        set     t.attribute_varchar1 = #{accept.receiptNo},
+                t.attribute_varchar2 = #{accept.purchaseOrderNo}
+         where t.accept_list_line_id =
+                (select a.accept_list_line_id from(select
+                srtl.accept_list_line_id
+                from
+                spuc_accept_list_line srtl
+                left join spuc_accept_list_header srth on srth.accept_list_header_id = srtl.accept_list_header_id
+                where srtl.line_num = #{accept.lineNumber}
+                and srth.accept_list_num = #{accept.acceptanceNumber}) a)
+    </update>
+
+    <select id="selectSinvStatusCount" resultType="java.lang.Long">
+        select
+        count(*)
+        from
+        sinv_rcv_trx_line srtl
+        left join sinv_rcv_trx_header srth on srth.rcv_trx_header_id = srtl.rcv_trx_header_id
+        where srtl.trx_line_num = #{sinv.lineNumber}
+        and srth.trx_num = #{sinv.acceptanceNumber}
+        and srtl.invoice_matched_status = 'UNINVOICED'
+    </select>
+
+    <select id="selectSpucCount" resultType="java.lang.Long">
+        select
+        count(*)
+        from
+        sfin_bill_detail_accept sbda
+        where sbda.accept_list_line_id =
+        (select a.accept_list_line_id from (select
+                srtl.accept_list_line_id
+                from
+                spuc_accept_list_line srtl
+                left join spuc_accept_list_header srth on srth.accept_list_header_id = srtl.accept_list_header_id
+                where srtl.line_num = #{accept.lineNumber}
+                and srth.accept_list_num = #{accept.acceptanceNumber}) a)
+    </select>
+
+    <update id="deleteSinvLineReturn">
+        update sinv_rcv_trx_line t
+        set     t.attribute_bigint1 = null,
+                t.attribute_varchar1 = null,
+                t.attribute_varchar2 = null
+        where t.rcv_trx_line_id =
+               (select a.rcv_trx_line_id from (select
+                srtl.rcv_trx_line_id
+                from
+                sinv_rcv_trx_line srtl
+                left join sinv_rcv_trx_header srth on srth.rcv_trx_header_id = srtl.rcv_trx_header_id
+                where srtl.trx_line_num = #{sinv.lineNumber}
+                and srth.trx_num = #{sinv.acceptanceNumber}) a)
+    </update>
+
+    <update id="deleteSpucLineReturn">
+        update spuc_accept_list_line t
+            set     t.attribute_varchar1 = null,
+                    t.attribute_varchar2 = null
+             where t.accept_list_line_id =
+                    (select a.accept_list_line_id from(select
+                    srtl.accept_list_line_id
+                    from
+                    spuc_accept_list_line srtl
+                    left join spuc_accept_list_header srth on srth.accept_list_header_id = srtl.accept_list_header_id
+                    where srtl.line_num = #{accept.lineNumber}
+                    and srth.accept_list_num = #{accept.acceptanceNumber}) a)
+    </update>
+
+</mapper>
