@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.asn.infra.mapper.RcwlAsnHeaderMapper">
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.cux.asn.domain.entity.RcwlAsnHeader">
+        <result column="asn_header_id" property="asnHeaderId" jdbcType="DECIMAL"/>
+        <result column="tenant_id" property="tenantId" jdbcType="DECIMAL"/>
+        <result column="asn_num" property="asnNum" jdbcType="VARCHAR"/>
+        <result column="erp_asn_num" property="erpAsnNum" jdbcType="VARCHAR"/>
+        <result column="asn_type_code" property="asnTypeCode" jdbcType="VARCHAR"/>
+        <result column="supplier_tenant_id" property="supplierTenantId" jdbcType="DECIMAL"/>
+        <result column="supplier_id" property="supplierId" jdbcType="DECIMAL"/>
+        <result column="supplier_num" property="supplierNum" jdbcType="VARCHAR"/>
+        <result column="supplier_name" property="supplierName" jdbcType="VARCHAR"/>
+        <result column="supplier_site_id" property="supplierSiteId" jdbcType="DECIMAL"/>
+        <result column="ship_to_location_id" property="shipToLocationId" jdbcType="DECIMAL"/>
+        <result column="ship_to_location_code" property="shipToLocationCode" jdbcType="VARCHAR"/>
+        <result column="ship_to_location_address" property="shipToLocationAddress" jdbcType="VARCHAR"/>
+        <result column="inv_organization_id" property="invOrganizationId" jdbcType="DECIMAL"/>
+        <result column="ship_date" property="shipDate" jdbcType="DATE"/>
+        <result column="expected_arrive_date" property="expectedArriveDate" jdbcType="DATE"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="asn_status" property="asnStatus" jdbcType="VARCHAR"/>
+        <result column="submitted_date" property="submittedDate" jdbcType="DATE"/>
+        <result column="service_create_flag" property="serviceCreateFlag" jdbcType="DECIMAL"/>
+        <result column="ou_id" property="ouId" jdbcType="DECIMAL"/>
+        <result column="company_id" property="companyId" jdbcType="DECIMAL"/>
+        <result column="company_name" property="companyName" jdbcType="VARCHAR"/>
+        <result column="supplier_company_id" property="supplierCompanyId" jdbcType="DECIMAL"/>
+        <result column="supplier_company_name" property="supplierCompanyName" jdbcType="VARCHAR"/>
+        <result column="suppplier_ou_id" property="suppplierOuId" jdbcType="DECIMAL"/>
+        <result column="source_code" property="sourceCode" jdbcType="VARCHAR"/>
+        <result column="external_system_code" property="externalSystemCode" jdbcType="VARCHAR"/>
+        <result column="approved_by" property="approvedBy" jdbcType="DECIMAL"/>
+        <result column="approved_date" property="approvedDate" jdbcType="DATE"/>
+        <result column="approved_remark" property="approvedRemark" jdbcType="VARCHAR"/>
+        <result column="review_by" property="reviewBy" jdbcType="DECIMAL"/>
+        <result column="review_date" property="reviewDate" jdbcType="DATE"/>
+        <result column="review_remark" property="reviewRemark" jdbcType="VARCHAR"/>
+        <result column="erp_creation_date" property="erpCreationDate" jdbcType="DATE"/>
+        <result column="erp_last_update_date" property="erpLastUpdateDate" jdbcType="DATE"/>
+        <result column="bill_of_lading_num" property="billOfLadingNum" jdbcType="VARCHAR"/>
+        <result column="actual_receiver_code" property="actualReceiverCode" jdbcType="VARCHAR"/>
+        <result column="actual_receiver_name" property="actualReceiverName" jdbcType="VARCHAR"/>
+        <result column="partner_code" property="partnerCode" jdbcType="VARCHAR"/>
+        <result column="partner_name" property="partnerName" jdbcType="VARCHAR"/>
+        <result column="init_flag" property="initFlag" jdbcType="DECIMAL"/>
+        <result column="submit_sync_status" property="submitSyncStatus" jdbcType="VARCHAR"/>
+        <result column="submit_sync_response_msg" property="submitSyncResponseMsg" jdbcType="VARCHAR"/>
+        <result column="submit_sync_date" property="submitSyncDate" jdbcType="DATE"/>
+        <result column="close_sync_status" property="closeSyncStatus" jdbcType="VARCHAR"/>
+        <result column="close_sync_response_msg" property="closeSyncResponseMsg" jdbcType="VARCHAR"/>
+        <result column="close_sync_date" property="closeSyncDate" jdbcType="DATE"/>
+        <result column="cancel_sync_status" property="cancelSyncStatus" jdbcType="VARCHAR"/>
+        <result column="cancel_sync_response_msg" property="cancelSyncResponseMsg" jdbcType="VARCHAR"/>
+        <result column="cancel_sync_date" property="cancelSyncDate" jdbcType="DATE"/>
+        <result column="logistics_company" property="logisticsCompany" jdbcType="VARCHAR"/>
+        <result column="logistics_staff" property="logisticsStaff" jdbcType="VARCHAR"/>
+        <result column="logistics_contact_info" property="logisticsContactInfo" jdbcType="VARCHAR"/>
+        <result column="logistics_cost" property="logisticsCost" jdbcType="VARCHAR"/>
+        <result column="deliver_num" property="deliverNum" jdbcType="VARCHAR"/>
+        <result column="express_num" property="expressNum" jdbcType="VARCHAR"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="agent_id" property="agentId" jdbcType="DECIMAL"/>
+        <result column="receive_status" property="receiveStatus" jdbcType="VARCHAR"/>
+        <result column="purchase_org_id" property="purchaseOrgId" jdbcType="DECIMAL"/>
+        <result column="approve_attachment_uuid" property="approveAttachmentUuid" jdbcType="VARCHAR"/>
+        <result column="review_attachment_uuid" property="reviewAttachmentUuid" jdbcType="VARCHAR"/>
+        <result column="other_attachment_uuid" property="otherAttachmentUuid" jdbcType="VARCHAR"/>
+        <result column="supplier_attachment_uuid" property="supplierAttachmentUuid" jdbcType="VARCHAR"/>
+        <result column="asn_header_bar_code" property="asnHeaderBarCode" jdbcType="VARCHAR"/>
+        <result column="asn_header_qr_code" property="asnHeaderQrCode" jdbcType="VARCHAR"/>
+        <result column="delivered_atta_uuid" property="deliveredAttaUuid" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="selectRcwlAsnHeaderByHeaderId" parameterType="java.lang.Long" resultType="org.srm.purchasecooperation.cux.asn.domain.vo.RcwlAsnHeaderVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        CASE WHEN sah.submit_sync_status = 'SUCCESS' THEN sah.erp_asn_num ELSE sah.submit_sync_response_msg  END AS erp_asn_num,
+        sah.asn_header_id,
+        sah.asn_status,
+        sah.asn_num,
+        sah.asn_type_code,
+        sah.buyer_remark,
+        ( CASE WHEN sah.supplier_company_name = '' OR sah.supplier_company_name IS NULL THEN hcc.company_name ELSE sah.supplier_company_name END ) AS supplier_company_name,
+        ( CASE WHEN sah.company_name = '' OR sah.company_name IS NULL THEN hc.company_name ELSE sah.company_name END ) AS company_name,
+        hio.organization_name,
+        sah.ship_to_location_address,
+        sah.immed_shipped_flag,
+        sah.actual_receiver_name,
+        sess.supplier_site_name,
+        sah.ship_date,
+        sah.expected_arrive_date,
+        sah.remark,
+        sah.close_sync_status,
+        sah.logistics_company,
+        sah.logistics_staff,
+        sah.logistics_contact_info,
+        sah.logistics_cost,
+        sah.logistics_phone_num,
+        sah.express_num,
+        sah.receive_status,
+        sah.submit_sync_status,
+        sah.object_version_number,
+        ses.supplier_name,
+        sah.logistics_receipt_status,
+        sah.approve_attachment_uuid,
+        sah.review_attachment_uuid,
+        sah.other_attachment_uuid,
+        sah.supplier_attachment_uuid,
+        sah.po_type_id,
+        ot.order_type_code,
+        ott.order_type_name,
+        sah.transport_type,
+        sah.approve_flag,
+        sah.cancel_approve_flag,
+        (SELECT SUM(sal2.ship_quantity)
+        FROM sinv_asn_line sal2
+        WHERE sal2.asn_header_id = #{asnHeaderId}) AS total_quantity,
+        sah.carriers_code,
+        sah.carriers_name,
+        sah.supplier_atta_uuid,
+        sah.contact_info,
+        sah.delivered_atta_uuid
+        FROM
+        sinv_asn_header sah
+        LEFT JOIN sslm_ext_supplier_site sess ON sah.supplier_site_id = sess.supplier_site_id
+        LEFT JOIN hpfm_inv_organization hio ON sah.inv_organization_id = hio.organization_id
+        LEFT JOIN sslm_external_supplier ses ON sah.supplier_id = ses.supplier_id
+        LEFT JOIN hpfm_company hc ON sah.company_id = hc.company_id
+        LEFT JOIN sodr_order_type ot ON sah.po_type_id = ot.order_type_id
+        LEFT JOIN sodr_order_type_tl ott ON ott.order_type_id = ot.order_type_id AND ott.lang = #{lang}
+        LEFT JOIN spfm_partner sp ON sp.partner_company_id=sah.supplier_company_id AND sp.company_id=sah.company_id
+        LEFT JOIN sslm_supplier_basic hcc ON hcc.supplier_basic_id = sp.supplier_basic_id
+        WHERE
+        sah.asn_header_id = #{asnHeaderId}
+        <bind name="userDetails" value="@io.choerodon.core.oauth.DetailsHelper@getUserDetails()"/>
+        <if test="userDetails.organizationId!=userDetails.tenantId">
+            and sah.supplier_tenant_id=#{userDetails.organizationId}
+        </if>
+    </select>
+</mapper>
