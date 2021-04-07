@@ -7,7 +7,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface RCWLAcceptListHeaderService {
-<<<<<<< HEAD
     /**
      * 查询验收单明细
      *
@@ -16,8 +15,6 @@ public interface RCWLAcceptListHeaderService {
      * @param pageRequest 分页参数
      * @return Page<RCWLAcceptListLineVO>
      */
-=======
->>>>>>> origin/feature-srm-56060
     Page<RCWLAcceptListLineVO> rcwlGetPageDetailAcceptList(AcceptListLineQueryDTO queryDTO, Long tenantId,
                     PageRequest pageRequest);
 
