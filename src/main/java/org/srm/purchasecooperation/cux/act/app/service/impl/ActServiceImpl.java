@@ -4,6 +4,7 @@ import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
 import org.srm.purchasecooperation.cux.act.app.service.ActService;
 import org.srm.purchasecooperation.cux.act.domain.repository.ActFilesRespository;
@@ -12,6 +13,9 @@ import org.srm.purchasecooperation.cux.act.domain.repository.ActLineRespository;
 import org.srm.purchasecooperation.cux.act.infra.repsitory.impl.ActHeaderRespositoryImpl;
 import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
 import org.srm.web.annotation.Tenant;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author lu.cheng01@hand-china.com
@@ -32,8 +36,9 @@ public class ActServiceImpl implements ActService {
 
     /**
      * 验收单查询，
+     *
      * @param acceptListHeaderId 验收单头id
-     * @param organizationId 租户id
+     * @param organizationId     租户id
      * @return ActListHeaderDto
      */
     @Override
@@ -41,7 +46,16 @@ public class ActServiceImpl implements ActService {
     public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) {
         ActListHeaderDto actListHeaderDto = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
         actListHeaderDto.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
-        actListHeaderDto.setURL(actFilesRespository.actFilesQuery(acceptListHeaderId,organizationId));
+        List<ActListFilesDto> actListFilesDtoList = actFilesRespository.actFilesQuery(acceptListHeaderId, organizationId);
+        if (actListFilesDtoList != null && actListFilesDtoList.size() > 0) {
+            int fileNumber = 1;
+            for (ActListFilesDto e : actListFilesDtoList) {
+                /*设置文件序号，自动增长，1，2，3，4...*/
+                e.setFileNumber(String.valueOf(fileNumber));
+                fileNumber++;
+            }
+        }
+        actListHeaderDto.setURL(actListFilesDtoList);
         return actListHeaderDto;
     }
 }
