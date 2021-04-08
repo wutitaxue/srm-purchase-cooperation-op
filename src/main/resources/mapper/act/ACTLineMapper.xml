@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActLineMapper">
+    <select id="actListLineQuery"
+            parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto"
+            resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto">
+            SELECT
+	ph.po_num po_header_num,
+	pl.line_num po_line_num,
+	pl.item_name,
+	pl.quantity,
+	l.accepted_quantity,
+	(
+		pl.quantity - l.accepted_quantity
+	) can_accept_quantity,
+	l.accept_quantity,
+	l.accept_opinion_code,
+	(
+		SELECT
+			m.category_name
+		FROM
+			smdm_item_category m
+		WHERE
+			m.category_id = l.item_category_id
+	) item_category_name,
+	(
+		SELECT
+			su.uom_name
+		FROM
+			smdm_uom su
+		WHERE
+			su.uom_id = l.uom_id
+	) uom_name,
+	pl.entered_tax_included_price po_unit_price,
+	(
+		l.accept_quantity * pl.entered_tax_included_price
+	) amount,
+	DATE_FORMAT(
+		ll.need_by_date,
+		'%Y-%m-%d %H:%i:%s'
+	) needed_date,
+	(
+		SELECT
+			date_format(
+				h.accept_date,
+				'%Y-%m-%d %H:%i:%s'
+			)
+		FROM
+			spuc_accept_list_header h
+		WHERE
+			h.accept_list_header_id = l.accept_list_header_id
+	) deliver_date,
+	NULL AS budget_account_id,
+	NULL AS cost_id
+FROM
+	spuc_accept_list_line l,
+	sodr_po_header ph,
+	sodr_po_line pl,
+	sodr_po_line_location ll
+WHERE
+	l.source_line_id = pl.po_line_id
+AND pl.po_header_id = ph.po_header_id
+AND ll.po_line_id = pl.po_line_id and l.tenant_id=#{organizationId} and l.accept_list_header_id = #{acceptListHeaderId}
+    </select>
+
+</mapper>
