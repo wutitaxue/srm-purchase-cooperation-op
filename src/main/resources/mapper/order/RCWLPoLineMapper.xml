@@ -23,8 +23,7 @@
         spl.po_line_id,
         spl.line_num,
         spll.original_quantity,
-        case when sph.source_bill_type_code='CONTRACT_ORDER' then spl.quantity else spll.quantity end quantity,
-        --         spll.quantity,
+        spll.quantity,
         spll.po_line_location_type,
         spl.unit_price,
         spl.benchmark_price_type,
@@ -38,7 +37,6 @@
         spl.display_line_num AS display_line_num,
         spl.unit_price_batch,
         spl.object_version_number AS line_version_number,
-        spl.object_version_number AS object_version_number,
         (CASE WHEN spl.old_item_code IS NULL THEN him.used_item_code
         ELSE spl.old_item_code END) AS old_item_code,
         spl.rate,
@@ -48,11 +46,6 @@
         spl.immed_shipped_flag,
         spl.unit_conversion_molecule,
         spl.unit_conversion_denominator,
-        spl.price_source,
-        spl.price_source_num,
-        spl.price_source_line_num,
-        spl.price_line_id,
-        spl.price_id,
         case spl.modify_price_flag
         when  2 then -1
         when  1 then 1
@@ -86,18 +79,12 @@
         spll.urgent_flag,
         spll.inv_organization_id,
         spll.inv_inventory_id,
+        spl.domestic_line_amount,
+        spl.domestic_tax_included_line_amount,
         hc.currency_name,
-        hup.uom_precision,
-        hc.financial_precision,
-        hc.default_precision,
         spl.tax_id,
         spl.pr_line_id,
         spl.pr_header_id,
-        spl.exchange_rate,
-        spl.domestic_tax_included_price,
-        spl.domestic_unit_price,
-        spl.domestic_tax_included_line_amount,
-        spl.domestic_line_amount,
         ( CASE WHEN spl.tax_rate IS NULL THEN ht.tax_rate ELSE spl.tax_rate END ) AS tax_rate,
         spl.item_id,
         case
@@ -305,6 +292,5 @@
             and sph.supplier_tenant_id=#{userDetails.organizationId}
         </if>
         ORDER BY spl.line_num, spll.line_location_num
-
     </select>
 </mapper>
