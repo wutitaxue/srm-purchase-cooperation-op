@@ -87,7 +87,7 @@
             resultType="org.srm.purchasecooperation.cux.domain.vo.PlanHeaderVO">
         select
         <include refid="Base_Column_List"/>,
-         l.attribute_varchar1,
+        l.attribute_varchar1,
         l.attribute_varchar2,
         l.attribute_varchar3,
         l.attribute_varchar4,
@@ -96,8 +96,14 @@
         l.attribute_date2,
         l.attribute_date3,
         l.attribute_date4,
-        l.attribute_date5
+        l.attribute_date5,
+        iu.real_name as  demandersMeaning,
+        sba.budget_account_name as budgetAccountMeaning,
+        hpa.purchase_agent_name as agentMeaning
         from scux_rcwl_plan_header h
+        left join  iam_user iu on iu.organization_id = h.tenant_id and iu.id = h.demanders
+        left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
+        left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
         left join sprm_pr_line l on h.plan_id = l.attribute_bigint1
 <where>
     <if test="planId != null">

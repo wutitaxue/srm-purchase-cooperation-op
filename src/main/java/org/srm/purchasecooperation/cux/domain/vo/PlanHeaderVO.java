@@ -42,10 +42,10 @@ public class PlanHeaderVO extends ExpandDomain {
     private String format;
     @ApiModelProperty(value = "业态")
     private String formatMeaning;
-    @LovValue(
-            lovCode = "SPFM.USER_AUTH.COMPANY",
-            meaningField = "companyName"
-    )
+//    @LovValue(
+//            lovCode = "SPFM.USER_AUTH.COMPANY",
+//            meaningField = "companyName"
+//    )
     @ApiModelProperty(value = "公司id")
     private Long companyId;
     @ApiModelProperty(value = "公司")
@@ -74,10 +74,10 @@ public class PlanHeaderVO extends ExpandDomain {
     private String bidMethod;
     @ApiModelProperty(value = "评标方法")
     private String bidMethodMeaning;
-    @LovValue(
-            lovCode = "SPCM.ACCEPT_USER",
-            meaningField = "demandersMeaning"
-    )
+//    @LovValue(
+//            lovCode = "SPCM.ACCEPT_USER",
+//            meaningField = "demandersMeaning"
+//    )
     @ApiModelProperty(value = "需求人code")
     private String demanders;
     @ApiModelProperty(value = "需求人")
@@ -94,10 +94,10 @@ public class PlanHeaderVO extends ExpandDomain {
     private String lineNum;
     @ApiModelProperty(value = "采购申请行id")
     private Long prLineId;
-    @LovValue(
-            lovCode = "SMDM.BUDGET_ACCOUNT",
-            meaningField = "budgetAccountMeaning"
-    )
+//    @LovValue(
+//            lovCode = "SMDM.BUDGET_ACCOUNT",
+//            meaningField = "budgetAccountMeaning"
+//    )
     @ApiModelProperty(value = "预算科目code")
     private String budgetAccount;
     @ApiModelProperty(value = "预算科目")
@@ -110,10 +110,10 @@ public class PlanHeaderVO extends ExpandDomain {
     private String biddingMode;
     @ApiModelProperty(value = "招采模式")
     private String biddingModeMeaning;
-    @LovValue(
-            lovCode = "SPUC.PURCHASE_AGENT",
-            meaningField = "agentMeaning"
-    )
+//    @LovValue(
+//            lovCode = "SPUC.PURCHASE_AGENT",
+//            meaningField = "agentMeaning"
+//    )
     @ApiModelProperty(value = "经办人code")
     private String agent;
     @ApiModelProperty(value = "经办人")
