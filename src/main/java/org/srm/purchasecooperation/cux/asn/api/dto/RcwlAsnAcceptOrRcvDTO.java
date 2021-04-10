@@ -5,6 +5,7 @@ import org.srm.purchasecooperation.order.api.dto.ItfBaseBO;
 
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 
 
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
@@ -57,7 +58,7 @@ public class RcwlAsnAcceptOrRcvDTO extends ItfBaseBO{
     /**
      * 净入库数量
      */
-    private Long inventoryQuantity;
+    private BigDecimal inventoryQuantity;
 
     /**
      * 资产系统采购订单号
@@ -130,11 +131,11 @@ public class RcwlAsnAcceptOrRcvDTO extends ItfBaseBO{
         this.receiptNo = receiptNo;
     }
 
-    public Long getInventoryQuantity() {
+    public BigDecimal getInventoryQuantity() {
         return inventoryQuantity;
     }
 
-    public void setInventoryQuantity(Long inventoryQuantity) {
+    public void setInventoryQuantity(BigDecimal inventoryQuantity) {
         this.inventoryQuantity = inventoryQuantity;
     }
 
