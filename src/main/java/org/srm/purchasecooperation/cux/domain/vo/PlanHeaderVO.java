@@ -40,6 +40,7 @@ public class PlanHeaderVO extends ExpandDomain {
     )
     @ApiModelProperty(value = "业态code")
     private String format;
+
     @ApiModelProperty(value = "业态")
     private String formatMeaning;
 //    @LovValue(
