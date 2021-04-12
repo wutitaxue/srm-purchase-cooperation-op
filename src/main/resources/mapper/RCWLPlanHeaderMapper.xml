@@ -97,9 +97,9 @@
         l.attribute_date3,
         l.attribute_date4,
         l.attribute_date5,
-        iu.real_name as  demandersMeaning,
-        sba.budget_account_name as budgetAccountMeaning,
-        hpa.purchase_agent_name as agentMeaning
+        iu.real_name as  demanders_meaning,
+        sba.budget_account_name as budget_account_meaning,
+        hpa.purchase_agent_name as agent_meaning
         from scux_rcwl_plan_header h
         left join  iam_user iu on iu.organization_id = h.tenant_id and iu.id = h.demanders
         left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
