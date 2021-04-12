@@ -103,6 +103,7 @@ public class RCWLPrHeaderController extends PrHeaderController {
     public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) {
         SecurityTokenHelper.validToken(prHeader, false);
         //融创 预算占用释放接口
+       this.rcwlPrItfService.invokeBudget(prHeader,tenantId);
 
         prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);

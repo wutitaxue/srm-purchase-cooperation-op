@@ -1,9 +1,14 @@
 package org.srm.purchasecooperation.cux.pr.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.integration.annotation.Default;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 
 /**
  * @description:预算占用/释放接口行
@@ -11,6 +16,8 @@ import javax.validation.constraints.NotNull;
  * @createDate: 2021/4/9 15:52
  */
 public class RCWLItfPrLineDTO {
+    @Autowired
+    private RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     @ApiModelProperty(value = "单据日期")
     @NotNull
@@ -31,6 +38,8 @@ public class RCWLItfPrLineDTO {
     @ApiModelProperty(value = "外部单据编号")
     @NotNull
     private String PAYMENBILLCODE;
+
+
 
     public String getBILLDATE() {
         return BILLDATE;
@@ -90,5 +99,22 @@ public class RCWLItfPrLineDTO {
                 ", MEXTERNALSYSID='" + MEXTERNALSYSID + '\'' +
                 ", PAYMENBILLCODE='" + PAYMENBILLCODE + '\'' +
                 '}';
+    }
+
+    public  RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId) {
+        RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
+        itfPrLineDTO.setMEXTERNALSYSID("CG");
+        itfPrLineDTO.setYSLX("01");
+        itfPrLineDTO.setCREATEUSER("jg");
+        SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-DD");
+        String dateString = formatter.format(prHeader.getCreationDate());
+        itfPrLineDTO.setBILLDATE(dateString);
+        itfPrLineDTO.setPAYMENBILLCODE(prHeader.getPrNum());
+        //测试使用
+       // itfPrLineDTO.setUNITCODE("01");
+        String unitCode = this.rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
+        itfPrLineDTO.setUNITCODE(unitCode);
+
+        return itfPrLineDTO;
     }
 }

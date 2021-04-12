@@ -19,6 +19,8 @@ public class RCWLItfPrLineDetailDTO {
     @ApiModelProperty(value = "业务用途名称")
     private String YWYTNAME;
     @ApiModelProperty(value = "行号")
+    private String LINE;
+    @ApiModelProperty(value = "预留字段")
     private String YLZDA1;
     @ApiModelProperty(value = "预留字段")
     private String YLZDA2;
@@ -99,6 +101,14 @@ public class RCWLItfPrLineDetailDTO {
         this.YLZDB2 = YLZDB2;
     }
 
+    public String getLINE() {
+        return LINE;
+    }
+
+    public void setLINE(String LINE) {
+        this.LINE = LINE;
+    }
+
     @Override
     public String toString() {
         return "RCWLItfPrLineDetailDTO{" +
@@ -107,6 +117,7 @@ public class RCWLItfPrLineDetailDTO {
                 ", CPLXNAME='" + CPLXNAME + '\'' +
                 ", YWYTCODE='" + YWYTCODE + '\'' +
                 ", YWYTNAME='" + YWYTNAME + '\'' +
+                ", LINE='" + LINE + '\'' +
                 ", YLZDA1='" + YLZDA1 + '\'' +
                 ", YLZDA2='" + YLZDA2 + '\'' +
                 ", YLZDB1='" + YLZDB1 + '\'' +
