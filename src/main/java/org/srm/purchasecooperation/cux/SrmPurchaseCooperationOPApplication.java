@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.srm.autoconfigure.purchasecooperation.EnableSrmPurchaseCooperationOP;
 
 /**
@@ -11,6 +12,7 @@ import org.srm.autoconfigure.purchasecooperation.EnableSrmPurchaseCooperationOP;
  */
 @SpringBootApplication
 @EnableSrmPurchaseCooperationOP
+//@ComponentScan("org.srm.purchasecooperation.cux.config")
 public class SrmPurchaseCooperationOPApplication {
 
     public static void main(String[] args) {

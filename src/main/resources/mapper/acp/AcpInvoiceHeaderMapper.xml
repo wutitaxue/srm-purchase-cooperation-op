@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.acp.infra.mapper.RCWLAcpInvoiceHeaderDataMapper">
+    <select id="getAcpInvoiceHeaderData"
+            parameterType="org.srm.purchasecooperation.cux.acp.domain.entity.RCWLAcpInvoiceHeaderData"
+            resultType="org.srm.purchasecooperation.cux.acp.domain.entity.RCWLAcpInvoiceHeaderData">
+           SELECT
+	h.invoice_num document_number,
+	h.invoice_status status,
+	(
+		SELECT
+			count(1)
+		FROM
+			sfin_tax_invoice_line l
+		WHERE
+			l.tenant_id = h.tenant_id
+		AND l.invoice_header_id = h.invoice_header_id
+	) tax_count
+FROM
+	sfin_invoice_header h
+WHERE
+	h.tenant_id = #{organizationId}
+AND h.invoice_header_id =#{InvoiceHeaderId}
+    </select>
+</mapper>
