@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 
 /**
  * @description:预算占用明细数据
@@ -28,6 +29,7 @@ public class RCWLItfPrLineDetailDTO {
     private String YLZDB1;
     @ApiModelProperty(value = "预留字段")
     private String YLZDB2;
+
 
     public String getYSZYJE() {
         return YSZYJE;
