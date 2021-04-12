@@ -7,7 +7,6 @@ public class Constants {
     private Constants() {
 
     }
-
     /**
      * api tags
      */
@@ -16,6 +15,29 @@ public class Constants {
     public static class WorkflowMessageCode {
         // 供应商消息通知
         public static final String SPUC_SUPPLIER_NOTIFY = "SPUC.SUPPLIER.NOTIFY";
+    }
+    public interface Pattern {
+        String DATE = "yyyy-MM-dd";
+        String DATETIME = "yyyy-MM-dd HH:mm:ss";
+        String DATETIME_MM = "yyyy-MM-dd HH:mm";
+        String DATETIME_SSS = "yyyy-MM-dd HH:mm:ss.SSS";
+        String TIME = "HH:mm";
+        String TIME_SS = "HH:mm:ss";
+        String SYS_DATE = "yyyy/MM/dd";
+        String SYS_DATETIME = "yyyy/MM/dd HH:mm:ss";
+        String SYS_DATETIME_MM = "yyyy/MM/dd HH:mm";
+        String SYS_DATETIME_SSS = "yyyy/MM/dd HH:mm:ss.SSS";
+        String NONE_DATE = "yyyyMMdd";
+        String NONE_DATETIME = "yyyyMMddHHmmss";
+        String NONE_DATETIME_MM = "yyyyMMddHHmm";
+        String NONE_DATETIME_SSS = "yyyyMMddHHmmssSSS";
+        String CST_DATETIME = "EEE MMM dd HH:mm:ss 'CST' yyyy";
+        String NONE_DECIMAL = "0";
+        String ONE_DECIMAL = "0.0";
+        String TWO_DECIMAL = "0.00";
+        String TB_NONE_DECIMAL = "#,##0";
+        String TB_ONE_DECIMAL = "#,##0.0";
+        String TB_TWO_DECIMAL = "#,##0.00";
     }
     /**
      * 采购计划状态

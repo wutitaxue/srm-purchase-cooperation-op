@@ -7,11 +7,13 @@ package org.srm.purchasecooperation.cux.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.hzero.export.annotation.ExcelColumn;
 import org.hzero.export.annotation.ExcelSheet;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.srm.common.mybatis.domain.ExpandDomain;
+import org.srm.purchasecooperation.cux.infra.constant.Constants;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -82,10 +84,10 @@ public class PlanHeaderExportVO extends ExpandDomain {
     @ExcelColumn(title = "行号")
     private String lineNum;
 
-    @LovValue(
-            lovCode = "SMDM.BUDGET_ACCOUNT",
-            meaningField = "budgetAccountMeaning"
-    )
+//    @LovValue(
+//            lovCode = "SMDM.BUDGET_ACCOUNT",
+//            meaningField = "budgetAccountMeaning"
+//    )
     private String budgetAccount;
     @ExcelColumn(title = "预算科目")
     private String budgetAccountMeaning;
@@ -96,10 +98,10 @@ public class PlanHeaderExportVO extends ExpandDomain {
     private String biddingMode;
     @ExcelColumn(title = "招采模式")
     private String biddingModeMeaning;
-    @LovValue(
-            lovCode = "SPUC.PURCHASE_AGENT",
-            meaningField = "agentMeaning"
-    )
+//    @LovValue(
+//            lovCode = "SPUC.PURCHASE_AGENT",
+//            meaningField = "agentMeaning"
+//    )
     private String agent;
     @ExcelColumn(title = "经办人")
     private String agentMeaning;
@@ -109,19 +111,19 @@ public class PlanHeaderExportVO extends ExpandDomain {
     private BigDecimal bidAmount;
     @ExcelColumn(title = "合同金额")
     private BigDecimal contractAmount;
-    @ExcelColumn(title = "需求计划完成时间")
+    @ExcelColumn(title = "需求计划完成时间", pattern = Constants.Pattern.DATE)
     private Date dePlanFinTime;
-    @ExcelColumn(title = "需求审批完成时间")
+    @ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE)
     private Date deApprFinTime;
-    @ExcelColumn(title = "计划完成时间（供方入围）")
+    @ExcelColumn(title = "计划完成时间（供方入围）", pattern = Constants.Pattern.DATE)
     private Date planFinVenTime;
-    @ExcelColumn(title = "计划完成时间（立项审批）")
+    @ExcelColumn(title = "计划完成时间（立项审批）", pattern = Constants.Pattern.DATE)
     private Date planFinApprTime;
-    @ExcelColumn(title = "计划完成时间（发标时间）")
+    @ExcelColumn(title = "计划完成时间（发标时间）", pattern = Constants.Pattern.DATE)
     private Date planFinIssueTime;
-    @ExcelColumn(title = "计划完成时间（定标时间）")
+    @ExcelColumn(title = "计划完成时间（定标时间）", pattern = Constants.Pattern.DATE)
     private Date planFinBidTime;
-    @ExcelColumn(title = "计划完成时间（合同完成时间）")
+    @ExcelColumn(title = "计划完成时间（合同完成时间）", pattern = Constants.Pattern.DATE)
     private Date planFinConTime;
     @ExcelColumn(title = "备注")
     private String remarks;
@@ -142,21 +144,23 @@ public class PlanHeaderExportVO extends ExpandDomain {
     private String attributeVarchar4;
     @ExcelColumn(title = "采购合同号")
     private String attributeVarchar5;
-    @ExcelColumn(title = "实际完成时间（供方入围）")
+    @ExcelColumn(title = "实际完成时间（供方入围）", pattern = Constants.Pattern.DATE)
     private Date attributeDate1;
-    @ExcelColumn(title = "实际完成时间（立项审批）")
+    @ExcelColumn(title = "实际完成时间（立项审批）", pattern = Constants.Pattern.DATE)
     private Date attributeDate2;
-    @ExcelColumn(title = "实际完成时间（发标时间）")
+    @ExcelColumn(title = "实际完成时间（发标时间）", pattern = Constants.Pattern.DATE)
     private Date attributeDate3;
-    @ExcelColumn(title = "实际完成时间（定标时间）")
+    @ExcelColumn(title = "实际完成时间（定标时间）", pattern = Constants.Pattern.DATE)
     private Date attributeDate4;
-    @ExcelColumn(title = "实际完成时间（合同完成时间）")
+    @ExcelColumn(title = "实际完成时间（合同完成时间）", pattern = Constants.Pattern.DATE)
     private Date attributeDate5;
-    @LovValue(
-            lovCode = "SPFM.USER_AUTH.COMPANY",
-            meaningField = "companyName"
-    )
+//    @LovValue(
+//            lovCode = "SPFM.USER_AUTH.COMPANY",
+//            meaningField = "companyName"
+//    )
    private Long companyId;
+    @ApiModelProperty(value = "创建人名称")
+    private String createdByName ;
 
     public PlanHeaderExportVO() {
     }
@@ -579,5 +583,13 @@ public class PlanHeaderExportVO extends ExpandDomain {
     @Override
     public void setAttributeDate5(Date attributeDate5) {
         this.attributeDate5 = attributeDate5;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
     }
 }
