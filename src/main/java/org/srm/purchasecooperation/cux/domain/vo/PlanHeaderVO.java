@@ -17,12 +17,13 @@ import org.srm.purchasecooperation.cux.infra.constant.Constants;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @JsonInclude(Include.NON_NULL)
 
 
-public class PlanHeaderVO extends ExpandDomain {
+public class PlanHeaderVO  {
     @ApiModelProperty("表ID，主键，供其他表做外键")
     private Long planId;
     @ApiModelProperty(value = "租户id", required = true)
@@ -130,34 +131,35 @@ public class PlanHeaderVO extends ExpandDomain {
     private BigDecimal bidAmount;
     @ApiModelProperty(value = "合同金额")
     private BigDecimal contractAmount;
+
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "需求计划完成时间")
-    private Date dePlanFinTime;
+    private LocalDate dePlanFinTime;
+
     @ApiModelProperty(value = "需求审批完成时间")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date deApprFinTime;
+    private LocalDate deApprFinTime;
+
     @ApiModelProperty(value = "计划完成时间（供方入围）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date planFinVenTime;
+    private LocalDate planFinVenTime;
+
     @ApiModelProperty(value = "计划完成时间（立项审批）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date planFinApprTime;
+    private LocalDate planFinApprTime;
+
     @ApiModelProperty(value = "计划完成时间（发标时间）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date planFinIssueTime;
+    private LocalDate planFinIssueTime;
+
     @ApiModelProperty(value = "计划完成时间（定标时间）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date planFinBidTime;
+    private LocalDate planFinBidTime;
+
     @ApiModelProperty(value = "计划完成时间（合同完成时间）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date planFinConTime;
+    private LocalDate planFinConTime;
+
     @ApiModelProperty(value = "备注")
     private String remarks;
     @ApiModelProperty(value = "附件")
@@ -181,25 +183,20 @@ public class PlanHeaderVO extends ExpandDomain {
     @ApiModelProperty(value = "采购合同号")
     private String attributeVarchar5;
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "实际完成时间（供方入围）")
-    private Date attributeDate1;
+    private LocalDate attributeDate1;
     @ApiModelProperty(value = "实际完成时间（立项审批）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date attributeDate2;
+    private LocalDate attributeDate2;
     @ApiModelProperty(value = "实际完成时间（发标时间）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date attributeDate3;
+    private LocalDate attributeDate3;
     @ApiModelProperty(value = "实际完成时间（定标时间）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date attributeDate4;
+    private LocalDate attributeDate4;
     @ApiModelProperty(value = "实际完成时间（合同完成时间）")
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @DateTimeFormat(pattern = Constants.Pattern.DATE)
-    private Date attributeDate5;
+    private LocalDate attributeDate5;
     @ApiModelProperty(value = "创建人名称")
     private String createdByName ;
 
@@ -261,6 +258,14 @@ public class PlanHeaderVO extends ExpandDomain {
 
     public void setFormatMeaning(String formatMeaning) {
         this.formatMeaning = formatMeaning;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public String getCompanyName() {
@@ -455,59 +460,59 @@ public class PlanHeaderVO extends ExpandDomain {
         this.contractAmount = contractAmount;
     }
 
-    public Date getDePlanFinTime() {
+    public LocalDate getDePlanFinTime() {
         return dePlanFinTime;
     }
 
-    public void setDePlanFinTime(Date dePlanFinTime) {
+    public void setDePlanFinTime(LocalDate dePlanFinTime) {
         this.dePlanFinTime = dePlanFinTime;
     }
 
-    public Date getDeApprFinTime() {
+    public LocalDate getDeApprFinTime() {
         return deApprFinTime;
     }
 
-    public void setDeApprFinTime(Date deApprFinTime) {
+    public void setDeApprFinTime(LocalDate deApprFinTime) {
         this.deApprFinTime = deApprFinTime;
     }
 
-    public Date getPlanFinVenTime() {
+    public LocalDate getPlanFinVenTime() {
         return planFinVenTime;
     }
 
-    public void setPlanFinVenTime(Date planFinVenTime) {
+    public void setPlanFinVenTime(LocalDate planFinVenTime) {
         this.planFinVenTime = planFinVenTime;
     }
 
-    public Date getPlanFinApprTime() {
+    public LocalDate getPlanFinApprTime() {
         return planFinApprTime;
     }
 
-    public void setPlanFinApprTime(Date planFinApprTime) {
+    public void setPlanFinApprTime(LocalDate planFinApprTime) {
         this.planFinApprTime = planFinApprTime;
     }
 
-    public Date getPlanFinIssueTime() {
+    public LocalDate getPlanFinIssueTime() {
         return planFinIssueTime;
     }
 
-    public void setPlanFinIssueTime(Date planFinIssueTime) {
+    public void setPlanFinIssueTime(LocalDate planFinIssueTime) {
         this.planFinIssueTime = planFinIssueTime;
     }
 
-    public Date getPlanFinBidTime() {
+    public LocalDate getPlanFinBidTime() {
         return planFinBidTime;
     }
 
-    public void setPlanFinBidTime(Date planFinBidTime) {
+    public void setPlanFinBidTime(LocalDate planFinBidTime) {
         this.planFinBidTime = planFinBidTime;
     }
 
-    public Date getPlanFinConTime() {
+    public LocalDate getPlanFinConTime() {
         return planFinConTime;
     }
 
-    public void setPlanFinConTime(Date planFinConTime) {
+    public void setPlanFinConTime(LocalDate planFinConTime) {
         this.planFinConTime = planFinConTime;
     }
 
@@ -543,111 +548,83 @@ public class PlanHeaderVO extends ExpandDomain {
         this.addFlagMeaning = addFlagMeaning;
     }
 
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
-    }
-
-    @Override
     public String getAttributeVarchar1() {
         return attributeVarchar1;
     }
 
-    @Override
     public void setAttributeVarchar1(String attributeVarchar1) {
         this.attributeVarchar1 = attributeVarchar1;
     }
 
-    @Override
     public String getAttributeVarchar2() {
         return attributeVarchar2;
     }
 
-    @Override
     public void setAttributeVarchar2(String attributeVarchar2) {
         this.attributeVarchar2 = attributeVarchar2;
     }
 
-    @Override
     public String getAttributeVarchar3() {
         return attributeVarchar3;
     }
 
-    @Override
     public void setAttributeVarchar3(String attributeVarchar3) {
         this.attributeVarchar3 = attributeVarchar3;
     }
 
-    @Override
     public String getAttributeVarchar4() {
         return attributeVarchar4;
     }
 
-    @Override
     public void setAttributeVarchar4(String attributeVarchar4) {
         this.attributeVarchar4 = attributeVarchar4;
     }
 
-    @Override
     public String getAttributeVarchar5() {
         return attributeVarchar5;
     }
 
-    @Override
     public void setAttributeVarchar5(String attributeVarchar5) {
         this.attributeVarchar5 = attributeVarchar5;
     }
 
-    @Override
-    public Date getAttributeDate1() {
+    public LocalDate getAttributeDate1() {
         return attributeDate1;
     }
 
-    @Override
-    public void setAttributeDate1(Date attributeDate1) {
+    public void setAttributeDate1(LocalDate attributeDate1) {
         this.attributeDate1 = attributeDate1;
     }
 
-    @Override
-    public Date getAttributeDate2() {
+    public LocalDate getAttributeDate2() {
         return attributeDate2;
     }
 
-    @Override
-    public void setAttributeDate2(Date attributeDate2) {
+    public void setAttributeDate2(LocalDate attributeDate2) {
         this.attributeDate2 = attributeDate2;
     }
 
-    @Override
-    public Date getAttributeDate3() {
+    public LocalDate getAttributeDate3() {
         return attributeDate3;
     }
 
-    @Override
-    public void setAttributeDate3(Date attributeDate3) {
+    public void setAttributeDate3(LocalDate attributeDate3) {
         this.attributeDate3 = attributeDate3;
     }
 
-    @Override
-    public Date getAttributeDate4() {
+    public LocalDate getAttributeDate4() {
         return attributeDate4;
     }
 
-    @Override
-    public void setAttributeDate4(Date attributeDate4) {
+    public void setAttributeDate4(LocalDate attributeDate4) {
         this.attributeDate4 = attributeDate4;
     }
 
-    @Override
-    public Date getAttributeDate5() {
+    public LocalDate getAttributeDate5() {
         return attributeDate5;
     }
 
-    @Override
-    public void setAttributeDate5(Date attributeDate5) {
+    public void setAttributeDate5(LocalDate attributeDate5) {
         this.attributeDate5 = attributeDate5;
     }
 

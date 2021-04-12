@@ -20,7 +20,7 @@ import java.util.Date;
 
 @JsonInclude(Include.NON_NULL)
 @ExcelSheet(title = "采购计划")
-public class PlanHeaderExportVO extends ExpandDomain {
+public class PlanHeaderExportVO  {
     @Encrypt
     private Long planId;
 
@@ -485,102 +485,82 @@ public class PlanHeaderExportVO extends ExpandDomain {
         this.addFlagMeaning = addFlagMeaning;
     }
 
-    @Override
     public String getAttributeVarchar1() {
         return attributeVarchar1;
     }
 
-    @Override
     public void setAttributeVarchar1(String attributeVarchar1) {
         this.attributeVarchar1 = attributeVarchar1;
     }
 
-    @Override
     public String getAttributeVarchar2() {
         return attributeVarchar2;
     }
 
-    @Override
     public void setAttributeVarchar2(String attributeVarchar2) {
         this.attributeVarchar2 = attributeVarchar2;
     }
 
-    @Override
     public String getAttributeVarchar3() {
         return attributeVarchar3;
     }
 
-    @Override
     public void setAttributeVarchar3(String attributeVarchar3) {
         this.attributeVarchar3 = attributeVarchar3;
     }
 
-    @Override
     public String getAttributeVarchar4() {
         return attributeVarchar4;
     }
 
-    @Override
     public void setAttributeVarchar4(String attributeVarchar4) {
         this.attributeVarchar4 = attributeVarchar4;
     }
 
-    @Override
     public String getAttributeVarchar5() {
         return attributeVarchar5;
     }
 
-    @Override
     public void setAttributeVarchar5(String attributeVarchar5) {
         this.attributeVarchar5 = attributeVarchar5;
     }
 
-    @Override
     public Date getAttributeDate1() {
         return attributeDate1;
     }
 
-    @Override
     public void setAttributeDate1(Date attributeDate1) {
         this.attributeDate1 = attributeDate1;
     }
 
-    @Override
     public Date getAttributeDate2() {
         return attributeDate2;
     }
 
-    @Override
     public void setAttributeDate2(Date attributeDate2) {
         this.attributeDate2 = attributeDate2;
     }
 
-    @Override
     public Date getAttributeDate3() {
         return attributeDate3;
     }
 
-    @Override
     public void setAttributeDate3(Date attributeDate3) {
         this.attributeDate3 = attributeDate3;
     }
 
-    @Override
     public Date getAttributeDate4() {
         return attributeDate4;
     }
 
-    @Override
     public void setAttributeDate4(Date attributeDate4) {
         this.attributeDate4 = attributeDate4;
     }
 
-    @Override
     public Date getAttributeDate5() {
         return attributeDate5;
     }
 
-    @Override
     public void setAttributeDate5(Date attributeDate5) {
         this.attributeDate5 = attributeDate5;
     }
