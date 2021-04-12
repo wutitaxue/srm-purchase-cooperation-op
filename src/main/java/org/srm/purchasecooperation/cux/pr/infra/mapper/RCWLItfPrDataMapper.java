@@ -1,5 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 /**
  * @author bin.zhang
  */
@@ -10,5 +12,5 @@ public interface RCWLItfPrDataMapper {
      * @param tenantId
      * @return
      */
-    String selectSapCode(Long companyId, Long tenantId);
+    String selectSapCode(@Param("companyId") Long companyId,@Param("tenantId") Long tenantId);
 }

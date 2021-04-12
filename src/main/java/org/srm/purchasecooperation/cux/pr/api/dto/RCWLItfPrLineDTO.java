@@ -16,8 +16,9 @@ import java.text.SimpleDateFormat;
  * @createDate: 2021/4/9 15:52
  */
 public class RCWLItfPrLineDTO {
+
     @Autowired
-    private RCWLItfPrDataRespository rcwlItfPrDataRespository;
+    private static RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     @ApiModelProperty(value = "单据日期")
     @NotNull
@@ -101,7 +102,7 @@ public class RCWLItfPrLineDTO {
                 '}';
     }
 
-    public  RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId) {
+    public static RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId) {
         RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
         itfPrLineDTO.setMEXTERNALSYSID("CG");
         itfPrLineDTO.setYSLX("01");
@@ -111,10 +112,9 @@ public class RCWLItfPrLineDTO {
         itfPrLineDTO.setBILLDATE(dateString);
         itfPrLineDTO.setPAYMENBILLCODE(prHeader.getPrNum());
         //测试使用
-       // itfPrLineDTO.setUNITCODE("01");
-        String unitCode = this.rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
-        itfPrLineDTO.setUNITCODE(unitCode);
-
+        itfPrLineDTO.setUNITCODE("01");
+//        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
+//        itfPrLineDTO.setUNITCODE(unitCode);
         return itfPrLineDTO;
     }
 }
