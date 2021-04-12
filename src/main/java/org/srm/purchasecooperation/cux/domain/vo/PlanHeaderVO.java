@@ -5,11 +5,15 @@
 
 package org.srm.purchasecooperation.cux.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.boot.platform.lov.annotation.LovValue;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.srm.common.mybatis.domain.ExpandDomain;
+import org.srm.purchasecooperation.cux.infra.constant.Constants;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -126,19 +130,33 @@ public class PlanHeaderVO extends ExpandDomain {
     private BigDecimal bidAmount;
     @ApiModelProperty(value = "合同金额")
     private BigDecimal contractAmount;
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "需求计划完成时间")
     private Date dePlanFinTime;
     @ApiModelProperty(value = "需求审批完成时间")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date deApprFinTime;
     @ApiModelProperty(value = "计划完成时间（供方入围）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date planFinVenTime;
     @ApiModelProperty(value = "计划完成时间（立项审批）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date planFinApprTime;
     @ApiModelProperty(value = "计划完成时间（发标时间）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date planFinIssueTime;
     @ApiModelProperty(value = "计划完成时间（定标时间）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date planFinBidTime;
     @ApiModelProperty(value = "计划完成时间（合同完成时间）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date planFinConTime;
     @ApiModelProperty(value = "备注")
     private String remarks;
@@ -162,16 +180,28 @@ public class PlanHeaderVO extends ExpandDomain {
     private String attributeVarchar4;
     @ApiModelProperty(value = "采购合同号")
     private String attributeVarchar5;
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "实际完成时间（供方入围）")
     private Date attributeDate1;
     @ApiModelProperty(value = "实际完成时间（立项审批）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date attributeDate2;
     @ApiModelProperty(value = "实际完成时间（发标时间）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date attributeDate3;
     @ApiModelProperty(value = "实际完成时间（定标时间）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date attributeDate4;
     @ApiModelProperty(value = "实际完成时间（合同完成时间）")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @DateTimeFormat(pattern = Constants.Pattern.DATE)
     private Date attributeDate5;
+    @ApiModelProperty(value = "创建人名称")
+    private String createdByName ;
 
 
     public PlanHeaderVO() {
@@ -619,5 +649,13 @@ public class PlanHeaderVO extends ExpandDomain {
     @Override
     public void setAttributeDate5(Date attributeDate5) {
         this.attributeDate5 = attributeDate5;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
     }
 }

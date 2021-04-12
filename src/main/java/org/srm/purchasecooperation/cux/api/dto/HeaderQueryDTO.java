@@ -36,6 +36,7 @@ public class HeaderQueryDTO {
     private Date creationDateTo;
     @ApiModelProperty(value = "公司id")
     private Long companyId;
+
     public Long getPlanId() {
         return planId;
     }
