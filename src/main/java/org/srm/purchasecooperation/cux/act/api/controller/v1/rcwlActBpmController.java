@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 public class rcwlActBpmController {
     @Autowired
     private ActService actService;
-    private Logger logger;
 
     /**
      * 验收单bpm接口查询
@@ -51,6 +50,7 @@ public class rcwlActBpmController {
      */
     @ApiOperation(value = "验收单BPM接口传输")
     @Permission(level = ResourceLevel.ORGANIZATION)
+//    @Permission(permissionPublic = true)
     @PostMapping("/getAct")
     @ProcessLovValue
     public ResponseEntity<ActListHeaderDto> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) {
