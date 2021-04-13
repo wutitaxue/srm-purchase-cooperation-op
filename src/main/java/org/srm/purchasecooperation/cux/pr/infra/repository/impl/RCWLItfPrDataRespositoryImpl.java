@@ -23,4 +23,28 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     public String selectSapCode(Long companyId, Long tenantId) {
         return rcwlItfPrDataMapper.selectSapCode(companyId,tenantId) ;
     }
+
+    /**
+     * 查找预算科目名称
+     *
+     * @param budgetAccountNum
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public String selectBudgetAccountName(String budgetAccountNum, Long tenantId) {
+        return rcwlItfPrDataMapper.selectBudgetAccountName(budgetAccountNum,tenantId);
+    }
+
+    /**
+     * 查找wbs名称
+     *
+     * @param wbsCode
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public String selectWbsName(String wbsCode, Long tenantId) {
+        return rcwlItfPrDataMapper.selectWbsName(wbsCode,tenantId);
+    }
 }

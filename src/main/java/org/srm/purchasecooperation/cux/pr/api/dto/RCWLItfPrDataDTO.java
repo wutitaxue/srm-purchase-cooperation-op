@@ -8,14 +8,14 @@ import java.util.List;
  * @createDate: 2021/4/10 10:34
  */
 public class RCWLItfPrDataDTO {
-    private List<RCWLItfPrLineDTO> yszy;
+    private RCWLItfPrLineDTO yszy;
     private List<RCWLItfPrLineDetailDTO> yszyzb;
 
-    public List<RCWLItfPrLineDTO> getYszy() {
+    public RCWLItfPrLineDTO getYszy() {
         return yszy;
     }
 
-    public void setYszy(List<RCWLItfPrLineDTO> yszy) {
+    public void setYszy(RCWLItfPrLineDTO yszy) {
         this.yszy = yszy;
     }
 

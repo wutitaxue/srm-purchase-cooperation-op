@@ -17,7 +17,7 @@ public class RCWLItfPrHeaderDTO {
     @ApiModelProperty(value = "数据定义标识")
     private String definecode;
     @ApiModelProperty(value = "同步数据列表")
-    List<RCWLItfPrDataDTO> data;
+    RCWLItfPrDataDTO data;
 
     public String getToken() {
         return token;
@@ -43,11 +43,11 @@ public class RCWLItfPrHeaderDTO {
         this.definecode = definecode;
     }
 
-    public List<RCWLItfPrDataDTO> getData() {
+    public RCWLItfPrDataDTO getData() {
         return data;
     }
 
-    public void setData(List<RCWLItfPrDataDTO> data) {
+    public void setData(RCWLItfPrDataDTO data) {
         this.data = data;
     }
 

@@ -1,7 +1,10 @@
 package org.srm.purchasecooperation.cux.pr.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 /**
  * @description:预算占用明细数据
@@ -9,6 +12,9 @@ import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
  * @createDate: 2021/4/10 10:21
  */
 public class RCWLItfPrLineDetailDTO {
+    @Autowired
+    private static RCWLItfPrDataRespository rcwlItfPrDataRespository;
+
     @ApiModelProperty(value = "预算占用金额")
     private String YSZYJE;
     @ApiModelProperty(value = "产品类型编码")
@@ -29,6 +35,19 @@ public class RCWLItfPrLineDetailDTO {
     private String YLZDB1;
     @ApiModelProperty(value = "预留字段")
     private String YLZDB2;
+
+    public static RCWLItfPrLineDetailDTO initOccupyDetail(PrLine prDetailLine, Long tenantId) {
+        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
+        rcwlItfPrLineDetailDTO.setYSZYJE(prDetailLine.getTaxIncludedLineAmount().toString());
+        rcwlItfPrLineDetailDTO.setYWYTCODE(prDetailLine.getBudgetAccountNum());
+        String budgetAccountName = rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(),tenantId);
+        rcwlItfPrLineDetailDTO.setYWYTNAME(budgetAccountName);
+        rcwlItfPrLineDetailDTO.setCPLXCODE(prDetailLine.getWbsCode());
+        String wbsName = rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),tenantId);
+        rcwlItfPrLineDetailDTO.setCPLXNAME(wbsName);
+        rcwlItfPrLineDetailDTO.setLINE(prDetailLine.getLineNum().toString());
+        return rcwlItfPrLineDetailDTO;
+    }
 
 
     public String getYSZYJE() {
