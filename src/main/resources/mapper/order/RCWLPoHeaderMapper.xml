@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RCWLPoHeaderMapper">
+
+    <select id="selectItemListByPoLineIdList"
+            resultType="org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO">
+        select
+        'SRM' as source_code,
+        sic.category_code as item_code,
+        srpl.item_name as item_name,
+        srpl.uom_id as primary_uom_id,
+        srpl.category_id as category_id,
+        srpl.po_line_id as po_line_id
+        FROM sodr_po_line srpl
+        left join smdm_item_category sic on srpl.category_id = sic.category_id
+        WHERE
+        srpl.po_line_id
+        IN
+        <foreach collection="ids" index="index" item="poLineId" open="(" close=")" separator=",">
+            #{poLineId}
+        </foreach>
+        and srpl.item_id is null and sic.tenant_id = #{tenantId}
+    </select>
+
+
+    <select id="selectItemCategoryListByPoLineIdList"
+            resultType="org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO">
+          select
+          'SRM' as source_code,
+           si.item_id as item_id,
+           si.item_code as item_code,
+           spl.po_line_id as po_line_id,
+           spl.category_id as category_id,
+           spl.tenant_id as tenant_id
+          from smdm_item si
+          left join sodr_po_line spl on si.attribute_bigint1 = spl.po_line_id  and si.tenant_id = spl.tenant_id
+          where si.attribute_bigint1 in
+        <foreach collection="lineIds" index="index" item="poLineId" open="(" close=")" separator=",">
+            #{poLineId}
+        </foreach>
+        and si.tenant_id = #{tenantId}
+
+    </select>
+
+    <insert id="batchInsertItem">
+             insert into smdm_item (tenant_id,source_code,item_number,item_code,item_name,primary_uom_id,query_item_code,attribute_bigint1)
+             values
+        <foreach collection ="rcwlItemInfoVOList" item="item" separator =",">
+            (#{item.tenantId},#{item.sourceCode},#{item.itemNumber},#{item.itemCode},#{item.itemName},#{item.primaryUomId},#{item.queryItemCode},#{item.poLineId})
+        </foreach >
+    </insert>
+
+    <update id="batchUpdatePoLine">
+        <foreach collection="poLineList" item="poLine" index="index" open="" close="" separator=";">
+            update sodr_po_line
+            <set>
+                <if test="poLine.itemId != null" >
+                    item_id = #{poLine.itemId},
+                </if>
+                <if test="poLine.itemCode != null" >
+                    item_code = #{poLine.itemCode},
+                </if>
+            </set>
+            where po_line_id = #{poLine.poLineId} and tenant_id = #{poLine.tenantId}
+        </foreach>
+    </update>
+
+</mapper>

@@ -34,3 +34,7 @@ build/
 
 ### VS Code ###
 .vscode/
+!/src/main/resources/rebel.xml
+!/src/main/resources/rebel-remote.xml
+!/src/main/java/org/srm/purchasecooperation/cux/act/infra/utils/ControllerAopLog.java
+/src/main/java/org/srm/purchasecooperation/cux/config/CustomWebSecurityConfigurerAdapter.java
