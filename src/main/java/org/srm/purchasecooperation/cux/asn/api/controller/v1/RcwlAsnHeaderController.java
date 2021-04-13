@@ -45,7 +45,7 @@ public class RcwlAsnHeaderController {
     @Permission(
             level = ResourceLevel.ORGANIZATION
     )
-    public ResponseEntity<RcwlAsnHeader> rcwlupdateAsnHeaderUuid(@PathVariable("organizationId") Long organizationId, @Encrypt @RequestBody RcwlAsnHeader rcwlasnHeader) {
+    public ResponseEntity<RcwlAsnHeader> rcwlUpdateAsnHeaderUuid(@PathVariable("organizationId") Long organizationId, @Encrypt @RequestBody RcwlAsnHeader rcwlasnHeader) {
 //        SecurityTokenHelper.validToken(rcwlasnHeader);
         Assert.notNull(rcwlasnHeader.getAsnHeaderId(), "error.data_invalid");
         this.rcwlAsnHeaderAttRepository.updateOptional(rcwlasnHeader, new String[]{"approveAttachmentUuid", "reviewAttachmentUuid", "otherAttachmentUuid", "supplierAttachmentUuid", "supplierAttaUuid","deliveredAttaUuid"});
