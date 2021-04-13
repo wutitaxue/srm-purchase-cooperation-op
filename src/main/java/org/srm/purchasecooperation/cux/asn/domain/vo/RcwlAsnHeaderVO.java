@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.export.annotation.ExcelSheet;
 import org.hzero.mybatis.domian.SecurityToken;
+import org.srm.purchasecooperation.asn.domain.entity.AsnHeader;
 import org.srm.purchasecooperation.asn.domain.vo.AsnHeaderVO;
 import org.srm.purchasecooperation.cux.asn.infra.constant.Constants;
 
@@ -34,6 +35,6 @@ public class RcwlAsnHeaderVO extends AsnHeaderVO {
 
     @Override
     public Class<? extends SecurityToken> associateEntityClass() {
-        return AsnHeaderVO.class;
+        return AsnHeader.class;
     }
 }
