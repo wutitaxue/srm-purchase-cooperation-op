@@ -3,16 +3,24 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 import com.alibaba.fastjson.JSON;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.mybatis.domian.Condition;
+import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
+import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
@@ -21,18 +29,22 @@ import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.pr.app.service.impl.PrHeaderServiceImpl;
+import org.srm.purchasecooperation.pr.domain.entity.PrAction;
+import org.srm.purchasecooperation.pr.domain.entity.PrChangeConfig;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.repository.PrActionRepository;
+import org.srm.purchasecooperation.pr.domain.repository.PrChangeConfigRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.web.annotation.Tenant;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @description:
@@ -54,6 +66,13 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private PrActionService prActionService;
     @Autowired
     private PrLineMapper prLineMapper;
+    @Autowired
+    private CustomizeSettingHelper customizeSettingHelper;
+    @Autowired
+    private PrChangeConfigRepository prChangeConfigRepository;
+    @Autowired
+    private PrActionRepository prActionRepository;
+
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
     private static final String LOG_MSG_SPUC_PR_HEADER_UPDATE_AMOUNT = "============SPUC_PR_HEADER_UPDATE_AMOUNT-TaskNotExistException=============={}";
@@ -98,7 +117,7 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 !PrConstant.PrType.PR_TYPE_PROJECT.equals(prHeader.getPrTypeCode())
         ) {
             prHeader.batchMaintainDateAndCountAmount(this.prLineRepository);
-        }else{
+        } else {
             //当申请类型为“计划申请” PLAN时 项目申请”PROJECT 成本中心 业务事项 产品类型 只能维护同一值
             // 保存时校验 如果不同报错：计划申请和项目申请只能维护同一成本中心、业务事项、产品类型
             this.checkLines(prHeader.getPrLineList());
@@ -128,17 +147,137 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         return prHeader;
     }
 
+    @Override
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @SagaStart
+    public PrHeader changeSubmit(Long tenantId, PrHeader prHeader, Set<String> approveSet) {
+        LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit start -------------");
+        Map<Long, PrLine> beforePrLineMap = (Map) this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", prHeader.getPrHeaderId())).build()).stream().collect(Collectors.toMap(PrLine::getPrLineId, Function.identity()));
+        List<PrLine> changePrlines = prHeader.getPrLineList();
+        //项目申请的删除或新增
+        //取消，行金额相加=申请总额的逻辑。
+        if (!PrConstant.PrType.PR_TYPE_PROJECT.equals(prHeader.getPrTypeCode())
+        ) {
+            this.validatePrCancel(prHeader);
+            String flag = this.customizeSettingHelper.queryBySettingCode(tenantId, "010910");
+            Assert.isTrue(StringUtils.isNotEmpty(flag) && String.valueOf(BaseConstants.Flag.YES).equals(flag), "error.change.tenant.cannot.change");
+            prHeader.batchMaintainDateAndCountAmount(this.prLineRepository);
+            this.changeStatusCheck(prHeader, beforePrLineMap);
+            LOGGER.info("Purchase requisition change save -------------");
+            prHeader.validInvoiceDetail();
+            prHeader.createValidateNonNull();
+            prHeader.validUniqueIndex(this.prHeaderRepository);
+            prHeader.setPrLineList(this.prLineService.updatePrLinesForChange(prHeader));
+            prHeader.setChangedFlag(BaseConstants.Flag.YES);
+            this.prHeaderRepository.updateByPrimaryKeySelective(prHeader);
+        } else {
+            this.deleteOrInsertLines(beforePrLineMap,prHeader);
+            prHeader.setPrLineList(this.prLineService.updatePrLines(prHeader));
+            this.checkLinesAmount(prHeader.getPrLineList(), prHeader.getAmount());
+        }
+
+        LOGGER.info("Purchase requisition change action -------------");
+        List<PrAction> insertPrActions = new ArrayList();
+        Map<Long, PrLine> afterPrLineMap = (Map) this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", prHeader.getPrHeaderId())).build()).stream().collect(Collectors.toMap(PrLine::getPrLineId, Function.identity()));
+        List<PrChangeConfig> configs = this.prChangeConfigRepository.listPrChangeConfig(new PrChangeConfig(tenantId));
+        List<PrChangeConfig> lineConfigs = (List) configs.stream().filter((config) -> {
+            return "SPRM_PR_LINE".equals(config.getTableName());
+        }).collect(Collectors.toList());
+        Iterator var11 = changePrlines.iterator();
+
+        while (var11.hasNext()) {
+            PrLine prLine = (PrLine) var11.next();
+            PrLine beforePrLine =  beforePrLineMap.get(prLine.getPrLineId());
+            if(!ObjectUtils.isEmpty(beforePrLine)){
+                PrLine afterPrLine = afterPrLineMap.get(prLine.getPrLineId());
+                insertPrActions.addAll(this.prActionService.createChangeAction(beforePrLine, afterPrLine, lineConfigs, prHeader, approveSet));
+            }
+        }
+
+        this.prActionRepository.batchInsertSelective(insertPrActions);
+        long submitFlag = changePrlines.stream().filter((prLinex) -> {
+            return BaseConstants.Flag.YES.equals(prLinex.getChangeSubmitFlag());
+        }).count();
+        if (submitFlag <= 0L && !"REJECTED".equals(prHeader.getPrStatusCode())) {
+            approveSet.clear();
+            LOGGER.info("No approval required for purchase requisition -------------");
+        } else if (!CollectionUtils.isNotEmpty(approveSet) && !"REJECTED".equals(prHeader.getPrStatusCode())) {
+            approveSet.clear();
+        } else {
+            LOGGER.info("Purchase requisition change submitting -------------");
+            this.submit(tenantId, prHeader);
+        }
+
+        LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit end -------------");
+        return prHeader;
+    }
+
+    private void deleteOrInsertLines(Map<Long, PrLine> beforePrLineMap, PrHeader prHeader) {
+        Set<Long> ids = new TreeSet<>();
+        List<PrLine> prDeleteLines = new ArrayList<>();
+         prHeader.getPrLineList().forEach(line->{
+             if(beforePrLineMap.keySet().contains(line.getPrLineId())){
+                 ids.add(line.getPrLineId());
+             }
+         });
+        beforePrLineMap.entrySet().forEach(e->{
+            if(!ids.contains(e.getValue().getPrLineId())){
+                prDeleteLines.add(e.getValue());
+            }
+        });
+        this.prLineService.deleteLines(prHeader.getPrHeaderId(),prDeleteLines);
+    }
+
+    private void checkLinesAmount(List<PrLine> prLineList, BigDecimal amount) {
+        BigDecimal lineAmount = BigDecimal.ZERO;
+        for (PrLine line : prLineList) {
+            lineAmount = lineAmount.add(line.getTaxIncludedLineAmount());
+        }
+       if(lineAmount.compareTo(amount)>=1){
+           throw new CommonException("error.lineAmount.lessThan.amount");
+       }
+
+    }
+
+    private void changeStatusCheck(PrHeader prHeader, Map<Long, PrLine> beforePrLineMap) {
+        Assert.isTrue("APPROVED".equals(prHeader.getPrStatusCode()) || "REJECTED".equals(prHeader.getPrStatusCode()), "error.change.header.status.not.approve");
+        Assert.isTrue(!"CATALOGUE".equals(prHeader.getPrSourcePlatform()) && !"E-COMMERCE".equals(prHeader.getPrSourcePlatform()), "error.change.header.source.platform");
+        List<PrLine> prLineList = (List) prHeader.getPrLineList().stream().filter((prLine) -> {
+            return !BaseConstants.Flag.YES.equals(prLine.getClosedFlag()) && !BaseConstants.Flag.YES.equals(prLine.getCancelledFlag());
+        }).map((prLine) -> {
+            PrLine oldPrLine = (PrLine) beforePrLineMap.get(prLine.getPrLineId());
+            if (oldPrLine.getOccupiedQuantity().compareTo(prLine.getQuantity()) > 0) {
+                throw new CommonException("error.pr.change_quantity_error", new Object[0]);
+            } else {
+                if (oldPrLine.getOccupiedQuantity() != null && oldPrLine.getOccupiedQuantity().compareTo(BigDecimal.ZERO) > 0) {
+                    prLine.setOccupyFlag(BaseConstants.Flag.YES);
+                    prLine.setOldQuantity(oldPrLine.getQuantity());
+                    prLine.setOccupiedQuantity(oldPrLine.getOccupiedQuantity());
+                }
+
+                return prLine;
+            }
+        }).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(prLineList)) {
+            throw new CommonException("error.change.line.cancelled.or.closed", new Object[0]);
+        } else {
+            prHeader.setPrLineList(prLineList);
+        }
+    }
+
     private void checkLines(List<PrLine> prLineList) {
         HashSet<Long> costIdSet = new HashSet<>();
         HashSet<String> wbsCodeSet = new HashSet<>();
 //        HashSet<Long> costIdSet = new HashSet<>();
-        prLineList.forEach(line->{
+        prLineList.forEach(line -> {
             costIdSet.add(line.getCostId());
             wbsCodeSet.add(line.getWbsCode());
         });
-        if(costIdSet.size()>1||
-                wbsCodeSet.size()>1
-        ){
+        if (costIdSet.size() > 1 ||
+                wbsCodeSet.size() > 1
+        ) {
             throw new CommonException("error.cost.different");
         }
     }
