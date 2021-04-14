@@ -1,8 +1,8 @@
-package org.srm.purchasecooperation.cux.infra.constant;
+package org.srm.purchasecooperation.cux.asn.infra.constant;
 
-public class Constants {
+public class RcwlAsnInterfaceConstants {
 
-    private Constants() {
+    private RcwlAsnInterfaceConstants() {
     }
 
     /**
