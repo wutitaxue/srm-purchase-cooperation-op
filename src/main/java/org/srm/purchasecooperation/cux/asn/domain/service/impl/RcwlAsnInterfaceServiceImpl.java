@@ -34,10 +34,10 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
             //业务类型 1回传数据 2单据反审核
             if (item.getBusinessType().equals("1")) {
                 //采购平台单据类型 01接收 02验收
-                if (item.getPlfmDocumentType().equals("1")) {
+                if (item.getPlfmDocumentType().equals("01")) {
                     rcwlAsnInterfaceMapper.updateSinvLineReturn(item);
                     addList(returnlist,0,"单据:" + item.getAcceptanceNumber() + "回传成功",null);
-                } else if (item.getPlfmDocumentType().equals("2")) {
+                } else if (item.getPlfmDocumentType().equals("02")) {
                     rcwlAsnInterfaceMapper.updateSpucLineReturn(item);
                     addList(returnlist,0,"单据:" + item.getAcceptanceNumber() + "回传成功",null);
                 } else {
@@ -45,7 +45,7 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
                 }
             } else if (item.getBusinessType().equals("2")) {
                 //查询是否生成对账单表sinv_rcv_trx_line字段invoice_matched_status值是否为UNINVOICED是给Y 否给N
-                if(item.getPlfmDocumentType().equals("1")){
+                if(item.getPlfmDocumentType().equals("01")){
                     Long aLong1 = rcwlAsnInterfaceMapper.selectSinvStatusCount(item);
                     if (aLong1 == 0) { //N
                         addList(returnlist,0,"单据:" + item.getAcceptanceNumber() + "已生成对账单","N");
@@ -54,7 +54,7 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
                         addList(returnlist,0,"单据:" + item.getAcceptanceNumber() + "未生成对账单，已清空接收单回写值","Y");
                     }
                 //查询是否生成对账单表sfin_bill_detail_accept根据验收单行ID查询这表是否有值 有给N 没有Y
-                }else if(item.getPlfmDocumentType().equals("2")){
+                }else if(item.getPlfmDocumentType().equals("02")){
                     Long aLong2 = rcwlAsnInterfaceMapper.selectSpucCount(item);
                     if (aLong2 == 0) { //Y
                         rcwlAsnInterfaceMapper.deleteSpucLineReturn(item);
