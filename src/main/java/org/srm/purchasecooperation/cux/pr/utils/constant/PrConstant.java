@@ -19,7 +19,7 @@ public interface PrConstant {
         String PR_TYPE_STANDARD = "STANDARD";
         String PR_TYPE_PROJECT = "PROJECT";
         String PR_TYPE_EMERGENCY = "EMERGENCY";
-        String PR_TYPE_SPORADIC = "STANDARD";
+        String PR_TYPE_SPORADIC = "SPORADIC";
         String PR_TYPE_PLAN = "PLAN";
     }
 }
