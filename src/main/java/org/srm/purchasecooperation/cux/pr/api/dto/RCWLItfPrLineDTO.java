@@ -98,30 +98,30 @@ public class RCWLItfPrLineDTO {
         this.paymentbillcode = paymentbillcode;
     }
 
-    public static RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId, String flag) {
-        RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
-        itfPrLineDTO.setMexternalsysid("CG");
-        //01占用 02释放
-        if("O".equals(flag)){
-            itfPrLineDTO.setYslx("01");
-        }else if("R".equals(flag)){
-            itfPrLineDTO.setYslx("02");
-        }
-
-        itfPrLineDTO.setCreateuser("jg");
-        SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-DD");
-        String dateString = formatter.format(prHeader.getCreationDate());
-        itfPrLineDTO.setBilldate(dateString);
-        itfPrLineDTO.setPaymentbillcode(prHeader.getPrNum());
-        //测试使用
-      //  itfPrLineDTO.setUnitcode("01");
-        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
-        if(StringUtils.isEmpty(unitCode)){
-            throw new CommonException("组织机构不能为空");
-        }
-        itfPrLineDTO.setUnitcode(unitCode);
-        return itfPrLineDTO;
-    }
+//    public static RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId, String flag) {
+//        RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
+//        itfPrLineDTO.setMexternalsysid("CG");
+//        //01占用 02释放
+//        if("O".equals(flag)){
+//            itfPrLineDTO.setYslx("01");
+//        }else if("R".equals(flag)){
+//            itfPrLineDTO.setYslx("02");
+//        }
+//
+//        itfPrLineDTO.setCreateuser("jg");
+//        SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-DD");
+//        String dateString = formatter.format(prHeader.getCreationDate());
+//        itfPrLineDTO.setBilldate(dateString);
+//        itfPrLineDTO.setPaymentbillcode(prHeader.getPrNum());
+//        //测试使用
+//      //  itfPrLineDTO.setUnitcode("01");
+//        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
+//        if(StringUtils.isEmpty(unitCode)){
+//            throw new CommonException("组织机构不能为空");
+//        }
+//        itfPrLineDTO.setUnitcode(unitCode);
+//        return itfPrLineDTO;
+//    }
 
 
 }
