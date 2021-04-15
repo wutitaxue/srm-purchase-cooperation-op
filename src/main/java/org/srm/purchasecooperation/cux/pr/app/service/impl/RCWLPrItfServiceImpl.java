@@ -29,6 +29,7 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataResposi
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -134,7 +135,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     @Override
     public RCWLItfPrHeaderDTO getBudgetAccountItfData(PrHeader prHeader, Long tenantId, String flag) {
         //获取接口所需数据
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = RCWLItfPrLineDTO.initOccupy(prHeader, tenantId, flag);
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, flag);
         List<PrLine> lineDetailList = prHeader.getPrLineList();
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
@@ -341,7 +342,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 
         RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
 
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = RCWLItfPrLineDTO.initOccupy(prHeader, tenantId, flag);
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, flag);
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
@@ -437,7 +438,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 
         RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
 
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = RCWLItfPrLineDTO.initOccupy(prHeader, tenantId, r);
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, r);
 
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
@@ -496,5 +497,30 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         rcwlItfPrLineDetailDTO.setCplxname(wbsName);
         rcwlItfPrLineDetailDTO.setLine(prDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
+    }
+
+    public  RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId, String flag) {
+        RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
+        itfPrLineDTO.setMexternalsysid("CG");
+        //01占用 02释放
+        if("O".equals(flag)){
+            itfPrLineDTO.setYslx("01");
+        }else if("R".equals(flag)){
+            itfPrLineDTO.setYslx("02");
+        }
+
+        itfPrLineDTO.setCreateuser("jg");
+        SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-DD");
+        String dateString = formatter.format(prHeader.getCreationDate());
+        itfPrLineDTO.setBilldate(dateString);
+        itfPrLineDTO.setPaymentbillcode(prHeader.getPrNum());
+        //测试使用
+        //  itfPrLineDTO.setUnitcode("01");
+        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
+        if(StringUtils.isEmpty(unitCode)){
+            throw new CommonException("组织机构不能为空");
+        }
+        itfPrLineDTO.setUnitcode(unitCode);
+        return itfPrLineDTO;
     }
 }
