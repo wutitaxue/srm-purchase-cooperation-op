@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.api.controller.v1;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -24,6 +25,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.web.annotation.Tenant;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -109,14 +111,14 @@ public class RCWLPrHeaderController {
 
       this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
 
-//        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
-//        boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
-//        if (syncFlag) {
-//            prHeader.setOperationFlag("I");
-//            this.prHeaderService.exportPrToErp(tenantId, Collections.singletonList(prHeader));
-//            prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
-//            this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
-//        }
+        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
+        boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
+        if (syncFlag) {
+            prHeader.setOperationFlag("I");
+            this.prHeaderService.exportPrToErp(tenantId, Collections.singletonList(prHeader));
+            prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
+            this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
+        }
 
         return Results.success(prHeader);
     }
