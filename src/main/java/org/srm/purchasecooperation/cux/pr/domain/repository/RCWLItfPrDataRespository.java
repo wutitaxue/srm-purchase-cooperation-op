@@ -24,4 +24,12 @@ public interface RCWLItfPrDataRespository {
      * @return
      */
     String selectWbsName(String wbsCode, Long tenantId);
+
+    /**
+     * 查找wbscode
+     * @param wbs
+     * @param prLineId
+     * @return
+     */
+    String selectWbsCode(String wbs, Long prLineId);
 }

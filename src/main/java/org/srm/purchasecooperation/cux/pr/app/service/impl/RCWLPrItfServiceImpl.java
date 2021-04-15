@@ -489,12 +489,17 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         }
         System.out.println("预算科目" + budgetAccountName);
         rcwlItfPrLineDetailDTO.setYmytname(budgetAccountName);
-        rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
-        String wbsName = this.rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(), tenantId);
-        if (StringUtils.isEmpty(wbsName)) {
-            throw new CommonException("WBS不能为空");
+        if((!StringUtils.isEmpty(prDetailLine.getWbsCode())) &&(!StringUtils.isEmpty(prDetailLine.getWbs()))  ){
+            rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
+            rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
         }
-        rcwlItfPrLineDetailDTO.setCplxname(wbsName);
+        //在采购申请控制界面，只查了wbs 没有查code
+        rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
+        String wbsCode = this.rcwlItfPrDataRespository.selectWbsCode(prDetailLine.getWbs(),prDetailLine.getPrLineId() );
+        if (StringUtils.isEmpty(wbsCode)) {
+            throw new CommonException("WBS编码为空");
+        }
+        rcwlItfPrLineDetailDTO.setCplxcode(wbsCode);
         rcwlItfPrLineDetailDTO.setLine(prDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }
