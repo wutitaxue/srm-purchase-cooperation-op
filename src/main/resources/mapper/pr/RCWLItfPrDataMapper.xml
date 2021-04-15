@@ -26,4 +26,13 @@
                   	h.wbs_code = #{wbsCode}
                   AND h.tenant_id = #{tenantId}
     </select>
+    <select id="selectWbsCode" resultType="java.lang.String">
+                       SELECT
+                        	l.wbs_code
+                        FROM
+                        	sprm_pr_line l
+                        WHERE
+                        	l.pr_line_id = #{prLineId}
+                       AND l.wbs = #{wbs}
+    </select>
 </mapper>
