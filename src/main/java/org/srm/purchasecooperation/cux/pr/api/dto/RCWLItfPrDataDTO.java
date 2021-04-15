@@ -1,5 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.api.dto;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.util.List;
 
 /**
@@ -8,7 +10,9 @@ import java.util.List;
  * @createDate: 2021/4/10 10:34
  */
 public class RCWLItfPrDataDTO {
+    @JSONField(ordinal = 1)
     private RCWLItfPrLineDTO yszy;
+    @JSONField(ordinal = 2)
     private List<RCWLItfPrLineDetailDTO> yszyzb;
 
     public RCWLItfPrLineDTO getYszy() {

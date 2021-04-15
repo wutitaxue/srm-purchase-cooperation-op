@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.infra.repository.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper;
 
@@ -9,6 +10,7 @@ import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper;
  * @author: bin.zhang
  * @createDate: 2021/4/12 15:18
  */
+@Component
 public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     @Autowired
     private RCWLItfPrDataMapper rcwlItfPrDataMapper;

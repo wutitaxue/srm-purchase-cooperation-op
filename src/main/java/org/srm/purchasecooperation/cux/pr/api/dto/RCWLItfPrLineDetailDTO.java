@@ -1,32 +1,35 @@
 package org.srm.purchasecooperation.cux.pr.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
-import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
-import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 /**
  * @description:预算占用明细数据
  * @author: bin.zhang
  * @createDate: 2021/4/10 10:21
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RCWLItfPrLineDetailDTO {
-    @Autowired
-    private static RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
+    @JsonProperty("YSZYJE")
     @ApiModelProperty(value = "预算占用金额")
-    private String YSZYJE;
+    private String yszyje;
+    @JsonProperty("CPLXCODE")
     @ApiModelProperty(value = "产品类型编码")
-    private String CPLXCODE;
+    private String cplxcode;
+    @JsonProperty("CPLXNAME")
     @ApiModelProperty(value = "产品类型名称")
-    private String CPLXNAME;
+    private String cplxname;
+    @JsonProperty("YWYTCODE")
     @ApiModelProperty(value = "业务用途编码")
-    private String YWYTCODE;
+    private String ymytcode;
+    @JsonProperty("YWYTNAME")
     @ApiModelProperty(value = "业务用途名称")
-    private String YWYTNAME;
+    private String ymytname;
+    @JsonProperty("LINE")
     @ApiModelProperty(value = "行号")
-    private String LINE;
+    private String line;
     @ApiModelProperty(value = "预留字段")
     private String YLZDA1;
     @ApiModelProperty(value = "预留字段")
@@ -36,58 +39,80 @@ public class RCWLItfPrLineDetailDTO {
     @ApiModelProperty(value = "预留字段")
     private String YLZDB2;
 
-    public static RCWLItfPrLineDetailDTO initOccupyDetail(PrLine prDetailLine, Long tenantId) {
-        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
-        rcwlItfPrLineDetailDTO.setYSZYJE(prDetailLine.getTaxIncludedLineAmount().toString());
-        rcwlItfPrLineDetailDTO.setYWYTCODE(prDetailLine.getBudgetAccountNum());
-        String budgetAccountName = rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(),tenantId);
-        rcwlItfPrLineDetailDTO.setYWYTNAME(budgetAccountName);
-        rcwlItfPrLineDetailDTO.setCPLXCODE(prDetailLine.getWbsCode());
-        String wbsName = rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),tenantId);
-        rcwlItfPrLineDetailDTO.setCPLXNAME(wbsName);
-        rcwlItfPrLineDetailDTO.setLINE(prDetailLine.getLineNum().toString());
-        return rcwlItfPrLineDetailDTO;
+//    public  RCWLItfPrLineDetailDTO initOccupyDetail(PrLine prDetailLine, Long tenantId) {
+//        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
+//        rcwlItfPrLineDetailDTO.setYSZYJE(prDetailLine.getTaxIncludedLineAmount().toString());
+//        rcwlItfPrLineDetailDTO.setYWYTCODE(prDetailLine.getBudgetAccountNum());
+//        String budgetAccountName = rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(),tenantId);
+//        System.out.println("预算科目"+budgetAccountName);
+//        rcwlItfPrLineDetailDTO.setYWYTNAME(budgetAccountName);
+//        rcwlItfPrLineDetailDTO.setCPLXCODE(prDetailLine.getWbsCode());
+//        String wbsName = rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),tenantId);
+//        rcwlItfPrLineDetailDTO.setCPLXNAME(wbsName);
+//        rcwlItfPrLineDetailDTO.setLINE(prDetailLine.getLineNum().toString());
+//        return rcwlItfPrLineDetailDTO;
+//    }
+//
+//    public  RCWLItfPrLineDetailDTO initDetail(PrLineVO prDetailLine, Long tenantId) {
+//        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
+//        rcwlItfPrLineDetailDTO.setYSZYJE(prDetailLine.getTaxIncludedLineAmount().toString());
+//        rcwlItfPrLineDetailDTO.setYWYTCODE(prDetailLine.getBudgetAccountNum());
+//        String budgetAccountName = rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(),tenantId);
+//        rcwlItfPrLineDetailDTO.setYWYTNAME(budgetAccountName);
+//        rcwlItfPrLineDetailDTO.setCPLXCODE(prDetailLine.getWbsCode());
+//        String wbsName = rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),tenantId);
+//        rcwlItfPrLineDetailDTO.setCPLXNAME(wbsName);
+//        rcwlItfPrLineDetailDTO.setLINE(prDetailLine.getLineNum().toString());
+//        return rcwlItfPrLineDetailDTO;
+//    }
+
+
+    public String getYszyje() {
+        return yszyje;
     }
 
-
-    public String getYSZYJE() {
-        return YSZYJE;
+    public void setYszyje(String yszyje) {
+        this.yszyje = yszyje;
     }
 
-    public void setYSZYJE(String YSZYJE) {
-        this.YSZYJE = YSZYJE;
+    public String getCplxcode() {
+        return cplxcode;
     }
 
-    public String getCPLXCODE() {
-        return CPLXCODE;
+    public void setCplxcode(String cplxcode) {
+        this.cplxcode = cplxcode;
     }
 
-    public void setCPLXCODE(String CPLXCODE) {
-        this.CPLXCODE = CPLXCODE;
+    public String getCplxname() {
+        return cplxname;
     }
 
-    public String getCPLXNAME() {
-        return CPLXNAME;
+    public void setCplxname(String cplxname) {
+        this.cplxname = cplxname;
     }
 
-    public void setCPLXNAME(String CPLXNAME) {
-        this.CPLXNAME = CPLXNAME;
+    public String getYmytcode() {
+        return ymytcode;
     }
 
-    public String getYWYTCODE() {
-        return YWYTCODE;
+    public void setYmytcode(String ymytcode) {
+        this.ymytcode = ymytcode;
     }
 
-    public void setYWYTCODE(String YWYTCODE) {
-        this.YWYTCODE = YWYTCODE;
+    public String getYmytname() {
+        return ymytname;
     }
 
-    public String getYWYTNAME() {
-        return YWYTNAME;
+    public void setYmytname(String ymytname) {
+        this.ymytname = ymytname;
     }
 
-    public void setYWYTNAME(String YWYTNAME) {
-        this.YWYTNAME = YWYTNAME;
+    public String getLine() {
+        return line;
+    }
+
+    public void setLine(String line) {
+        this.line = line;
     }
 
     public String getYLZDA1() {
@@ -120,29 +145,5 @@ public class RCWLItfPrLineDetailDTO {
 
     public void setYLZDB2(String YLZDB2) {
         this.YLZDB2 = YLZDB2;
-    }
-
-    public String getLINE() {
-        return LINE;
-    }
-
-    public void setLINE(String LINE) {
-        this.LINE = LINE;
-    }
-
-    @Override
-    public String toString() {
-        return "RCWLItfPrLineDetailDTO{" +
-                "YSZYJE='" + YSZYJE + '\'' +
-                ", CPLXCODE='" + CPLXCODE + '\'' +
-                ", CPLXNAME='" + CPLXNAME + '\'' +
-                ", YWYTCODE='" + YWYTCODE + '\'' +
-                ", YWYTNAME='" + YWYTNAME + '\'' +
-                ", LINE='" + LINE + '\'' +
-                ", YLZDA1='" + YLZDA1 + '\'' +
-                ", YLZDA2='" + YLZDA2 + '\'' +
-                ", YLZDB1='" + YLZDB1 + '\'' +
-                ", YLZDB2='" + YLZDB2 + '\'' +
-                '}';
     }
 }

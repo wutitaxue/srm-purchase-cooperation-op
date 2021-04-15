@@ -10,9 +10,9 @@
     <select id="selectBudgetAccountName" resultType="java.lang.String">
               SELECT
               	h.budget_account_name
-              ROM
+              FROM
               	smdm_budget_account h
-              HERE
+              WHERE
               	h.budget_account_num = #{budgetAccountNum}
               	AND h.tenant_id =#{tenantId}
 

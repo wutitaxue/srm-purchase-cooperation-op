@@ -1,13 +1,14 @@
 package org.srm.purchasecooperation.cux.pr.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.choerodon.core.exception.CommonException;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.integration.annotation.Default;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 
-import javax.validation.constraints.NotNull;
 import java.text.SimpleDateFormat;
 
 /**
@@ -15,106 +16,112 @@ import java.text.SimpleDateFormat;
  * @author: bin.zhang
  * @createDate: 2021/4/9 15:52
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RCWLItfPrLineDTO {
 
     @Autowired
     private static RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     @ApiModelProperty(value = "单据日期")
-    @NotNull
-    private String BILLDATE;
+    @JsonProperty("BILLDATE")
+    private String billdate;
     @ApiModelProperty(value = "创建人")
-    @NotNull
-    private String CREATEUSER;
+    @JsonProperty("CREATEUSER")
+    private String createuser;
     @ApiModelProperty(value = "组织机构")
-    @NotNull
-    private String UNITCODE;
+    @JsonProperty("UNITCODE")
+    private String unitcode;
     @ApiModelProperty(value = "预算类型")
-    @NotNull
-    private String YSLX;
+    @JsonProperty("YSLX")
+    private String yslx;
     @ApiModelProperty(value = "外部单据标识")
-    @NotNull
-    private String MEXTERNALSYSID;
+    @JsonProperty("MEXTERNALSYSID")
+    private String mexternalsysid;
 
     @ApiModelProperty(value = "外部单据编号")
-    @NotNull
-    private String PAYMENBILLCODE;
+    @JsonProperty("PAYMENTBILLCODE")
+    private String paymentbillcode;
 
-
-
-    public String getBILLDATE() {
-        return BILLDATE;
+    public static RCWLItfPrDataRespository getRcwlItfPrDataRespository() {
+        return rcwlItfPrDataRespository;
     }
 
-    public void setBILLDATE(String BILLDATE) {
-        this.BILLDATE = BILLDATE;
+    public static void setRcwlItfPrDataRespository(RCWLItfPrDataRespository rcwlItfPrDataRespository) {
+        RCWLItfPrLineDTO.rcwlItfPrDataRespository = rcwlItfPrDataRespository;
     }
 
-    public String getCREATEUSER() {
-        return CREATEUSER;
+    public String getBilldate() {
+        return billdate;
     }
 
-    public void setCREATEUSER(String CREATEUSER) {
-        this.CREATEUSER = CREATEUSER;
+    public void setBilldate(String billdate) {
+        this.billdate = billdate;
     }
 
-    public String getUNITCODE() {
-        return UNITCODE;
+    public String getCreateuser() {
+        return createuser;
     }
 
-    public void setUNITCODE(String UNITCODE) {
-        this.UNITCODE = UNITCODE;
+    public void setCreateuser(String createuser) {
+        this.createuser = createuser;
     }
 
-    public String getYSLX() {
-        return YSLX;
+    public String getUnitcode() {
+        return unitcode;
     }
 
-    public void setYSLX(String YSLX) {
-        this.YSLX = YSLX;
+    public void setUnitcode(String unitcode) {
+        this.unitcode = unitcode;
     }
 
-    public String getMEXTERNALSYSID() {
-        return MEXTERNALSYSID;
+    public String getYslx() {
+        return yslx;
     }
 
-    public void setMEXTERNALSYSID(String MEXTERNALSYSID) {
-        this.MEXTERNALSYSID = MEXTERNALSYSID;
+    public void setYslx(String yslx) {
+        this.yslx = yslx;
     }
 
-    public String getPAYMENBILLCODE() {
-        return PAYMENBILLCODE;
+    public String getMexternalsysid() {
+        return mexternalsysid;
     }
 
-    public void setPAYMENBILLCODE(String PAYMENBILLCODE) {
-        this.PAYMENBILLCODE = PAYMENBILLCODE;
+    public void setMexternalsysid(String mexternalsysid) {
+        this.mexternalsysid = mexternalsysid;
     }
 
-    @Override
-    public String toString() {
-        return "RCWLItfPrLineDTO{" +
-                "BILLDATE='" + BILLDATE + '\'' +
-                ", CREATEUSER='" + CREATEUSER + '\'' +
-                ", UNITCODE='" + UNITCODE + '\'' +
-                ", YSLX='" + YSLX + '\'' +
-                ", MEXTERNALSYSID='" + MEXTERNALSYSID + '\'' +
-                ", PAYMENBILLCODE='" + PAYMENBILLCODE + '\'' +
-                '}';
+    public String getPaymentbillcode() {
+        return paymentbillcode;
     }
 
-    public static RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId) {
+    public void setPaymentbillcode(String paymentbillcode) {
+        this.paymentbillcode = paymentbillcode;
+    }
+
+    public static RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId, String flag) {
         RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
-        itfPrLineDTO.setMEXTERNALSYSID("CG");
-        itfPrLineDTO.setYSLX("01");
-        itfPrLineDTO.setCREATEUSER("jg");
+        itfPrLineDTO.setMexternalsysid("CG");
+        //01占用 02释放
+        if("O".equals(flag)){
+            itfPrLineDTO.setYslx("01");
+        }else if("R".equals(flag)){
+            itfPrLineDTO.setYslx("02");
+        }
+
+        itfPrLineDTO.setCreateuser("jg");
         SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-DD");
         String dateString = formatter.format(prHeader.getCreationDate());
-        itfPrLineDTO.setBILLDATE(dateString);
-        itfPrLineDTO.setPAYMENBILLCODE(prHeader.getPrNum());
+        itfPrLineDTO.setBilldate(dateString);
+        itfPrLineDTO.setPaymentbillcode(prHeader.getPrNum());
         //测试使用
-        itfPrLineDTO.setUNITCODE("01");
-//        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
-//        itfPrLineDTO.setUNITCODE(unitCode);
+      //  itfPrLineDTO.setUnitcode("01");
+        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
+        if(StringUtils.isEmpty(unitCode)){
+            throw new CommonException("组织机构不能为空");
+        }
+        itfPrLineDTO.setUnitcode(unitCode);
         return itfPrLineDTO;
     }
+
+
 }
