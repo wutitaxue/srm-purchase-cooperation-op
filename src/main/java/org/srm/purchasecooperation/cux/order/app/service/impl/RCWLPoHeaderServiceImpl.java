@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
 import io.choerodon.core.oauth.DetailsHelper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,6 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
     @Autowired
     private RCWLPoHeaderService rcwlPoHeaderService;
     @Autowired
-    private PoLineRepository poLineRepository;
-    @Autowired
     private CodeRuleBuilder codeRuleBuilder;
     @Autowired
     private RCWLPoHeaderRepository poHeaderRepository;
@@ -50,6 +49,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
         List<RCWLItemInfoVO> rcwlItemInfoVOList = poHeaderRepository.selectItemListByPoLineIdList(ids, tenantId);
         List<ItemCategoryAssign> itemCategoryAssignList = new ArrayList<>();
         // 生成对应条编码
+        if(CollectionUtils.isNotEmpty(rcwlItemInfoVOList)){
         rcwlItemInfoVOList.forEach(item -> {
             //物料设值
             item.setTenantId(tenantId);
@@ -59,7 +59,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
             item.setItemNumber(ruleCode);
             item.setItemCode(categoryCode + str);
             item.setQueryItemCode(categoryCode + str);
-        });
+        });}
         logger.info("物料封装数据:" + rcwlItemInfoVOList.toString());
         //批量插入物料表
         poHeaderRepository.batchInsertItem(rcwlItemInfoVOList);
@@ -69,6 +69,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
         //查询出需要封装好的itemCategoryAssign
         List<RCWLItemInfoVO> itemCategoryList = poHeaderRepository.selectItemCategoryListByPoLineIdList(lineIds, tenantId);
 
+        if(CollectionUtils.isNotEmpty(itemCategoryList)){
         itemCategoryList.forEach(item -> {
             ItemCategoryAssign itemCategoryAssign = new ItemCategoryAssign();
             itemCategoryAssign.setItemId(item.getItemId());
@@ -76,13 +77,14 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
             itemCategoryAssign.setSourceCode(item.getSourceCode());
             itemCategoryAssign.setCategoryId(item.getCategoryId());
             itemCategoryAssignList.add(itemCategoryAssign);
-        });
+        });}
         logger.info("品类封装数据:" + itemCategoryAssignList.toString());
         //批量插入物料分配品类表
         itemCategoryAssignRepository.batchInsertSelective(itemCategoryAssignList);
 
         //把item_id item_code回写到订单行
         List<RCWLItemInfoVO> poLineList = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(itemCategoryList)){
         itemCategoryList.forEach(poLine -> {
             RCWLItemInfoVO lineUpdateInfo = new RCWLItemInfoVO();
             lineUpdateInfo.setTenantId(tenantId);
@@ -94,7 +96,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
         logger.info("订单行封装数据:" + poLineList.toString());
         //批量更新订单物料id和code
         poHeaderRepository.batchUpdatePoLine(poLineList);
-    }
+    }}
 
     /**
      * 判断是否存在itemcode
