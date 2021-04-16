@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.order.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO;
 
 import java.util.Date;
@@ -9,7 +10,7 @@ import java.util.List;
 /**
  * @author 15640
  */
-
+@Component
 public interface RCWLPoLineMapper{
     /**
      * 需求物料描述 二开字段查询
