@@ -18,14 +18,14 @@
 
     </select>
     <select id="selectWbsName" resultType="java.lang.String">
-                  SELECT
-                  	h.wbs_name
-                  FROM
-                  	smdm_wbs h
-                  WHERE
-                  	h.wbs_code = #{wbsCode}
-                  AND h.tenant_id = #{tenantId}
-    </select>
+                           SELECT
+                        	l.wbs
+                        FROM
+                        	sprm_pr_line l
+                        WHERE
+                        	l.pr_line_id = #{prLineId}
+                       AND l.wbs_code = #{wbsCode}
+     </select>
     <select id="selectWbsCode" resultType="java.lang.String">
                        SELECT
                         	l.wbs_code

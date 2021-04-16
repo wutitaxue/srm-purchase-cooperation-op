@@ -485,7 +485,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         rcwlItfPrLineDetailDTO.setYmytcode(prDetailLine.getBudgetAccountNum());
         String budgetAccountName = this.rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(), tenantId);
         if (StringUtils.isEmpty(budgetAccountName)) {
-            throw new CommonException("预算科目不能为空");
+            throw new CommonException("业务用途为空");
         }
         System.out.println("预算科目" + budgetAccountName);
         rcwlItfPrLineDetailDTO.setYmytname(budgetAccountName);
@@ -493,13 +493,23 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
             rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
         }
-        //在采购申请控制界面，只查了wbs 没有查code
-        rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
-        String wbsCode = this.rcwlItfPrDataRespository.selectWbsCode(prDetailLine.getWbs(),prDetailLine.getPrLineId() );
-        if (StringUtils.isEmpty(wbsCode)) {
-            throw new CommonException("WBS编码为空");
+
+        if((!StringUtils.isEmpty(prDetailLine.getWbsCode())) &&(StringUtils.isEmpty(prDetailLine.getWbs()))  ){
+            rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
+            String wbsName = this.rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),prDetailLine.getPrLineId());
+            rcwlItfPrLineDetailDTO.setCplxname(wbsName);
         }
-        rcwlItfPrLineDetailDTO.setCplxcode(wbsCode);
+
+
+        if((StringUtils.isEmpty(prDetailLine.getWbsCode())) &&!(StringUtils.isEmpty(prDetailLine.getWbs()))  ){
+            rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
+            String wbsCode = this.rcwlItfPrDataRespository.selectWbsCode(prDetailLine.getWbs(),prDetailLine.getPrLineId());
+            rcwlItfPrLineDetailDTO.setCplxcode(wbsCode);
+        }
+
+        if((StringUtils.isEmpty(prDetailLine.getWbsCode()))&&(StringUtils.isEmpty(prDetailLine.getWbs()))  ){
+            throw new CommonException("产品类型为空");
+        }
         rcwlItfPrLineDetailDTO.setLine(prDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }
