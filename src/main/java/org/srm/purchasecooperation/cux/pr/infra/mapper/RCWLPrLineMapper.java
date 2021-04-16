@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
@@ -11,6 +12,7 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
  *
  * @author bin.zhang06@hand-china.com 2021-03-16 15:49:15
  */
+@Component
 public interface RCWLPrLineMapper extends BaseMapper<PrLine> {
 
     PrLineDTO selectPrLine(@Param("planId") Long planId);
