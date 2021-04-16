@@ -154,22 +154,23 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     @SagaStart
     public PrHeader changeSubmit(Long tenantId, PrHeader prHeader, Set<String> approveSet) {
         LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit start -------------");
+        this.validatePrCancel(prHeader);
+        String flag = this.customizeSettingHelper.queryBySettingCode(tenantId, "010910");
+        Assert.isTrue(StringUtils.isNotEmpty(flag) && String.valueOf(BaseConstants.Flag.YES).equals(flag), "error.change.tenant.cannot.change");
         Map<Long, PrLine> beforePrLineMap = (Map) this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", prHeader.getPrHeaderId())).build()).stream().collect(Collectors.toMap(PrLine::getPrLineId, Function.identity()));
+        LOGGER.info("Purchase requisition " + beforePrLineMap + " change submit start -------------");
         List<PrLine> changePrlines = prHeader.getPrLineList();
         //项目申请的删除或新增
         //取消，行金额相加=申请总额的逻辑。
         if (!PrConstant.PrType.PR_TYPE_PROJECT.equals(prHeader.getPrTypeCode())
         ) {
-            this.validatePrCancel(prHeader);
-            String flag = this.customizeSettingHelper.queryBySettingCode(tenantId, "010910");
-            Assert.isTrue(StringUtils.isNotEmpty(flag) && String.valueOf(BaseConstants.Flag.YES).equals(flag), "error.change.tenant.cannot.change");
-            prHeader.batchMaintainDateAndCountAmount(this.prLineRepository);
             this.changeStatusCheck(prHeader, beforePrLineMap);
             LOGGER.info("Purchase requisition change save -------------");
             prHeader.validInvoiceDetail();
             prHeader.createValidateNonNull();
             prHeader.validUniqueIndex(this.prHeaderRepository);
             prHeader.setPrLineList(this.prLineService.updatePrLinesForChange(prHeader));
+            prHeader.batchMaintainDateAndCountAmount(this.prLineRepository);
             prHeader.setChangedFlag(BaseConstants.Flag.YES);
             this.prHeaderRepository.updateByPrimaryKeySelective(prHeader);
         } else {
