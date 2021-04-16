@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.cux.order.app.service.RCWLPoHeaderService;
+import org.srm.purchasecooperation.order.domain.entity.PoLine;
 import org.srm.purchasecooperation.order.domain.entity.PoLineLocation;
+import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.cux.order.domain.repository.RCWLPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
@@ -30,6 +32,8 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
     @Autowired
     private RCWLPoHeaderService rcwlPoHeaderService;
     @Autowired
+    private PoLineRepository poLineRepository;
+    @Autowired
     private CodeRuleBuilder codeRuleBuilder;
     @Autowired
     private RCWLPoHeaderRepository poHeaderRepository;
@@ -37,13 +41,19 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
     private ItemRepository itemRepository;
     @Autowired
     private ItemCategoryAssignRepository itemCategoryAssignRepository;
+    @Autowired
+    private PoHeaderRepository HeaderRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RCWLPoHeaderServiceImpl.class);
 
     @Override
     public void insertItemCode(PoDTO poDTO, Long tenantId) {
         logger.info("订单DTO:" + poDTO.toString());
-        List<PoLineLocation> poLineLocationList = poDTO.getPoLineLocationList();
-        List<Long> ids = poLineLocationList.stream().map(PoLineLocation::getPoLineId).distinct().collect(Collectors.toList());
+
+        List prHeaderIdList = new ArrayList();
+        prHeaderIdList.add(poDTO.getPoHeaderId());
+         List<PoLine> lineList = poLineRepository.selectByPoHeaderIdList(prHeaderIdList);
+        List<Long> ids = lineList.stream().map(PoLine::getPoLineId).distinct().collect(Collectors.toList());
 
         //查询需要封装的item数据集合(排除存在物料id的数据)
         List<RCWLItemInfoVO> rcwlItemInfoVOList = poHeaderRepository.selectItemListByPoLineIdList(ids, tenantId);
