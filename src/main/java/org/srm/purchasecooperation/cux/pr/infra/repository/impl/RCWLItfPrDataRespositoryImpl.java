@@ -42,11 +42,23 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
      * 查找wbs名称
      *
      * @param wbsCode
-     * @param tenantId
+     * @param prLineId
      * @return
      */
     @Override
-    public String selectWbsName(String wbsCode, Long tenantId) {
-        return rcwlItfPrDataMapper.selectWbsName(wbsCode,tenantId);
+    public String selectWbsName(String wbsCode, Long prLineId) {
+        return rcwlItfPrDataMapper.selectWbsName(wbsCode,prLineId);
+    }
+
+    /**
+     * 查找wbscode
+     *
+     * @param wbs
+     * @param prLineId
+     * @return
+     */
+    @Override
+    public String selectWbsCode(String wbs, Long prLineId) {
+        return  rcwlItfPrDataMapper.selectWbsCode(wbs,prLineId);
     }
 }

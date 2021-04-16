@@ -25,8 +25,16 @@ public interface RCWLItfPrDataMapper {
     /**
      * 查找wbs名称
      * @param wbsCode
-     * @param tenantId
+     * @param prLineId
      * @return
      */
-    String selectWbsName(@Param("wbsCode") String wbsCode, @Param("tenantId") Long tenantId);
+    String selectWbsName(@Param("wbsCode") String wbsCode, @Param("prLineId") Long prLineId);
+
+    /**
+     * 查找wbs
+     * @param wbs
+     * @param prLineId
+     * @return
+     */
+    String selectWbsCode(@Param("wbs")String wbs, @Param("prLineId")Long prLineId);
 }
