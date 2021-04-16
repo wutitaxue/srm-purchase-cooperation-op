@@ -34,6 +34,11 @@
             <artifactId>hzero-boot-interface</artifactId>
             <version>${hzero.boot.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.srm-op</groupId>
+            <artifactId>rcwl-bpm</artifactId>
+            <version>1.0-20210414.155404-4</version>
+        </dependency>
     </dependencies>
 
     <repositories>

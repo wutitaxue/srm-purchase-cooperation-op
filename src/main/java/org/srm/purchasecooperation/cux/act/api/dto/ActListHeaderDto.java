@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.act.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
@@ -13,46 +14,67 @@ import java.util.List;
 @JsonInclude
 public class ActListHeaderDto {
     /*验收单标题*/
+    @JsonProperty("TITLE")
     private String acceptListNum;
     /*验收人*/
+    @JsonProperty("ACCEPTORNAME")
     private String acceptOrName;
     /*合同编码*/
+    @JsonProperty("PCNUM")
     private String pcNum;
     /*合同名称*/
+    @JsonProperty("PCNAME")
     private String pcName;
     /*验收单编号*/
-    private String Title;
+    @JsonProperty("ACCEPTLISTNUM")
+
+    private String title;
     /*费用承担公司*/
+    @JsonProperty("COMPANYID")
     private String companyId;
     /*供应商名称 */
+    @JsonProperty("SUPPLIERCOMPANYID")
     private String supplierCompanyId;
     /*验收类型*/
+    @JsonProperty("ACCEPTLISTTYPE")
     private String acceptListType;
+    /*验收日期*/
+    @JsonProperty("ACCEPTDATE")
+    private String acceptDate;
+    /*验收进度*/
+    @JsonProperty("SPEED")
+    private String speed;
+    /*验收详细情况*/
+    @JsonProperty("ACCEPTDETAILS")
+    private String acceptDetails;
+
 
     /**
      * 验收行数据
      */
-    private List<ActListLinesDto> YSDDH;
+    @JsonProperty("YSDDH")
+    private List<ActListLinesDto> ysddh;
 
     /**
      * 附件链接
      */
-    private List<ActListFilesDto> URL;
+    @JsonProperty("URL")
+    private List<ActListFilesDto> url;
 
     public List<ActListLinesDto> getYSDDH() {
-        return YSDDH;
+        return ysddh;
     }
 
-    public void setYSDDH(List<ActListLinesDto> YSDDH) {
-        this.YSDDH = YSDDH;
+    public void setYSDDH(List<ActListLinesDto> ysddh) {
+        this.ysddh = ysddh;
     }
 
     public List<ActListFilesDto> getURL() {
-        return URL;
+        return url;
     }
 
-    public void setURL(List<ActListFilesDto> URL) {
-        this.URL = URL;
+    public void setURL(List<ActListFilesDto> url) {
+        this.url = url;
     }
 
     public String getAcceptListNum() {
@@ -88,11 +110,11 @@ public class ActListHeaderDto {
     }
 
     public String getTitle() {
-        return Title;
+        return title;
     }
 
     public void setTitle(String title) {
-        Title = title;
+        title = title;
     }
 
     public String getCompanyId() {
@@ -142,12 +164,5 @@ public class ActListHeaderDto {
     public void setAcceptDetails(String acceptDetails) {
         this.acceptDetails = acceptDetails;
     }
-
-    /*验收日期*/
-    private String acceptDate;
-    /*验收进度*/
-    private String speed;
-    /*验收详细情况*/
-    private String acceptDetails;
 
 }

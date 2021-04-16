@@ -12,6 +12,7 @@ import org.srm.autoconfigure.purchasecooperation.EnableSrmPurchaseCooperationOP;
  */
 @SpringBootApplication
 @EnableSrmPurchaseCooperationOP
+@ComponentScan(basePackages ={"gxbpm.service" })
 //@ComponentScan("org.srm.purchasecooperation.cux.config")
 public class SrmPurchaseCooperationOPApplication {
 

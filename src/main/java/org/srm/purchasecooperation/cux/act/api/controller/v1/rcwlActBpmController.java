@@ -27,6 +27,7 @@ import org.srm.purchasecooperation.finance.api.dto.InvoiceTransactionSearchDTO;
 import org.srm.web.annotation.Tenant;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -53,7 +54,7 @@ public class rcwlActBpmController {
 //    @Permission(permissionPublic = true)
     @PostMapping("/getAct")
     @ProcessLovValue
-    public ResponseEntity<ActListHeaderDto> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) {
+    public ResponseEntity<ActListHeaderDto> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) throws IOException {
         return Results.success(actService.actQuery(acceptListHeaderId,organizationId));
     }
 }

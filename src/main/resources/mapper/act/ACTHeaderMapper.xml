@@ -5,7 +5,7 @@
             parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto">
             SELECT
-	h.title accept_list_num,
+	h.title,
 	(
 		SELECT
 			iu.real_name
@@ -52,7 +52,7 @@
 			)
 		AND sph.tenant_id = h.tenant_id
 	) pc_name,
-	h.accept_list_num title,
+	h.accept_list_num,
 	(
 		SELECT
 			hc.company_name

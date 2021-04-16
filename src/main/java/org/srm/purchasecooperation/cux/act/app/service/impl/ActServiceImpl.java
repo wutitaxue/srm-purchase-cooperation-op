@@ -1,8 +1,13 @@
 package org.srm.purchasecooperation.cux.act.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import gxbpm.dto.RCWLGxBpmStartDataDTO;
+import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.oauth.DetailsHelper;
 import javassist.Loader;
+import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
+import org.hzero.boot.platform.profile.ProfileClient;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +24,7 @@ import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
 import org.srm.web.annotation.Tenant;
 import sun.security.smartcardio.SunPCSC;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,6 +43,15 @@ public class ActServiceImpl implements ActService {
     private ActLineRespository actLineRespository;
     @Autowired
     private ActFilesRespository actFilesRespository;
+    @Autowired
+    private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
+
+    //获取配置参数
+    @Autowired
+    private ProfileClient profileClient;
+
+    private static final Logger logger = LoggerFactory.getLogger(Loader.class);
+
 
     /**
      * 验收单查询，
@@ -47,7 +62,8 @@ public class ActServiceImpl implements ActService {
      */
     @Override
     @ProcessLovValue
-    public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) {
+    public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
         ActListHeaderDto actListHeaderDto = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
         actListHeaderDto.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
         List<ActListFilesDto> actListFilesDtoList = actFilesRespository.actFilesQuery(acceptListHeaderId, organizationId);
@@ -60,6 +76,31 @@ public class ActServiceImpl implements ActService {
             }
         }
         actListHeaderDto.setURL(actListFilesDtoList);
+        String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQSRCSYS");
+        String reqTarSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQTARSYS");
+
+        ResponsePayloadDTO responsePayloadDTO = new ResponsePayloadDTO();
+
+        RCWLGxBpmStartDataDTO rcwlGxBpmStartDataDTO = new RCWLGxBpmStartDataDTO();
+        String data = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(actListHeaderDto);
+        logger.info("data:" + data);
+        String userName = DetailsHelper.getUserDetails().getUsername();
+
+        //设置传输值
+        rcwlGxBpmStartDataDTO.setReSrcSys(reSrcSys);
+        rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
+        rcwlGxBpmStartDataDTO.setUserId(userName);
+        rcwlGxBpmStartDataDTO.setBtid(rcwlActConstant.ACCEPT_BPM_TYPE_CODE);
+        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.getAcceptListNum());
+        rcwlGxBpmStartDataDTO.setProcinstId("0");
+        rcwlGxBpmStartDataDTO.setData(data);
+        logger.info("rcwlGxBpmStartDataDTO：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlGxBpmStartDataDTO));
+
+        responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
+
+        logger.info("返回结果：" + responsePayloadDTO);
+
+        //调用接口
         return actListHeaderDto;
     }
 }
