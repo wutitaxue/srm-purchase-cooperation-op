@@ -196,6 +196,8 @@ public class PlanHeaderVO  {
     private LocalDate attributeDate5;
     @ApiModelProperty(value = "创建人名称")
     private String createdByName ;
+    @ApiModelProperty(value = "创建时间")
+    private Date creationDate;
 
 
     public PlanHeaderVO() {
@@ -631,5 +633,13 @@ public class PlanHeaderVO  {
 
     public void setCreatedByName(String createdByName) {
         this.createdByName = createdByName;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 }

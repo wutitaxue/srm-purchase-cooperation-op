@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
@@ -15,6 +16,7 @@ import java.util.List;
  *
  * @author bin.zhang06@hand-china.com 2021-03-15 12:30:00
  */
+@Component
 public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
 
     List<PlanHeaderVO> listPlanHeader(HeaderQueryDTO planHeaderParam);
