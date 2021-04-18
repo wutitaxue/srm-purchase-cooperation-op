@@ -8,6 +8,10 @@ import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPrLineMapper;
+import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
+import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
+
+import java.util.List;
 
 
 /**
@@ -20,6 +24,8 @@ public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> impleme
 
     @Autowired
     private RCWLPrLineMapper rcwlPrLineMapper;
+    @Autowired
+    private PrLineMapper prLineMapper;
     /**
      * 根据计划编号查询采购申请行
      *
@@ -65,5 +71,15 @@ public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> impleme
     @Override
     public PrHeaderVO selectByNum(String prNum, String lineNum, Long tenantId) {
         return rcwlPrLineMapper.selectByNum(prNum,lineNum,tenantId);
+    }
+
+    @Override
+    public List<org.srm.purchasecooperation.pr.domain.entity.PrLine> updateSourcePrLine(List<org.srm.purchasecooperation.pr.domain.entity.PrLine> prLines) {
+        prLines.forEach(prLine -> {
+            org.srm.purchasecooperation.pr.domain.entity.PrLine prLineOld = prLineMapper.selectByPrimaryKey(prLine);
+            prLine.setObjectVersionNumber(prLineOld.getObjectVersionNumber());
+            prLineMapper.updateOptional(prLine, "attributeBigint1");
+        });
+        return prLines;
     }
 }
