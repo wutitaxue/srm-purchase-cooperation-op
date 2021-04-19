@@ -59,4 +59,16 @@ public class RCWLPoHeaderRepositoryImpl  implements RCWLPoHeaderRepository {
     public void batchUpdatePoLine(List<RCWLItemInfoVO> poLineList) {
         this.rcwlPoHeaderMapper.batchUpdatePoLine(poLineList);
     }
+
+    /**
+     * 批量插入物料名称多语言表smdm_item_tl
+     *
+     * @param poLineList
+     */
+    @Override
+    public void batchInsertItemTl(List<RCWLItemInfoVO> poLineList) {
+        this.rcwlPoHeaderMapper.batchInsertItemTl(poLineList);
+    }
+
+
 }
