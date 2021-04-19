@@ -15,6 +15,8 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPlanHeaderMapper;
 
+import java.util.List;
+
 /**
  * 采购计划表 资源库实现
  *
@@ -32,10 +34,10 @@ public class RCWLPlanHeaderRepositoryImpl extends BaseRepositoryImpl<PlanHeader>
         return PageHelper.doPageAndSort(pageRequest, () -> rcwlPlanHeaderMapper.listPlanHeader(planHeaderParam));
     }
 
-    @Override
-    public Page<PlanHeaderExportDTO> pageAllPlanHeader(PlanHeader planHeader, PageRequest pageRequest) {
-        return PageHelper.doPageAndSort(pageRequest, () -> rcwlPlanHeaderMapper.exportAllPlanHeader(planHeader));
-    }
+//    @Override
+//    public Page<PlanHeaderExportDTO> pageAllPlanHeader(PlanHeader planHeader, PageRequest pageRequest) {
+//        return PageHelper.doPageAndSort(pageRequest, () -> rcwlPlanHeaderMapper.exportAllPlanHeader(planHeader));
+//    }
 
     @Override
     @ProcessLovValue
@@ -149,6 +151,18 @@ public class RCWLPlanHeaderRepositoryImpl extends BaseRepositoryImpl<PlanHeader>
     @Override
     public String selectAgent(String agent, Long tenantId) {
         return this.rcwlPlanHeaderMapper.selectAgent(agent,tenantId);
+    }
+
+    /**
+     * 提交采购计划，生成新的流程编号
+     *
+     * @param list
+     * @param organizationId
+     */
+    @Override
+    public void submitPlanHeader(List<PlanHeader> list, Long organizationId) {
+        this.rcwlPlanHeaderMapper.submitPlanHeader(list,organizationId);
+
     }
 
 

@@ -112,4 +112,16 @@ public class RCWLPlanHeaderController extends BaseController {
     }
 
 
+    @ApiOperation(value = "提交采购计划")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    //@Permission(permissionPublic = true)
+    @PostMapping("/submit")
+    public ResponseEntity<List<PlanHeaderVO>> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) {
+
+        List<PlanHeaderVO> list =  this.RCWLPlanHeaderService.submitPlanHeader(planHeaderVOS,organizationId);
+        return Results.success(list);
+    }
+
+
+
 }

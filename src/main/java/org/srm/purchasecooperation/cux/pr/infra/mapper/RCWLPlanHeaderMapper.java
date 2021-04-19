@@ -21,7 +21,7 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
 
     List<PlanHeaderVO> listPlanHeader(HeaderQueryDTO planHeaderParam);
 
-    List<PlanHeaderExportDTO> exportAllPlanHeader(@Param("planHeader") PlanHeader planHeader);
+   // List<PlanHeaderExportDTO> exportAllPlanHeader(@Param("planHeader") PlanHeader planHeader);
 
     List<PlanHeaderExportVO> selectPrHeaderExport(PlanHeaderExportDTO planHeaderExportDTO);
 
@@ -47,4 +47,6 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
     String selectDemanders(@Param("demanders") String demanders, @Param("tenantId") Long tenantId);
 
     String selectAgent(@Param("agent") String agent, @Param("tenantId") Long tenantId);
+
+    void submitPlanHeader(@Param("list")List<PlanHeader> list, @Param("organizationId")Long organizationId);
 }
