@@ -24,30 +24,30 @@ public class PlanHeaderExportVO  {
     private Long planId;
 
     private Long tenantId;
-    @ExcelColumn(title = "采购计划编号")
+    @ExcelColumn(title = "采购计划编号",order = 4)
     private String planNum;
     @LovValue(
             lovCode = "SCUX.RCWL.SCEC.JH_STATE",
             meaningField = "stateMeaning"
     )
     private String state;
-    @ExcelColumn(title = "状态")
+    @ExcelColumn(title = "状态",order = 3)
     private String stateMeaning;
     @LovValue(
             lovCode = "SCUX.RCWL.SCEC.JH_FORMAT",
             meaningField = "formatMeaning"
     )
     private String format;
-    @ExcelColumn(title = "业态")
+    @ExcelColumn(title = "业态",order = 9)
     private String formatMeaning;
-    @ExcelColumn(title = "公司")
+    @ExcelColumn(title = "公司",order = 7)
     private String companyName;
     @LovValue(
             lovCode = "SCUX.RCWL.SCEC.JH_PROCUREMENT",
             meaningField = "prCategoryMeaning"
     )
     private String prCategory;
-    @ExcelColumn(title = "采购分类")
+    @ExcelColumn(title = "采购分类",order = 8)
     private String prCategoryMeaning;
 
     @LovValue(
@@ -55,7 +55,7 @@ public class PlanHeaderExportVO  {
             meaningField = "prWayMeaning"
     )
     private String prWay;
-    @ExcelColumn(title = "采购方式")
+    @ExcelColumn(title = "采购方式",order = 12)
     private String prWayMeaning;
 
     @LovValue(
@@ -63,14 +63,14 @@ public class PlanHeaderExportVO  {
             meaningField = "bidMethodMeaning"
     )
     private String bidMethod;
-    @ExcelColumn(title = "评标方法")
+    @ExcelColumn(title = "评标方法",order = 19)
     private String bidMethodMeaning;
     @LovValue(
             lovCode = "SPCM.ACCEPT_USER",
             meaningField = "demandersMeaning"
     )
     private String demanders;
-    @ExcelColumn(title = "需求人")
+    @ExcelColumn(title = "需求人",order = 13)
     private String demandersMeaning;
     @ExcelColumn(title = "创建日期从")
     private Date creationDateFrom;
@@ -78,9 +78,9 @@ public class PlanHeaderExportVO  {
     private Date creationDateTo;
 
 
-    @ExcelColumn(title = "采购申请编号")
+    @ExcelColumn(title = "采购申请编号",order = 5)
     private String prNum;
-    @ExcelColumn(title = "行号")
+    @ExcelColumn(title = "行号",order = 6)
     private String lineNum;
 
 //    @LovValue(
@@ -88,81 +88,81 @@ public class PlanHeaderExportVO  {
 //            meaningField = "budgetAccountMeaning"
 //    )
     private String budgetAccount;
-    @ExcelColumn(title = "预算科目")
+    @ExcelColumn(title = "预算科目",order = 10)
     private String budgetAccountMeaning;
     @LovValue(
             lovCode = "SCUX.RCWL.SCEC.JH_BIDDING",
             meaningField = "biddingModeMeaning"
     )
     private String biddingMode;
-    @ExcelColumn(title = "招采模式")
+    @ExcelColumn(title = "招采模式",order = 11)
     private String biddingModeMeaning;
 //    @LovValue(
 //            lovCode = "SPUC.PURCHASE_AGENT",
 //            meaningField = "agentMeaning"
 //    )
     private String agent;
-    @ExcelColumn(title = "经办人")
+    @ExcelColumn(title = "经办人",order = 14)
     private String agentMeaning;
-    @ExcelColumn(title = "立项金额（万元）")
+    @ExcelColumn(title = "立项金额（万元）",order = 15)
     private BigDecimal projectAmount;
-    @ExcelColumn(title = "定标金额")
+    @ExcelColumn(title = "定标金额",order = 16)
     private BigDecimal bidAmount;
-    @ExcelColumn(title = "合同金额")
+    @ExcelColumn(title = "合同金额",order = 17)
     private BigDecimal contractAmount;
-    @ExcelColumn(title = "需求计划完成时间", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "需求计划完成时间", pattern = Constants.Pattern.DATE,order = 20)
     private Date dePlanFinTime;
-    @ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE,order = 21)
     private Date deApprFinTime;
-    @ExcelColumn(title = "计划完成时间（供方入围）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "计划完成时间（供方入围）", pattern = Constants.Pattern.DATE,order = 22)
     private Date planFinVenTime;
-    @ExcelColumn(title = "计划完成时间（立项审批）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "计划完成时间（立项审批）", pattern = Constants.Pattern.DATE,order = 24)
     private Date planFinApprTime;
-    @ExcelColumn(title = "计划完成时间（发标时间）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "计划完成时间（发标时间）", pattern = Constants.Pattern.DATE,order = 26)
     private Date planFinIssueTime;
-    @ExcelColumn(title = "计划完成时间（定标时间）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "计划完成时间（定标时间）", pattern = Constants.Pattern.DATE,order = 28)
     private Date planFinBidTime;
-    @ExcelColumn(title = "计划完成时间（合同完成时间）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "计划完成时间（合同完成时间）", pattern = Constants.Pattern.DATE,order = 30)
     private Date planFinConTime;
-    @ExcelColumn(title = "备注")
+    @ExcelColumn(title = "备注",order = 32)
     private String remarks;
     @LovValue(
             lovCode = "HPFM.FLAG",
             meaningField = "addFlagMeaning"
     )
     private Integer addFlag;
-    @ExcelColumn(title = "是否临时新增")
+    @ExcelColumn(title = "是否临时新增",order = 37)
     private String addFlagMeaning;
-    @ExcelColumn(title = "整体周期（天数）")
+    @ExcelColumn(title = "整体周期（天数）",order = 18)
     private String attributeVarchar1;
-    @ExcelColumn(title = "入围单号")
+    @ExcelColumn(title = "入围单号",order = 33)
     private String attributeVarchar2;
-    @ExcelColumn(title = "询报价单号")
+    @ExcelColumn(title = "询报价单号",order = 35)
     private String attributeVarchar3;
-    @ExcelColumn(title = "招标单号")
+    @ExcelColumn(title = "招标单号",order = 34)
     private String attributeVarchar4;
-    @ExcelColumn(title = "采购合同号")
+    @ExcelColumn(title = "协议单号",order = 36)
     private String attributeVarchar5;
-    @ExcelColumn(title = "实际完成时间（供方入围）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "实际完成时间（供方入围）", pattern = Constants.Pattern.DATE,order = 23)
     private Date attributeDate1;
-    @ExcelColumn(title = "实际完成时间（立项审批）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "实际完成时间（立项审批）", pattern = Constants.Pattern.DATE,order = 25)
     private Date attributeDate2;
-    @ExcelColumn(title = "实际完成时间（发标时间）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "实际完成时间（发标时间）", pattern = Constants.Pattern.DATE,order = 27)
     private Date attributeDate3;
-    @ExcelColumn(title = "实际完成时间（定标时间）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "实际完成时间（定标时间）", pattern = Constants.Pattern.DATE,order = 29)
     private Date attributeDate4;
-    @ExcelColumn(title = "实际完成时间（合同完成时间）", pattern = Constants.Pattern.DATE)
+    @ExcelColumn(title = "实际完成时间（合同完成时间）", pattern = Constants.Pattern.DATE,order = 31)
     private Date attributeDate5;
 //    @LovValue(
 //            lovCode = "SPFM.USER_AUTH.COMPANY",
 //            meaningField = "companyName"
 //    )
     private Long companyId;
-    @ExcelColumn(title = "创建人")
+    @ExcelColumn(title = "创建人",order = 38)
     private String createdByName ;
-    @ExcelColumn(title = "创建时间")
+    @ExcelColumn(title = "创建时间",order = 39)
     private Date creationDate;
-    @ExcelColumn(title = "流程编号")
+    @ExcelColumn(title = "流程编号",order = 1)
     private String processNum;
     @LovValue(
             lovCode = "SCUX.RCWL.SCEC.JH_BPM",
@@ -170,7 +170,7 @@ public class PlanHeaderExportVO  {
     )
     @ApiModelProperty(value = "审批状态code")
     private String approvalStatus;
-    @ExcelColumn(title = "审批状态")
+    @ExcelColumn(title = "审批状态",order = 2)
     private String approvalStatusMeaning;
 
     public PlanHeaderExportVO() {
