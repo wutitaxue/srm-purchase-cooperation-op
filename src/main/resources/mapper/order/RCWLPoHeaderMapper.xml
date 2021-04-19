@@ -43,10 +43,10 @@
     </select>
 
     <insert id="batchInsertItem">
-             insert into smdm_item (tenant_id,source_code,item_number,item_code,item_name,primary_uom_id,query_item_code,attribute_bigint1)
+             insert into smdm_item (tenant_id,source_code,item_number,item_code,item_name,primary_uom_id,query_item_code,attribute_bigint1,attribute_varchar1)
              values
         <foreach collection ="rcwlItemInfoVOList" item="item" separator =",">
-            (#{item.tenantId},#{item.sourceCode},#{item.itemNumber},#{item.itemCode},#{item.itemName},#{item.primaryUomId},#{item.queryItemCode},#{item.poLineId})
+            (#{item.tenantId},#{item.sourceCode},#{item.itemNumber},#{item.itemCode},#{item.itemName},#{item.primaryUomId},#{item.queryItemCode},#{item.poLineId},'1')
         </foreach >
     </insert>
 
