@@ -74,17 +74,17 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
 
         if (!CollectionUtils.isEmpty(planHeaderList1)) {
             planHeaderList1.forEach(planHeaderVo -> {
-                if ("CANCEL".equals(planHeaderVo.getState())){
+                if (Constants.PlanHeaderApprovalStatus.CANCEL.equals(planHeaderVo.getApprovalStatus())){
                     throw new CommonException(Constants.ErrorCode.CANCEL_EXIST);
                 }
                 //状态设置为取消
-                planHeaderVo.setState(Constants.PlanHeaderState.CANCEL);
+                planHeaderVo.setApprovalStatus(Constants.PlanHeaderApprovalStatus.CANCEL);
                 //更改申请行的计划编号为空
                 RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(),organizationId);
 
             });
         }
-       RCWLPlanHeaderRepository.batchUpdateOptional(planHeaderList1, PlanHeader.FIELD_STATE);
+       RCWLPlanHeaderRepository.batchUpdateOptional(planHeaderList1, PlanHeader.FIELD_APPROVAL_STATUS);
         return null;
     }
 
