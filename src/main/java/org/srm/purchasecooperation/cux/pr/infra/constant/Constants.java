@@ -43,6 +43,21 @@ public class Constants {
         private PlanHeaderState() {
         }
     }
+
+    /**
+     * 采购计划审批状态
+     */
+    public static class PlanHeaderApprovalStatus {
+        public static final String NEW = "NEW";
+        public static final String SUBMITTED = "SUBMITTED";
+        public static final String APPROVED = "APPROVED";
+        public static final String REJECTED = "REJECTED";
+        public static final String CANCEL = "CANCEL";
+
+
+        private PlanHeaderApprovalStatus() {
+        }
+    }
     /**
      * 编码规则
      */

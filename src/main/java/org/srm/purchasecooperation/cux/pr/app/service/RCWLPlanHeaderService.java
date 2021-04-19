@@ -54,4 +54,13 @@ public interface RCWLPlanHeaderService {
      * @return
      */
     boolean checkData(PlanHeaderImportVO planHeaderImportVO, ImportData importData, Long tenantId);
+
+    /**
+     * 采购计划提交
+     * @param planHeaderVOS
+     * @param organizationId
+     * @return
+     */
+
+    List<PlanHeaderVO> submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId);
 }

@@ -24,6 +24,7 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -236,5 +237,34 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         }
         return true;
     }
+
+    /**
+     * 采购计划提交
+     *
+     * @param planHeaderVOS
+     * @param organizationId
+     * @return
+     */
+    @Override
+    public List<PlanHeaderVO> submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
+        List<Long> ids = planHeaderVOS.stream().map(PlanHeaderVO::getPlanId).distinct().collect(Collectors.toList());
+        List<PlanHeader> planHeaderList = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
+        logger.info("planHeaderList:"+planHeaderList);
+
+        List<PlanHeader> list = new ArrayList<>();
+        String processNum = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_BPM", "GLOBAL", "GLOBAL", (Map) null);
+        planHeaderList.forEach(planHeader -> {
+            if(!Constants.PlanHeaderApprovalStatus.NEW.equals(planHeader.getApprovalStatus())){
+                throw new CommonException("只有审批状态为新建的单据才可以提交");
+            }
+            planHeader.setProcessNum(processNum);
+            list.add(planHeader);
+        });
+        //提交计划单号，生成新的流程编号
+        RCWLPlanHeaderRepository.submitPlanHeader(list,organizationId);
+
+        return planHeaderVOS;
+    }
+
 
 }

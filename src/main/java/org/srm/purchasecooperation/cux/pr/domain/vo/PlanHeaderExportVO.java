@@ -157,9 +157,21 @@ public class PlanHeaderExportVO  {
 //            lovCode = "SPFM.USER_AUTH.COMPANY",
 //            meaningField = "companyName"
 //    )
-   private Long companyId;
-    @ApiModelProperty(value = "创建人名称")
+    private Long companyId;
+    @ExcelColumn(title = "创建人")
     private String createdByName ;
+    @ExcelColumn(title = "创建时间")
+    private Date creationDate;
+    @ExcelColumn(title = "流程编号")
+    private String processNum;
+    @LovValue(
+            lovCode = "SCUX.RCWL.SCEC.JH_BPM",
+            meaningField = "approvalStatusMeaning"
+    )
+    @ApiModelProperty(value = "审批状态code")
+    private String approvalStatus;
+    @ExcelColumn(title = "审批状态")
+    private String approvalStatusMeaning;
 
     public PlanHeaderExportVO() {
     }

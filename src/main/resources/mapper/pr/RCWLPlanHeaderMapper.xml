@@ -79,10 +79,21 @@
 	             h.creation_date,
 	             h.created_by,
 	             h.last_updated_by,
-	             h.last_update_date
+	             h.last_update_date,
+	             h.process_num,
+	             h.approval_status
 
 
     </sql>
+    <update id="submitPlanHeader">
+        <foreach collection="list" item="planHeader" index="index" open="" close="" separator=";">
+            update scux_rcwl_plan_header
+            <set>
+                    process_num = #{planHeader.processNum}
+            </set>
+            where plan_id = #{planHeader.planId} and tenant_id = #{planHeader.tenantId}
+        </foreach>
+    </update>
 
     <select id="listPlanHeader" parameterType="org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO"
             resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO">
@@ -147,24 +158,6 @@
         AND h.creation_date &lt; #{creationDateTo}
     </if>
 </where>
-    </select>
-    <select id="exportAllPlanHeader" parameterType="org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader"
-            resultType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO">
-        select
-        <include refid="Base_Column_List"/>
-        l.attribute_varchar1,
-        l.attribute_varchar2,
-        l.attribute_varchar3,
-        l.attribute_varchar4,
-        l.attribute_varchar5,
-        l.attribute_date1,
-        l.attribute_date2,
-        l.attribute_date3,
-        l.attribute_date4,
-        l.attribute_date5
-        from scux_rcwl_plan_header h
-        left join sprm_pr_line l on h.plan_id = l.attribute_bigint1
-
     </select>
     <select id="selectPrHeaderExport"  parameterType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO"
             resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO">
