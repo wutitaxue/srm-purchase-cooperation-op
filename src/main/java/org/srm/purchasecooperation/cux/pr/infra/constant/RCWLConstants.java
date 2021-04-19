@@ -5,6 +5,11 @@ public class RCWLConstants {
     private RCWLConstants() {
     }
 
+    /**
+     * 租户编码
+     */
+    public static final String TENANT_CODE = "SRM-RCWL";
+
 
     /**
      * 接口初始化字段值
