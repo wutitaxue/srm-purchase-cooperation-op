@@ -103,8 +103,13 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             throw new CommonException("接口调用失败");
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
+            String detailsMsg =res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
             String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
-            throw new CommonException(simpleMessage + ",采购申请不可提交");
+             if(StringUtils.isEmpty(simpleMessage)){
+                 throw new CommonException(detailsMsg);
+             }
+            throw new CommonException(simpleMessage+"，采购申请不可提交");
+
         }
 
 
@@ -267,9 +272,10 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             throw new CommonException("接口调用失败");
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
-            String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
-            throw new CommonException(simpleMessage);
+            String detailsMsg =res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+                throw new CommonException(detailsMsg);
         }
+
 
     }
 
@@ -319,8 +325,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             throw new CommonException("接口调用失败");
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
-            String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
-            throw new CommonException(simpleMessage);
+            String detailsMsg =res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+            throw new CommonException(detailsMsg);
         }
 
     }
@@ -413,8 +419,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             throw new CommonException("接口调用失败");
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
-            String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
-            throw new CommonException(simpleMessage);
+            String detailsMsg =res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+            throw new CommonException(detailsMsg);
         }
 
 
