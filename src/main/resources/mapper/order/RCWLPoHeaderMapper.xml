@@ -29,6 +29,7 @@
           'SRM' as source_code,
            si.item_id as item_id,
            si.item_code as item_code,
+           si.item_name as item_name,
            spl.po_line_id as po_line_id,
            spl.category_id as category_id,
            spl.tenant_id as tenant_id
@@ -49,6 +50,16 @@
             (#{item.tenantId},#{item.sourceCode},#{item.itemNumber},#{item.itemCode},#{item.itemName},#{item.primaryUomId},#{item.queryItemCode},#{item.poLineId},'1')
         </foreach >
     </insert>
+    <insert id="batchInsertItemTl">
+        insert into smdm_item_tl (item_id,lang,item_name)
+        values
+        <foreach collection ="poLineList" item="item" separator =",">
+            (#{item.itemId},'zh_CN',#{item.itemName}),
+            (#{item.itemId},'en_US',#{item.itemName}),
+            (#{item.itemId},'ja_JP',#{item.itemName})
+        </foreach >
+    </insert>
+
 
     <update id="batchUpdatePoLine">
         <foreach collection="poLineList" item="poLine" index="index" open="" close="" separator=";">
