@@ -38,4 +38,11 @@ public interface RCWLPoHeaderRepository {
      * @param poLineList
      */
     void batchUpdatePoLine(List<RCWLItemInfoVO> poLineList);
+
+    /**
+     * 批量插入物料名称多语言表smdm_item_tl
+     * @param poLineList
+     */
+
+    void batchInsertItemTl(List<RCWLItemInfoVO> poLineList);
 }
