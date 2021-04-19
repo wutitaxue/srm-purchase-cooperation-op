@@ -7,7 +7,7 @@
         WHERE
         1 = 1
         AND spl.tenant_id=#{tenantId,jdbcType=DECIMAL}
-
+        AND spl.attribute_bigint1 = #{attributeBigint1}
         <!--添加查询条件 -->
         <if test="attributeBigint1 != null">
             AND spl.attribute_bigint1 = #{attributeBigint1}
