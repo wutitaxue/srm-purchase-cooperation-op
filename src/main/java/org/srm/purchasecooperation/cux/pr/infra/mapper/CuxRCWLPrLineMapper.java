@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author furong.tang@hand-china.com
  */
-@Tenant(RCWLConstants.TENANT_CODE)
+@Tenant
 public interface CuxRCWLPrLineMapper extends PrLineMapper, ExtendMapper<PrLine> {
 
     /**
