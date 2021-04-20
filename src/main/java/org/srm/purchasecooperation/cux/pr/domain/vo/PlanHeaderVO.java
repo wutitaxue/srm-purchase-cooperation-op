@@ -198,7 +198,16 @@ public class PlanHeaderVO  {
     private String createdByName ;
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
-
+    @ApiModelProperty(value = "流程编号")
+    private String processNum;
+    @LovValue(
+            lovCode = "SCUX.RCWL.SCEC.JH_BPM",
+            meaningField = "approvalStatusMeaning"
+    )
+    @ApiModelProperty(value = "审批状态code")
+    private String approvalStatus;
+    @ApiModelProperty(value = "审批状态")
+    private String approvalStatusMeaning;
 
     public PlanHeaderVO() {
     }
@@ -642,4 +651,29 @@ public class PlanHeaderVO  {
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
+
+    public String getProcessNum() {
+        return processNum;
+    }
+
+    public void setProcessNum(String processNum) {
+        this.processNum = processNum;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public String getApprovalStatusMeaning() {
+        return approvalStatusMeaning;
+    }
+
+    public void setApprovalStatusMeaning(String approvalStatusMeaning) {
+        this.approvalStatusMeaning = approvalStatusMeaning;
+    }
+
 }

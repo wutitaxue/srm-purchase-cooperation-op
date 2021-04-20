@@ -13,9 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.pr.api.dto.PrLineCloseResultDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.web.annotation.Tenant;
@@ -40,6 +42,8 @@ public class RCWLPrLineController {
     private PrHeaderRepository prHeaderRepository;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
+    @Autowired
+    private RCWLPrLineRepository rcwlPrLineRepository;
 
 
     @ApiOperation("采购申请行取消")
@@ -75,5 +79,15 @@ public class RCWLPrLineController {
         return Results.success(prLineCloseResultDTO);
     }
 
+
+    @ApiOperation("更新采购申请行信息-source服务-入围单")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping({"/purchase-requests/source/lines"})
+    public ResponseEntity<List<PrLine>> feignUpdatePrLine(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrLine> prLines){
+        Assert.notEmpty(prLines, "error.not_null");
+        SecurityTokenHelper.validToken(prLines);
+        List<PrLine> prLineList = rcwlPrLineRepository.updateSourcePrLine(prLines);
+        return Results.success(prLineList);
+    }
 
 }

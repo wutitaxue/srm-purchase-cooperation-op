@@ -59,7 +59,8 @@ public class PlanHeader extends AuditDomain {
     public static final String FIELD_ATTACHMENT = "attachment";
     public static final String FIELD_ADD_FLAG = "addFlag";
 	public static final String FIELD_COMPANY_ID = "companyId";
-
+	public static final String FIELD_PROCESS_NUM = "processNum";
+	public static final String FIELD_APPROVAL_STATUS = "approvalStatus";
     //
     // 业务方法(按public protected private顺序排列)
     // ------------------------------------------------------------------------------
@@ -138,8 +139,10 @@ public class PlanHeader extends AuditDomain {
     private Integer addFlag;
 	@ApiModelProperty(value = "公司id")
 	private Long companyId;
-
-
+	@ApiModelProperty(value = "流程编号")
+	private String processNum;
+	@ApiModelProperty(value = "审批状态")
+	private String approvalStatus;
 	//
     // 非数据库字段
     // ------------------------------------------------------------------------------
@@ -475,5 +478,21 @@ public class PlanHeader extends AuditDomain {
 
 	public void setCompanyId(Long companyId) {
 		this.companyId = companyId;
+	}
+
+	public String getProcessNum() {
+		return processNum;
+	}
+
+	public void setProcessNum(String processNum) {
+		this.processNum = processNum;
+	}
+
+	public String getApprovalStatus() {
+		return approvalStatus;
+	}
+
+	public void setApprovalStatus(String approvalStatus) {
+		this.approvalStatus = approvalStatus;
 	}
 }

@@ -9,6 +9,8 @@ import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 
+import java.util.List;
+
 /**
  * 采购计划表资源库
  *
@@ -23,13 +25,13 @@ public interface RCWLPlanHeaderRepository extends BaseRepository<PlanHeader> {
      */
     Page<PlanHeaderVO> listPlanHeader(PageRequest pageRequest, HeaderQueryDTO planHeaderParam);
 
-    /**
-     * 导出数据查询
-     * @param planHeader
-     * @param pageRequest
-     * @return
-     */
-    Page<PlanHeaderExportDTO> pageAllPlanHeader(PlanHeader planHeader, PageRequest pageRequest);
+//    /**
+//     * 导出数据查询
+//     * @param planHeader
+//     * @param pageRequest
+//     * @return
+//     */
+//    Page<PlanHeaderExportDTO> pageAllPlanHeader(PlanHeader planHeader, PageRequest pageRequest);
 
     /**
      * 导出数据查询
@@ -113,4 +115,11 @@ public interface RCWLPlanHeaderRepository extends BaseRepository<PlanHeader> {
      * @return
      */
     String selectAgent(String agent, Long tenantId);
+
+    /**
+     * 提交采购计划，生成新的流程编号
+     * @param list
+     * @param organizationId
+     */
+    void submitPlanHeader(List<PlanHeader> list, Long organizationId);
 }

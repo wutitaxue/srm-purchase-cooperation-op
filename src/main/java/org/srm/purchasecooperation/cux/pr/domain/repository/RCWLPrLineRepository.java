@@ -4,6 +4,9 @@ import org.hzero.mybatis.base.BaseRepository;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
+
+import java.util.List;
 
 /**
  * 采购申请行资源库
@@ -38,4 +41,12 @@ public interface RCWLPrLineRepository extends BaseRepository<PrLine> {
      * @return
      */
     PrHeaderVO selectByNum(String prNum, String lineNum, Long tenantId);
+
+    /**
+     * source服务-入围单更新入围单信息
+     *
+     * @param prLines 采购申请行信息
+     * @return List<PrLine>
+     */
+    List<org.srm.purchasecooperation.pr.domain.entity.PrLine> updateSourcePrLine(List<org.srm.purchasecooperation.pr.domain.entity.PrLine> prLines);
 }
