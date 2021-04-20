@@ -62,5 +62,5 @@ public interface RCWLPlanHeaderService {
      * @return
      */
 
-    List<PlanHeaderVO> submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId);
+    PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId);
 }
