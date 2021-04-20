@@ -376,6 +376,7 @@
         sph.attribute_varchar40,
         sph.attribute_varchar38,
         sph.attribute_varchar39,
+        sph.attribute_varchar17,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN scu2.financial_precision ELSE NULL END) AS financial_precision,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN scu2.default_precision ELSE NULL END) AS default_precision
         FROM sprm_pr_header sph
