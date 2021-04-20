@@ -15,7 +15,7 @@ import org.srm.purchasecooperation.cux.gxbpm.app.service.RCWLGxBpmInterfaceServi
  * @date 2021/4/12 22:14
  * @version:1.0
  */
-@Service
+@Service("BpmInterfaceService")
 public class RCWLGxBpmInterfaceServiceImpl implements RCWLGxBpmInterfaceService {
     private static final Logger logger = LoggerFactory.getLogger(Loader.class);
 

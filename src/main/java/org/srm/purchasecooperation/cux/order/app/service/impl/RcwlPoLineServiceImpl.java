@@ -58,13 +58,13 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
             });
             List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             List<PoHeaderAccordingToLineOfReferenceVO> list = new ArrayList<>();
+            Set<String> prTypeCodes = new TreeSet<>();
+            prTypeCodes.add(PrConstant.PrType.PR_TYPE_STANDARD);
+            prTypeCodes.add(PrConstant.PrType.PR_TYPE_EMERGENCY);
+            prTypeCodes.add(PrConstant.PrType.PR_TYPE_PROJECT);
+            prTypeCodes.add(PrConstant.PrType.PR_TYPE_SPORADIC);
             content.forEach(e->{
                 //当申请类型为“标准申请”STANDARD“项目申请”PROJECT“紧急申请”EMERGENCY“零星申请”SPORADIC  时,剩余可下单数量不等于本次下单数量时，这条数据不显示。
-                Set<String> prTypeCodes = new TreeSet<>();
-                prTypeCodes.add(PrConstant.PrType.PR_TYPE_STANDARD);
-                prTypeCodes.add(PrConstant.PrType.PR_TYPE_EMERGENCY);
-                prTypeCodes.add(PrConstant.PrType.PR_TYPE_PROJECT);
-                prTypeCodes.add(PrConstant.PrType.PR_TYPE_SPORADIC);
                 String prTypeCode = ObjectUtils.isEmpty(e.getPrTypeCode()) ? "" : e.getPrTypeCode();
                 if (prTypeCodes.contains(prTypeCode)){
                     if(e.getRestPoQuantity().compareTo(e.getThisOrderQuantity())==1){
