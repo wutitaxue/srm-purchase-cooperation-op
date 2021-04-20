@@ -116,10 +116,10 @@ public class RCWLPlanHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     //@Permission(permissionPublic = true)
     @PostMapping("/submit")
-    public ResponseEntity<List<PlanHeaderVO>> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) {
+    public ResponseEntity<PlanHeaderVO> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) {
 
-        List<PlanHeaderVO> list =  this.RCWLPlanHeaderService.submitPlanHeader(planHeaderVOS,organizationId);
-        return Results.success(list);
+        PlanHeaderVO planHeaderVO =  this.RCWLPlanHeaderService.submitPlanHeader(planHeaderVOS,organizationId);
+        return Results.success(planHeaderVO);
     }
 
 
