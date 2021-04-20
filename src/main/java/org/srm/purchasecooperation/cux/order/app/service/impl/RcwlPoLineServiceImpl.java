@@ -57,24 +57,29 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
                 return  this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
             });
             List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
-            List<PoHeaderAccordingToLineOfReferenceVO> list = new ArrayList<>();
-            Set<String> prTypeCodes = new TreeSet<>();
-            prTypeCodes.add(PrConstant.PrType.PR_TYPE_STANDARD);
-            prTypeCodes.add(PrConstant.PrType.PR_TYPE_EMERGENCY);
-            prTypeCodes.add(PrConstant.PrType.PR_TYPE_PROJECT);
-            prTypeCodes.add(PrConstant.PrType.PR_TYPE_SPORADIC);
-            content.forEach(e->{
-                //当申请类型为“标准申请”STANDARD“项目申请”PROJECT“紧急申请”EMERGENCY“零星申请”SPORADIC  时,剩余可下单数量不等于本次下单数量时，这条数据不显示。
-                String prTypeCode = ObjectUtils.isEmpty(e.getPrTypeCode()) ? "" : e.getPrTypeCode();
-                if (prTypeCodes.contains(prTypeCode)){
-                    if(e.getRestPoQuantity().compareTo(e.getThisOrderQuantity())==1){
+            String attributeVarchar40 = poHeaderAccordingToLineOfReferenceDTO.getAttributeVarchar40();
+            //融创需求池二开内容
+            if(StringUtils.isNotBlank(attributeVarchar40)&&"rcwl".equals(attributeVarchar40)){
+                List<PoHeaderAccordingToLineOfReferenceVO> list = new ArrayList<>();
+                Set<String> prTypeCodes = new TreeSet<>();
+                prTypeCodes.add(PrConstant.PrType.PR_TYPE_STANDARD);
+                prTypeCodes.add(PrConstant.PrType.PR_TYPE_EMERGENCY);
+                prTypeCodes.add(PrConstant.PrType.PR_TYPE_PROJECT);
+                prTypeCodes.add(PrConstant.PrType.PR_TYPE_SPORADIC);
+                content.forEach(e->{
+                    //当申请类型为“标准申请”STANDARD“项目申请”PROJECT“紧急申请”EMERGENCY“零星申请”SPORADIC  时,剩余可下单数量不等于本次下单数量时，这条数据不显示。
+                    String prTypeCode = ObjectUtils.isEmpty(e.getPrTypeCode()) ? "" : e.getPrTypeCode();
+                    if (prTypeCodes.contains(prTypeCode)){
+                        if(e.getRestPoQuantity().compareTo(e.getThisOrderQuantity())==1){
+                            list.add(e);
+                        }
+                    }else{
                         list.add(e);
                     }
-                }else{
-                    list.add(e);
-                }
-            });
-            page.setContent(list);
+                });
+                page.setContent(list);
+            }
+
             this.queryDefaultSupplier(poHeaderAccordingToLineOfReferenceDTO, content);
             List<Long> prLineIds = (List) content.stream().map(PoHeaderAccordingToLineOfReferenceVO::getPrLineId).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(prLineIds)) {
