@@ -268,8 +268,8 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
 
         //将url拼接返回给前端
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
-        logger.info("配置维护："+reSrcSys);
-        String url = "http://"+reSrcSys+"/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGJH&BOID="+processNum;
+        logger.info("配置维护：" + reSrcSys);
+        String url = "http://" + reSrcSys + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGJH&BOID=" + processNum;
         PlanHeaderVO planHeaderVO = new PlanHeaderVO();
         planHeaderVO.setUrl(url);
         return planHeaderVO;
