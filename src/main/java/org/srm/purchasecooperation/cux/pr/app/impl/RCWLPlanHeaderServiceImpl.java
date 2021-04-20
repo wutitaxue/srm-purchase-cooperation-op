@@ -264,7 +264,12 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
             list.add(planHeader);
         });
         //提交计划单号，生成新的流程编号
-        RCWLPlanHeaderRepository.submitPlanHeader(list, organizationId);
+        try {
+            RCWLPlanHeaderRepository.submitPlanHeader(list, organizationId);
+        }catch (Exception e){
+            logger.info("异常");
+        }
+       // RCWLPlanHeaderRepository.submitPlanHeader(list, organizationId);
 
         //将url拼接返回给前端
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
