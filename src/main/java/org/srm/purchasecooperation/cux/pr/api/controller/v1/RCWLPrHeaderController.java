@@ -196,6 +196,10 @@ public class RCWLPrHeaderController {
 
         Set<String> approveSet = new HashSet();
         prHeader = this.prHeaderService.changeSubmit(tenantId, prHeader, approveSet);
+
+        String bpmUrl = this.rcwlPrToBpmService.prDataToBpm(prHeader, "change");
+        //返回前台一个bpm地址
+        prHeader.setAttributeVarchar37(bpmUrl);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
         if ((CollectionUtils.isNotEmpty(approveSet) || "REJECTED".equals(prHeader.getPrStatusCode())) && syncFlag) {
             this.prHeaderService.afterChangeSubmit(tenantId, prHeader);
