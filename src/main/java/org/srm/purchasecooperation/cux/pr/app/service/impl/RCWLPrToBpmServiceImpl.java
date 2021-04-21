@@ -75,10 +75,13 @@ public class RCWLPrToBpmServiceImpl implements RCWLPrToBpmService {
         //附件信息
         List<PrToBpmFileDTO> fileDTOS = new ArrayList<>();
         FileClient fileClient = new FileClient(fileRemoteService);
-        List<FileDTO> attachmentFiles = fileClient.getAttachmentFiles(prHeader.getTenantId(), "private-bucket", prHeader.getAttachmentUuid());
-        for (int i = 0; i < attachmentFiles.size(); i++) {
-            fileDTOS.add(this.setUrlDataMap(attachmentFiles.get(i), i + 1));
+        if(StringUtils.isNotBlank(prHeader.getAttachmentUuid())){
+            List<FileDTO> attachmentFiles = fileClient.getAttachmentFiles(prHeader.getTenantId(), "private-bucket", prHeader.getAttachmentUuid());
+            for (int i = 0; i < attachmentFiles.size(); i++) {
+                fileDTOS.add(this.setUrlDataMap(attachmentFiles.get(i), i + 1));
+            }
         }
+
         //甄云链接
 
         //采购申请头数据
@@ -122,9 +125,9 @@ public class RCWLPrToBpmServiceImpl implements RCWLPrToBpmService {
         prToBpmLineDTO.setQuantity(String.valueOf(line.getQuantity()));
         prToBpmLineDTO.setTaxIncludedUnitPrice(String.valueOf(line.getTaxIncludedUnitPrice()));
         prToBpmLineDTO.setTaxIncludedLineAmount(String.valueOf(line.getTaxIncludedLineAmount()));
-        prToBpmLineDTO.setBudgetAccountId(String.valueOf(line.getBudgetAccountId()));
-        prToBpmLineDTO.setCostId(String.valueOf(line.getCostId()));
-        prToBpmLineDTO.setWbsCode(line.getWbsCode());
+        prToBpmLineDTO.setBudgetAccountId(lovAdapter.queryLovMeaning(PrConstant.BpmCodes.BUDGET_ACCOUNT, line.getTenantId(), String.valueOf(line.getBudgetAccountId())));
+        prToBpmLineDTO.setCostId(lovAdapter.queryLovMeaning(PrConstant.BpmCodes.COST_CENTER, line.getTenantId(), String.valueOf(line.getCostId())));
+        prToBpmLineDTO.setWbsCode(lovAdapter.queryLovMeaning(PrConstant.BpmCodes.WBS, line.getTenantId(), String.valueOf(line.getWbsCode())));
         prToBpmLineDTO.setRemark(line.getRemark());
         return prToBpmLineDTO;
     }
@@ -173,7 +176,7 @@ public class RCWLPrToBpmServiceImpl implements RCWLPrToBpmService {
                 map.put("prNum", header.getPrNum());
                 break;
             case "change":
-                String prNum = header.getPrNum() + "-" + (Math.random() * (4 - 1) + 1);
+                String prNum = header.getPrNum() + "-" + Math.round((Math.random()+1) * 1000);
                 map.put("typeStr", "预算变更");
                 map.put("subject", "预算变更" + prNum);
                 map.put("prNum", prNum);

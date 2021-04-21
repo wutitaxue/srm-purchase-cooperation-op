@@ -140,7 +140,9 @@
         <if test="changedFlag != null">
             AND sph.changed_flag = #{changedFlag}
         </if>
-
+        <if test=" prTypeId!= null">
+            AND sph.pr_type_id = #{prTypeId}
+        </if>
     </select>
 
     <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.pr.domain.entity.PrHeader">
@@ -1756,6 +1758,9 @@
         LEFT JOIN iam_user iur ON iur.id = sph.requested_by
         LEFT JOIN hpfm_inventory hi ON hi.inventory_id = sph.inventory_id
         WHERE sph.tenant_id = #{tenantId}
+        <if test=" prTypeId!= null">
+            AND sph.pr_type_id = #{prTypeId}
+        </if>
         <if test="prHeaderIds != null and prHeaderIds.size() gt 0">
             AND sph.pr_header_id IN
             <foreach collection="prHeaderIds" index="index" item="prHeaderId" open="(" separator="," close=")">

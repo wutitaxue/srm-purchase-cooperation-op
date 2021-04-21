@@ -32,5 +32,9 @@ public interface PrConstant {
         String PR_STAGING = "SCUX.RCWL.PR_STAGING";
         String JH_BIDDING = "SCUX.RCWL.SCEC.JH_BIDDING";
         String PR_FORMAT = "SCUX.RCWL.PR_FORMAT";
+
+        String BUDGET_ACCOUNT = "SMDM.BUDGET_ACCOUNT";
+        String COST_CENTER = "SPRM.COST_CENTER";
+        String WBS = "SMDM.WBS";
     }
 }
