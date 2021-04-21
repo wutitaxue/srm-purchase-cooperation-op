@@ -99,29 +99,29 @@ public class RCWLPrHeaderController {
 //    }
 
 
-    @ApiOperation("采购申请提交")
-    @Permission(
-            level = ResourceLevel.ORGANIZATION
-    )
-    @PostMapping({"/purchase-requests/singleton-submit"})
-    public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
-        SecurityTokenHelper.validToken(prHeader, false);
+//    @ApiOperation("采购申请提交")
+//    @Permission(
+//            level = ResourceLevel.ORGANIZATION
+//    )
+//    @PostMapping({"/purchase-requests/singleton-submit"})
+//    public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
+//        SecurityTokenHelper.validToken(prHeader, false);
 
      //   String token = this.rcwlPrItfService.getToken();
 
-      this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
-
-        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
-        boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
-        if (syncFlag) {
-            prHeader.setOperationFlag("I");
-            this.prHeaderService.exportPrToErp(tenantId, Collections.singletonList(prHeader));
-            prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
-            this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
-        }
-
-        return Results.success(prHeader);
-    }
+//      this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
+//
+//        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
+//        boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
+//        if (syncFlag) {
+//            prHeader.setOperationFlag("I");
+//            this.prHeaderService.exportPrToErp(tenantId, Collections.singletonList(prHeader));
+//            prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
+//            this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
+//        }
+//
+//        return Results.success(prHeader);
+//    }
 
 
 
