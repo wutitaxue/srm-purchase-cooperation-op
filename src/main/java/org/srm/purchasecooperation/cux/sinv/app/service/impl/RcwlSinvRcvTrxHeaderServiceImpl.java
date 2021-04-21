@@ -5,6 +5,7 @@ import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO;
 import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
 import org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxHeaderMapper;
@@ -12,9 +13,12 @@ import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.purchasecooperation.sinv.app.service.impl.SinvRcvTrxHeaderServiceImpl;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
+import org.srm.web.annotation.Tenant;
 
 import java.util.Optional;
 
+@Service
+@Tenant("SRM-RCWL")
 public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl {
 
     @Autowired
