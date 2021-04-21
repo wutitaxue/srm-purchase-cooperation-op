@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxHeaderMapper">
+    <select id="countTrxHeaderByClosedFlag"
+            resultType="org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        sph.po_type_id,
+        sph.po_num
+        FROM
+        sinv_rcv_trx_line srtl
+        JOIN sinv_rcv_trx_order_link srto ON srtl.order_link_id = srto.order_link_id
+        JOIN sinv_rcv_trx_header srth ON srtl.rcv_trx_header_id = srth.rcv_trx_header_id
+        LEFT JOIN sodr_po_line spl ON srto.from_po_line_id = spl.po_line_id
+        LEFT JOIN sodr_po_header sph ON sph.po_header_id = spl.po_header_id
+        LEFT JOIN sinv_asn_line sal on srto.from_asn_line_id = sal.asn_line_id
+        LEFT JOIN sinv_asn_header sah on sal.asn_header_id = sah.asn_header_id
+        WHERE
+        srtl.tenant_id = #{sinvRcvTrxHeaderDTO.tenantId}
+        and srth.rcv_trx_header_id = #{sinvRcvTrxHeaderDTO.rcvTrxHeaderId}
+        and sph.closed_flag = 1
+    </select>
+</mapper>

@@ -208,6 +208,8 @@ public class PlanHeaderVO  {
     private String approvalStatus;
     @ApiModelProperty(value = "审批状态")
     private String approvalStatusMeaning;
+    @ApiModelProperty(value = "返回url")
+    private String url;
 
     public PlanHeaderVO() {
     }
@@ -676,4 +678,11 @@ public class PlanHeaderVO  {
         this.approvalStatusMeaning = approvalStatusMeaning;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 }

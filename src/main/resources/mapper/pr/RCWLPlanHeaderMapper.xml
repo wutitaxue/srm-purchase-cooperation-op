@@ -85,11 +85,11 @@
 
 
     </sql>
-    <update id="submitPlanHeader">
-        <foreach collection="list" item="planHeader" index="index" open="" close="" separator=";">
+    <update id="submitPlanHeader" parameterType="java.util.List">
+        <foreach collection="list" item="planHeader" index="index"  separator=";">
             update scux_rcwl_plan_header
             <set>
-                    process_num = #{planHeader.processNum}
+                process_num = #{planHeader.processNum}
             </set>
             where plan_id = #{planHeader.planId} and tenant_id = #{planHeader.tenantId}
         </foreach>

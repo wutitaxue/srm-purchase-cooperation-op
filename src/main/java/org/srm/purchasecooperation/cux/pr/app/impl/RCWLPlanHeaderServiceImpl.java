@@ -8,6 +8,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.imported.domain.entity.ImportData;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
+import org.hzero.boot.platform.profile.ProfileClient;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,12 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     private RCWLPrLineRepository RCWLPrLineRepository;
     @Autowired
     private CodeRuleBuilder codeRuleBuilder;
+    @Autowired
+    private ProfileClient profileClient;
 
     /**
      * 查询
+     *
      * @param pageRequest
      * @param organizationId
      * @param planHeaderParam
@@ -62,6 +66,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
 
     /**
      * 批量取消
+     *
      * @param organizationId
      * @param planHeaderList
      * @return
@@ -74,23 +79,24 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
 
         if (!CollectionUtils.isEmpty(planHeaderList1)) {
             planHeaderList1.forEach(planHeaderVo -> {
-                if (Constants.PlanHeaderApprovalStatus.CANCEL.equals(planHeaderVo.getApprovalStatus())){
+                if (Constants.PlanHeaderApprovalStatus.CANCEL.equals(planHeaderVo.getApprovalStatus())) {
                     throw new CommonException(Constants.ErrorCode.CANCEL_EXIST);
                 }
                 //状态设置为取消
                 planHeaderVo.setApprovalStatus(Constants.PlanHeaderApprovalStatus.CANCEL);
                 //更改申请行的计划编号为空
-                RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(),organizationId);
+                RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
 
             });
         }
-       RCWLPlanHeaderRepository.batchUpdateOptional(planHeaderList1, PlanHeader.FIELD_APPROVAL_STATUS);
+        RCWLPlanHeaderRepository.batchUpdateOptional(planHeaderList1, PlanHeader.FIELD_APPROVAL_STATUS);
         return null;
     }
 
 
     /**
      * 创建保存采购计划
+     *
      * @param planHeaderParam
      */
     @Override
@@ -117,7 +123,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 Long planId = RCWLPlanHeaderRepository.selectPlanIdByPrIdAndLineNum(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum());
                 logger.info("planId:{}" + planId);
                 System.out.println("planId:{}" + planId);
-                Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(),planHeaderParam.getTenantId());
+                Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(), planHeaderParam.getTenantId());
                 logger.info("prLineId:{}" + prLineId);
                 System.out.println("prLineId:{}" + prLineId);
                 //申请行表插入编号
@@ -182,11 +188,12 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         }
         PlanHeader selectPlanHeader = RCWLPlanHeaderRepository.selectByPrimaryKey(planHeader);
         selectPlanHeader.setAttachment(planHeader.getAttachment());
-        RCWLPlanHeaderRepository.updateOptional(selectPlanHeader,PlanHeader.FIELD_ATTACHMENT);
+        RCWLPlanHeaderRepository.updateOptional(selectPlanHeader, PlanHeader.FIELD_ATTACHMENT);
     }
 
     /**
      * 导入校验
+     *
      * @param planHeaderImportVO
      * @param importData
      * @param tenantId
@@ -196,39 +203,35 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     public boolean checkData(PlanHeaderImportVO planHeaderImportVO, ImportData importData, Long tenantId) {
         //校验采购申请头行是否存在重复
         if (planHeaderImportVO.getPrNum() != null && planHeaderImportVO.getLineNum() != null) {
-            boolean check = RCWLPlanHeaderRepository.checkPrNumRep(planHeaderImportVO.getPrNum(), planHeaderImportVO.getLineNum(),tenantId);
+            boolean check = RCWLPlanHeaderRepository.checkPrNumRep(planHeaderImportVO.getPrNum(), planHeaderImportVO.getLineNum(), tenantId);
             if (!check) {
                 importData.addErrorMsg("已存在重复的采购申请头和行");
                 return false;
             }
             return true;
-        }
-        else if (planHeaderImportVO.getCompanyName() != null){
+        } else if (planHeaderImportVO.getCompanyName() != null) {
             boolean check = RCWLPlanHeaderRepository.checkCompanyExist(planHeaderImportVO.getCompanyName());
             if (!check) {
                 importData.addErrorMsg("该公司编码不存在");
                 return false;
             }
             return true;
-        }
-        else if (planHeaderImportVO.getBudgetAccount() != null){
-            boolean check = RCWLPlanHeaderRepository.checkBudgetAccountExist(planHeaderImportVO.getBudgetAccount() ,tenantId);
+        } else if (planHeaderImportVO.getBudgetAccount() != null) {
+            boolean check = RCWLPlanHeaderRepository.checkBudgetAccountExist(planHeaderImportVO.getBudgetAccount(), tenantId);
             if (!check) {
                 importData.addErrorMsg("该预算科目不存在");
                 return false;
             }
             return true;
-        }
-        else if (planHeaderImportVO.getDemanders() != null){
-            boolean check = RCWLPlanHeaderRepository.checkDemandersExist(planHeaderImportVO.getDemanders(),tenantId);
+        } else if (planHeaderImportVO.getDemanders() != null) {
+            boolean check = RCWLPlanHeaderRepository.checkDemandersExist(planHeaderImportVO.getDemanders(), tenantId);
             if (!check) {
                 importData.addErrorMsg("该需求人不存在");
                 return false;
             }
             return true;
-        }
-        else if (planHeaderImportVO.getAgent() != null){
-            boolean check = RCWLPlanHeaderRepository.checkAgentExist(planHeaderImportVO.getAgent(),tenantId);
+        } else if (planHeaderImportVO.getAgent() != null) {
+            boolean check = RCWLPlanHeaderRepository.checkAgentExist(planHeaderImportVO.getAgent(), tenantId);
             if (!check) {
                 importData.addErrorMsg("该经办人不存在");
                 return false;
@@ -246,24 +249,36 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
      * @return
      */
     @Override
-    public List<PlanHeaderVO> submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
+    public PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
         List<Long> ids = planHeaderVOS.stream().map(PlanHeaderVO::getPlanId).distinct().collect(Collectors.toList());
         List<PlanHeader> planHeaderList = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
-        logger.info("planHeaderList:"+planHeaderList);
+        logger.info("planHeaderList:" + planHeaderList);
 
         List<PlanHeader> list = new ArrayList<>();
         String processNum = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_BPM", "GLOBAL", "GLOBAL", (Map) null);
         planHeaderList.forEach(planHeader -> {
-            if(!Constants.PlanHeaderApprovalStatus.NEW.equals(planHeader.getApprovalStatus())){
+            if (!Constants.PlanHeaderApprovalStatus.NEW.equals(planHeader.getApprovalStatus())) {
                 throw new CommonException("只有审批状态为新建的单据才可以提交");
             }
             planHeader.setProcessNum(processNum);
             list.add(planHeader);
         });
+        RCWLPlanHeaderRepository.batchUpdateOptional(list, PlanHeader.FIELD_PROCESS_NUM);
         //提交计划单号，生成新的流程编号
-        RCWLPlanHeaderRepository.submitPlanHeader(list,organizationId);
+//        try {
+//            RCWLPlanHeaderRepository.submitPlanHeader(list, organizationId);
+//        }catch (Exception e){
+//            logger.info("异常");
+//        }
+       // RCWLPlanHeaderRepository.submitPlanHeader(list, organizationId);
 
-        return planHeaderVOS;
+        //将url拼接返回给前端
+        String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
+        logger.info("配置维护：" + reSrcSys);
+        String url = "http://" + reSrcSys + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGJH&BOID=" + processNum;
+        PlanHeaderVO planHeaderVO = new PlanHeaderVO();
+        planHeaderVO.setUrl(url);
+        return planHeaderVO;
     }
 
 

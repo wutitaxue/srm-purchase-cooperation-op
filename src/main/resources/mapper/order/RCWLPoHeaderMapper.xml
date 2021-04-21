@@ -69,7 +69,7 @@
                     item_id = #{poLine.itemId},
                 </if>
                 <if test="poLine.itemCode != null" >
-                    item_code = #{poLine.itemCode},
+                    item_code = #{poLine.itemCode}
                 </if>
             </set>
             where po_line_id = #{poLine.poLineId} and tenant_id = #{poLine.tenantId}
