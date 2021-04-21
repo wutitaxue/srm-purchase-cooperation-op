@@ -12,7 +12,7 @@ import java.util.List;
  * @version:1.0
  */
 public class PrToBpmDTO implements Serializable {
-    @JSONField(name = "FSUBJECT")
+    @JSONField(name = "FSubject")
     private String subject;
     @JSONField(name = "TYPE")
     private String typeStr;
