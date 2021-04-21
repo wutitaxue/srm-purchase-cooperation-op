@@ -24,4 +24,12 @@ public class SinvRcvTrxToKpiAutoPOLineVO extends ExpandDomain {
     public void setPoNum(String poNum) {
         this.poNum = poNum;
     }
+
+    public Long getTenantId() {
+        return TenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        TenantId = tenantId;
+    }
 }
