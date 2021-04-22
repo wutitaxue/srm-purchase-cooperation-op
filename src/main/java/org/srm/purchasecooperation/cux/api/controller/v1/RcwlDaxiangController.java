@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.app.service.RCWLTaxInvoiceLineService;
 import org.srm.purchasecooperation.cux.domain.entity.InvoiceData;
 import org.srm.purchasecooperation.cux.domain.entity.ResponseData;
+import org.srm.web.annotation.Tenant;
+
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -16,6 +18,7 @@ import java.util.List;
 )
 @RestController("rcwlElephantController.v1")
 @RequestMapping({"/v1/RcwlElephantController"})
+@Tenant("SRM-RCWL")
 public class RcwlDaxiangController {
     @Resource
     private RCWLTaxInvoiceLineService rcwlTaxInvoiceLineService;
