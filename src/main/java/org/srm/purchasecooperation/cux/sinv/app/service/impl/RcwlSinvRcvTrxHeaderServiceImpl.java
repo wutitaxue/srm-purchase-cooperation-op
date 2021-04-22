@@ -45,9 +45,9 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             return sinvRcvTrxHeaderDTO;
         } else {
             this.submittedSinvNone(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
-            //如果事务订单 sodr_po_header.closed_flag=1 则调用订单自动更新考评评分
+            //如果事务订单 sodr_po_line_location表的quantity=net_received_quantity 则调用订单自动更新考评评分
             SinvRcvTrxToKpiAutoPOLineVO sinvRcvTrxToKpiAutoPOLineVO = rcvRcvTrxHeaderMapper.countTrxHeaderByClosedFlag(sinvRcvTrxHeaderDTO);
-            if (sinvRcvTrxToKpiAutoPOLineVO != null) {
+            if (sinvRcvTrxToKpiAutoPOLineVO != null && (sinvRcvTrxToKpiAutoPOLineVO.getNetReceivedQuantity()==sinvRcvTrxToKpiAutoPOLineVO.getQuantity())) {
                 //feign调用自动更新考评评分
                 rcwlSinvRcvTrxSslmRemoteService.rcwlORAutoEval(sinvRcvTrxHeaderDTO.getTenantId(),sinvRcvTrxToKpiAutoPOLineVO);
             }
