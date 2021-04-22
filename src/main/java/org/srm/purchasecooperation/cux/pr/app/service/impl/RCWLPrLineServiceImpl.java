@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.cux.pr.app.impl;
+package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrLineService;

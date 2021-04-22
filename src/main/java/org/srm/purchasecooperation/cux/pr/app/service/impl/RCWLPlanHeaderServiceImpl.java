@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.cux.pr.app.impl;
+package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
