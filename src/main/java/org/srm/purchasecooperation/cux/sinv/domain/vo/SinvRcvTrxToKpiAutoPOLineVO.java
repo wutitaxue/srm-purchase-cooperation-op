@@ -7,7 +7,25 @@ import org.srm.common.mybatis.domain.ExpandDomain;
 public class SinvRcvTrxToKpiAutoPOLineVO extends ExpandDomain {
     private Long poTypeId;
     private String poNum;
+    private Long quantity;
+    private Long netReceivedQuantity;
     private Long TenantId;
+
+    public Long getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Long quantity) {
+        this.quantity = quantity;
+    }
+
+    public Long getNetReceivedQuantity() {
+        return netReceivedQuantity;
+    }
+
+    public void setNetReceivedQuantity(Long netReceivedQuantity) {
+        this.netReceivedQuantity = netReceivedQuantity;
+    }
 
     public Long getPoTypeId() {
         return poTypeId;

@@ -4,20 +4,21 @@
     <select id="countTrxHeaderByClosedFlag"
             resultType="org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
-        SELECT
+        SELECT distinct
         sph.po_type_id,
-        sph.po_num
+        sph.po_num,
+        sum(spll.quantity) quantity,
+        sum(spll.net_received_quantity) net_received_quantity
         FROM
         sinv_rcv_trx_line srtl
         JOIN sinv_rcv_trx_order_link srto ON srtl.order_link_id = srto.order_link_id
         JOIN sinv_rcv_trx_header srth ON srtl.rcv_trx_header_id = srth.rcv_trx_header_id
         LEFT JOIN sodr_po_line spl ON srto.from_po_line_id = spl.po_line_id
         LEFT JOIN sodr_po_header sph ON sph.po_header_id = spl.po_header_id
-        LEFT JOIN sinv_asn_line sal on srto.from_asn_line_id = sal.asn_line_id
-        LEFT JOIN sinv_asn_header sah on sal.asn_header_id = sah.asn_header_id
+        LEFT JOIN sodr_po_line_location spll ON spl.po_line_id = spll.po_line_id
         WHERE
         srtl.tenant_id = #{sinvRcvTrxHeaderDTO.tenantId}
         and srth.rcv_trx_header_id = #{sinvRcvTrxHeaderDTO.rcvTrxHeaderId}
-        and sph.closed_flag = 1
+        and spll.cancelled_flag = 0
     </select>
 </mapper>
