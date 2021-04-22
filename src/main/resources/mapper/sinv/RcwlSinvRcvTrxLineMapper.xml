@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxLineMapper">
+
+
+    <select id="selectRententionMoneyPercent" resultType="java.math.BigDecimal">
+                   SELECT
+                    	h.attribute1
+                    FROM
+                    	SPCM_PC_HEADER h
+                    	LEFT JOIN sodr_po_line l ON l.pc_num = h.pc_num
+                    WHERE
+                    	l.po_header_id = #{fromPoHeaderId}
+                    	AND l.po_line_id = {fromPoLineId}
+                    	AND l.tenant_id = {tenantId}
+    </select>
+</mapper>
