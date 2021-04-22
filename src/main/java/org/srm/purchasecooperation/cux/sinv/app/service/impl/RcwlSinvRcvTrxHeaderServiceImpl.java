@@ -18,7 +18,6 @@ import org.srm.purchasecooperation.asn.app.service.SendMessageToPrService;
 import org.srm.purchasecooperation.common.api.dto.SmdmCurrencyDTO;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.common.app.impl.SpucCommonServiceImpl;
-import org.srm.purchasecooperation.cux.sinv.domain.entity.RcwlSinvRcvTrxLine;
 import org.srm.purchasecooperation.cux.sinv.domain.repository.RcwlSinvRcvTrxLineRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
@@ -31,7 +30,6 @@ import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.repository.*;
 import org.srm.purchasecooperation.sinv.domain.service.*;
-import org.srm.web.annotation.Tenant;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -43,7 +41,6 @@ import java.util.*;
  * @createDate: 2021/4/22 16:36
  */
 @Service
-@Tenant("SRM-RCWL")
 public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlSinvRcvTrxHeaderServiceImpl.class);
     @Autowired
@@ -103,6 +100,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
 
+
     @Override
     @Transactional(
             rollbackFor = {Exception.class}
@@ -111,6 +109,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:begin");
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:sinvRcvTrxHeaderDTO,{}", sinvRcvTrxHeaderDTO);
         SinvRcvTrxHeader sinvRcvTrxHeader = new SinvRcvTrxHeader();
+
         BeanUtils.copyProperties(sinvRcvTrxHeaderDTO, sinvRcvTrxHeader);
         List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
         List<SinvRcvTrxLine> sinvRcvTrxLines = new ArrayList();
@@ -127,8 +126,9 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
 
         sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
             //新增字段
-            RcwlSinvRcvTrxLine sinvRcvTrxLine = new RcwlSinvRcvTrxLine();
+            SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
             BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
+            LOGGER.info("收获事务行标表24730:"+sinvRcvTrxLine.toString());
             sinvRcvTrxLine.setTenantId(tenantId);
             SmdmCurrencyDTO smdmCurrencyDTO = this.mdmService.selectSmdmCurrencyDto(tenantId, sinvRcvTrxLine.getCurrencyCode());
             int financialPrecision = smdmCurrencyDTO.getFinancialPrecision();
@@ -167,9 +167,12 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                     percent = new BigDecimal(0);
                 }
                 //质保金金额=执行金额（含税）*质保金比例/100
-             //   BigDecimal
-
+                 BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
+                LOGGER.info("质保金："+retentionMoney);
                 LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:taxIncludedAmount[" + taxIncludedAmount + "]");
+                //将质保金和收货人插入行表
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint1(),tenantId);
+
                 sinvRcvTrxLine.setTaxIncludedAmount(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setTaxIncludedAmount(taxIncludedAmount);
                 netAmount = sinvRcvTrxLineDTO.getQuantity().multiply(sinvRcvTrxLineDTO.getNetPrice()).divide(sinvRcvTrxLine.getUnitPriceBatch(), 8, RoundingMode.HALF_UP).setScale(financialPrecision, RoundingMode.HALF_UP);

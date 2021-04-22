@@ -16,4 +16,13 @@ public interface RcwlSinvRcvTrxLineRepository {
      * @return
      */
     BigDecimal selectRententionMoneyPercent(Long fromPoHeaderId, Long fromPoLineId, Long tenantId);
+
+    /**
+     * 将质保金和收货人插入行表
+     * @param rcvTrxLineId
+     * @param retentionMoney
+     * @param attributeBigint1
+     * @param tenantId
+     */
+    void insertRetentionMoneyAndReceiver(Long rcvTrxLineId, BigDecimal retentionMoney, Long attributeBigint1, Long tenantId);
 }
