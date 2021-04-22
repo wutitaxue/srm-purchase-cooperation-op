@@ -19,9 +19,9 @@ import java.util.List;
         tags = {"elephant"}
 )
 @RestController("rcwlElephantController.v1")
-@RequestMapping({"/v1/RcwlElephantController"})
+@RequestMapping({"/v1/rcwlElephantController"})
 @Tenant("SRM-RCWL")
-public class RcwlDaxiangController extends BaseController {
+public class RcwlElephantController extends BaseController {
     @Resource
     private RCWLTaxInvoiceLineService rcwlTaxInvoiceLineService;
 
