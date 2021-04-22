@@ -1,8 +1,10 @@
 package org.srm.purchasecooperation.cux.api.controller.v1;
 
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hzero.core.base.BaseController;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.app.service.RCWLTaxInvoiceLineService;
@@ -19,16 +21,15 @@ import java.util.List;
 @RestController("rcwlElephantController.v1")
 @RequestMapping({"/v1/RcwlElephantController"})
 @Tenant("SRM-RCWL")
-public class RcwlDaxiangController {
+public class RcwlDaxiangController extends BaseController {
     @Resource
     private RCWLTaxInvoiceLineService rcwlTaxInvoiceLineService;
 
     @PostMapping({"/invoice-elephant"})
     @ApiOperation("税务发票数据同步")
     @Permission(
-            permissionPublic = true
+            level = ResourceLevel.SITE
     )
-
     public ResponseData InvoiceSynchronization(
                                          @RequestBody List<InvoiceData> invoiceDataList) {
         ResponseData responseData = new ResponseData();
