@@ -46,6 +46,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         } else {
             this.submittedSinvNone(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
             //如果事务订单 sodr_po_line_location表的quantity=net_received_quantity 则调用订单自动更新考评评分
+            sinvRcvTrxHeaderDTO.setTenantId(tenantId);
             SinvRcvTrxToKpiAutoPOLineVO sinvRcvTrxToKpiAutoPOLineVO = rcvRcvTrxHeaderMapper.countTrxHeaderByClosedFlag(sinvRcvTrxHeaderDTO);
             if (sinvRcvTrxToKpiAutoPOLineVO != null && (sinvRcvTrxToKpiAutoPOLineVO.getNetReceivedQuantity()==sinvRcvTrxToKpiAutoPOLineVO.getQuantity())) {
                 //feign调用自动更新考评评分

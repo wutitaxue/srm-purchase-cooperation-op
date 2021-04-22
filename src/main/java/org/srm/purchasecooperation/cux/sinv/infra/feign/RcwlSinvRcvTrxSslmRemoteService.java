@@ -9,7 +9,7 @@ import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineV
 import org.srm.purchasecooperation.cux.sinv.infra.feign.fallback.RcwlSinvRcvTrxSslmRemoteServiceImpl;
 
 @FeignClient(
-        value = "${srm.service.interface.name:srm-supplier}",
+        value = "${srm.service.supplier.name:srm-supplier-lifecycle}",
         fallback = RcwlSinvRcvTrxSslmRemoteServiceImpl.class,
         path = "/v1"
 )
