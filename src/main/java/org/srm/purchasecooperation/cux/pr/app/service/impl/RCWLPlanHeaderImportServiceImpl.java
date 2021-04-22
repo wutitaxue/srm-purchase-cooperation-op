@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.cux.pr.app.impl;
+package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -36,7 +36,7 @@ public class RCWLPlanHeaderImportServiceImpl extends BatchImportHandler {
     private RCWLPrLineRepository RCWLPrLineRepository;
     @Autowired
     private CodeRuleBuilder codeRuleBuilder;
-    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.pr.app.impl.RCWLPlanHeaderImportServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.pr.app.service.impl.RCWLPlanHeaderImportServiceImpl.class);
 
     public RCWLPlanHeaderImportServiceImpl() {
     }

@@ -157,6 +157,10 @@
     <if test="creationDateTo != null">
         AND h.creation_date &lt; #{creationDateTo}
     </if>
+    <if test="createdByName != null">
+        <bind name="createdByName" value="'%'+createdByName+'%'"/>
+        and iur.real_name like #{createdByName}
+    </if>
 </where>
     </select>
     <select id="selectPrHeaderExport"  parameterType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO"

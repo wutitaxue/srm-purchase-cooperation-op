@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.cux.pr.app.impl;
+package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -75,12 +75,17 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     public List<PlanHeader> batchCancelPlanHeader(Long organizationId, List<PlanHeader> planHeaderList) {
 
         List<Long> ids = planHeaderList.stream().map(PlanHeader::getPlanId).distinct().collect(Collectors.toList());
-        List<PlanHeader> planHeaderList1 = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
 
+        logger.info("ids:"+ids);
+        List<PlanHeader> planHeaderList1 = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
+        logger.info("planHeaderList1:"+planHeaderList1.toString());
         if (!CollectionUtils.isEmpty(planHeaderList1)) {
             planHeaderList1.forEach(planHeaderVo -> {
                 if (Constants.PlanHeaderApprovalStatus.CANCEL.equals(planHeaderVo.getApprovalStatus())) {
-                    throw new CommonException(Constants.ErrorCode.CANCEL_EXIST);
+                    throw new CommonException("已取消的不能再取消");
+                }
+                if (Constants.PlanHeaderApprovalStatus.SUBMITTED.equals(planHeaderVo.getApprovalStatus())) {
+                    throw new CommonException("审批中的不能取消");
                 }
                 //状态设置为取消
                 planHeaderVo.setApprovalStatus(Constants.PlanHeaderApprovalStatus.CANCEL);
@@ -119,16 +124,13 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 logger.info("plan_num:{}" + str);
                 RCWLPlanHeaderRepository.insertSelective(planHeaderParam);
                 logger.info("计划id:{}" + planHeaderParam.getPlanId());
-                //获取计划id
-                Long planId = RCWLPlanHeaderRepository.selectPlanIdByPrIdAndLineNum(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum());
-                logger.info("planId:{}" + planId);
-                System.out.println("planId:{}" + planId);
+
                 Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(), planHeaderParam.getTenantId());
                 logger.info("prLineId:{}" + prLineId);
                 System.out.println("prLineId:{}" + prLineId);
                 //申请行表插入编号
                 PrLine prLine = RCWLPrLineRepository.selectByPrimaryKey(prLineId);
-                prLine.setAttributeBigint1(planId);
+                prLine.setAttributeBigint1(planHeaderParam.getPlanId());
                 RCWLPrLineRepository.updateOptional(prLine, PrLine.FIELD_ATTRIBUTE_BIGINT1);
             }
 

@@ -36,6 +36,11 @@ public class HeaderQueryDTO {
     private Date creationDateTo;
     @ApiModelProperty(value = "公司id")
     private Long companyId;
+    @ApiModelProperty(value = "审批状态code")
+    private String approvalStatus;
+    @ApiModelProperty(value = "创建人名称")
+    private String createdByName;
+
 
     public Long getPlanId() {
         return planId;
@@ -141,6 +146,22 @@ public class HeaderQueryDTO {
         this.companyId = companyId;
     }
 
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
     @Override
     public String toString() {
         return "HeaderQueryDTO{" +
@@ -157,6 +178,8 @@ public class HeaderQueryDTO {
                 ", creationDateFrom=" + creationDateFrom +
                 ", creationDateTo=" + creationDateTo +
                 ", companyId=" + companyId +
+                ", approvalStatus='" + approvalStatus + '\'' +
+                ", createdByName='" + createdByName + '\'' +
                 '}';
     }
 }

@@ -1,4 +1,4 @@
-package org.srm.purchasecooperation.cux.pr.app.impl;
+package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
