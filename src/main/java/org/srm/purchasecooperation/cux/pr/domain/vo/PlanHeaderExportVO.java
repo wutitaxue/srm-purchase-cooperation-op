@@ -65,10 +65,10 @@ public class PlanHeaderExportVO  {
     private String bidMethod;
     @ExcelColumn(title = "评标方法",order = 19)
     private String bidMethodMeaning;
-    @LovValue(
-            lovCode = "SPCM.ACCEPT_USER",
-            meaningField = "demandersMeaning"
-    )
+//    @LovValue(
+//            lovCode = "SPCM.ACCEPT_USER",
+//            meaningField = "demandersMeaning"
+//    )
     private String demanders;
     @ExcelColumn(title = "需求人",order = 13)
     private String demandersMeaning;
