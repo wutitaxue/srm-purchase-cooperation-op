@@ -9,6 +9,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.app.service.RCWLTaxInvoiceLineService;
 import org.srm.purchasecooperation.cux.domain.entity.InvoiceData;
+import org.srm.purchasecooperation.cux.domain.entity.PayLoad;
 import org.srm.purchasecooperation.cux.domain.entity.ResponseData;
 import org.srm.web.annotation.Tenant;
 
@@ -28,12 +29,12 @@ public class RcwlElephantController extends BaseController {
     @PostMapping({"/invoice-elephant"})
     @ApiOperation("税务发票数据同步")
     @Permission(
-            level = ResourceLevel.SITE
+            permissionPublic = true
     )
     public ResponseData InvoiceSynchronization(
-                                         @RequestBody List<InvoiceData> invoiceDataList) {
+                                         @RequestBody PayLoad payLoad) {
         ResponseData responseData = new ResponseData();
-        responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, invoiceDataList);
+        responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, payLoad.getInvoiceDataList());
         return responseData;
 //        return rcwlTaxInvoiceLineService.ResponseData(new ResponseData());
     }
