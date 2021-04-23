@@ -1,11 +1,9 @@
 package org.srm.purchasecooperation.cux.app.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.hzero.mybatis.domian.Condition;
-import org.hzero.mybatis.util.Sqls;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.app.service.RCWLTaxInvoiceLineService;
 import org.srm.purchasecooperation.cux.domain.entity.InvoiceData;
@@ -13,12 +11,10 @@ import org.srm.purchasecooperation.cux.domain.entity.ResponseData;
 import org.srm.purchasecooperation.cux.domain.repository.RCWLTaxInvoiceLineRepository;
 import org.srm.purchasecooperation.finance.app.service.TaxInvoiceLineService;
 import org.srm.purchasecooperation.finance.domain.entity.InvoiceHeader;
-import org.srm.purchasecooperation.finance.domain.entity.InvoiceLine;
 import org.srm.purchasecooperation.finance.domain.entity.TaxInvoiceLine;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -39,17 +35,10 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 invoiceHeader = rcwlTaxInvoiceLineRepository.selectOneInvoiceHeader(invoiceLine.getDocumentNumber());
                 TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
                 log.info("====================一========================="+invoiceLine.getDocumentNumber());
-                log.info("====================二========================="+invoiceLine.getTotalAmount());
-                //taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
-                List list = this.rcwlTaxInvoiceLineRepository.selectByCondition(
-                        Condition.builder(TaxInvoiceLine.class)
-                                .andWhere(Sqls.custom()
-                                        .andEqualTo(TaxInvoiceLine.FIELD_INVOICE_HEADER_ID, invoiceHeader.getInvoiceHeaderId())
-                                ).build());
-                if(list.size()==0){
-                    log.info("====================塞值=========================");
-                    taxInvoiceLine.setTenantId(tenantId);
+                taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
+                if(null == taxInvoiceLine){
                     taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
+                    taxInvoiceLine.setTenantId(tenantId);
                     taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
                     taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
                     taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
