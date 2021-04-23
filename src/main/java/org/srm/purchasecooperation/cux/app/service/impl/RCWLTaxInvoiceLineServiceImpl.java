@@ -1,6 +1,11 @@
 package org.srm.purchasecooperation.cux.app.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.hzero.mybatis.domian.Condition;
+import org.hzero.mybatis.util.Sqls;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.app.service.RCWLTaxInvoiceLineService;
 import org.srm.purchasecooperation.cux.domain.entity.InvoiceData;
@@ -8,10 +13,12 @@ import org.srm.purchasecooperation.cux.domain.entity.ResponseData;
 import org.srm.purchasecooperation.cux.domain.repository.RCWLTaxInvoiceLineRepository;
 import org.srm.purchasecooperation.finance.app.service.TaxInvoiceLineService;
 import org.srm.purchasecooperation.finance.domain.entity.InvoiceHeader;
+import org.srm.purchasecooperation.finance.domain.entity.InvoiceLine;
 import org.srm.purchasecooperation.finance.domain.entity.TaxInvoiceLine;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -33,7 +40,14 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
                 log.info("====================一========================="+invoiceLine.getDocumentNumber());
                 taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
-                if(null == taxInvoiceLine){
+
+
+                List list = this.rcwlTaxInvoiceLineRepository.selectByCondition(
+                        Condition.builder(InvoiceLine.class)
+                                .andWhere(Sqls.custom()
+                                        .andEqualTo(InvoiceLine.FIELD_INVOICE_HEADER_ID, invoiceHeader.getInvoiceHeaderId())
+                                ).build());
+                if(CollectionUtil.isEmpty(list)){
                     taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
                     taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
                     taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
