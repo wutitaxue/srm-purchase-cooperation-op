@@ -41,6 +41,7 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
 //                if(null == taxInvoiceLine){
                     taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
                     taxInvoiceLine.setTenantId(tenantId);
+                    taxInvoiceLine.setCheckCode("111111");
                     taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
                     taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
                     taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
