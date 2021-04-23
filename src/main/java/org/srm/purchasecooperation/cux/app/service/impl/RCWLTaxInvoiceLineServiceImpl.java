@@ -47,6 +47,8 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                                         .andEqualTo(InvoiceLine.FIELD_INVOICE_HEADER_ID, invoiceHeader.getInvoiceHeaderId())
                                 ).build());
                 if(list.size()==0){
+                    taxInvoiceLine.setTenantId(tenantId);
+                    taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
                     taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
                     taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
                     taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
