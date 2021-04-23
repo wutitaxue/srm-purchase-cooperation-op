@@ -26,7 +26,7 @@ public class RcwlElephantController extends BaseController {
     @Resource
     private RCWLTaxInvoiceLineService rcwlTaxInvoiceLineService;
 
-    @PostMapping({"/invoice-elephant"})
+    @PostMapping({"/invoice-elephant2"})
     @ApiOperation("税务发票数据同步")
     @Permission(
             permissionPublic = true
