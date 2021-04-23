@@ -116,10 +116,12 @@
         srpd.accepter_user_id,
         srpd.accepter_user_name,
         srtl.category_id,
-        /*新加字段质保金，收货人*/
+        /*新加字段质保金，收货人,入库单号，入库数量*/
         srtl.retention_money,
         srtl.attribute_bigint1,
-        iu.real_name as attribute_bigint1_meaning
+        iu.real_name as attribute_bigint1_meaning,
+        srtl.assetsbill_num,
+        srtl.warehouse_quantity
         FROM
         sinv_rcv_trx_line srtl
         JOIN sinv_rcv_trx_order_link srto ON srtl.order_link_id = srto.order_link_id

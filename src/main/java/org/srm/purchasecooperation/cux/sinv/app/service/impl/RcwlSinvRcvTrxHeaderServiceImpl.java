@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.sinv.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import io.choerodon.core.exception.CommonException;
+import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +27,12 @@ import org.srm.purchasecooperation.order.domain.service.PoHeaderSendApplyMqServi
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.app.service.impl.SinvRcvTrxHeaderServiceImpl;
+import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.repository.*;
 import org.srm.purchasecooperation.sinv.domain.service.*;
+import org.srm.web.annotation.Tenant;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -41,6 +44,7 @@ import java.util.*;
  * @createDate: 2021/4/22 16:36
  */
 @Service
+@Tenant("SRM-RCWL")
 public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlSinvRcvTrxHeaderServiceImpl.class);
     @Autowired
@@ -190,5 +194,30 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:end");
         return sinvRcvTrxHeaderDTO;
     }
+
+    @Override
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @SagaStart
+    public SinvRcvTrxHeaderDTO submittedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-submittedSinv:begin");
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-submittedSinv:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
+        if (BaseConstants.Flag.YES.equals(sinvRcvTrxHeaderDTO.getExecuteUpdateFlag())) {
+            this.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
+        }
+
+        this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);
+        RcvStrategyLine rcvStrategyLine = this.selectRcvNowNodeConfig(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), (Long)null);
+        if ("WFL".equals(((RcvStrategyLine)Optional.ofNullable(rcvStrategyLine).orElse(new RcvStrategyLine())).getApproveRuleCode())) {
+            LOGGER.debug("21424-submittedSinv-need-wfl");
+            this.sinvRcvTrxHeaderDomainService.submittedSinvToWFL(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
+            return sinvRcvTrxHeaderDTO;
+        } else {
+            this.submittedSinvNone(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
+            return sinvRcvTrxHeaderDTO;
+        }
+    }
+
 
 }

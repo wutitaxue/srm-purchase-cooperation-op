@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxHeaderMapper">
+
+    <select id="selectSinvRcvTrxFinishLine"
+            resultType="org.srm.purchasecooperation.cux.sinv.api.dto.RcwlSinvRcvTrxFinishLineDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        srtl.rcv_trx_line_id,
+        srtl.rcv_trx_header_id,
+        sph.display_po_num,
+        sph.po_num,
+        concat(srto.source_header_num,IFNULL(srtl.item_name,'0'),IFNULL(srto.from_display_po_num,'0'),IFNULL(srto.from_pc_num,'0')) as all_source,
+        srtl.tenant_id,
+        (case when srrsm.initial_node_flag = 1 then srto.source_header_num else srth.trx_num end ) trx_num,
+        (case when srrsm.initial_node_flag = 1 then srto.source_header_num else srth.display_trx_num end )
+        display_trx_num,
+        (case when srrsm.initial_node_flag = 1 then srto.source_line_num else srtl.trx_line_num end ) trx_line_num,
+        srrsm.order_type_code,
+        (case when srrsm.initial_node_flag = 1 then srrsm.order_type_name else srnc.node_config_name end )
+        order_type_name,
+        concat(srto.source_header_num,IFNULL(srth.trx_num,'0'),IFNULL(srto.from_display_po_num,'0')) as all_source_header,
+        srto.source_header_num,
+        srto.source_line_num,
+        srtl.item_id,
+        srtl.item_code,
+        srtl.item_name,
+        /*单据数量*/
+        srtl.quantity,
+        /*本次退回*/
+        (srtl.quantity - srtl.occupied_quantity + srtl.reversed_quantity) update_quantity,
+        (srtl.tax_included_amount - srtl.occupied_tax_amount + srtl.reversed_tax_amount) update_tax_amount,
+        /*可退回数量*/
+        (srtl.quantity - srtl.occupied_quantity + srtl.reversed_quantity) left_quantity,
+        /*修改时记录修改前的数量*/
+        srtl.quantity org_quantity,
+        /*退回数量*/
+        srtl.reversed_quantity,
+        /*占用数量*/
+        srtl.occupied_quantity,
+        /*当前执行金额*/
+        srtl.net_amount,
+        /*不含税单价*/
+        srtl.net_price,
+        srtl.po_unit_price,
+        srtl.tax_included_price,
+        srtl.occupied_tax_amount,
+        srtl.reversed_tax_amount,
+        srtl.tax_included_amount,
+        (srtl.tax_included_amount - srtl.occupied_tax_amount + srtl.reversed_tax_amount) left_tax_amount,
+        /*实际操作日期*/
+        srtl.trx_date,
+        /*库房*/
+        hi.inventory_name,
+        /*库位*/
+        hl.location_name,
+        /*收货组织*/
+        hio.organization_name,
+        /*单据数量*/
+        spll.quantity source_quantity,
+        /*单位*/
+        CONCAT( CONCAT( su.uom_code, '/' ), sut.uom_name ) uom_name,
+        /*商品编码*/
+        spl.product_num,
+        spl.product_name,
+        /*妥投时间*/
+        sal.deliver_time due_date,
+        /*供应商*/
+        srth.supplier_id,
+        (case when srth.supplier_num is null then hcc.company_num else srth.supplier_num end) supplier_num,
+        (case when srth.supplier_name is null then srth.supplier_company_name else srth.supplier_name end)
+        supplier_name,
+        /*业务实体*/
+        hou.ou_name ,
+        hc.company_id,
+        hc.company_num,
+        hc.company_name,
+        srto.from_po_header_id,
+        srto.from_po_line_id,
+        srto.from_po_line_location_id,
+        srto.from_display_po_num,
+        srto.from_display_po_line_num,
+        srto.from_display_po_line_location_num,
+        srto.from_asn_header_id,
+        srto.from_asn_line_id,
+        srto.from_display_asn_num,
+        srto.from_display_asn_line_num,
+        srto.from_pc_header_id,
+        srto.from_pc_subject_id,
+        srto.from_pc_num,
+        srto.from_pc_subject_num,
+        srsl.strategy_header_id,
+        srrsm.initial_node_flag,
+        srrsm.strategy_line_id,
+        srtl.inventory_id,
+        srtl.locator_id,
+        srtl.object_version_number,
+        srsl.subject_type,
+        srsl.line_seq,
+        srnc.node_config_id,
+        /*节点index*/
+        srnc.node_config_index,
+        /*节点编码*/
+        srnc.node_config_code,
+        /*节点名称*/
+        srnc.node_config_name,
+        srem.rcv_type_name,
+        srtl.from_rcv_trx_line_id,
+        srtl.rcv_trx_line_id parent_trx_line_id,
+        srtl.rcv_trx_type_id,
+        srto.order_link_id,
+        srtl.tax_rate,
+        concat(srsh.strategy_code, '-', srsh.strategy_name) strategy_code,
+        srth.rcv_status_code,
+        srtl.currency_code,
+        (case when spl.unit_price_batch is null then 1 else spl.unit_price_batch end) unit_price_batch,
+        srtl.move_reason,
+        sah.carriers_code,
+        srpd.stage_code,
+        srpd.stage_name,
+        srpd.check_type check_type_code,
+        srpd.pay_ratio,
+        srpd.pc_status_code,
+        srpd.specifications,
+        srpd.model,
+        srpd.accepter_user_id,
+        srpd.accepter_user_name,
+        srtl.category_id,
+        /*查询入库数量和入库单号*/
+        srtl.assetsbill_num,
+        srtl.warehouse_quantity
+        FROM
+        sinv_rcv_trx_line srtl
+        JOIN sinv_rcv_trx_order_link srto ON srtl.order_link_id = srto.order_link_id
+        JOIN sinv_rcv_trx_header srth ON srtl.rcv_trx_header_id = srth.rcv_trx_header_id
+        JOIN sinv_rcv_record_strategy_mapping srrsm ON srth.rcv_trx_header_id = srrsm.rcv_trx_header_id
+        LEFT JOIN sinv_rcv_strategy_line srsl ON srrsm.strategy_line_id = srsl.strategy_line_id
+        LEFT JOIN sinv_rcv_node_config srnc ON srsl.node_config_id = srnc.node_config_id
+        LEFT JOIN hpfm_inventory hi ON srtl.inventory_id = hi.inventory_id
+        LEFT JOIN hpfm_location hl ON srtl.locator_id = hl.location_id
+        LEFT JOIN hpfm_inv_organization hio ON srtl.inv_organization_id = hio.organization_id
+        LEFT JOIN smdm_uom su ON srtl.uom_id = su.uom_id
+        LEFT JOIN smdm_uom_tl sut ON su.uom_id = sut.uom_id AND sut.lang = #{lang}
+        LEFT JOIN hpfm_operation_unit hou ON srtl.ou_id = hou.ou_id
+        LEFT JOIN hpfm_company hc ON srth.company_id = hc.company_id
+        LEFT JOIN hpfm_company hcc ON srth.supplier_company_id = hcc.company_id
+        LEFT JOIN sodr_po_line_location spll on srto.from_po_line_location_id = spll.po_line_location_id
+        LEFT JOIN sodr_po_line spl ON srto.from_po_line_id = spl.po_line_id
+        LEFT JOIN sodr_po_header sph ON sph.po_header_id = spll.po_header_id
+        LEFT JOIN sinv_rcv_ext_mapping srem ON srtl.rcv_trx_type_id = srem.mapping_id
+        LEFT JOIN sinv_asn_line sal on srto.from_asn_line_id = sal.asn_line_id
+        LEFT JOIN sinv_asn_header sah on sal.asn_header_id = sah.asn_header_id
+        LEFT JOIN sinv_rcv_strategy_header srsh ON srsl.strategy_header_id = srsh.node_strategy_id
+        LEFT JOIN sinv_rcv_pc_details srpd ON srto.order_link_id = srpd.order_link_id
+        left join sprm_pr_header srh on srh.pr_header_id=srtl.pr_header_id
+        WHERE
+        srtl.tenant_id = #{sinvRcvTrxQueryDTO.tenantId}
+        <!-- 事务行id -->
+        <if test="sinvRcvTrxQueryDTO.rcvTrxLineIds != null">
+            and srtl.rcv_trx_line_id in
+            <foreach collection="sinvRcvTrxQueryDTO.rcvTrxLineIds" index="index" item="item" open="(" separator=","
+                     close=")">
+                #{item}
+            </foreach>
+        </if>
+        and srth.source_code = 'SRM'
+        AND srtl.reverse_flag = 0
+        AND srtl.delete_flag = 0
+        AND (srrsm.initial_node_flag =1 or EXISTS ( SELECT 1 FROM sinv_rcv_trx_line srtl1
+        WHERE srtl1.rcv_trx_line_id = srtl.from_rcv_trx_line_id
+        AND srth.rcv_status_code = '40_FINISHED' ))
+        <!-- 角色权限 -->
+        /*当前节点对应的策略行id需限制当前角色必须有编辑权限*/
+        <if test="customUserDetails.roleId != null and customUserDetails.roleId != ''">
+            AND EXISTS ( SELECT 1 FROM sinv_rcv_strategy_permission srsp
+            WHERE srsp.strategy_line_id = srrsm.strategy_line_id
+            AND srsp.strategy_permission_type in ('UPDATE','QUERY')
+            AND srsp.role_id = #{customUserDetails.roleId})
+        </if>
+        <!-- 节点 -->
+        <if test="sinvRcvTrxQueryDTO.nodeConfigId != null and sinvRcvTrxQueryDTO.nodeConfigId != ''">
+            AND srnc.node_config_id = #{sinvRcvTrxQueryDTO.nodeConfigId}
+        </if>
+        <!-- 单据编号-事务 -->
+        <if test="sinvRcvTrxQueryDTO.trxNum != null and sinvRcvTrxQueryDTO.trxNum != ''">
+            <bind name="trxNumLike" value="'%' + sinvRcvTrxQueryDTO.trxNum + '%'"/>
+            and concat(srto.source_header_num,IFNULL(srth.trx_num,'0'),IFNULL(srto.from_display_po_num,'0')) like #{trxNumLike}
+        </if>
+        <!-- 单据编号-事务 -->
+        <if test="sinvRcvTrxQueryDTO.displayTrxNum != null and sinvRcvTrxQueryDTO.displayTrxNum != ''">
+            <bind name="displayTrxNumLike" value="'%' + sinvRcvTrxQueryDTO.displayTrxNum + '%'"/>
+            and (case when srrsm.initial_node_flag = 1 then srto.source_header_num else srth.display_trx_num end )
+            display_trx_num like #{displayTrxNumLike}
+        </if>
+        <!-- 单据编号 -->
+        <if test="sinvRcvTrxQueryDTO.sourceHeaderNum != null and sinvRcvTrxQueryDTO.sourceHeaderNum != ''">
+            <bind name="sourceHeaderNumLike" value="'%' + sinvRcvTrxQueryDTO.sourceHeaderNum + '%'"/>
+            and srto.source_header_num like #{sourceHeaderNumLike}
+        </if>
+        <!-- 单据行号 -->
+        <if test="sinvRcvTrxQueryDTO.sourceLineNum != null">
+            <bind name="sourceLineNumLike" value="'%' + sinvRcvTrxQueryDTO.sourceLineNum + '%'"/>
+            AND srto.source_line_num like #{sinvRcvTrxQueryDTO.sourceLineNumLike}
+        </if>
+        <!-- 物料 -->
+        <if test="sinvRcvTrxQueryDTO.itemId != null and sinvRcvTrxQueryDTO.itemId != ''">
+            and srtl.item_id = #{sinvRcvTrxQueryDTO.itemId}
+        </if>
+        <!-- 供应商 -->
+        <if test="sinvRcvTrxQueryDTO.supplierCompanyId != null and sinvRcvTrxQueryDTO.supplierCompanyId != ''">
+            AND srtl.supplier_company_id = #{sinvRcvTrxQueryDTO.supplierCompanyId}
+        </if>
+        <!-- 移动类型 -->
+        <if test="sinvRcvTrxQueryDTO.rcvTrxTypeId != null and sinvRcvTrxQueryDTO.rcvTrxTypeId != ''">
+            AND srem.mapping_id = #{sinvRcvTrxQueryDTO.rcvTrxTypeId}
+        </if>
+        <!-- 单号-物料 -->
+        <if test="sinvRcvTrxQueryDTO.allSource != null">
+            <bind name="allSourceLike" value="'%' + sinvRcvTrxQueryDTO.allSource + '%'"/>
+            AND concat(srto.source_header_num,IFNULL(srtl.item_name,'0'),IFNULL(srto.from_display_po_num,'0'),IFNULL(srto.from_pc_num,'0')) like #{allSourceLike}
+        </if>
+        <!-- 验收人标识:采购申请行上-目前项目:叮咚买菜 -->
+        <if test="sinvRcvTrxQueryDTO.accepterUserIdFlag != null">
+            AND EXISTS (SELECT 1 FROM sprm_pr_line sprl
+            LEFT JOIN sodr_po_line spl ON sprl.pr_line_id = spl.pr_line_id
+            WHERE spl.po_line_id = srto.from_po_line_id
+            and sprl.accepter_user_id = #{customUserDetails.userId})
+        </if>
+        <!-- 委外收货标识 -->
+        <if test="sinvRcvTrxQueryDTO.thirdPartyFlag != null">
+            and EXISTS (SELECT 1 FROM hpfm_company hc
+            JOIN iam_user su WHERE
+            hc.tenant_id = su.organization_id
+            AND su.id = #{customUserDetails.userId}
+            AND hc.company_num = sah.carriers_code)
+        </if>
+        <!-- sap订单号 -->
+        <if test="sinvRcvTrxQueryDTO.displayPoNum != null and sinvRcvTrxQueryDTO.displayPoNum != ''">
+            <bind name="displayPoNumLike" value="'%' + sinvRcvTrxQueryDTO.displayPoNum + '%'"/>
+            and sph.display_po_num like #{displayPoNumLike}
+        </if>
+        <!-- 订单号 -->
+        <if test="sinvRcvTrxQueryDTO.poNum != null and sinvRcvTrxQueryDTO.poNum != ''">
+            <bind name="poNumLike" value="'%' + sinvRcvTrxQueryDTO.poNum + '%'"/>
+            and sph.po_num like #{poNumLike}
+        </if>
+        <!-- 事务日期 -->
+        <if test = "sinvRcvTrxQueryDTO.trxDateStart != null">
+            AND srtl.trx_date &gt;= #{sinvRcvTrxQueryDTO.trxDateStart}
+        </if>
+        <if test = "sinvRcvTrxQueryDTO.trxDateEnd != null">
+            AND srtl.trx_date &lt; #{sinvRcvTrxQueryDTO.trxDateEnd}
+        </if>
+        order by srtl.rcv_trx_line_id desc
+
+    </select>
+</mapper>

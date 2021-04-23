@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 public class RcwlSinvRcvTrxLineDTO extends SinvRcvTrxLineDTO {
     @ApiModelProperty(value = "质保金")
     private BigDecimal retentionMoney;
-    @ApiModelProperty(value = "资产单据号")
+    @ApiModelProperty(value = "资产单据号(入库单号)")
     private String assetsbillNum;
     @ApiModelProperty(value = "入库数量")
     private Long warehouseQuantity;
