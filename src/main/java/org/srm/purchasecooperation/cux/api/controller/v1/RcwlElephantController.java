@@ -32,9 +32,9 @@ public class RcwlElephantController extends BaseController {
             permissionPublic = true
     )
     public ResponseData InvoiceSynchronization(
-                                         @RequestBody PayLoad payLoad) {
+                                         @RequestBody List<InvoiceData> invoiceDataList) {
         ResponseData responseData = new ResponseData();
-        responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, payLoad.getInvoiceDataList());
+        responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, invoiceDataList);
         return responseData;
 //        return rcwlTaxInvoiceLineService.ResponseData(new ResponseData());
     }
