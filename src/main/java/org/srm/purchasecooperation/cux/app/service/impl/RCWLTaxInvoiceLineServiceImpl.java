@@ -35,9 +35,9 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 invoiceHeader = rcwlTaxInvoiceLineRepository.selectOneInvoiceHeader(invoiceLine.getDocumentNumber());
                 TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
                 log.info("====================一========================="+invoiceLine.getDocumentNumber());
-                taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
-                String b = taxInvoiceLine == null ? "为null":"不为null";
-                log.info("====================二========================="+b);
+//                taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
+//                String b = taxInvoiceLine == null ? "为null":"不为null";
+                log.info("====================二=========================");
 //                if(null == taxInvoiceLine){
                     taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
                     taxInvoiceLine.setTenantId(tenantId);
