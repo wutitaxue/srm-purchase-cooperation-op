@@ -20,4 +20,5 @@ public class InvoiceData {
     private BigDecimal taxIncludedAmount;
     private String taxIncludedStatusCode;
     private String validateStatus;
+    private String checkCode;
 }
