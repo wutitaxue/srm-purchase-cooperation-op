@@ -30,15 +30,18 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
             for (InvoiceData invoiceLine : invoiceDataList) {
                 invoiceHeader = rcwlTaxInvoiceLineRepository.selectOneInvoiceHeader(invoiceLine.getDocumentNumber());
                 taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
-                taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
-                taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
-                taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
-                taxInvoiceLine.setBillingDate(invoiceLine.getBillingDate());
-                taxInvoiceLine.setTotalAmount(invoiceLine.getTotalAmount());
-                taxInvoiceLine.setTaxAmount(invoiceLine.getTaxAmount());
-                taxInvoiceLine.setTaxIncludedAmount(invoiceLine.getTaxIncludedAmount());
-                taxInvoiceLine.setTaxInvoiceStatusCode(invoiceLine.getTaxIncludedStatusCode());
-                taxInvoiceLine.setValidateStatusCode(invoiceLine.getValidateStatus());
+                if(null == taxInvoiceLine){
+                    taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
+                    taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
+                    taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
+                    taxInvoiceLine.setBillingDate(invoiceLine.getBillingDate());
+                    taxInvoiceLine.setTotalAmount(invoiceLine.getTotalAmount());
+                    taxInvoiceLine.setTaxAmount(invoiceLine.getTaxAmount());
+                    taxInvoiceLine.setTaxIncludedAmount(invoiceLine.getTaxIncludedAmount());
+                    taxInvoiceLine.setTaxInvoiceStatusCode(invoiceLine.getTaxIncludedStatusCode());
+                    taxInvoiceLine.setValidateStatusCode(invoiceLine.getValidateStatus());
+                    taxInvoiceLineList.add(taxInvoiceLine);
+                }
             }
             taxInvoiceLineService.batchAddOrUpdateTaxInvoiceLine(taxInvoiceLineList, tenantId);
             responseData.setState("1");
