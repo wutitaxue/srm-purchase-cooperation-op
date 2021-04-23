@@ -44,7 +44,7 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 List list = this.rcwlTaxInvoiceLineRepository.selectByCondition(
                         Condition.builder(TaxInvoiceLine.class)
                                 .andWhere(Sqls.custom()
-                                        .andEqualTo(TaxInvoiceLine.FIELD_TAX_INVOICE_LINE_ID, invoiceHeader.getInvoiceHeaderId())
+                                        .andEqualTo(TaxInvoiceLine.FIELD_INVOICE_HEADER_ID, invoiceHeader.getInvoiceHeaderId())
                                 ).build());
                 if(list.size()==0){
                     log.info("====================塞值=========================");
