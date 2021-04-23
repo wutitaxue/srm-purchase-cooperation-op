@@ -36,12 +36,13 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
                 log.info("====================一========================="+invoiceLine.getDocumentNumber());
 //                taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
-//                String b = taxInvoiceLine == null ? "为null":"不为null";
-                log.info("====================二=========================");
-//                if(null == taxInvoiceLine){
                     taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
                     taxInvoiceLine.setTenantId(tenantId);
-                    taxInvoiceLine.setCheckCode("111111");
+                    if("".equals(invoiceLine.getCheckCode()) || null == invoiceLine.getCheckCode()){
+                        taxInvoiceLine.setCheckCode("111111");
+                    }else{
+                        taxInvoiceLine.setCheckCode(invoiceLine.getCheckCode());
+                    }
                     taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
                     taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
                     taxInvoiceLine.setInvoiceTypeCode(invoiceLine.getInvoiceTypeCode());
