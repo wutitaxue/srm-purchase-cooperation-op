@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.app.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.app.service.RCWLTaxInvoiceLineService;
 import org.srm.purchasecooperation.cux.domain.entity.InvoiceData;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService {
     @Resource
     private TaxInvoiceLineService taxInvoiceLineService;
@@ -25,11 +27,13 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
         ResponseData responseData =  new ResponseData();
         try {
             InvoiceHeader invoiceHeader = new InvoiceHeader();
-            TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
             List<TaxInvoiceLine> taxInvoiceLineList = new ArrayList<>();
             for (InvoiceData invoiceLine : invoiceDataList) {
                 invoiceHeader = rcwlTaxInvoiceLineRepository.selectOneInvoiceHeader(invoiceLine.getDocumentNumber());
+                TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
+                log.info("====================一========================="+invoiceLine.getDocumentNumber());
                 taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
+                log.info("====================二========================="+taxInvoiceLine.getInvoiceCode());
                 if(null == taxInvoiceLine){
                     taxInvoiceLine.setInvoiceCode(invoiceLine.getInvoiceCode());
                     taxInvoiceLine.setInvoiceNumber(invoiceLine.getInvoiceNumber());
