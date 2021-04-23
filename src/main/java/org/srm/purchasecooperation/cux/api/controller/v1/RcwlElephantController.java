@@ -32,7 +32,21 @@ public class RcwlElephantController extends BaseController {
             permissionPublic = true
     )
     public ResponseData InvoiceSynchronization(
-                                         @RequestBody PayLoad payLoad) {
+            @RequestBody PayLoad payLoad) {
+        ResponseData responseData = new ResponseData();
+        responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, payLoad.getInvoiceDataList());
+        return responseData;
+//        return rcwlTaxInvoiceLineService.ResponseData(new ResponseData());
+    }
+
+
+    @PostMapping(value = "/invoice-elephant",consumes = {"application/json"})
+    @ApiOperation("税务发票数据同步")
+    @Permission(
+            permissionPublic = true
+    )
+    public ResponseData InvoiceSynchronization2(
+            @RequestBody PayLoad payLoad) {
         ResponseData responseData = new ResponseData();
         responseData =  rcwlTaxInvoiceLineService.InvoiceSynchronization(0L, payLoad.getInvoiceDataList());
         return responseData;
