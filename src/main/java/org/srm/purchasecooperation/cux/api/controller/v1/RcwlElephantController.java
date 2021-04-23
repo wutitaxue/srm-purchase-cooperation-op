@@ -21,7 +21,6 @@ import java.util.List;
 )
 @RestController("rcwlElephantController.v1")
 @RequestMapping({"/v1/rcwlElephantController"})
-@Tenant("SRM-RCWL")
 public class RcwlElephantController extends BaseController {
     @Resource
     private RCWLTaxInvoiceLineService rcwlTaxInvoiceLineService;
