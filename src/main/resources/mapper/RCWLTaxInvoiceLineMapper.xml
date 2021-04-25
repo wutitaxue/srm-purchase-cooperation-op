@@ -9,9 +9,11 @@
         WHERE sih.invoice_num = #{invoiceNum}
     </select>
     <select id="selectOneInvoiceLine"
-            resultType="org.srm.purchasecooperation.finance.domain.entity.TaxInvoiceLine">
-        SELECT *
+            resultType="int">
+        SELECT count(*)
         FROM `sfin_tax_invoice_line` stil
         WHERE stil.invoice_header_id = #{invoiceHeaderId}
+        and stil.invoice_code = #{invoiceCode}
+        and stil.invoice_number = #{invoiceNumber}
     </select>
 </mapper>
