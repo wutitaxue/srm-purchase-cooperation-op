@@ -3,6 +3,7 @@ package org.srm.purchasecooperation.cux.pr.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.boot.imported.domain.entity.ImportData;
+import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
@@ -15,6 +16,7 @@ import java.util.List;
  *
  * @author bin.zhang06@hand-china.com 2021-03-15 12:30:00
  */
+@Service
 public interface RCWLPlanHeaderService {
     /**
      * 查询全部
