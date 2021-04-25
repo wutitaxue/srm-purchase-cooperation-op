@@ -149,6 +149,18 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
 
                 taxIncludedAmount = this.calcQuantity(sinvRcvTrxLine.getTaxIncludedAmount(), sinvRcvTrxLine.getUnitPriceBatch(), sinvRcvTrxLine.getTaxIncludedPrice(), 4, sinvRcvTrxHeaderDTO.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
                 LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:quantity[" + taxIncludedAmount + "]");
+                //质保金比例获取
+                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
+
+                if (percent == null) {
+                    percent = new BigDecimal(0);
+                }
+                //质保金金额=执行金额（含税）*质保金比例/100
+                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
+                LOGGER.info("质保金："+retentionMoney);
+                //将质保金和收货人插入行表
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint1(),tenantId);
+
                 sinvRcvTrxLine.setQuantity(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setQuantity(taxIncludedAmount);
                 netAmount = (new BigDecimal(100)).add(sinvRcvTrxLine.getTaxRate()).divide(new BigDecimal(100));
