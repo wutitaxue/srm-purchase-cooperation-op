@@ -19,8 +19,8 @@
                     	LEFT JOIN sodr_po_line l ON l.pc_num = h.pc_num
                     WHERE
                     	l.po_header_id = #{fromPoHeaderId}
-                    	AND l.po_line_id = {fromPoLineId}
-                    	AND l.tenant_id = {tenantId}
+                    	AND l.po_line_id = #{fromPoLineId}
+
     </select>
     <select id="listRcvTrxLineDetail" resultType="org.srm.purchasecooperation.cux.sinv.api.dto.RcwlSinvRcvTrxLineDTO">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
@@ -117,6 +117,10 @@
         srpd.accepter_user_name,
         srtl.category_id,
         /*新加字段质保金，收货人,入库单号，入库数量*/
+        srtl.attribute_decimal1,
+        srtl.attribute_varchar1,
+        srtl.attribute_bigint1,
+
         srtl.attribute_decimal1 as retention_money,
         srtl.attribute_bigint2,
         iu.real_name as attribute_bigint2_meaning,

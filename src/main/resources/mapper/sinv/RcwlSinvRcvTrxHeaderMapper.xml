@@ -127,6 +127,8 @@
         srpd.accepter_user_name,
         srtl.category_id,
         /*查询入库数量和入库单号*/
+        srtl.attribute_varchar1,
+        srtl.attribute_bigint1,
         srtl.attribute_varchar1 as  assetsbill_num,
         srtl.attribute_bigint1 as warehouse_quantity
         FROM
