@@ -36,5 +36,5 @@ public interface RCWLItfPrDataMapper {
      * @param prLineId
      * @return
      */
-    String selectWbsCode(@Param("wbs")String wbs, @Param("prLineId")Long prLineId);
+    String selectWbsCode(@Param("wbs") String wbs, @Param("prLineId") Long prLineId);
 }

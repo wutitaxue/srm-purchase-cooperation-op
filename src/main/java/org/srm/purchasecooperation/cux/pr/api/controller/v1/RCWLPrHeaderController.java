@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
-import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrToBpmService;
+import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrHeaderSubmitService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -53,6 +53,8 @@ public class RCWLPrHeaderController {
     private PrintHelper printHelper;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
+    @Autowired
+    private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
 
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
 
@@ -108,11 +110,11 @@ public class RCWLPrHeaderController {
     public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
         SecurityTokenHelper.validToken(prHeader, false);
 
-     //   String token = this.rcwlPrItfService.getToken();
+      // String token = this.rcwlPrItfService.getToken();
 
      // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
 
-        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
+        prHeader = this.rcwlPrHeaderSubmitService.singletonSubmit(tenantId, prHeader);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
         if (syncFlag) {
             prHeader.setOperationFlag("I");
