@@ -21,8 +21,8 @@ public interface RcwlSinvRcvTrxLineRepository {
      * 将质保金和收货人插入行表
      * @param rcvTrxLineId
      * @param retentionMoney
-     * @param attributeBigint1
+     * @param attributeBigint2
      * @param tenantId
      */
-    void insertRetentionMoneyAndReceiver(Long rcvTrxLineId, BigDecimal retentionMoney, Long attributeBigint1, Long tenantId);
+    void insertRetentionMoneyAndReceiver(Long rcvTrxLineId, BigDecimal retentionMoney, Long attributeBigint2, Long tenantId);
 }

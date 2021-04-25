@@ -129,7 +129,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         }
 
         sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
-            //新增字段
+
             SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
             BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
             LOGGER.info("收获事务行标表24730:"+sinvRcvTrxLine.toString());
@@ -159,7 +159,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                 BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
                 LOGGER.info("质保金："+retentionMoney);
                 //将质保金和收货人插入行表
-                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint1(),tenantId);
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
 
                 sinvRcvTrxLine.setQuantity(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setQuantity(taxIncludedAmount);
@@ -187,7 +187,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                 LOGGER.info("质保金："+retentionMoney);
                 LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:taxIncludedAmount[" + taxIncludedAmount + "]");
                 //将质保金和收货人插入行表
-                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint1(),tenantId);
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
 
                 sinvRcvTrxLine.setTaxIncludedAmount(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setTaxIncludedAmount(taxIncludedAmount);

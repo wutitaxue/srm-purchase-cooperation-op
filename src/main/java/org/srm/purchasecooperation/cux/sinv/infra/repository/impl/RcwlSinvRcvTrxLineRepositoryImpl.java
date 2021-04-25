@@ -41,12 +41,12 @@ public class RcwlSinvRcvTrxLineRepositoryImpl extends SinvRcvTrxLineRepositoryIm
      *
      * @param rcvTrxLineId
      * @param retentionMoney
-     * @param attributeBigint1
+     * @param attributeBigint2
      * @param tenantId
      */
     @Override
-    public void insertRetentionMoneyAndReceiver(Long rcvTrxLineId, BigDecimal retentionMoney, Long attributeBigint1, Long tenantId) {
-            this.rcwlSinvRcvTrxLineMapper.insertRetentionMoneyAndReceiver(rcvTrxLineId,retentionMoney,attributeBigint1,tenantId);
+    public void insertRetentionMoneyAndReceiver(Long rcvTrxLineId, BigDecimal retentionMoney, Long attributeBigint2, Long tenantId) {
+            this.rcwlSinvRcvTrxLineMapper.insertRetentionMoneyAndReceiver(rcvTrxLineId,retentionMoney,attributeBigint2,tenantId);
     }
 
 }

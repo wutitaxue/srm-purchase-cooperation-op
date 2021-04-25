@@ -18,9 +18,9 @@ public class RcwlSinvRcvTrxLineDTO extends SinvRcvTrxLineDTO {
     @ApiModelProperty(value = "入库数量")
     private Long warehouseQuantity;
     @ApiModelProperty(value = "收货人id")
-    private Long attributeBigint1;
+    private Long attributeBigint2;
     @ApiModelProperty(value = "收货人名字")
-    private String  attributeBigint1Meaning;
+    private String  attributeBigint2Meaning;
 
     public BigDecimal getRetentionMoney() {
         return retentionMoney;
@@ -46,21 +46,5 @@ public class RcwlSinvRcvTrxLineDTO extends SinvRcvTrxLineDTO {
         this.warehouseQuantity = warehouseQuantity;
     }
 
-    @Override
-    public Long getAttributeBigint1() {
-        return attributeBigint1;
-    }
 
-    @Override
-    public void setAttributeBigint1(Long attributeBigint1) {
-        this.attributeBigint1 = attributeBigint1;
-    }
-
-    public String getAttributeBigint1Meaning() {
-        return attributeBigint1Meaning;
-    }
-
-    public void setAttributeBigint1Meaning(String attributeBigint1Meaning) {
-        this.attributeBigint1Meaning = attributeBigint1Meaning;
-    }
 }
