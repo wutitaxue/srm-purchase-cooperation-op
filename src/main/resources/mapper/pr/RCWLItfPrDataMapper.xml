@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper">
+
+
+    <select id="selectSapCode" resultType="java.lang.String">
+        select h.attribute_varchar1 from spfm_company_basic h
+        where h.company_id = #{companyId} and h.group_id = #{tenantId}
+    </select>
+    <select id="selectBudgetAccountName" resultType="java.lang.String">
+              SELECT
+              	h.budget_account_name
+              FROM
+              	smdm_budget_account h
+              WHERE
+              	h.budget_account_num = #{budgetAccountNum}
+              	AND h.tenant_id =#{tenantId}
+
+    </select>
+    <select id="selectWbsName" resultType="java.lang.String">
+                           SELECT
+                        	l.wbs
+                        FROM
+                        	sprm_pr_line l
+                        WHERE
+                        	l.pr_line_id = #{prLineId}
+                       AND l.wbs_code = #{wbsCode}
+     </select>
+    <select id="selectWbsCode" resultType="java.lang.String">
+                       SELECT
+                        	l.wbs_code
+                        FROM
+                        	sprm_pr_line l
+                        WHERE
+                        	l.pr_line_id = #{prLineId}
+                       AND l.wbs = #{wbs}
+    </select>
+</mapper>
