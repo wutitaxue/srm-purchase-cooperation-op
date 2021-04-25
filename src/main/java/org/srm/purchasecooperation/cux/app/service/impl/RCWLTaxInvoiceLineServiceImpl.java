@@ -34,7 +34,7 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
             for (InvoiceData invoiceLine : invoiceDataList) {
                 invoiceHeader = rcwlTaxInvoiceLineRepository.selectOneInvoiceHeader(invoiceLine.getDocumentNumber());
                 log.info("====================一========================="+invoiceLine.getDocumentNumber());
-                int count = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
+                int count = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId(),invoiceHeader.getTaxInvoiceCode(),invoiceHeader.getTaxInvoiceNum());
                 if(0 == count){
                     TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
                     taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
