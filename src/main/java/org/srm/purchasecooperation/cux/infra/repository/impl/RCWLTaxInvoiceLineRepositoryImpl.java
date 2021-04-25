@@ -21,7 +21,7 @@ public class RCWLTaxInvoiceLineRepositoryImpl extends BaseRepositoryImpl<TaxInvo
     }
 
     @Override
-    public int selectOneInvoiceLine(Long invoiceHeaderId,String invoiceCode,String invoiceNumber) {
-        return rcwLTaxInvoiceLineMapper.selectOneInvoiceLine(invoiceHeaderId,invoiceCode,invoiceNumber) == 0 ? 0:1;
+    public TaxInvoiceLine selectOneInvoiceLine(Long invoiceHeaderId) {
+        return rcwLTaxInvoiceLineMapper.selectOneInvoiceLine(invoiceHeaderId);
     }
 }

@@ -6,5 +6,5 @@ import org.srm.purchasecooperation.finance.domain.entity.TaxInvoiceLine;
 public interface RCWLTaxInvoiceLineMapper {
     InvoiceHeader selectOneInvoiceHeader(String InvoiceNum);
 
-    int selectOneInvoiceLine(Long invoiceHeaderId,String invoiceCode,String invoiceNumber);
+    TaxInvoiceLine selectOneInvoiceLine(Long invoiceHeaderId);
 }

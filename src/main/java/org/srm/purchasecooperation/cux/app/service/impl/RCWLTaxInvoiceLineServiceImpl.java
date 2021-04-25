@@ -33,10 +33,9 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
             List<TaxInvoiceLine> taxInvoiceLineList = new ArrayList<>();
             for (InvoiceData invoiceLine : invoiceDataList) {
                 invoiceHeader = rcwlTaxInvoiceLineRepository.selectOneInvoiceHeader(invoiceLine.getDocumentNumber());
+                TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
                 log.info("====================一========================="+invoiceLine.getDocumentNumber());
-                int count = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId(),invoiceHeader.getTaxInvoiceCode(),invoiceHeader.getTaxInvoiceNum());
-                if(0 == count){
-                    TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
+                taxInvoiceLine = rcwlTaxInvoiceLineRepository.selectOneInvoiceLine(invoiceHeader.getInvoiceHeaderId());
                     taxInvoiceLine.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
                     taxInvoiceLine.setTenantId(tenantId);
                     if("".equals(invoiceLine.getCheckCode()) || null == invoiceLine.getCheckCode()){
@@ -54,25 +53,18 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                     taxInvoiceLine.setTaxInvoiceStatusCode(invoiceLine.getTaxIncludedStatusCode());
                     taxInvoiceLine.setValidateStatusCode(invoiceLine.getValidateStatus());
                     taxInvoiceLineList.add(taxInvoiceLine);
-                }
 //                }
             }
-            if(taxInvoiceLineList.size() != 0){
-                taxInvoiceLineService.batchAddOrUpdateTaxInvoiceLine(taxInvoiceLineList, tenantId);
-                responseData.setState("1");
-                responseData.setMessage("操作成功！");
-                responseData.setCode("200");
-            }else{
-                responseData.setState("0");
-                responseData.setMessage("操作失败，数据已存在！");
-                responseData.setCode("200");
-            }
+            taxInvoiceLineService.batchAddOrUpdateTaxInvoiceLine(taxInvoiceLineList, tenantId);
+            responseData.setState("1");
+            responseData.setMessage("操作成功！");
+            responseData.setCode("200");
             return responseData;
         } catch (Exception e) {
             e.printStackTrace();
         }
         responseData.setState("0");
-        responseData.setMessage("操作失败！");
+        responseData.setMessage("操作失败，数据已存在！");
         responseData.setCode("201");
         return responseData;
     }
