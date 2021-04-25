@@ -125,11 +125,11 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 RCWLPlanHeaderRepository.insertSelective(planHeaderParam);
                 logger.info("计划id:{}" + planHeaderParam.getPlanId());
 
-                Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(), planHeaderParam.getTenantId());
-                logger.info("prLineId:{}" + prLineId);
-                System.out.println("prLineId:{}" + prLineId);
+//                Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(), planHeaderParam.getTenantId());
+//                logger.info("prLineId:{}" + prLineId);
+//                System.out.println("prLineId:{}" + prLineId);
                 //申请行表插入编号
-                PrLine prLine = RCWLPrLineRepository.selectByPrimaryKey(prLineId);
+                PrLine prLine = RCWLPrLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
                 prLine.setAttributeBigint1(planHeaderParam.getPlanId());
                 RCWLPrLineRepository.updateOptional(prLine, PrLine.FIELD_ATTRIBUTE_BIGINT1);
             }
