@@ -5,10 +5,12 @@ import io.choerodon.core.oauth.DetailsHelper;
 import javassist.Loader;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.core.message.MessageAccessor;
+import org.hzero.lock.annotation.LockKey;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
@@ -27,11 +29,11 @@ import org.srm.boot.platform.group.feign.HwfpRemoteService;
 import org.srm.boot.platform.message.MessageHelper;
 import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.boot.saga.utils.SagaClient;
+import org.srm.purchasecooperation.accept.app.service.AcceptListLineService;
 import org.srm.purchasecooperation.cux.acp.app.service.RCWLAcpInvoceElephantInterfaceService;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
-import org.srm.purchasecooperation.finance.api.dto.EcInvoiceLinesDTO;
-import org.srm.purchasecooperation.finance.api.dto.EcInvoiceReqDTO;
-import org.srm.purchasecooperation.finance.api.dto.MessageDTO;
+import org.srm.purchasecooperation.finance.api.dto.*;
+import org.srm.purchasecooperation.finance.app.service.BillHeaderService;
 import org.srm.purchasecooperation.finance.app.service.InvoiceActionService;
 import org.srm.purchasecooperation.finance.app.service.InvoiceHeaderService;
 import org.srm.purchasecooperation.finance.app.service.TaxInvoiceLineService;
@@ -44,6 +46,7 @@ import org.srm.purchasecooperation.finance.infra.constant.FinanceConstants;
 import org.srm.purchasecooperation.finance.infra.feign.SrmRemoteService;
 import org.srm.purchasecooperation.finance.infra.utils.BusinessRulesUtil;
 import org.srm.purchasecooperation.finance.infra.utils.DateUtil;
+import org.srm.purchasecooperation.transaction.app.service.RcvTrxLineService;
 import org.srm.web.annotation.Tenant;
 
 import java.io.UnsupportedEncodingException;
@@ -51,6 +54,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.codehaus.groovy.runtime.DefaultGroovyMethods.collect;
 
 /**
  * @author lu.cheng01@hand-china.com
@@ -61,6 +66,30 @@ import java.util.stream.Collectors;
 @Service
 @Tenant(RCWLAcpConstant.TENANT_NUMBER)
 public class RCWLAcpInvoiceHeaderServiceImpl extends InvoiceHeaderServiceImpl {
+    private static final String MAIN_TABLE_ALIAS = "sab";
+    public static final String FIELD_ORGANIZATION_ID = "organizationId";
+    private static final String INVOICE_NUMBER = "SFIN.INVOICE_NUMBER";
+    private static final String FIELD_COMPANY_NAME = "companyName";
+    private static final String FIELD_INVOICE_NUM = "invoiceNum";
+    private static final String MAP_KEY_SOURCE_CODE = "sourceCode";
+    private static final String MAP_KEY_EXTERNAL_SYSTEM_CODE = "externalSystemCode";
+    private static final String FIELD_AGENT_ID_LIST = "agentIds";
+    public static final String RULE_COMPANY_CONSISTENCY = "invoice.rule.company";
+    public static final String RULE_OU_CONSISTENCY = "invoice.rule.ou";
+    public static final String RULE_SUPPLIER_CONSISTENCY = "invoice.rule.supplier";
+    public static final String RULE_INV_ORGANIZATION_CONSISTENCY = "invoice.rule.invOrganization";
+    public static final String RULE_INV_EXTERNAL_SYSTEM_CODE_CONSISTENCY = "invoice.rule.externalSystemCode";
+    public static final String RULE_PO_TYPE_CONSISTENCY = "invoice.rule.poType";
+    public static final String RULE_WBS_CONSISTENCY = "invoice.rule.wbs";
+    public static final String RULE_INVOICE_TYPE_CONSISTENCY = "invoice.rule.invoiceType";
+    private static final String VALIDATE_SOURCE_ERROR = "validate.source.error";
+    private static final String SFIN_INVOICE_APV_REJECTED = "SFIN.INVOICE_APV_REJECTED";
+    private static final String SFIN_INVOICE_RV_REJECTED = "SFIN.INVOICE_RV_REJECTED";
+    private static final String SFIN_INVOICE_RV_CONFIRMED = "SFIN.INVOICE_RV_CONFIRMED";
+    private static final String SFIN_INVOICE_RETURN = "SFIN.INVOICE_RETURN";
+    private static final String SRM_SOURCE_CODE = "SRM";
+    private static final String FIELD_INVOICE_NUM_URL = "invoiceNumUrl";
+    private static final String WORKFLOW_URL = "/hwfp/task/list";
     private static final Logger LOGGER = LoggerFactory.getLogger(Loader.class);
     @Autowired
     private InvoiceHeaderRepository invoiceHeaderRepository;
@@ -74,6 +103,8 @@ public class RCWLAcpInvoiceHeaderServiceImpl extends InvoiceHeaderServiceImpl {
     private CustomizeSettingHelper customizeSettingHelper;
     @Autowired
     private InvoiceUpdateRulesRepository invoiceUpdateRulesRepository;
+    @Autowired
+    private DeductionRelationRepository deductionRelationRepository;
     @Autowired
     private EventSender eventSender;
     @Autowired
@@ -91,9 +122,19 @@ public class RCWLAcpInvoiceHeaderServiceImpl extends InvoiceHeaderServiceImpl {
     @Autowired
     private MessageHelper messageHelper;
     @Autowired
+    private AutoBillRepository autoBillRepository;
+    @Autowired
     private HwfpRemoteService hwfpRemoteService;
     @Value("${service.purchase-approval-invoice-url}")
     private String invoiceUrl;
+    @Autowired
+    private AcceptListLineService acceptListLineService;
+    @Autowired
+    private RcvTrxLineService rcvTrxLineService;
+    @Autowired
+    private BillHeaderService billHeaderService;
+    @Autowired
+    private InvoiceActionRepository invoiceActionRepository;
 
     @Override
     @Transactional(
@@ -581,4 +622,160 @@ public class RCWLAcpInvoiceHeaderServiceImpl extends InvoiceHeaderServiceImpl {
 
     }
 
+    private void deleteInvoiceDeduction(Long invoiceHeaderId) {
+        DeductionRelation invoiceDeduction = new DeductionRelation();
+        invoiceDeduction.setRelationId(invoiceHeaderId);
+        invoiceDeduction.setRelationType("INVOICE");
+        this.deductionRelationRepository.updateBillTypeRelation(invoiceHeaderId);
+        this.deductionRelationRepository.delete(invoiceDeduction);
+    }
+
+    private void checkUpdate(Long userId, Long invoiceHeaderId) {
+        InvoiceHeader invoiceHeader = (InvoiceHeader) this.invoiceHeaderRepository.selectByPrimaryKey(invoiceHeaderId);
+        if (org.apache.commons.lang3.ObjectUtils.notEqual(userId, invoiceHeader.getCreatedBy())) {
+            throw new CommonException("invoice.operation.user.error", new Object[0]);
+        }
+    }
+
+    private List<SrmInvoiceDTO> getSrmInvoiceDTO(InvoiceHeader invoiceHeader) {
+        List<SrmInvoiceDTO> srmInvoiceDTOList = new ArrayList();
+        List<InvoiceLine> invoiceLines = invoiceHeader.getInvoiceLines();
+        if (invoiceLines.isEmpty()) {
+            return srmInvoiceDTOList;
+        } else {
+            Map<Long, List<InvoiceLine>> map = new HashMap(invoiceLines.size());
+            Iterator var5 = invoiceLines.iterator();
+
+            ArrayList srmInvoiceLineDTOS;
+            while (var5.hasNext()) {
+                InvoiceLine invoiceLine = (InvoiceLine) var5.next();
+                List<InvoiceLine> oldList = (List) map.get(invoiceLine.getEcPoLineId());
+                if (oldList == null) {
+                    srmInvoiceLineDTOS = new ArrayList();
+                    srmInvoiceLineDTOS.add(invoiceLine);
+                    map.put(invoiceLine.getEcPoLineId(), srmInvoiceLineDTOS);
+                } else {
+                    oldList.add(invoiceLine);
+                    map.put(invoiceLine.getEcPoLineId(), oldList);
+                }
+            }
+
+            var5 = map.values().iterator();
+
+            while (true) {
+                List lines;
+                do {
+                    if (!var5.hasNext()) {
+                        return srmInvoiceDTOList;
+                    }
+
+                    lines = (List) var5.next();
+                } while (lines.isEmpty());
+
+                SrmInvoiceDTO srmInvoiceDTO = new SrmInvoiceDTO();
+                srmInvoiceDTO.setInvoiceNum(invoiceHeader.getInvoiceNum());
+                srmInvoiceDTO.setInvoiceHeaderId(invoiceHeader.getInvoiceHeaderId());
+                srmInvoiceDTO.setEcPoHeaderId(((InvoiceLine) lines.get(0)).getEcPoHeaderId());
+                srmInvoiceDTO.setEcPoSubHeaderId(((InvoiceLine) lines.get(0)).getEcPoSubHeaderId());
+                srmInvoiceLineDTOS = new ArrayList(lines.size());
+                SrmInvoiceLineDTO srmInvoiceLineDTO = null;
+                Iterator var10 = lines.iterator();
+
+                while (var10.hasNext()) {
+                    InvoiceLine line = (InvoiceLine) var10.next();
+                    srmInvoiceLineDTO = new SrmInvoiceLineDTO();
+                    srmInvoiceLineDTO.setInvoiceLineId(line.getInvoiceLineId());
+                    srmInvoiceLineDTO.setEcPoLineId(line.getEcPoLineId());
+                    srmInvoiceLineDTOS.add(srmInvoiceLineDTO);
+                }
+
+                srmInvoiceDTO.setSrmInvoiceLineId(srmInvoiceLineDTOS);
+                srmInvoiceDTOList.add(srmInvoiceDTO);
+            }
+        }
+    }
+
+    /**
+     * 删除发票重写
+     *
+     * @param tenantId
+     * @param invoiceHeaderId
+     */
+    @Override
+    public void deleteInvoice(Long tenantId, @LockKey Long invoiceHeaderId) {
+        if (null == this.invoiceHeaderRepository.selectByPrimaryKey(invoiceHeaderId)) {
+            throw new CommonException("invoice.header.no.found", new Object[0]);
+        } else {
+            try {
+                rcwlAcpInvoceElephantInterfaceService.rcwlAcpInvoceElephantInterface(invoiceHeaderId);
+
+                this.deleteInvoiceDeduction(invoiceHeaderId);
+                this.checkUpdate(DetailsHelper.getUserDetails().getUserId(), invoiceHeaderId);
+                InvoiceHeader invoiceHeader = (InvoiceHeader) this.invoiceHeaderRepository.selectByPrimaryKey(invoiceHeaderId);
+                String taxCategory = invoiceHeader.getTaxCategory();
+                Assert.notNull(tenantId, "error.not_null");
+                Assert.notNull(invoiceHeaderId, "error.not_null");
+                List<InvoiceLine> invoiceLines;
+                List<AutoBill> autoBillList;
+                List<Long> longList;
+                if ("STANDARD".equals(taxCategory)) {
+                    invoiceLines = null;
+                    if ("AC".equals(invoiceHeader.getDataSource())) {
+                        invoiceLines = this.invoiceLineRepository.selectInvoiceLineWithBillAccept(tenantId, invoiceHeaderId);
+                        this.acceptListLineService.invoiceCancelWriteBackAccept(invoiceLines);
+                    } else {
+                        invoiceLines = this.invoiceLineRepository.selectInvoiceLineWithBill(tenantId, invoiceHeaderId);
+                        this.rcvTrxLineService.invoiceCancelWriteBackTrx(invoiceLines);
+                        longList = (List) invoiceLines.stream().map(InvoiceLine::getBillDetailId).collect(Collectors.toList());
+                        this.billHeaderService.updateCompleteFlagByBillDetail(longList);
+                    }
+
+                    this.invoiceLineRepository.deleteByInvoiceHeaderId(invoiceHeaderId);
+                    this.invoiceHeaderRepository.deleteByPrimaryKey(invoiceHeaderId);
+                    this.invoiceActionRepository.delete(new InvoiceAction(tenantId, invoiceHeaderId));
+                    TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
+                    taxInvoiceLine.setTenantId(tenantId);
+                    taxInvoiceLine.setInvoiceHeaderId(invoiceHeaderId);
+                    this.taxInvoiceLineRepository.delete(taxInvoiceLine);
+                    List<InvoiceHeader> invoiceHeaders = new ArrayList();
+                    invoiceHeader.setInvoiceStatus("CANCELLED");
+                    invoiceHeader.setMessageCopyTime(new Date());
+                    invoiceHeaders.add(invoiceHeader);
+                    this.sendMessageToWorkbench(invoiceHeaders, (String) null);
+                } else if ("WITH_GOODS".equals(taxCategory) || "CENTRALIZED".equals(taxCategory)) {
+                    invoiceLines = this.invoiceLineRepository.selectInvoiceLineByHeaderId(tenantId, invoiceHeaderId);
+                    autoBillList = this.autoBillRepository.selectAutoBillByInvoiceHeaderId(invoiceHeaderId);
+                    autoBillList.forEach((autoBill) -> {
+                        autoBill.setAutoBillStatus("NO_INVOICE");
+                    });
+                    this.autoBillRepository.batchUpdateOptional(autoBillList, new String[]{"autoBillStatus"});
+                    this.invoiceHeaderRepository.deleteByPrimaryKey(invoiceHeaderId);
+                    this.invoiceLineRepository.deleteByInvoiceHeaderId(invoiceHeaderId);
+                    this.invoiceActionRepository.deleteByInvoiceHeaderId(invoiceHeaderId);
+                    TaxInvoiceLine taxInvoiceLine = new TaxInvoiceLine();
+                    taxInvoiceLine.setTenantId(tenantId);
+                    taxInvoiceLine.setInvoiceHeaderId(invoiceHeaderId);
+                    this.taxInvoiceLineRepository.delete(taxInvoiceLine);
+                    invoiceHeader.setInvoiceLines(invoiceLines);
+                    List<SrmInvoiceDTO> srmInvoiceDTOs = this.getSrmInvoiceDTO(invoiceHeader);
+                    ResponseEntity<String> booleanResponseEntity = this.srmRemoteService.srmDeleteInvoice(SagaClient.getSagaKey(), tenantId, srmInvoiceDTOs);
+                    List<InvoiceHeader> invoiceHeaders = new ArrayList();
+                    invoiceHeader.setInvoiceStatus("CANCELLED");
+                    invoiceHeader.setMessageCopyTime(invoiceHeader.getLastUpdateDate());
+                    invoiceHeaders.add(invoiceHeader);
+                    this.sendMessageToWorkbench(invoiceHeaders, (String) null);
+                    if (booleanResponseEntity == null || !StringUtils.equals("true", (CharSequence) booleanResponseEntity.getBody())) {
+                        throw new CommonException("error.order.delete_invoice", new Object[0]);
+                    }
+                }
+
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
