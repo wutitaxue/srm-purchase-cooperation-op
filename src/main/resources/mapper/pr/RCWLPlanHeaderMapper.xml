@@ -251,13 +251,17 @@
             and h.tenant_id = #{tenantId}
     </select>
     <select id="checkDemandersExist" resultType="java.lang.Integer">
-        select count(1) from iam_user h where h.real_name = trim(#{demanders})
+        select count(1) from iam_user h where h.login_name = trim(#{demanders})
         and h.organization_id = #{tenantId}
     </select>
     <select id="checkAgentExist" resultType="java.lang.Integer">
-        select  count(1)  from hpfm_purchase_agent h
-       where  h.purchase_agent_name = trim(#{agent})
-       and h.tenant_id = #{tenantId}
+          SELECT
+        	count( 1 )
+        FROM
+        	hpfm_purchase_agent h
+        WHERE
+        	h.purchase_agent_code = trim(#{agent})
+		AND h.tenant_id = = #{tenantId}
     </select>
     <select id="selectCompanyName" resultType="java.lang.String">
         select h.company_name from hpfm_company  h
@@ -272,12 +276,12 @@
           and h.tenant_id = #{tenantId}
     </select>
     <select id="selectDemanders" resultType="java.lang.String">
-        select h.login_name from iam_user h where h.real_name = trim(#{demanders})
+        select h.id from iam_user h where h.login_name = trim(#{demanders})
         and h.organization_id = #{tenantId}
     </select>
     <select id="selectAgent" resultType="java.lang.String">
-        select  h.purchase_agent_code  from hpfm_purchase_agent h
-       where  h.purchase_agent_name = trim(#{agent})
+        select  h.purchase_agent_id  from hpfm_purchase_agent h
+       where  h.purchase_agent_code = trim(#{agent})
        and h.tenant_id = #{tenantId}
     </select>
 </mapper>
