@@ -57,10 +57,16 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                 }
 //                }
             }
-            taxInvoiceLineService.batchAddOrUpdateTaxInvoiceLine(taxInvoiceLineList, tenantId);
-            responseData.setState("1");
-            responseData.setMessage("操作成功！");
-            responseData.setCode("200");
+            if(taxInvoiceLineList.size() != 0){
+                taxInvoiceLineService.batchAddOrUpdateTaxInvoiceLine(taxInvoiceLineList, tenantId);
+                responseData.setState("1");
+                responseData.setMessage("操作成功！");
+                responseData.setCode("200");
+            }else{
+                responseData.setState("0");
+                responseData.setMessage("操作失败，数据已存在！");
+                responseData.setCode("200");
+            }
             return responseData;
         } catch (Exception e) {
             e.printStackTrace();
