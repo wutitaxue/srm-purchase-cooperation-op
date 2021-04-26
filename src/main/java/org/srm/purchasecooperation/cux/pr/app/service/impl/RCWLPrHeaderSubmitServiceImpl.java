@@ -175,7 +175,9 @@ public class RCWLPrHeaderSubmitServiceImpl implements RCWLPrHeaderSubmitService 
     private PoHeaderDomainService poHeaderDomainService;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PrHeaderServiceImpl.class);
+    @Autowired
+    private PrHeaderService prHeaderService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(RCWLPrHeaderSubmitServiceImpl.class);
     @Value("${service.home-url}")
     private String homeUrl;
     @Value("${service.reject-url}")
@@ -208,7 +210,7 @@ public class RCWLPrHeaderSubmitServiceImpl implements RCWLPrHeaderSubmitService 
                 e.printStackTrace();
             }
             prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
-            return ((PrHeaderService)this).submit(tenantId, prHeader);
+            return this.prHeaderService.submit(tenantId, prHeader);
         }
     }
     private void checkUnit(PrHeader prHeader) {
