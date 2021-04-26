@@ -15,6 +15,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 @JsonInclude(Include.NON_NULL)
@@ -111,19 +112,19 @@ public class PlanHeaderExportVO  {
     @ExcelColumn(title = "合同金额",order = 17)
     private BigDecimal contractAmount;
     @ExcelColumn(title = "需求计划完成时间", pattern = Constants.Pattern.DATE,order = 20)
-    private Date dePlanFinTime;
+    private LocalDate dePlanFinTime;
     @ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE,order = 21)
-    private Date deApprFinTime;
+    private LocalDate deApprFinTime;
     @ExcelColumn(title = "计划完成时间（供方入围）", pattern = Constants.Pattern.DATE,order = 22)
-    private Date planFinVenTime;
+    private LocalDate planFinVenTime;
     @ExcelColumn(title = "计划完成时间（立项审批）", pattern = Constants.Pattern.DATE,order = 24)
-    private Date planFinApprTime;
+    private LocalDate planFinApprTime;
     @ExcelColumn(title = "计划完成时间（发标时间）", pattern = Constants.Pattern.DATE,order = 26)
-    private Date planFinIssueTime;
+    private LocalDate planFinIssueTime;
     @ExcelColumn(title = "计划完成时间（定标时间）", pattern = Constants.Pattern.DATE,order = 28)
-    private Date planFinBidTime;
+    private LocalDate planFinBidTime;
     @ExcelColumn(title = "计划完成时间（合同完成时间）", pattern = Constants.Pattern.DATE,order = 30)
-    private Date planFinConTime;
+    private LocalDate planFinConTime;
     @ExcelColumn(title = "备注",order = 32)
     private String remarks;
     @LovValue(
@@ -144,15 +145,15 @@ public class PlanHeaderExportVO  {
     @ExcelColumn(title = "协议单号",order = 36)
     private String attributeVarchar5;
     @ExcelColumn(title = "实际完成时间（供方入围）", pattern = Constants.Pattern.DATE,order = 23)
-    private Date attributeDate1;
+    private LocalDate attributeDate1;
     @ExcelColumn(title = "实际完成时间（立项审批）", pattern = Constants.Pattern.DATE,order = 25)
-    private Date attributeDate2;
+    private LocalDate attributeDate2;
     @ExcelColumn(title = "实际完成时间（发标时间）", pattern = Constants.Pattern.DATE,order = 27)
-    private Date attributeDate3;
+    private LocalDate attributeDate3;
     @ExcelColumn(title = "实际完成时间（定标时间）", pattern = Constants.Pattern.DATE,order = 29)
-    private Date attributeDate4;
+    private LocalDate attributeDate4;
     @ExcelColumn(title = "实际完成时间（合同完成时间）", pattern = Constants.Pattern.DATE,order = 31)
-    private Date attributeDate5;
+    private LocalDate attributeDate5;
 //    @LovValue(
 //            lovCode = "SPFM.USER_AUTH.COMPANY",
 //            meaningField = "companyName"
@@ -416,61 +417,7 @@ public class PlanHeaderExportVO  {
         this.contractAmount = contractAmount;
     }
 
-    public Date getDePlanFinTime() {
-        return dePlanFinTime;
-    }
 
-    public void setDePlanFinTime(Date dePlanFinTime) {
-        this.dePlanFinTime = dePlanFinTime;
-    }
-
-    public Date getDeApprFinTime() {
-        return deApprFinTime;
-    }
-
-    public void setDeApprFinTime(Date deApprFinTime) {
-        this.deApprFinTime = deApprFinTime;
-    }
-
-    public Date getPlanFinVenTime() {
-        return planFinVenTime;
-    }
-
-    public void setPlanFinVenTime(Date planFinVenTime) {
-        this.planFinVenTime = planFinVenTime;
-    }
-
-    public Date getPlanFinApprTime() {
-        return planFinApprTime;
-    }
-
-    public void setPlanFinApprTime(Date planFinApprTime) {
-        this.planFinApprTime = planFinApprTime;
-    }
-
-    public Date getPlanFinIssueTime() {
-        return planFinIssueTime;
-    }
-
-    public void setPlanFinIssueTime(Date planFinIssueTime) {
-        this.planFinIssueTime = planFinIssueTime;
-    }
-
-    public Date getPlanFinBidTime() {
-        return planFinBidTime;
-    }
-
-    public void setPlanFinBidTime(Date planFinBidTime) {
-        this.planFinBidTime = planFinBidTime;
-    }
-
-    public Date getPlanFinConTime() {
-        return planFinConTime;
-    }
-
-    public void setPlanFinConTime(Date planFinConTime) {
-        this.planFinConTime = planFinConTime;
-    }
 
     public String getRemarks() {
         return remarks;
@@ -536,45 +483,6 @@ public class PlanHeaderExportVO  {
         this.attributeVarchar5 = attributeVarchar5;
     }
 
-    public Date getAttributeDate1() {
-        return attributeDate1;
-    }
-
-    public void setAttributeDate1(Date attributeDate1) {
-        this.attributeDate1 = attributeDate1;
-    }
-
-    public Date getAttributeDate2() {
-        return attributeDate2;
-    }
-
-    public void setAttributeDate2(Date attributeDate2) {
-        this.attributeDate2 = attributeDate2;
-    }
-
-    public Date getAttributeDate3() {
-        return attributeDate3;
-    }
-
-    public void setAttributeDate3(Date attributeDate3) {
-        this.attributeDate3 = attributeDate3;
-    }
-
-    public Date getAttributeDate4() {
-        return attributeDate4;
-    }
-
-    public void setAttributeDate4(Date attributeDate4) {
-        this.attributeDate4 = attributeDate4;
-    }
-
-    public Date getAttributeDate5() {
-        return attributeDate5;
-    }
-
-    public void setAttributeDate5(Date attributeDate5) {
-        this.attributeDate5 = attributeDate5;
-    }
 
     public String getCreatedByName() {
         return createdByName;
@@ -582,5 +490,133 @@ public class PlanHeaderExportVO  {
 
     public void setCreatedByName(String createdByName) {
         this.createdByName = createdByName;
+    }
+
+    public LocalDate getDePlanFinTime() {
+        return dePlanFinTime;
+    }
+
+    public void setDePlanFinTime(LocalDate dePlanFinTime) {
+        this.dePlanFinTime = dePlanFinTime;
+    }
+
+    public LocalDate getDeApprFinTime() {
+        return deApprFinTime;
+    }
+
+    public void setDeApprFinTime(LocalDate deApprFinTime) {
+        this.deApprFinTime = deApprFinTime;
+    }
+
+    public LocalDate getPlanFinVenTime() {
+        return planFinVenTime;
+    }
+
+    public void setPlanFinVenTime(LocalDate planFinVenTime) {
+        this.planFinVenTime = planFinVenTime;
+    }
+
+    public LocalDate getPlanFinApprTime() {
+        return planFinApprTime;
+    }
+
+    public void setPlanFinApprTime(LocalDate planFinApprTime) {
+        this.planFinApprTime = planFinApprTime;
+    }
+
+    public LocalDate getPlanFinIssueTime() {
+        return planFinIssueTime;
+    }
+
+    public void setPlanFinIssueTime(LocalDate planFinIssueTime) {
+        this.planFinIssueTime = planFinIssueTime;
+    }
+
+    public LocalDate getPlanFinBidTime() {
+        return planFinBidTime;
+    }
+
+    public void setPlanFinBidTime(LocalDate planFinBidTime) {
+        this.planFinBidTime = planFinBidTime;
+    }
+
+    public LocalDate getPlanFinConTime() {
+        return planFinConTime;
+    }
+
+    public void setPlanFinConTime(LocalDate planFinConTime) {
+        this.planFinConTime = planFinConTime;
+    }
+
+    public LocalDate getAttributeDate1() {
+        return attributeDate1;
+    }
+
+    public void setAttributeDate1(LocalDate attributeDate1) {
+        this.attributeDate1 = attributeDate1;
+    }
+
+    public LocalDate getAttributeDate2() {
+        return attributeDate2;
+    }
+
+    public void setAttributeDate2(LocalDate attributeDate2) {
+        this.attributeDate2 = attributeDate2;
+    }
+
+    public LocalDate getAttributeDate3() {
+        return attributeDate3;
+    }
+
+    public void setAttributeDate3(LocalDate attributeDate3) {
+        this.attributeDate3 = attributeDate3;
+    }
+
+    public LocalDate getAttributeDate4() {
+        return attributeDate4;
+    }
+
+    public void setAttributeDate4(LocalDate attributeDate4) {
+        this.attributeDate4 = attributeDate4;
+    }
+
+    public LocalDate getAttributeDate5() {
+        return attributeDate5;
+    }
+
+    public void setAttributeDate5(LocalDate attributeDate5) {
+        this.attributeDate5 = attributeDate5;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public String getProcessNum() {
+        return processNum;
+    }
+
+    public void setProcessNum(String processNum) {
+        this.processNum = processNum;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public String getApprovalStatusMeaning() {
+        return approvalStatusMeaning;
+    }
+
+    public void setApprovalStatusMeaning(String approvalStatusMeaning) {
+        this.approvalStatusMeaning = approvalStatusMeaning;
     }
 }
