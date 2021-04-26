@@ -93,7 +93,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 //状态设置为取消
                 planHeaderVo.setApprovalStatus(Constants.PlanHeaderApprovalStatus.CANCEL);
                 //更改申请行的计划编号为空
-                RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
+               //  RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
 
             });
         }
@@ -130,10 +130,10 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
 
                 //申请行表插入编号
               //  PrLine prLine = this.RCWLPrLineRepository.selectPrLineRecord(planHeaderParam.getPrLineId());
-                PrLine prLine = this.prLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
-                logger.info("查询采购申请行:{}" + prLine.toString());
-                prLine.setAttributeBigint1(planHeaderParam.getPlanId());
-                prLineRepository.updateByPrimaryKeySelective(prLine);
+//                PrLine prLine = this.prLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
+//                logger.info("查询采购申请行:{}" + prLine.toString());
+//                prLine.setAttributeBigint1(planHeaderParam.getPlanId());
+//                prLineRepository.updateByPrimaryKeySelective(prLine);
             }
 
         } else {
@@ -253,7 +253,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
      * @return
      */
     @Override
-    public PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
+    public PlanHeaderVO  submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
         List<Long> ids = planHeaderVOS.stream().map(PlanHeaderVO::getPlanId).distinct().collect(Collectors.toList());
         List<PlanHeader> planHeaderList = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
         logger.info("planHeaderList:" + planHeaderList);
