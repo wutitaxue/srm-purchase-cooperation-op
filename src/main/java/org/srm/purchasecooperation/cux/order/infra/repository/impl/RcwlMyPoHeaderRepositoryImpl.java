@@ -10,16 +10,21 @@ import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyPoHeaderMapper;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderDetailDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
+import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
 import org.srm.purchasecooperation.order.infra.repository.impl.PoHeaderRepositoryImpl;
 import org.srm.web.annotation.Tenant;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Tenant("SRM-RCWL")
 public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
 
+    @Autowired
+    private PoHeaderMapper poHeaderMapper;
     @Autowired
     private RcwlMyPoHeaderMapper rcwlMyPoHeaderMapper;
 
@@ -38,13 +43,20 @@ public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
 
         poHeader.setStatusCodes((Set)statusSet);
         return PageHelper.doPageAndSort(pageRequest, () -> {
-            return this.rcwlMyPoHeaderMapper.rcwlSelectPoHeader(poHeader);
+            Page<PoHeader> page = (Page<PoHeader>) poHeaderMapper.selectPoHeader(poHeader);
+            List<PoHeader> collect = page.stream().map(m -> {
+                m.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(m.getPoHeaderId()));
+                return m;
+            }).collect(Collectors.toList());
+            page.setContent(collect);
+            return page;
         });
     }
 
     @Override
     public PoHeaderDetailDTO selectHeaderdetail(Long tenantId, Long poHeaderId) {
-        PoHeaderDetailDTO poHeaderDetailDTO = this.rcwlMyPoHeaderMapper.rcwlSelectHeaderdetail(tenantId, poHeaderId);
+        PoHeaderDetailDTO poHeaderDetailDTO = this.poHeaderMapper.selectHeaderdetail(tenantId, poHeaderId);
+        poHeaderDetailDTO.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(poHeaderDetailDTO.getPoHeaderId()));
         PoHeaderDetailDTO poHeaderDetailDTO1 = this.selectHeaderdetailAdress(tenantId, poHeaderId);
         if (poHeaderDetailDTO1 != null) {
             if (StringUtils.isNotEmpty(poHeaderDetailDTO1.getShipToLocContName())) {
