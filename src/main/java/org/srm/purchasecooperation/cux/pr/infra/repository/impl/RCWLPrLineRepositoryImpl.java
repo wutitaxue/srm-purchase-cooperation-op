@@ -66,4 +66,15 @@ public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> impleme
     public PrHeaderVO selectByNum(String prNum, String lineNum, Long tenantId) {
         return rcwlPrLineMapper.selectByNum(prNum,lineNum,tenantId);
     }
+
+    /**
+     * 通过id查找行记录
+     *
+     * @param prLineId
+     * @return
+     */
+    @Override
+    public PrLine selectPrLineRecord(Long prLineId) {
+        return rcwlPrLineMapper.selectPrLineRecord(prLineId) ;
+    }
 }

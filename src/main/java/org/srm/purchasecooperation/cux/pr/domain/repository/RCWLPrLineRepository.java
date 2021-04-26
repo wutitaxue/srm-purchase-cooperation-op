@@ -38,4 +38,11 @@ public interface RCWLPrLineRepository extends BaseRepository<PrLine> {
      * @return
      */
     PrHeaderVO selectByNum(String prNum, String lineNum, Long tenantId);
+
+    /**
+     * 通过id查找行记录
+     * @param prLineId
+     * @return
+     */
+    PrLine selectPrLineRecord(Long prLineId);
 }

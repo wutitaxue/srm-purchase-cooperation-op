@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -163,6 +164,17 @@ public class PlanHeaderExportDTO {
 
     @ApiModelProperty(value = "公司id")
     private Long companyId;
+    @ApiModelProperty(value = "创建人名称")
+    private String createdByName ;
+    @ApiModelProperty(value = "创建时间")
+    private Date creationDate;
+    @ApiModelProperty(value = "流程编号")
+    private String processNum;
+    @ApiModelProperty(value = "审批状态code")
+    private String approvalStatus;
+    @ApiModelProperty(value = "审批状态")
+    private String approvalStatusMeaning;
+
 
     public List<Long> getPlanIds() {
         return planIds;
@@ -490,5 +502,45 @@ public class PlanHeaderExportDTO {
 
     public void setCompanyId(Long companyId) {
         this.companyId = companyId;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public String getProcessNum() {
+        return processNum;
+    }
+
+    public void setProcessNum(String processNum) {
+        this.processNum = processNum;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
+    public String getApprovalStatusMeaning() {
+        return approvalStatusMeaning;
+    }
+
+    public void setApprovalStatusMeaning(String approvalStatusMeaning) {
+        this.approvalStatusMeaning = approvalStatusMeaning;
     }
 }
