@@ -49,4 +49,11 @@ public interface RCWLPrLineRepository extends BaseRepository<PrLine> {
      * @return List<PrLine>
      */
     List<org.srm.purchasecooperation.pr.domain.entity.PrLine> updateSourcePrLine(List<org.srm.purchasecooperation.pr.domain.entity.PrLine> prLines);
+
+    /**
+     * 通过id查找行记录
+     * @param prLineId
+     * @return
+     */
+    PrLine selectPrLineRecord(Long prLineId);
 }

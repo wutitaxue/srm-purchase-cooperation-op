@@ -353,4 +353,6 @@
          from sprm_pr_header h left join sprm_pr_line l on h.pr_header_id = l.pr_header_id
         where  h.pr_num = trim(#{prNum}) and l.line_num = trim(#{lineNum}) and h.tenant_id = #{tenantId}
     </select>
+    <select id="selectPrLineRecord" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.PrLine">
+    </select>
 </mapper>

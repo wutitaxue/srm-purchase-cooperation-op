@@ -29,4 +29,5 @@ public interface RCWLPrLineMapper extends BaseMapper<PrLine> {
 
     PrHeaderVO selectByNum(@Param("prNum") String prNum, @Param("lineNum") String lineNum, @Param("tenantId") Long tenantId);
 
+    PrLine selectPrLineRecord(@Param("prLineId")Long prLineId);
 }

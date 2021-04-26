@@ -18,12 +18,13 @@ import org.springframework.util.Assert;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPlanHeaderService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
-import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPlanHeaderRepository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
+import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,8 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     private CodeRuleBuilder codeRuleBuilder;
     @Autowired
     private ProfileClient profileClient;
+    @Autowired
+    private PrLineRepository prLineRepository;
 
     /**
      * 查询
@@ -90,7 +93,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 //状态设置为取消
                 planHeaderVo.setApprovalStatus(Constants.PlanHeaderApprovalStatus.CANCEL);
                 //更改申请行的计划编号为空
-                RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
+               //  RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
 
             });
         }
@@ -125,13 +128,12 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 RCWLPlanHeaderRepository.insertSelective(planHeaderParam);
                 logger.info("计划id:{}" + planHeaderParam.getPlanId());
 
-//                Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(), planHeaderParam.getTenantId());
-//                logger.info("prLineId:{}" + prLineId);
-//                System.out.println("prLineId:{}" + prLineId);
                 //申请行表插入编号
-                PrLine prLine = RCWLPrLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
-                prLine.setAttributeBigint1(planHeaderParam.getPlanId());
-                RCWLPrLineRepository.updateOptional(prLine, PrLine.FIELD_ATTRIBUTE_BIGINT1);
+              //  PrLine prLine = this.RCWLPrLineRepository.selectPrLineRecord(planHeaderParam.getPrLineId());
+//                PrLine prLine = this.prLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
+//                logger.info("查询采购申请行:{}" + prLine.toString());
+//                prLine.setAttributeBigint1(planHeaderParam.getPlanId());
+//                prLineRepository.updateByPrimaryKeySelective(prLine);
             }
 
         } else {
@@ -251,7 +253,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
      * @return
      */
     @Override
-    public PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
+    public PlanHeaderVO  submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
         List<Long> ids = planHeaderVOS.stream().map(PlanHeaderVO::getPlanId).distinct().collect(Collectors.toList());
         List<PlanHeader> planHeaderList = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
         logger.info("planHeaderList:" + planHeaderList);

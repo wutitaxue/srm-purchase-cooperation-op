@@ -118,7 +118,7 @@
         left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
         left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
         left join  iam_user iur on iur.organization_id = h.tenant_id and iur.id = h.created_by
-        left join sprm_pr_line l on h.plan_id = l.attribute_bigint1
+        left join sprm_pr_line l on h.pr_line_id = l.pr_line_id
 <where>
     <if test="planId != null">
         and h.plan_id = #{planId}
@@ -161,6 +161,9 @@
         <bind name="createdByName" value="'%'+createdByName+'%'"/>
         and iur.real_name like #{createdByName}
     </if>
+    <if test="approvalStatus != null">
+        and h.approval_status = #{approvalStatus}
+    </if>
 </where>
     </select>
     <select id="selectPrHeaderExport"  parameterType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO"
@@ -187,7 +190,7 @@
         left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
         left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
         left join  iam_user iur on iur.organization_id = h.tenant_id and iur.id = h.created_by
-        left join sprm_pr_line l on h.plan_id = l.attribute_bigint1
+        left join sprm_pr_line l on h.pr_line_id = l.pr_line_id
         WHERE h.tenant_id = #{tenantId}
       <choose>
       <when test="planIds != null and planIds.size gt 0">
@@ -227,6 +230,13 @@
           </if>
           <if test="creationDateTo != null">
               AND h.creation_date &lt; #{creationDateTo}
+          </if>
+          <if test="createdByName != null">
+              <bind name="createdByName" value="'%'+createdByName+'%'"/>
+              and iur.real_name like #{createdByName}
+          </if>
+          <if test="approvalStatus != null">
+              and h.approval_status = #{approvalStatus}
           </if>
       </otherwise>
 
