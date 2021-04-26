@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoHeaderMapper">
+<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyPoHeaderMapper">
     <select id="rcwlSelectHeaderdetail" resultType="org.srm.purchasecooperation.order.api.dto.PoHeaderDetailDTO">
         <bind name="userDetails" value="@io.choerodon.core.oauth.DetailsHelper@getUserDetails()"/>
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
