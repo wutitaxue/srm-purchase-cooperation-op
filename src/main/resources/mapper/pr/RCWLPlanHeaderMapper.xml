@@ -161,6 +161,9 @@
         <bind name="createdByName" value="'%'+createdByName+'%'"/>
         and iur.real_name like #{createdByName}
     </if>
+    <if test="approvalStatus != null">
+        and h.approval_status = #{approvalStatus}
+    </if>
 </where>
     </select>
     <select id="selectPrHeaderExport"  parameterType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO"
@@ -227,6 +230,13 @@
           </if>
           <if test="creationDateTo != null">
               AND h.creation_date &lt; #{creationDateTo}
+          </if>
+          <if test="createdByName != null">
+              <bind name="createdByName" value="'%'+createdByName+'%'"/>
+              and iur.real_name like #{createdByName}
+          </if>
+          <if test="approvalStatus != null">
+              and h.approval_status = #{approvalStatus}
           </if>
       </otherwise>
 

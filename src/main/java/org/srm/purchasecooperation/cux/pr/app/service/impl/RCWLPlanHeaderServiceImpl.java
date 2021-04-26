@@ -18,12 +18,13 @@ import org.springframework.util.Assert;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPlanHeaderService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
-import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPlanHeaderRepository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
+import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,8 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     private CodeRuleBuilder codeRuleBuilder;
     @Autowired
     private ProfileClient profileClient;
+    @Autowired
+    private PrLineRepository prLineRepository;
 
     /**
      * 查询
@@ -125,13 +128,12 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 RCWLPlanHeaderRepository.insertSelective(planHeaderParam);
                 logger.info("计划id:{}" + planHeaderParam.getPlanId());
 
-//                Long prLineId = RCWLPrLineRepository.selectPrLineId(planHeaderParam.getPrHeaderId(), planHeaderParam.getLineNum(), planHeaderParam.getTenantId());
-//                logger.info("prLineId:{}" + prLineId);
-//                System.out.println("prLineId:{}" + prLineId);
                 //申请行表插入编号
-                PrLine prLine = RCWLPrLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
+              //  PrLine prLine = this.RCWLPrLineRepository.selectPrLineRecord(planHeaderParam.getPrLineId());
+                PrLine prLine = this.prLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
+                logger.info("查询采购申请行:{}" + prLine.toString());
                 prLine.setAttributeBigint1(planHeaderParam.getPlanId());
-                RCWLPrLineRepository.updateOptional(prLine, PrLine.FIELD_ATTRIBUTE_BIGINT1);
+                prLineRepository.updateByPrimaryKeySelective(prLine);
             }
 
         } else {

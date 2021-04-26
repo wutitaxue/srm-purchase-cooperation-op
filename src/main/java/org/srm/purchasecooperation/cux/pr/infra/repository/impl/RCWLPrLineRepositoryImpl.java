@@ -82,4 +82,15 @@ public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> impleme
         });
         return prLines;
     }
+
+    /**
+     * 通过id查找行记录
+     *
+     * @param prLineId
+     * @return
+     */
+    @Override
+    public PrLine selectPrLineRecord(Long prLineId) {
+        return rcwlPrLineMapper.selectPrLineRecord(prLineId) ;
+    }
 }
