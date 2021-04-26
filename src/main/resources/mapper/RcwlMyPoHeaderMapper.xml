@@ -189,4 +189,441 @@
             and (sph.supplier_tenant_id=#{userDetails.organizationId} OR hcc.tenant_id=#{userDetails.organizationId})
         </if>
     </select>
+
+    <select id = "rcwlSelectPoHeader" resultType = "org.srm.purchasecooperation.order.domain.entity.PoHeader">
+        <bind name="userDetails" value="@io.choerodon.core.oauth.DetailsHelper@getUserDetails()"/>
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        ph.delivery_sync_status,
+        ph.delivery_sync_response_msg,
+        ph.delivery_sync_date,
+        (
+        SELECT
+        sum(
+        CASE
+
+        WHEN #{nowDate} > spllinfo.promise_delivery_date
+        AND phs.confirmed_flag = 1
+        AND phs.cancelled_flag = 0
+        AND phs.closed_flag = 0
+        AND phs.publish_cancel_flag = 0 THEN
+        ( CASE spllinfo.quantity WHEN spllinfo.net_received_quantity THEN 0 ELSE 1 END ) ELSE 0
+        END
+        ) AS receive_status
+        FROM
+        sodr_po_line_location spllinfo
+        LEFT JOIN sodr_po_header phs ON spllinfo.po_header_id = phs.po_header_id
+        WHERE
+        phs.po_header_id = ph.po_header_id
+        group by phs.po_header_id
+        ) beyond_quantity,
+        ph.po_header_id,
+        ph.tenant_id,
+        ph.po_num,
+        ph.version_num,
+        ph.version_date,
+        ph.po_type_id,
+        ph.release_num,
+        ph.display_po_num,
+        ph.supplier_company_id,
+        ph.supplier_company_name,
+        ph.po_source_platform,
+        ph.create_sync_date,
+        ph.create_sync_response_msg,
+        ph.create_sync_status,
+        ph.change_sync_status,
+        hsc.company_num AS supplier_company_code,
+        com.company_num company_code,
+        ou.ou_code,
+        po.organization_code purchase_org_code,
+        NULL supplier_category_id,
+        NULL supplier_category_code ,
+        NULL supplier_category_name,
+        pa.purchase_agent_name AS agent_name,
+        (
+        CASE
+        WHEN ph.supplier_id IS NOT NULL AND ph.supplier_code IS NOT NULL THEN ph.supplier_code
+        WHEN ph.supplier_id IS NOT NULL AND ph.supplier_code IS NULL THEN es.supplier_num
+        ELSE hsc.company_num
+        END
+        ) AS supplier_code,
+        (
+        CASE
+        WHEN ph.supplier_id IS NOT NULL AND ph.supplier_name IS NOT NULL THEN ph.supplier_name
+        WHEN ph.supplier_id IS NOT NULL AND ph.supplier_name IS NULL THEN es.supplier_name
+        WHEN ph.supplier_id IS NULL AND ph.supplier_company_name IS NULL THEN hsc.company_name
+        ELSE ph.supplier_company_name
+        END
+        ) AS supplier_name,
+        ess.supplier_site_code AS supplier_site_code,
+        ess.supplier_site_name AS supplier_site_name,
+        ph.ship_to_location_code,
+        ph.ship_to_location_address,
+        ph.bill_to_location_code,
+        ph.bill_to_location_address,
+        pt.term_name AS terms_name,
+        (
+        CASE
+        WHEN ph.company_name IS NULL THEN com.company_name
+        ELSE ph.company_name
+        END
+        )AS company_name,
+        ou.ou_name AS org_name,
+        po.organization_name AS pur_organization_name,
+        ph.submitted_by,
+        ph.submitted_date,
+        ph.released_flag,
+        ph.release_type_code,
+        ph.released_by,
+        ph.released_date,
+        ph.confirmed_flag,
+        ph.confirm_type_code,
+        ph.confirmed_by,
+        ph.confirmed_date,
+        ph.urgent_flag,
+        ph.urgent_date,
+        ph.feedback_date,
+        ph.confirm_update_flag,
+        ph.frozen_flag,
+        ph.erp_approval_flag,
+        ph.erp_status,
+        ph.status_code,
+        ph.source_code,
+        ph.external_system_code,
+        ph.currency_code,
+        ph.domestic_currency_code,
+        ph.amount,
+        ph.tax_include_amount,
+        ph.remark,
+        ph.erp_creation_date,
+        ph.creation_date,
+        ph.created_by,
+        ph.object_version_number,
+        sot.order_type_code AS po_type_code,
+        sot.return_order_flag,
+        sott.order_type_name AS po_type_code_meaning,
+        ph.cancelled_flag,
+        ph.closed_flag,
+        ph.publish_cancel_flag,
+        ph.refused_flag,
+        ph.incorrect_msg,
+        ph.incorrect_flag,
+        ph.approved_sync_status,
+        ph.approved_sync_response_msg,
+        ph.approved_sync_date,
+        ph.attachment_uuid,
+        ph.supplier_attachment_uuid,
+        ph.erp_contract_num,
+        sprhcom.mall_parent_order_num,
+        usr.real_name,
+        ph.original_po_header_id,
+        ph.company_id,
+        com.registered_country_id,
+        sph2.display_po_num AS original_po_num,
+        (SELECT
+        max( spm.po_message_num ) -
+        CASE
+        WHEN ( SELECT COUNT(0) FROM sodr_po_msg_read_record spmrr WHERE spmrr.po_header_id = ph.po_header_id
+        AND spmrr.user_id = #{userDetails.userId}
+        AND spmrr.tenant_id = #{userDetails.tenantId}  ) = 0 THEN
+        0 ELSE (SELECT
+        spmrr.read_record_index
+        FROM
+        sodr_po_msg_read_record spmrr
+        WHERE
+        spmrr.po_header_id = ph.po_header_id
+        AND spmrr.user_id = #{userDetails.userId} ) END
+        FROM
+        sodr_po_message spm
+        WHERE
+        spm.po_header_id = ph.po_header_id) AS unread_count,
+        (SELECT
+        case when
+        ( SELECT sum( t.net_received_quantity ) FROM sodr_po_line_location t WHERE t.po_header_id = sph3.po_header_id ) > 0 and not EXISTS (select 1 from sslm_kpi_eval_header skeh where skeh.attribute_varchar2 = sph3.po_num) THEN
+        1 ELSE 0
+        END
+        FROM
+        sodr_po_header sph3
+        WHERE
+        sph3.po_header_id = ph.po_header_id) attribute_varchar40
+        FROM
+        sodr_po_header ph
+        LEFT JOIN sodr_order_type sot on ph.po_type_id = sot.order_type_id
+        LEFT JOIN sodr_order_type_tl sott ON sott.order_type_id = sot.order_type_id AND sott.lang = #{lang}
+        LEFT JOIN smdm_payment_term pt on ph.terms_id = pt.term_id
+        LEFT JOIN sslm_external_supplier es on ph.supplier_id = es.supplier_id
+        LEFT JOIN hpfm_company hsesc ON hsesc.company_id = es.link_id
+        LEFT JOIN hpfm_purchase_agent pa on ph.agent_id = pa.purchase_agent_id
+        LEFT JOIN hpfm_operation_unit ou on ph.ou_id = ou.ou_id
+        LEFT JOIN hpfm_purchase_organization po on ph.purchase_org_id = po.purchase_org_id
+        LEFT JOIN sslm_ext_supplier_site ess on ph.supplier_site_id = ess.supplier_site_id
+        LEFT JOIN hpfm_company com on ph.company_id = com.company_id
+        LEFT JOIN spfm_partner sp ON sp.partner_company_id=ph.supplier_company_id AND sp.company_id=ph.company_id AND sp.tenant_id = ph.tenant_id AND sp.partner_tenant_id = ph.supplier_tenant_id
+        LEFT JOIN sslm_supplier_basic hsc ON sp.supplier_basic_id = hsc.supplier_basic_id
+        LEFT JOIN sprm_pr_header sprhcom ON sprhcom.pr_header_id=ph.pr_header_id
+        LEFT JOIN iam_user usr on ph.created_by = usr.id
+        LEFT JOIN sodr_po_header sph2 ON ph.original_po_header_id = sph2.po_header_id
+        WHERE
+        1 = 1
+        <include refid="rcwlSelectPoHeaderCondition"/>
+    </select>
+
+
+    <sql id="rcwlSelectPoHeaderCondition">
+    <if test = "poNum != null">
+        <bind name = "poNumLike" value = "'%'+poNum +'%'"></bind>
+        AND ph.po_num LIKE #{poNumLike}
+    </if>
+    <if test = "mallParentOrderNum != null">
+        <bind name = "mallParentOrderNumLike" value = "'%'+mallParentOrderNum +'%'"></bind>
+        AND sprhcom.mall_parent_order_num LIKE #{mallParentOrderNumLike}
+    </if>
+
+    <if test = "companyId != null">
+        AND ph.company_id = #{companyId}
+    </if>
+    <if test = "agentName != null and agentName != '' and agentIds == null">
+        <bind name = "agentNameLike" value = "'%'+ agentName +'%'"></bind>
+        AND pa.purchase_agent_name like #{agentNameLike}
+    </if>
+    <if test="agentIds != null and agentIds != '' ">
+        and ph.agent_id in (
+        <foreach collection="agentIds.split(',') " separator="," item="agentIdItem">
+            #{agentIdItem}
+        </foreach>)
+    </if>
+    <if test="purchaseOrgIds != null and purchaseOrgIds != ''">
+        and ph.purchase_org_id in (
+        <foreach collection="purchaseOrgIds.split(',') " separator="," item="purchaseOrgIdItem">
+            #{purchaseOrgIdItem}
+        </foreach>)
+    </if>
+    <if test = "poTypeId != null">
+        AND ph.po_type_id = #{poTypeId}
+    </if>
+    <if test = "supplierId != null">
+        and es.supplier_id = #{supplierId}
+    </if>
+    <if test="supplierIds != null and supplierIds.size() > 0">
+        and es.supplier_id IN
+        <foreach collection="supplierIds" open="(" close=")" separator="," item="supplierId">
+            #{supplierId}
+        </foreach>
+    </if>
+    <if test = "agentId != null">
+        AND ph.agent_id = #{agentId}
+    </if>
+    <if test = "erpStatus != null and erpStatus != ''">
+        AND ph.erp_status = #{erpStatus}
+    </if>
+    <if test = "confirmedFlag != null ">
+        AND ph.confirmed_flag = #{confirmedFlag}
+    </if>
+    <if test = "releaseNum != null">
+        <bind name = "releaseNumLike" value = "'%'+ releaseNum +'%'"></bind>
+        AND ph.release_num LIKE #{releaseNumLike}
+    </if>
+    <if test = "supplierSiteId != null">
+        AND ph.supplier_site_id = #{supplierSiteId}
+    </if>
+    <if test = "urgentFlag != null">
+        AND ph.urgent_flag = #{urgentFlag}
+    </if>
+    <if test = "submitDateStart != null">
+        AND ph.submitted_date &gt;= #{submitDateStart}
+    </if>
+    <if test = "submitDateEnd != null">
+        AND ph.submitted_date &lt; #{submitDateStart}
+    </if>
+    <if test = "releaseDateStart != null">
+        AND ph.released_date &gt;= #{releaseDateStart}
+    </if>
+    <if test = "releaseDateEnd != null">
+        AND ph.released_date &lt; #{releaseDateEnd}
+    </if>
+    <if test = "confirmDateStart != null">
+        AND ph.confirmed_date &gt;= #{confirmDateStart}
+    </if>
+    <if test = "confirmDateEnd != null">
+        AND ph.confirmed_date &lt; #{confirmDateEnd}
+    </if>
+    <if test = "creationDateStart != null">
+        AND ph.creation_date &gt;= #{creationDateStart}
+    </if>
+    <if test = "creationDateEnd != null">
+        AND ph.creation_date &lt; #{creationDateEnd}
+    </if>
+    <if test = "feedbackDateStart != null">
+        and ph.feedback_date &gt;= #{feedbackDateStart}
+    </if>
+    <if test = "feedbackDateEnd != null">
+        and ph.feedback_date &lt; #{feedbackDateEnd}
+    </if>
+    <if test = "tenantId != null">
+        AND ph.tenant_id = #{tenantId}
+    </if>
+    <if test = "releasedFlag != null">
+        AND ph.released_flag = #{releasedFlag}
+    </if>
+    <if test = "remark != null and remark != ''">
+        <bind name = "remarkLike" value = "'%' + remark + '%'"></bind>
+        AND ph.remark LIKE #{remarkLike}
+    </if>
+    <if test = "submittedBy != null and submittedBy != ''">
+        <bind name = "submittedByLike" value = "'%'+ submittedBy + '%'"></bind>
+        AND ph.submitted_by LIKE #{submittedByLike}
+    </if>
+    <if test = "releasedBy != null and releasedBy != ''">
+        <bind name = "releasedByLike" value = "'%'+ releasedBy  + '%'"></bind>
+        AND ph.released_by LIKE #{releasedByLike}
+    </if>
+    <if test = "confirmedBy != null and confirmedBy != ''">
+        <bind name = "confirmedByLike" value = "'%'+  confirmedBy + '%'"></bind>
+        AND ph.confirmed_by LIKE #{confirmedByLike}
+    </if>
+    <if test = "companyId != null">
+        AND ph.company_id = #{companyId}
+    </if>
+    <if test = "poHeaderId != null">
+        AND ph.po_header_id = #{poHeaderId}
+    </if>
+    <if test = "billToLocationAddress != null and billToLocationAddress != ''">
+        <bind name = "billToLocationNameLike" value = "'%'+  billToLocationAddress + '%'"></bind>
+        AND ph.bill_to_location_address LIKE #{billToLocationNameLike}
+    </if>
+    <if test = "billToLocationCode != null and billToLocationCode != ''">
+        <bind name = "billToLocationCodeLike" value = "'%'+  billToLocationCode + '%'"></bind>
+        AND ph.bill_to_location_code LIKE #{billToLocationCodeLike}
+    </if>
+    <if test = "shipToLocationCode != null and shipToLocationCode != ''">
+        <bind name = "shipToLocationCodeLike" value = "'%'+  shipToLocationCode + '%'"></bind>
+        AND ph.ship_to_location_code LIKE #{shipToLocationCodeLike}
+    </if>
+    <if test = "shipToLocationAddress != null and shipToLocationAddress != ''">
+        <bind name = "shipToLocationNameLike" value = "'%'+  shipToLocationAddress + '%'"></bind>
+        AND ph.ship_to_location_address LIKE #{shipToLocationNameLike}
+    </if>
+    <if test = "sourceCode != null and sourceCode != ''">
+        <bind name = "sourceCodeLike" value = "'%' + sourceCode + '%'"></bind>
+        AND ph.source_code LIKE #{sourceCodeLike}
+    </if>
+    <if test = "supplierCompanyId != null">
+        AND ph.supplier_company_id = #{supplierCompanyId}
+    </if>
+    <if test="supplierCompanyIds != null and supplierCompanyIds.size() > 0">
+        AND ph.supplier_company_id IN
+        <foreach collection="supplierCompanyIds" open="(" close=")" separator="," item="supplierCompanyId">
+            #{supplierCompanyId}
+        </foreach>
+    </if>
+    <if test = "poSourcePlatform != null">
+        AND ph.po_source_platform = #{poSourcePlatform}
+    </if>
+    <if test = "userId != null">
+        AND usr.id = #{userId}
+    </if>
+    <if test = "agentId != null">
+        and ph.agent_id = #{agentId}
+    </if>
+    <if test = "refusedFlag != null">
+        and ph.refused_flag = #{refusedFlag}
+    </if>
+    <if test = "confirmUpdateFlag != null">
+        AND ph.confirm_update_flag = #{confirmUpdateFlag}
+    </if>
+    <if test = "supplierName != null and supplierName != ''">
+        AND ph.supplier_name = #{supplierName}
+    </if>
+    <if test = "supplierTenantId != null ">
+        <bind name="userDetails" value="@io.choerodon.core.oauth.DetailsHelper@getUserDetails()"/>
+        AND (
+        CASE
+        WHEN ph.supplier_tenant_id IS NULL
+        THEN hsesc.tenant_id
+        ELSE ph.supplier_tenant_id
+        END
+        ) = #{userDetails.organizationId}
+    </if>
+    <if test = "displayPoNum != null and displayPoNum != ''">
+        <bind name = "displayPoNumLike" value = "'%'+  displayPoNum + '%'"></bind>
+        AND (ph.display_po_num like #{displayPoNumLike} OR ph.po_num like #{displayPoNumLike})
+    </if>
+    <if test = "ouId != null">
+        AND ph.ou_id = #{ouId}
+    </if>
+    <if test = "purchaseOrgId != null">
+        AND ph.purchase_org_id = #{purchaseOrgId}
+    </if>
+    <if test = "releaseFlag != null">
+        AND ph.release_flag = #{releaseFlag}
+    </if>
+    <if test = "snapshotFlag != null">
+        AND ph.snapshot_flag = #{snapshotFlag}
+    </if>
+    <if test = "erpCreationDateStart != null">
+        AND ph.erp_creation_date &gt;= #{erpCreationDateStart}
+    </if>
+    <if test = "erpCreationDateEnd != null">
+        AND ph.erp_creation_date &lt; #{erpCreationDateEnd }
+    </if>
+    <if test = "creationDateStart != null">
+        AND ph.creation_date &gt;= #{creationDateStart}
+    </if>
+    <if test = "creationDateEnd != null">
+        AND ph.creation_date &lt; #{creationDateEnd }
+    </if>
+    <if test = "publishCancelFlag != null">
+        AND ph.publish_cancel_flag = #{publishCancelFlag}
+    </if>
+    <if test = "cancelledFlag != null">
+        AND ph.cancelled_flag = #{cancelledFlag}
+    </if>
+    <!--        <if test = "statusCode != null and statusCode != ''">-->
+    <!--            AND ph.status_code = #{statusCode}-->
+    <!--        </if>-->
+    <if test = "beyondFlag != null">
+        <if test = "beyondFlag == 0">
+            AND (
+            SELECT
+            sum(
+            CASE
+
+            WHEN #{nowDate} > spllinfo.promise_delivery_date
+            AND phs.confirmed_flag = 1
+            AND phs.cancelled_flag = 0
+            AND phs.closed_flag = 0
+            AND phs.publish_cancel_flag = 0 THEN
+            ( CASE spllinfo.quantity WHEN spllinfo.net_received_quantity THEN 0 ELSE 1 END ) ELSE 0
+            END
+            ) AS receive_status
+            FROM
+            sodr_po_header phs
+            LEFT JOIN sodr_po_line_location spllinfo ON spllinfo.po_header_id = phs.po_header_id
+            WHERE
+            phs.po_header_id = ph.po_header_id
+            ) = #{beyondFlag}
+        </if>
+        <if test = "beyondFlag == 1">
+            AND (
+            SELECT
+            sum(
+            CASE
+
+            WHEN #{nowDate} > spllinfo.promise_delivery_date
+            AND phs.confirmed_flag = 1
+            AND phs.cancelled_flag = 0
+            AND phs.closed_flag = 0
+            AND phs.publish_cancel_flag = 0 THEN
+            ( CASE spllinfo.quantity WHEN spllinfo.net_received_quantity THEN 0 ELSE 1 END ) ELSE 0
+            END
+            ) AS receive_status
+            FROM
+            sodr_po_header phs
+            LEFT JOIN sodr_po_line_location spllinfo ON spllinfo.po_header_id = phs.po_header_id
+            WHERE
+            phs.po_header_id = ph.po_header_id
+            ) >= #{beyondFlag}
+        </if>
+    </if>
+    </sql>
 </mapper>
