@@ -116,7 +116,7 @@ public class RCWLPrHeaderController {
 
         // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
 
-        prHeader = this.rcwlPrHeaderSubmitService.singletonSubmit(tenantId, prHeader);
+        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
         if (syncFlag) {
             prHeader.setOperationFlag("I");

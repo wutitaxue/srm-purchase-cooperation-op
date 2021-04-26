@@ -1,11 +1,13 @@
 package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
+import org.hzero.boot.customize.service.CustomizeClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
@@ -23,10 +25,12 @@ import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
+import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
+import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.pr.app.service.impl.PrHeaderServiceImpl;
 import org.srm.purchasecooperation.pr.domain.entity.PrAction;
@@ -54,8 +58,8 @@ import java.util.stream.Collectors;
  */
 @Tenant
 @Service
-public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements RcwlPrheaderService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPrHeaderServiceImpl.class);
+public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements RcwlPrheaderService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RCWLPrHeaderServiceImpl.class);
     @Autowired
     private PrHeaderRepository prHeaderRepository;
     @Autowired
@@ -72,7 +76,10 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private PrChangeConfigRepository prChangeConfigRepository;
     @Autowired
     private PrActionRepository prActionRepository;
-
+    @Autowired
+    private RCWLPrItfService rcwlPrItfService;
+    @Autowired
+    private CustomizeClient customizeClient;
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
     private static final String LOG_MSG_SPUC_PR_HEADER_UPDATE_AMOUNT = "============SPUC_PR_HEADER_UPDATE_AMOUNT-TaskNotExistException=============={}";
@@ -152,6 +159,28 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             rollbackFor = {Exception.class}
     )
     @SagaStart
+    public PrHeader singletonSubmit(Long tenantId, PrHeader prHeader) {
+        this.checkUnit(prHeader);
+        if (CollectionUtils.isEmpty(prHeader.getPrLineList())) {
+            return prHeader;
+        } else {
+            prHeader = this.updatePrHeader(prHeader);
+            //保存完之后触发接口
+            try {
+                this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
+            return ((PrHeaderService)this).submit(tenantId, prHeader);
+        }
+    }
+
+    @Override
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @SagaStart
     public PrHeader changeSubmit(Long tenantId, PrHeader prHeader, Set<String> approveSet) {
         LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit start -------------");
         this.validatePrCancel(prHeader);
@@ -218,11 +247,11 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private void deleteOrInsertLines(Map<Long, PrLine> beforePrLineMap, PrHeader prHeader) {
         Set<Long> ids = new TreeSet<>();
         List<PrLine> prDeleteLines = new ArrayList<>();
-         prHeader.getPrLineList().forEach(line->{
-             if(beforePrLineMap.keySet().contains(line.getPrLineId())){
-                 ids.add(line.getPrLineId());
-             }
-         });
+        prHeader.getPrLineList().forEach(line->{
+            if(beforePrLineMap.keySet().contains(line.getPrLineId())){
+                ids.add(line.getPrLineId());
+            }
+        });
         beforePrLineMap.entrySet().forEach(e->{
             if(!ids.contains(e.getValue().getPrLineId())){
                 prDeleteLines.add(e.getValue());
@@ -236,9 +265,9 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         for (PrLine line : prLineList) {
             lineAmount = lineAmount.add(line.getTaxIncludedLineAmount());
         }
-       if(lineAmount.compareTo(amount)>=1){
-           throw new CommonException("error.lineAmount.lessThan.amount");
-       }
+        if(lineAmount.compareTo(amount)>=1){
+            throw new CommonException("error.lineAmount.lessThan.amount");
+        }
 
     }
 
