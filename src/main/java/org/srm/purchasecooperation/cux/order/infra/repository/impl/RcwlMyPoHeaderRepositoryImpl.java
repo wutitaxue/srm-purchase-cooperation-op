@@ -17,6 +17,7 @@ import org.srm.web.annotation.Tenant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Tenant("SRM-RCWL")
@@ -41,12 +42,14 @@ public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
         }
 
         poHeader.setStatusCodes((Set)statusSet);
-        List<PoHeader> poHeaders = poHeaderMapper.selectPoHeader(poHeader);
-        for (PoHeader poHd : poHeaders) {
-            poHd.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(poHd.getPoHeaderId()));
-        }
         return PageHelper.doPageAndSort(pageRequest, () -> {
-            return poHeaders;
+            Page<PoHeader> page = (Page<PoHeader>) poHeaderMapper.selectPoHeader(poHeader);
+            List<PoHeader> collect = page.stream().map(m -> {
+                m.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(m.getPoHeaderId()));
+                return m;
+            }).collect(Collectors.toList());
+            page.setContent(collect);
+            return page;
         });
     }
 
