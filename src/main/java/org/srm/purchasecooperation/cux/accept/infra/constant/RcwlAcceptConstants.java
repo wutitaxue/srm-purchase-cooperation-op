@@ -1,10 +1,10 @@
 package org.srm.purchasecooperation.cux.accept.infra.constant;
 
-public class Constants {
+public class RcwlAcceptConstants {
 
     public static String order = "ORDER";
 
-    private Constants() {
+    private RcwlAcceptConstants() {
     }
 
     /**

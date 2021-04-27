@@ -11,13 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
-import org.srm.purchasecooperation.cux.transaction.infra.constant.Constants;
+import org.srm.purchasecooperation.cux.transaction.infra.constant.RcwlTrcConstants;
+import org.srm.web.annotation.Tenant;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Tenant("SRM-RCWL")
 public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
 
     @Autowired
@@ -42,7 +44,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
             BeanUtils.copyProperties(rcwlOrderBillDTO, requestMap);
             RequestPayloadDTO requestPayloadDTO = new RequestPayloadDTO();
             requestPayloadDTO.setRequestParamMap(requestMap);
-            requestPayloadDTO.setMediaType(Constants.interfaceInvoke.MEDIA_TYPE);
-            interfaceInvokeSdk.invoke(Constants.interfaceInvoke.NAME_SPACE,Constants.interfaceInvoke.SERVER_CODE,Constants.interfaceInvoke.INTERFACE_CODE,requestPayloadDTO);
+            requestPayloadDTO.setMediaType(RcwlTrcConstants.interfaceInvoke.MEDIA_TYPE);
+            interfaceInvokeSdk.invoke(RcwlTrcConstants.interfaceInvoke.NAME_SPACE, RcwlTrcConstants.interfaceInvoke.SERVER_CODE, RcwlTrcConstants.interfaceInvoke.INTERFACE_CODE,requestPayloadDTO);
     }
 }

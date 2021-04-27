@@ -9,12 +9,12 @@ import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.srm.purchasecooperation.cux.accept.infra.constant.Constants;
+import org.srm.purchasecooperation.cux.accept.infra.constant.RcwlAcceptConstants;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 
 
 @Api(
-        tags = {Constants.API_TAGS}
+        tags = {RcwlAcceptConstants.API_TAGS}
 )
 @RestController("RcwlOrderBillController.v1")
 @RequestMapping

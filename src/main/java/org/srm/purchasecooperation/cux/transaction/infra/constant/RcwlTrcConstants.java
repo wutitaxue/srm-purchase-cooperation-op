@@ -1,8 +1,8 @@
 package org.srm.purchasecooperation.cux.transaction.infra.constant;
 
-public class Constants {
+public class RcwlTrcConstants {
 
-    private Constants() {
+    private RcwlTrcConstants() {
     }
 
     /**

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
 
 
-import org.srm.purchasecooperation.cux.accept.infra.constant.Constants;
+import org.srm.purchasecooperation.cux.accept.infra.constant.RcwlAcceptConstants;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
 import org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlOrderBillMapper;
@@ -27,7 +27,7 @@ import java.util.List;
 
 
 @Api(
-        tags = {Constants.API_TAGS}
+        tags = {RcwlAcceptConstants.API_TAGS}
 )
 @RestController("RcwlRcvTrxHeaderController.v1")
 @RequestMapping({"/v1/{organizationId}/rcv-trx-header"})
@@ -57,7 +57,7 @@ public class RcwlRcvTrxHeaderController extends BaseController {
     public ResponseEntity<RcvTrxHeader> createRcvTrx(@PathVariable Long organizationId, @RequestParam(required = false) String receivedBy, @RequestParam(required = false) String receiveOrderType, @Encrypt @RequestBody List<CreateRcvTrcDTO> dtos) {
         this.validList(dtos, new Class[0]);
         RcvTrxHeader rcvTrxHeader;
-        if (Constants.order.equals(receiveOrderType)) {
+        if (RcwlAcceptConstants.order.equals(receiveOrderType)) {
             rcvTrxHeader = rcvTrxHeaderService.createRcvTrxByPo(organizationId, receivedBy, dtos);
         } else {
             rcvTrxHeader = rcvTrxHeaderService.createRcvTrx(organizationId, receivedBy, dtos);
