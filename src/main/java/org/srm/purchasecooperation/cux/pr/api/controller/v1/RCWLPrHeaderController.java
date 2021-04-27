@@ -53,8 +53,8 @@ public class RCWLPrHeaderController {
     private PrintHelper printHelper;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
-    @Autowired
-    private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
+//    @Autowired
+//    private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
 
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
 
@@ -114,7 +114,7 @@ public class RCWLPrHeaderController {
 
      // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
 
-        prHeader = this.rcwlPrHeaderSubmitService.singletonSubmit(tenantId, prHeader);
+       // prHeader = this.rcwlPrHeaderSubmitService.singletonSubmit(tenantId, prHeader);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
         if (syncFlag) {
             prHeader.setOperationFlag("I");
