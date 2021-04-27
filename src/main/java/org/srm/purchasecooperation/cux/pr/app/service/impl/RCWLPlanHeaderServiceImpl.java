@@ -16,9 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
+import org.srm.purchasecooperation.cux.pr.app.service.RCWLPlanHeaderDataToBpmService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPlanHeaderService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
-import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPlanHeaderRepository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
@@ -48,6 +48,8 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     private ProfileClient profileClient;
     @Autowired
     private PrLineRepository prLineRepository;
+    @Autowired
+    private RCWLPlanHeaderDataToBpmService dataToBpmService;
 
     /**
      * 查询
@@ -282,6 +284,10 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         String url = "http://" + reSrcSys + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGJH&BOID=" + processNum;
         PlanHeaderVO planHeaderVO = new PlanHeaderVO();
         planHeaderVO.setUrl(url);
+
+         //调用bpm接口
+        this.dataToBpmService.sendDataToBpm(list,organizationId);
+
         return planHeaderVO;
     }
 
