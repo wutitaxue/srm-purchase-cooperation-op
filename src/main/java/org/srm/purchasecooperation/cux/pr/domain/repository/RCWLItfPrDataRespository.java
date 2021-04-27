@@ -15,7 +15,7 @@ public interface RCWLItfPrDataRespository {
      * @param tenantId
      * @return
      */
-    String selectBudgetAccountName(String budgetAccountNum, Long tenantId);
+   // String selectBudgetAccountName(String budgetAccountNum, Long tenantId);
 
     /**
      * 查找wbs名称
@@ -32,4 +32,8 @@ public interface RCWLItfPrDataRespository {
      * @return
      */
     String selectWbsCode(String wbs, Long prLineId);
+
+    String selectBudgetAccountName(Long budgetAccountId);
+
+    String selectBudgetAccountNum(Long budgetAccountId);
 }
