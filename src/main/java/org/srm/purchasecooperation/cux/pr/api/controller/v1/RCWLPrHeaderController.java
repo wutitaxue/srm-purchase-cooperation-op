@@ -54,8 +54,8 @@ public class RCWLPrHeaderController {
     private PrintHelper printHelper;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
-    @Autowired
-    private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
+   // @Autowired
+   //private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
     @Autowired
     private RCWLPrToBpmService rcwlPrToBpmService;
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
