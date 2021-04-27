@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -48,6 +49,9 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         rcwlGxBpmStartDataDTO.setBtid("RCWLSRMCGJH");
         rcwlGxBpmStartDataDTO.setBoid(list.get(0).getProcessNum());
         rcwlGxBpmStartDataDTO.setProcinstId("0");
+
+//        ObjectMapper mapper = new ObjectMapper();
+//        payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
 
         rcwlGxBpmStartDataDTO.setData("");
 
