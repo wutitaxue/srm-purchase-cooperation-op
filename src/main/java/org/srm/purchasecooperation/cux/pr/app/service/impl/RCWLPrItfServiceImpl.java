@@ -488,13 +488,23 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     private RCWLItfPrLineDetailDTO initOccupyDetail(PrLine prDetailLine, Long tenantId) {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
-        rcwlItfPrLineDetailDTO.setYmytcode(prDetailLine.getBudgetAccountNum());
-        String budgetAccountName = this.rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(), tenantId);
-        if (StringUtils.isEmpty(budgetAccountName)) {
+
+        if(prDetailLine.getBudgetAccountId()==null){
             throw new CommonException("业务用途为空");
         }
-        System.out.println("预算科目" + budgetAccountName);
+        String budgetAccountNum = this.rcwlItfPrDataRespository.selectBudgetAccountNum(prDetailLine.getBudgetAccountId());
+        String budgetAccountName = this.rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountId());
+
+//        rcwlItfPrLineDetailDTO.setYmytcode(prDetailLine.getBudgetAccountNum());
+//        String budgetAccountName = this.rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(), tenantId);
+//        if (StringUtils.isEmpty(budgetAccountName)) {
+//            throw new CommonException("业务用途为空");
+//        }
+//        System.out.println("预算科目" + budgetAccountName);
+//        rcwlItfPrLineDetailDTO.setYmytname(budgetAccountName);
+        rcwlItfPrLineDetailDTO.setYmytcode(budgetAccountNum);
         rcwlItfPrLineDetailDTO.setYmytname(budgetAccountName);
+
         if((!StringUtils.isEmpty(prDetailLine.getWbsCode())) &&(!StringUtils.isEmpty(prDetailLine.getWbs()))  ){
             rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
             rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());

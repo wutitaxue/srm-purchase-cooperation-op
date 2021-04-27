@@ -7,16 +7,7 @@
         select h.attribute_varchar1 from spfm_company_basic h
         where h.company_id = #{companyId} and h.group_id = #{tenantId}
     </select>
-    <select id="selectBudgetAccountName" resultType="java.lang.String">
-              SELECT
-              	h.budget_account_name
-              FROM
-              	smdm_budget_account h
-              WHERE
-              	h.budget_account_num = #{budgetAccountNum}
-              	AND h.tenant_id =#{tenantId}
 
-    </select>
     <select id="selectWbsName" resultType="java.lang.String">
                            SELECT
                         	l.wbs
@@ -34,5 +25,21 @@
                         WHERE
                         	l.pr_line_id = #{prLineId}
                        AND l.wbs = #{wbs}
+    </select>
+    <select id="selectBudgetAccountNum" resultType="java.lang.String">
+          SELECT
+              	h.budget_account_num
+              FROM
+              	smdm_budget_account h
+              WHERE
+              	h.budget_account_id = #{budgetAccountId}
+    </select>
+    <select id="selectBudgetAccountName" resultType="java.lang.String">
+              SELECT
+              	h.budget_account_name
+              FROM
+              	smdm_budget_account h
+              WHERE
+              	h.budget_account_id = #{budgetAccountId}
     </select>
 </mapper>

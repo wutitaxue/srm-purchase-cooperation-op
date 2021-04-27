@@ -20,7 +20,7 @@ public interface RCWLItfPrDataMapper {
      * @param tenantId
      * @return
      */
-    String selectBudgetAccountName(@Param("budgetAccountNum") String budgetAccountNum, @Param("tenantId") Long tenantId);
+   // String selectBudgetAccountName(@Param("budgetAccountNum") String budgetAccountNum, @Param("tenantId") Long tenantId);
 
     /**
      * 查找wbs名称
@@ -37,4 +37,17 @@ public interface RCWLItfPrDataMapper {
      * @return
      */
     String selectWbsCode(@Param("wbs") String wbs, @Param("prLineId") Long prLineId);
+
+    /**
+     * 查找业务用途编码
+     * @param budgetAccountId
+     * @return
+     */
+    String selectBudgetAccountNum(@Param("budgetAccountId")Long budgetAccountId);
+    /**
+     * 查找业务用途名称
+     * @param budgetAccountId
+     * @return
+     */
+    String selectBudgetAccountName(@Param("budgetAccountId")Long budgetAccountId);
 }
