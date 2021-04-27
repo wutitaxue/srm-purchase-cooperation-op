@@ -20,6 +20,7 @@ import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrHeaderSubmitService;
+import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrToBpmService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -55,7 +56,8 @@ public class RCWLPrHeaderController {
     private RCWLPrItfService rcwlPrItfService;
     @Autowired
     private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
-
+    @Autowired
+    private RCWLPrToBpmService rcwlPrToBpmService;
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
 
 
@@ -110,11 +112,11 @@ public class RCWLPrHeaderController {
     public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
         SecurityTokenHelper.validToken(prHeader, false);
 
-      // String token = this.rcwlPrItfService.getToken();
+        // String token = this.rcwlPrItfService.getToken();
 
-     // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
+        // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
 
-        prHeader = this.rcwlPrHeaderSubmitService.singletonSubmit(tenantId, prHeader);
+        prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
         if (syncFlag) {
             prHeader.setOperationFlag("I");
@@ -122,10 +124,9 @@ public class RCWLPrHeaderController {
             prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
             this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
         }
-
+        this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
         return Results.success(prHeader);
     }
-
 
 
 //    @ApiOperation("采购申请审批拒绝")
@@ -153,10 +154,9 @@ public class RCWLPrHeaderController {
         SecurityTokenHelper.validToken(prHeader, false);
         PrHeader returnCloseResults = this.prHeaderService.closeWholePrNote(tenantId, prHeader);
         //调用接口
-        this.rcwlPrItfService.invokeBudgetRelease(prHeader,tenantId);
+        this.rcwlPrItfService.invokeBudgetRelease(prHeader, tenantId);
         return Results.success(returnCloseResults);
     }
-
 
 
     @ApiOperation("采购申请整单取消")
@@ -172,7 +172,7 @@ public class RCWLPrHeaderController {
         //调用接口
         PrHeader prHeader = prHeaders.get(0);
 
-        this.rcwlPrItfService.invokeBudgetRelease(prHeader,tenantId);
+        this.rcwlPrItfService.invokeBudgetRelease(prHeader, tenantId);
 
         return Results.success(returnPrHeaders);
     }
@@ -186,13 +186,12 @@ public class RCWLPrHeaderController {
     public ResponseEntity<PrHeader> changeSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
 
 
-
         Assert.notNull(prHeader, "error.not_null");
         SecurityTokenHelper.validToken(prHeader, false);
         Assert.notEmpty(prHeader.getPrLineList(), "error.not_null");
 
         //触发变更接口
-        this.rcwlPrItfService.submitChange(prHeader,tenantId);
+        this.rcwlPrItfService.submitChange(prHeader, tenantId);
 
 
         Set<String> approveSet = new HashSet();
@@ -201,7 +200,7 @@ public class RCWLPrHeaderController {
         if ((CollectionUtils.isNotEmpty(approveSet) || "REJECTED".equals(prHeader.getPrStatusCode())) && syncFlag) {
             this.prHeaderService.afterChangeSubmit(tenantId, prHeader);
         }
-
+        this.rcwlPrToBpmService.prDataToBpm(prHeader, "change");
         return Results.success(prHeader);
     }
 
