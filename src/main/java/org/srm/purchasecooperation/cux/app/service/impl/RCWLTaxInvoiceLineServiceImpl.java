@@ -84,7 +84,7 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
                     taxInvoiceLine.setTotalAmount(invoiceLine.getTotalAmount());
                     taxInvoiceLine.setTaxAmount(invoiceLine.getTaxAmount());
                     taxInvoiceLine.setTaxIncludedAmount(invoiceLine.getTaxIncludedAmount());
-                    taxInvoiceLine.setTaxInvoiceStatusCode(invoiceLine.getTaxIncludedStatusCode());
+                    taxInvoiceLine.setTaxInvoiceStatusCode(invoiceLine.getTaxInvoiceStatusCode());
                     taxInvoiceLine.setValidateStatusCode(invoiceLine.getValidateStatus());
                     taxInvoiceLineList.add(taxInvoiceLine);
             }
@@ -114,7 +114,7 @@ public class RCWLTaxInvoiceLineServiceImpl implements RCWLTaxInvoiceLineService 
             null != invoiceLine.getDocumentType() &&
             null != invoiceLine.getTaxIncludedAmount() &&
             null != invoiceLine.getTotalAmount() &&
-            null != invoiceLine.getTaxIncludedStatusCode()){
+            null != invoiceLine.getTaxInvoiceStatusCode()){
             b = true;
         }
         return b;
