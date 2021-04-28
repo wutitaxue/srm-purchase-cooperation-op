@@ -149,7 +149,7 @@
         LEFT JOIN sinv_asn_line sal on srto.from_asn_line_id = sal.asn_line_id
         LEFT JOIN sinv_rcv_pc_details srpd ON srto.order_link_id = srpd.order_link_id
         left join sprm_pr_header srh on srh.pr_header_id=srtl.pr_header_id
-        LEFT JOIN iam_user iu on iu.id = srtl.attribute_bigint1
+        LEFT JOIN iam_user iu on iu.id = srtl.attribute_bigint2
         WHERE
         srtl.tenant_id = #{tenantId}
         AND srtl.rcv_trx_header_id = #{rcvTrxHeaderId}
