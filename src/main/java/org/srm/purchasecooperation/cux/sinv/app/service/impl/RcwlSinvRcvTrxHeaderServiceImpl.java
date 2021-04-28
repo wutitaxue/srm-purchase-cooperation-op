@@ -27,10 +27,18 @@ import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.service.PoHeaderSendApplyMqService;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
+import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
+import org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlOrderBillMapper;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.app.service.impl.SinvRcvTrxHeaderServiceImpl;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvRecordStrategyMapping;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.repository.*;
@@ -240,6 +248,18 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             if (sinvRcvTrxToKpiAutoPOLineVO != null && (sinvRcvTrxToKpiAutoPOLineVO.getNetReceivedQuantity() == sinvRcvTrxToKpiAutoPOLineVO.getQuantity())) {
                 //feign调用自动更新考评评分
                 rcwlSinvRcvTrxSslmRemoteService.rcwlORAutoEval(sinvRcvTrxHeaderDTO.getTenantId(), sinvRcvTrxToKpiAutoPOLineVO);
+            }
+            //循环所有行数据调用接口
+            //查询事务头对应的单据类型
+            SinvRcvRecordStrategyMapping sinvRcvRecordStrategyMapping = new SinvRcvRecordStrategyMapping();
+            sinvRcvRecordStrategyMapping.setRcvTrxHeaderId(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+            sinvRcvRecordStrategyMapping = (SinvRcvRecordStrategyMapping)this.sinvRcvRecordStrategyMappingRepository.selectOne(sinvRcvRecordStrategyMapping);
+            //送货单时
+            if("ASN".equals(sinvRcvRecordStrategyMapping.getOrderTypeCode())){
+                List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
+                for (SinvRcvTrxLineDTO i:sinvRcvTrxLineDTOS){
+                    rcwlOrderBillService.sendOrderBillOne(i.getTenantId(),i.getRcvTrxLineId(),"ASN");
+                }
             }
             return sinvRcvTrxHeaderDTO;
         }
