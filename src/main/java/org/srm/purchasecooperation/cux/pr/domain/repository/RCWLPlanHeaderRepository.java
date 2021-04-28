@@ -154,5 +154,5 @@ public interface RCWLPlanHeaderRepository extends BaseRepository<PlanHeader> {
    * @param organizationId
    * @return
    */
-  List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List<PlanHeaderVO> list, Long organizationId);
+  List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List list, Long organizationId);
 }

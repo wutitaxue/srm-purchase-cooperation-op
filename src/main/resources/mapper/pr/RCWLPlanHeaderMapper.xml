@@ -331,7 +331,22 @@
     </select>
     <select id="batchSelectAttachmentsInfo"
             resultType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO">
-
+                    SELECT
+            	( @i := @i + 1 ) AS file_number,
+            	h.file_name,
+            	h.file_size,
+            	h.file_name AS description,
+            	h.file_url AS url
+            FROM
+            	( SELECT @i := 0 ) AS i,
+            	hfle_file h
+            WHERE
+            1=1
+            and h.attachment_uuid in
+            <foreach collection="list" index="index" item="uuId" open="(" separator="," close=")">
+                #{uuId}
+            </foreach>
 
     </select>
+
 </mapper>

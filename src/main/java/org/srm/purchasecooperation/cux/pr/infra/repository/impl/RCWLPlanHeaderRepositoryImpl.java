@@ -210,7 +210,7 @@ public class RCWLPlanHeaderRepositoryImpl extends BaseRepositoryImpl<PlanHeader>
      * @return
      */
     @Override
-    public List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List<PlanHeaderVO> list, Long organizationId) {
+    public List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List list, Long organizationId) {
         return rcwlPlanHeaderMapper.batchSelectAttachmentsInfo(list,organizationId);
     }
 

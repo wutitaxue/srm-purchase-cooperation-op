@@ -5,6 +5,7 @@ import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.profile.ProfileClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -113,15 +115,48 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
 
     private List<PlanHeaderAttachementToBpmDTO> initPlanHeaderAttachment(List<PlanHeaderVO> list, Long organizationId) {
         List<PlanHeaderAttachementToBpmDTO> bpmDTOS = new ArrayList<>();
-        if(CollectionUtils.isNotEmpty(list)) {
-             bpmDTOS = this.rcwlPlanHeaderRepository.batchSelectAttachmentsInfo(list, organizationId);
+        List attList = new ArrayList();
+        list.forEach(item->{
+           if(!StringUtils.isEmpty(item.getAttachment())){
+               attList.add(item.getAttachment());
+           }
+        });
+        if(CollectionUtils.isNotEmpty(attList)) {
+             bpmDTOS = this.rcwlPlanHeaderRepository.batchSelectAttachmentsInfo(attList, organizationId);
         }
         return bpmDTOS;
     }
 
 
     private List<PlanHeaderInfoToBpmDTO> initPlanHeaderInfo(List<PlanHeaderVO> list, Long organizationId) {
-        return null;
+        List<PlanHeaderInfoToBpmDTO> infoToBpmDTOS = new ArrayList<>();
+        list.forEach(item-> {
+            PlanHeaderInfoToBpmDTO planHeaderInfoToBpmDTO = new PlanHeaderInfoToBpmDTO();
+            planHeaderInfoToBpmDTO.setPrCategory(item.getPrCategoryMeaning());
+            planHeaderInfoToBpmDTO.setFormat(item.getFormatMeaning());
+            planHeaderInfoToBpmDTO.setBudgetAccount(item.getBudgetAccountMeaning());
+            planHeaderInfoToBpmDTO.setBiddingMode(item.getBiddingModeMeaning());
+            planHeaderInfoToBpmDTO.setPrWay(item.getPrWayMeaning());
+            planHeaderInfoToBpmDTO.setDemanders(item.getDemandersMeaning());
+            planHeaderInfoToBpmDTO.setAgent(item.getAgentMeaning());
+            if (item.getProjectAmount() != null) {
+                BigDecimal projectAmount = item.getProjectAmount().setScale(2, RoundingMode.HALF_UP);
+                planHeaderInfoToBpmDTO.setProjectAmount(String.valueOf(projectAmount));
+            }
+            planHeaderInfoToBpmDTO.setBidMethod(item.getBidMethodMeaning());
+            planHeaderInfoToBpmDTO.setDePlanFinTime(String.valueOf(item.getDeApprFinTime()));
+            planHeaderInfoToBpmDTO.setPlanFinVenTime(String.valueOf(item.getPlanFinVenTime()));
+            planHeaderInfoToBpmDTO.setPlanFinApprTime(String.valueOf(item.getPlanFinApprTime()));
+            planHeaderInfoToBpmDTO.setPlanFinBidTime(String.valueOf((item.getPlanFinBidTime())));
+            planHeaderInfoToBpmDTO.setPlanFinConTime(String.valueOf(item.getPlanFinConTime()));
+            planHeaderInfoToBpmDTO.setPlanFinIssueTime(String.valueOf(item.getPlanFinIssueTime()));
+            planHeaderInfoToBpmDTO.setPrNum(item.getPrNum());
+            planHeaderInfoToBpmDTO.setLineNum(item.getLineNum());
+            planHeaderInfoToBpmDTO.setRemarks(item.getRemarks());
+            infoToBpmDTOS.add(planHeaderInfoToBpmDTO);
+        });
+
+        return infoToBpmDTOS;
     }
 
 

@@ -57,5 +57,5 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
 
     Integer calLastMonthComplete(@Param("userId")Long userId, @Param("organizationId")Long organizationId);
 
-    List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(@Param("list")List<PlanHeaderVO> list, @Param("organizationId")Long organizationId);
+    List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(@Param("list")List list, @Param("organizationId")Long organizationId);
 }
