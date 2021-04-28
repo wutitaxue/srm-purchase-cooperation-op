@@ -8,6 +8,7 @@ import org.hzero.mybatis.base.impl.BaseRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
+import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPlanHeaderRepository;
@@ -163,6 +164,54 @@ public class RCWLPlanHeaderRepositoryImpl extends BaseRepositoryImpl<PlanHeader>
     public void submitPlanHeader(List<PlanHeader> list, Long organizationId) {
         this.rcwlPlanHeaderMapper.submitPlanHeader(list,organizationId);
 
+    }
+
+    /**
+     * 计算当前创建人本月创建单据数量
+     *
+     * @param userId
+     * @param organizationId
+     * @return
+     */
+    @Override
+    public Integer calThisMonthNumber(Long userId, Long organizationId) {
+        return rcwlPlanHeaderMapper.calThisMonthNumber(userId,organizationId);
+    }
+
+    /**
+     * 查询当前创建人合同实际完成时间在本月的数量
+     *
+     * @param userId
+     * @param organizationId
+     * @return
+     */
+    @Override
+    public Integer calLastMonthNumber(Long userId, Long organizationId) {
+        return rcwlPlanHeaderMapper.calLastMonthNumber(userId,organizationId);
+    }
+
+    /**
+     * 查询当前创建人合同实际完成时间在上月的数量
+     *
+     * @param userId
+     * @param organizationId
+     * @return
+     */
+    @Override
+    public Integer calLastMonthComplete(Long userId, Long organizationId) {
+        return rcwlPlanHeaderMapper.calLastMonthComplete(userId,organizationId);
+    }
+
+    /**
+     * 批量查询采购计划附件信息
+     *
+     * @param list
+     * @param organizationId
+     * @return
+     */
+    @Override
+    public List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List<PlanHeaderVO> list, Long organizationId) {
+        return rcwlPlanHeaderMapper.batchSelectAttachmentsInfo(list,organizationId);
     }
 
 

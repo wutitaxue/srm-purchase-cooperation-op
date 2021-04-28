@@ -4,6 +4,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.mybatis.base.BaseRepository;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
+import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO;
@@ -122,4 +123,36 @@ public interface RCWLPlanHeaderRepository extends BaseRepository<PlanHeader> {
      * @param organizationId
      */
     void submitPlanHeader(List<PlanHeader> list, Long organizationId);
+
+    /**
+     * 计算当前创建人本月创建单据数量
+     * @param userId
+     * @param organizationId
+     * @return
+     */
+    Integer calThisMonthNumber(Long userId, Long organizationId);
+
+  /**
+   * 查询当前创建人合同实际完成时间在本月的数量
+   * @param userId
+   * @param organizationId
+   * @return
+   */
+    Integer calLastMonthNumber(Long userId, Long organizationId);
+
+  /**
+   * 查询当前创建人合同实际完成时间在上月的数量
+   * @param userId
+   * @param organizationId
+   * @return
+   */
+  Integer calLastMonthComplete(Long userId, Long organizationId);
+
+  /**
+   * 批量查询采购计划附件信息
+   * @param list
+   * @param organizationId
+   * @return
+   */
+  List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List<PlanHeaderVO> list, Long organizationId);
 }

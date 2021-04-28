@@ -294,4 +294,44 @@
        where  h.purchase_agent_code = trim(#{agent})
        and h.tenant_id = #{tenantId}
     </select>
+    <select id="calThisMonthNumber" resultType="java.lang.Integer">
+        SELECT
+        	count(1)
+        FROM
+        	scux_rcwl_plan_header h
+        WHERE
+        	DATE_FORMAT( h.creation_date, '%Y%m' ) = DATE_FORMAT(
+        		CURDATE( ),
+        	'%Y%m'
+	     ) and h.created_by = #{userId} and h.tenant_id = #{organizationId}
+     </select>
+    <select id="calLastMonthNumber" resultType="java.lang.Integer">
+                SELECT
+                	count(1)
+                FROM
+                	scux_rcwl_plan_header h
+                	JOIN sprm_pr_line l ON h.pr_line_id = l.pr_line_id
+                WHERE
+                	l.attribute_date4 IS NOT NULL
+                	AND DATE_FORMAT( l.attribute_date4, '%Y%m' ) = DATE_FORMAT( CURDATE( ), '%Y%m' )
+                	AND h.created_by = #{userId}
+                	AND h.tenant_id = #{organizationId}
+    </select>
+    <select id="calLastMonthComplete" resultType="java.lang.Integer">
+                SELECT
+               	count(1)
+               FROM
+               	scux_rcwl_plan_header h
+               	JOIN sprm_pr_line l ON h.pr_line_id = l.pr_line_id
+               WHERE
+               	l.attribute_date4 IS NOT NULL
+               	AND ( PERIOD_DIFF( date_format( now( ), '%Y%m' ), date_format( l.attribute_date4, '%Y%m' ) ) = 1 )
+               	AND h.created_by = #{userId}
+               	AND h.tenant_id = #{organizationId}
+    </select>
+    <select id="batchSelectAttachmentsInfo"
+            resultType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO">
+
+
+    </select>
 </mapper>

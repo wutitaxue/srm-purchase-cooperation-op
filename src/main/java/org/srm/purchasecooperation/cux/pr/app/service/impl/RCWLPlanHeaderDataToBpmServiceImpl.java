@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.oauth.DetailsHelper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.profile.ProfileClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +13,14 @@ import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderInfoToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPlanHeaderDataToBpmService;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPlanHeaderRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +35,8 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
     private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
     @Autowired
     private ProfileClient profileClient;
+    @Autowired
+    private RCWLPlanHeaderRepository rcwlPlanHeaderRepository;
 
     /**
      * 传输数据给bpm
@@ -68,6 +74,8 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
 
     private PlanHeaderToBpmDTO initData(List<PlanHeaderVO> list, Long organizationId) {
         PlanHeaderToBpmDTO bpmDTO = new PlanHeaderToBpmDTO();
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
         String cur_month = sdf.format(date);
@@ -77,6 +85,13 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         bpmDTO.setAddFlag(list.get(0).getAddFlagMeaning());
         bpmDTO.setNumber(String.valueOf(list.size()));
 
+        Integer thisMonthNumber =  this.rcwlPlanHeaderRepository.calThisMonthNumber(userId,organizationId);
+        Integer lastMonthNumber = this.rcwlPlanHeaderRepository.calLastMonthNumber(userId,organizationId);
+        Integer lastMonthComplete = this.rcwlPlanHeaderRepository.calLastMonthComplete(userId,organizationId);
+        bpmDTO.setThisMonthNumber(String.valueOf(thisMonthNumber));
+        bpmDTO.setLastMonthNumber(String.valueOf(lastMonthNumber));
+        bpmDTO.setLastMonthComplete(String.valueOf(lastMonthComplete));
+
         BigDecimal projectAmount = new BigDecimal(0);
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getProjectAmount() == null) {
@@ -84,7 +99,10 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
             }
             projectAmount.add(list.get(i).getProjectAmount());
         }
-        bpmDTO.setMoney(String.valueOf(projectAmount));
+        BigDecimal newPeojectAmount = projectAmount.setScale(2, RoundingMode.HALF_UP);
+        bpmDTO.setMoney(String.valueOf(newPeojectAmount));
+
+
 
         List<PlanHeaderInfoToBpmDTO> planHeaderInfoToBpmDTOS = this.initPlanHeaderInfo(list, organizationId);
         bpmDTO.setCgjhxx(planHeaderInfoToBpmDTOS);
@@ -94,7 +112,11 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
     }
 
     private List<PlanHeaderAttachementToBpmDTO> initPlanHeaderAttachment(List<PlanHeaderVO> list, Long organizationId) {
-        return null;
+        List<PlanHeaderAttachementToBpmDTO> bpmDTOS = new ArrayList<>();
+        if(CollectionUtils.isNotEmpty(list)) {
+             bpmDTOS = this.rcwlPlanHeaderRepository.batchSelectAttachmentsInfo(list, organizationId);
+        }
+        return bpmDTOS;
     }
 
 
