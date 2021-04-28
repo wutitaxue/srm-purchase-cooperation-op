@@ -3,11 +3,14 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.profile.ProfileClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO;
@@ -23,7 +26,6 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -39,6 +41,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
     private ProfileClient profileClient;
     @Autowired
     private RCWLPlanHeaderRepository rcwlPlanHeaderRepository;
+    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.pr.app.service.impl.RCWLPlanHeaderDataToBpmServiceImpl.class);
 
     /**
      * 传输数据给bpm
@@ -68,10 +71,19 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
 
         //获取封装数据
         PlanHeaderToBpmDTO planHeaderToBpmDTO = this.initData(list, organizationId);
+         logger.info("封装DTO==================================================");
+        logger.info(planHeaderToBpmDTO.toString());
+        logger.info("封装报文==================================================");
+        logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(planHeaderToBpmDTO));
         rcwlGxBpmStartDataDTO.setData(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(planHeaderToBpmDTO));
-
-        //调用bpm接口
-        responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
+        logger.info("封装数据==================================================");
+        logger.info(rcwlGxBpmStartDataDTO.toString());
+        try {
+            //调用bpm接口
+            responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
+        }catch(Exception e){
+            throw new CommonException("接口调用失败！！！");
+        }
     }
 
     private PlanHeaderToBpmDTO initData(List<PlanHeaderVO> list, Long organizationId) {
@@ -124,6 +136,8 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         if(CollectionUtils.isNotEmpty(attList)) {
              bpmDTOS = this.rcwlPlanHeaderRepository.batchSelectAttachmentsInfo(attList, organizationId);
         }
+        logger.info("附件行信息：===========================");
+        logger.info(bpmDTOS.toString());
         return bpmDTOS;
     }
 
@@ -155,7 +169,8 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
             planHeaderInfoToBpmDTO.setRemarks(item.getRemarks());
             infoToBpmDTOS.add(planHeaderInfoToBpmDTO);
         });
-
+        logger.info("采购计划行信息：=============================");
+        logger.info(infoToBpmDTOS.toString());
         return infoToBpmDTOS;
     }
 

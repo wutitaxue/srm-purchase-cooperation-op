@@ -30,6 +30,7 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -116,7 +117,7 @@ public class RCWLPlanHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     //@Permission(permissionPublic = true)
     @PostMapping("/submit")
-    public ResponseEntity<PlanHeaderVO> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) {
+    public ResponseEntity<PlanHeaderVO> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) throws IOException {
 
         PlanHeaderVO planHeaderVO =  this.RCWLPlanHeaderService.submitPlanHeader(planHeaderVOS,organizationId);
         return Results.success(planHeaderVO);
