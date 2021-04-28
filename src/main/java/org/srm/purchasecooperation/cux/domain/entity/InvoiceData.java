@@ -28,8 +28,8 @@ public class InvoiceData {
     private BigDecimal taxAmount;
     @JsonProperty("taxIncludedAmount")
     private BigDecimal taxIncludedAmount;
-    @JsonProperty("taxIncludedStatusCode")
-    private String taxIncludedStatusCode;
+    @JsonProperty("taxInvoiceStatusCode")
+    private String taxInvoiceStatusCode;
     @JsonProperty("validateStatus")
     private String validateStatus;
     @JsonProperty("checkCode")
