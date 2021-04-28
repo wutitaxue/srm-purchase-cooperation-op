@@ -22,6 +22,7 @@ import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineReposito
 import org.srm.web.annotation.Tenant;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -68,9 +69,11 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         //更新事务行表的回写数据
         SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
         sinvRcvTrxLine.setRcvTrxLineId(rcvTrxLineId);
+        Long objectVersionNumber = sinvRcvTrxLineRepository.selectOne(sinvRcvTrxLine).getObjectVersionNumber();
         sinvRcvTrxLine.setAttributeVarchar4(code);
         sinvRcvTrxLine.setAttributeVarchar5(message);
         sinvRcvTrxLine.setAttributeVarchar6(codecg);
+        sinvRcvTrxLine.setObjectVersionNumber(objectVersionNumber);
         sinvRcvTrxLineRepository.updateByPrimaryKeySelective(sinvRcvTrxLine);
     }
 }
