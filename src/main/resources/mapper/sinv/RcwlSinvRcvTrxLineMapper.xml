@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxLineMapper">
+    <update id="insertRetentionMoneyAndReceiver">
+       UPDATE sinv_rcv_trx_line
+          SET attribute_bigint2 = #{attributeBigint2},
+          attribute_decimal1 = #{retentionMoney}
+          WHERE
+              	rcv_trx_line_id = #{rcvTrxLineId}
+
+    </update>
+
+
+    <select id="selectRententionMoneyPercent" resultType="java.math.BigDecimal">
+                   SELECT
+                    	h.attribute1
+                    FROM
+                    	SPCM_PC_HEADER h
+                    	LEFT JOIN sodr_po_line l ON l.pc_num = h.pc_num
+                    WHERE
+                    	l.po_header_id = #{fromPoHeaderId}
+                    	AND l.po_line_id = #{fromPoLineId}
+
+    </select>
+    <select id="listRcvTrxLineDetail" resultType="org.srm.purchasecooperation.cux.sinv.api.dto.RcwlSinvRcvTrxLineDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        srtl.rcv_trx_line_id,
+        srtl.tenant_id,
+        srtl.rcv_trx_header_id,
+        srth.trx_num,
+        srth.display_trx_num,
+        srtl.trx_line_num,
+        srtl.display_trx_line_num,
+        srtl.item_id,
+        srtl.item_code,
+        srtl.item_name,
+        srtl.quantity,
+        (srtl.quantity-srtl.occupied_quantity) can_quantity,
+        (srtl2.quantity - srtl2.occupied_quantity + srtl2.reversed_quantity + srtl.quantity) left_quantity,
+        /*不含税单价*/
+        srtl.net_price,
+        srtl.net_amount,
+        srtl.po_unit_price,
+        srtl.tax_included_price,
+        srtl.occupied_tax_amount,
+        srtl.tax_included_amount,
+        srtl.reversed_tax_amount,
+        (srtl.tax_included_amount-srtl.occupied_tax_amount) can_tax_amount,
+        (srtl2.tax_included_amount - srtl2.occupied_tax_amount + srtl2.reversed_tax_amount + srtl.tax_included_amount)
+        left_tax_amount,
+        srnc.node_config_code,
+        srnc.node_config_name,
+        srtl.creation_date,
+        hi.inventory_code,
+        hi.inventory_name,
+        srtl.inventory_id,
+        srtl.locator_id,
+        hl.location_name,
+        sott.order_type_name AS po_type_code_meaning,
+        sot.order_type_code AS po_type_code,
+        srto.source_header_num,
+        srto.source_line_num,
+        srto.order_link_id,
+        srto.from_po_header_id,
+        srto.from_po_line_id,
+        srto.from_po_line_location_id,
+        srto.from_display_po_num,
+        srto.from_display_po_line_num,
+        srto.from_display_po_line_location_num,
+        srto.from_asn_header_id,
+        srto.from_asn_line_id,
+        srto.from_display_asn_num,
+        srto.from_display_asn_line_num,
+        srto.from_pc_header_id,
+        srto.from_pc_subject_id,
+        srto.from_pc_num,
+        srto.from_pc_subject_num,
+        srsl.strategy_header_id,
+        srtl.inv_organization_id,
+        hio.organization_name inv_organization_name,
+        hio.organization_code inv_organization_code,
+        (case when srrsm.order_type_code = 'PC' then srtl.quantity else spll.quantity end) po_quantity,
+        spl.product_num,
+        spl.product_name,
+        spl.catalog_name,
+        srtl.uom_id,
+        su.uom_code,
+        /*单位*/
+        CONCAT( CONCAT( su.uom_code, '/' ), sut.uom_name ) uom_name,
+        srtl.remark,
+        sal.deliver_time,
+        sal.deliver_time due_date,
+        srtl.sinv_line_attachment_uuid,
+        /*修改时记录修改前的数量*/
+        srtl.quantity update_quantity,
+        srtl.tax_included_amount update_tax_amount,
+        srtl.trx_date,
+        srtl.object_version_number,
+        srtl.from_rcv_trx_line_id,
+        srsl.subject_type,
+        srsl.line_seq,
+        srsl.node_config_id,
+        srem.rcv_type_name,
+        srtl.tax_rate,
+        (case when spl.unit_price_batch is null then 1 else spl.unit_price_batch end) unit_price_batch,
+        srtl.move_reason,
+        srto.from_pc_stage_id,
+        srpd.stage_code,
+        srpd.stage_name,
+        srpd.check_type check_type_code,
+        srpd.pay_ratio,
+        srpd.pc_status_code,
+        srpd.specifications,
+        srpd.model,
+        srpd.accepter_user_id,
+        srpd.accepter_user_name,
+        srtl.category_id,
+        /*新加字段质保金，收货人,入库单号，入库数量*/
+        srtl.attribute_decimal1,
+        srtl.attribute_varchar1,
+        srtl.attribute_bigint1,
+
+        srtl.attribute_decimal1 as retention_money,
+        srtl.attribute_bigint2,
+        iu.real_name as attribute_bigint2_meaning,
+        srtl.attribute_varchar1 as assetsbill_num,
+        srtl.attribute_bigint1 as warehouse_quantity
+        FROM
+        sinv_rcv_trx_line srtl
+        JOIN sinv_rcv_trx_order_link srto ON srtl.order_link_id = srto.order_link_id
+        JOIN sinv_rcv_trx_header srth ON srtl.rcv_trx_header_id = srth.rcv_trx_header_id
+        JOIN sinv_rcv_record_strategy_mapping srrsm ON srth.rcv_trx_header_id = srrsm.rcv_trx_header_id
+        /*采购事务头关联事务事务头策略行映射表的下一策略行id=当前节点对应的策略行id*/
+        LEFT JOIN sinv_rcv_strategy_line srsl ON srrsm.strategy_line_id = srsl.strategy_line_id
+        LEFT JOIN sodr_po_line_location spll ON srto.from_po_line_location_id = spll.po_line_location_id
+        LEFT JOIN sodr_po_line spl ON spl.po_line_id = spll.po_line_id
+        LEFT JOIN sodr_po_header sph ON sph.po_header_id = spll.po_header_id
+        LEFT JOIN sodr_order_type sot ON sot.order_type_id = sph.po_type_id
+        LEFT JOIN sodr_order_type_tl sott ON sott.order_type_id = sot.order_type_id AND sott.lang = #{lang}
+        LEFT JOIN hpfm_inventory hi ON srtl.inventory_id = hi.inventory_id
+        LEFT JOIN hpfm_location hl ON srtl.locator_id = hl.location_id
+        LEFT JOIN sinv_rcv_node_config srnc ON srsl.node_config_id = srnc.node_config_id
+        LEFT JOIN hpfm_inv_organization hio ON srtl.inv_organization_id = hio.organization_id
+        LEFT JOIN smdm_uom su ON srtl.uom_id = su.uom_id
+        LEFT JOIN smdm_uom_tl sut ON su.uom_id = sut.uom_id AND sut.lang = #{lang}
+        LEFT JOIN sinv_rcv_trx_line srtl2 on srtl.from_rcv_trx_line_id = srtl2.rcv_trx_line_id
+        LEFT JOIN sinv_rcv_ext_mapping srem ON srtl.rcv_trx_type_id = srem.mapping_id
+        LEFT JOIN sinv_asn_line sal on srto.from_asn_line_id = sal.asn_line_id
+        LEFT JOIN sinv_rcv_pc_details srpd ON srto.order_link_id = srpd.order_link_id
+        left join sprm_pr_header srh on srh.pr_header_id=srtl.pr_header_id
+        LEFT JOIN iam_user iu on iu.id = srtl.attribute_bigint1
+        WHERE
+        srtl.tenant_id = #{tenantId}
+        AND srtl.rcv_trx_header_id = #{rcvTrxHeaderId}
+        AND srtl.delete_flag = 0
+        order by srtl.trx_line_num asc
+    </select>
+
+</mapper>
