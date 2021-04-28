@@ -20,6 +20,9 @@ import org.srm.purchasecooperation.common.api.dto.SmdmCurrencyDTO;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.common.app.impl.SpucCommonServiceImpl;
 import org.srm.purchasecooperation.cux.sinv.domain.repository.RcwlSinvRcvTrxLineRepository;
+import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO;
+import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
+import org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxHeaderMapper;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
@@ -49,61 +52,65 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlSinvRcvTrxHeaderServiceImpl.class);
     @Autowired
     private SinvRcvTrxHeaderRepository sinvRcvTrxHeaderRepository;
-    @Autowired
-    private PoHeaderRepository poHeaderRepository;
-    @Autowired
-    private PoLineRepository poLineRepository;
-    @Autowired
-    private PoLineLocationRepository poLineLocationRepository;
+//    @Autowired
+//    private PoHeaderRepository poHeaderRepository;
+//    @Autowired
+//    private PoLineRepository poLineRepository;
+//    @Autowired
+//    private PoLineLocationRepository poLineLocationRepository;
     @Autowired
     private SinvTrxNodeExectorDomainService sinvRcvTrxDomainService;
-    @Autowired
-    private RcvStrategyLineRepository strategyLineRepository;
-    @Autowired
-    private RcvStrategyLineDomainService rcvStrategyLineDomainService;
+//    @Autowired
+//    private RcvStrategyLineRepository strategyLineRepository;
+//    @Autowired
+//    private RcvStrategyLineDomainService rcvStrategyLineDomainService;
     @Autowired
     private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
-    @Autowired
-    private SinvRcvRecordStrategyMappingRepository sinvRcvRecordStrategyMappingRepository;
-    @Autowired
-    private SinvRcvTrxOrderLinkRepository sinvRcvTrxOrderLinkRepository;
-    @Autowired
-    private RcvChangeRecordRepository rcvChangeRecordRepository;
-    @Autowired
-    private RcvStrategyLineRepository rcvStrategyLineRepository;
+//    @Autowired
+//    private SinvRcvRecordStrategyMappingRepository sinvRcvRecordStrategyMappingRepository;
+//    @Autowired
+//    private SinvRcvTrxOrderLinkRepository sinvRcvTrxOrderLinkRepository;
+//    @Autowired
+//    private RcvChangeRecordRepository rcvChangeRecordRepository;
+//    @Autowired
+//    private RcvStrategyLineRepository rcvStrategyLineRepository;
     @Autowired
     private MdmService mdmService;
     @Autowired
     private SinvRcvTrxHeaderDomainService sinvRcvTrxHeaderDomainService;
-    @Autowired
-    private SpucCommonServiceImpl spucCommonService;
-    @Autowired
-    private SinvTrxExportDomainService sinvTrxExportDomainService;
-    @Autowired
-    private SinvTrxPcDomainService sinvRcvPcDomainService;
-    @Autowired
-    private SinvTrxMinuQuantityDomainService sinvTrxMinuQuantityDomainService;
-
-    @Autowired
-    private SinvTrxCommonDomainService sinvTrxCommonDomainService;
-    @Autowired
-    @Lazy
-    private SinvTrxSettleDomainService sinvTrxSettleDomainService;
-    @Autowired
-    private PoHeaderSendApplyMqService poHeaderSendApplyMqService;
-    @Autowired
-    private MessageProducer messageProducer;
-    @Autowired
-    private SendMessageToPrService sendMessageToPrService;
-    @Autowired
-    @Lazy
-    private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
+//    @Autowired
+//    private SpucCommonServiceImpl spucCommonService;
+//    @Autowired
+//    private SinvTrxExportDomainService sinvTrxExportDomainService;
+//    @Autowired
+//    private SinvTrxPcDomainService sinvRcvPcDomainService;
+//    @Autowired
+//    private SinvTrxMinuQuantityDomainService sinvTrxMinuQuantityDomainService;
+//
+//    @Autowired
+//    private SinvTrxCommonDomainService sinvTrxCommonDomainService;
+//    @Autowired
+//    @Lazy
+//    private SinvTrxSettleDomainService sinvTrxSettleDomainService;
+//    @Autowired
+//    private PoHeaderSendApplyMqService poHeaderSendApplyMqService;
+//    @Autowired
+//    private MessageProducer messageProducer;
+//    @Autowired
+//    private SendMessageToPrService sendMessageToPrService;
+//    @Autowired
+//    @Lazy
+//    private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
     @Autowired
     private RcwlSinvRcvTrxLineRepository rcwlSinvRcvTrxLineRepository;
+    @Autowired
+    private RcwlSinvRcvTrxHeaderMapper rcvRcvTrxHeaderMapper;
+    @Autowired
+    private RcwlSinvRcvTrxSslmRemoteService rcwlSinvRcvTrxSslmRemoteService;
+
 
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
-
 
     @Override
     @Transactional(
@@ -132,7 +139,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
 
             SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
             BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
-            LOGGER.info("收获事务行标表24730:"+sinvRcvTrxLine.toString());
+            LOGGER.info("收获事务行标表24730:" + sinvRcvTrxLine.toString());
             sinvRcvTrxLine.setTenantId(tenantId);
             SmdmCurrencyDTO smdmCurrencyDTO = this.mdmService.selectSmdmCurrencyDto(tenantId, sinvRcvTrxLine.getCurrencyCode());
             int financialPrecision = smdmCurrencyDTO.getFinancialPrecision();
@@ -156,10 +163,10 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                     percent = new BigDecimal(0);
                 }
                 //质保金金额=执行金额（含税）*质保金比例/100
-                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
-                LOGGER.info("质保金："+retentionMoney);
+                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
+                LOGGER.info("质保金：" + retentionMoney);
                 //将质保金和收货人插入行表
-                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(), retentionMoney, sinvRcvTrxLine.getAttributeBigint2(), tenantId);
 
                 sinvRcvTrxLine.setQuantity(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setQuantity(taxIncludedAmount);
@@ -183,11 +190,11 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                     percent = new BigDecimal(0);
                 }
                 //质保金金额=执行金额（含税）*质保金比例/100
-                 BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
-                LOGGER.info("质保金："+retentionMoney);
+                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
+                LOGGER.info("质保金：" + retentionMoney);
                 LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:taxIncludedAmount[" + taxIncludedAmount + "]");
                 //将质保金和收货人插入行表
-                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(), retentionMoney, sinvRcvTrxLine.getAttributeBigint2(), tenantId);
 
                 sinvRcvTrxLine.setTaxIncludedAmount(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setTaxIncludedAmount(taxIncludedAmount);
@@ -220,7 +227,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         }
 
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);
-        RcvStrategyLine rcvStrategyLine = this.selectRcvNowNodeConfig(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), (Long)null);
+        RcvStrategyLine rcvStrategyLine = this.selectRcvNowNodeConfig(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), (Long) null);
         if ("WFL".equals(((RcvStrategyLine) Optional.ofNullable(rcvStrategyLine).orElse(new RcvStrategyLine())).getApproveRuleCode())) {
             LOGGER.debug("21424-submittedSinv-need-wfl");
             this.sinvRcvTrxHeaderDomainService.submittedSinvToWFL(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
@@ -230,9 +237,9 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             //如果事务订单 sodr_po_line_location表的quantity=net_received_quantity 则调用订单自动更新考评评分
             sinvRcvTrxHeaderDTO.setTenantId(tenantId);
             SinvRcvTrxToKpiAutoPOLineVO sinvRcvTrxToKpiAutoPOLineVO = rcvRcvTrxHeaderMapper.countTrxHeaderByClosedFlag(sinvRcvTrxHeaderDTO);
-            if (sinvRcvTrxToKpiAutoPOLineVO != null && (sinvRcvTrxToKpiAutoPOLineVO.getNetReceivedQuantity()==sinvRcvTrxToKpiAutoPOLineVO.getQuantity())) {
+            if (sinvRcvTrxToKpiAutoPOLineVO != null && (sinvRcvTrxToKpiAutoPOLineVO.getNetReceivedQuantity() == sinvRcvTrxToKpiAutoPOLineVO.getQuantity())) {
                 //feign调用自动更新考评评分
-                rcwlSinvRcvTrxSslmRemoteService.rcwlORAutoEval(sinvRcvTrxHeaderDTO.getTenantId(),sinvRcvTrxToKpiAutoPOLineVO);
+                rcwlSinvRcvTrxSslmRemoteService.rcwlORAutoEval(sinvRcvTrxHeaderDTO.getTenantId(), sinvRcvTrxToKpiAutoPOLineVO);
             }
             return sinvRcvTrxHeaderDTO;
         }

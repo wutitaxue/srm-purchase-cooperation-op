@@ -3,10 +3,11 @@ package org.srm.purchasecooperation.cux.sinv.infra.feign.fallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO;
 import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
 
-@Component
+@Service
 public class RcwlSinvRcvTrxSslmRemoteServiceImpl implements RcwlSinvRcvTrxSslmRemoteService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlSinvRcvTrxSslmRemoteServiceImpl.class);
     public RcwlSinvRcvTrxSslmRemoteServiceImpl() {

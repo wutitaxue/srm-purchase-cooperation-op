@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.sinv.infra.mapper;
 
 import io.choerodon.core.oauth.CustomUserDetails;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxFinishLineDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
@@ -19,6 +20,7 @@ import java.util.List;
  * @createDate: 2021/4/22 21:07
  */
 @Tenant("SRM-RCWL")
+@Component
 public interface RcwlSinvRcvTrxHeaderMapper extends SinvRcvTrxHeaderMapper, ExtendMapper<SinvRcvTrxHeader> {
     @Override
     List<SinvRcvTrxFinishLineDTO> selectSinvRcvTrxFinishLine(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
