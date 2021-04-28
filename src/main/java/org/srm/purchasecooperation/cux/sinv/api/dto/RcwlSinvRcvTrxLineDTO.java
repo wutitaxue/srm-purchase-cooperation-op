@@ -21,6 +21,8 @@ public class RcwlSinvRcvTrxLineDTO extends SinvRcvTrxLineDTO {
     private Long attributeBigint2;
     @ApiModelProperty(value = "收货人名字")
     private String  attributeBigint2Meaning;
+    @ApiModelProperty(value = "收货人名字")
+    private String  receiverName;
 
     public BigDecimal getRetentionMoney() {
         return retentionMoney;
@@ -47,4 +49,19 @@ public class RcwlSinvRcvTrxLineDTO extends SinvRcvTrxLineDTO {
     }
 
 
+    public String getAttributeBigint2Meaning() {
+        return attributeBigint2Meaning;
+    }
+
+    public void setAttributeBigint2Meaning(String attributeBigint2Meaning) {
+        this.attributeBigint2Meaning = attributeBigint2Meaning;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
 }
