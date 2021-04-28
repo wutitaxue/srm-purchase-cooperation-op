@@ -123,7 +123,7 @@
 
         srtl.attribute_decimal1 as retention_money,
         srtl.attribute_bigint2,
-        iu.real_name as attribute_bigint2_meaning,
+        iu.real_name as receiver_name,
         srtl.attribute_varchar1 as assetsbill_num,
         srtl.attribute_bigint1 as warehouse_quantity
         FROM
