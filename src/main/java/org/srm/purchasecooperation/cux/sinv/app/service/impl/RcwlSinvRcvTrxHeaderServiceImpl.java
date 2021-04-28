@@ -115,6 +115,10 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private RcwlSinvRcvTrxHeaderMapper rcvRcvTrxHeaderMapper;
     @Autowired
     private RcwlSinvRcvTrxSslmRemoteService rcwlSinvRcvTrxSslmRemoteService;
+    @Autowired
+    private RcwlOrderBillService rcwlOrderBillService;
+    @Autowired
+    private SinvRcvRecordStrategyMappingRepository sinvRcvRecordStrategyMappingRepository;
 
 
     public RcwlSinvRcvTrxHeaderServiceImpl() {
