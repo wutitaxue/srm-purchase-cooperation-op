@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.app.service;
 
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
+import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,9 +13,10 @@ import java.util.List;
  */
 public interface RCWLPlanHeaderDataToBpmService {
     /**
-     * 传输数据给bpm
+     * 触发bpm接口
      * @param list
      * @param organizationId
+     * @throws IOException
      */
-    void sendDataToBpm(List<PlanHeader> list, Long organizationId) throws IOException;
+    void sendDataToBpm(List<PlanHeaderVO> list, Long organizationId) throws IOException;
 }

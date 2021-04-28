@@ -26,6 +26,7 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -255,7 +256,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
      * @return
      */
     @Override
-    public PlanHeaderVO  submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) {
+    public PlanHeaderVO  submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) throws IOException {
         List<Long> ids = planHeaderVOS.stream().map(PlanHeaderVO::getPlanId).distinct().collect(Collectors.toList());
         List<PlanHeader> planHeaderList = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
         logger.info("planHeaderList:" + planHeaderList);
@@ -286,7 +287,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         planHeaderVO.setUrl(url);
 
          //调用bpm接口
-        this.dataToBpmService.sendDataToBpm(list,organizationId);
+        this.dataToBpmService.sendDataToBpm(planHeaderVOS,organizationId);
 
         return planHeaderVO;
     }

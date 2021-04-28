@@ -14,7 +14,7 @@ public class PlanHeaderToBpmDTO {
 
    @ApiModelProperty(value = "标题")
    @JsonProperty("FSubject")
-   private  String FSubject;
+   private  String fSubject;
 
    @ApiModelProperty(value = "管理公司")
    @JsonProperty("COMPANY")
@@ -45,6 +45,106 @@ public class PlanHeaderToBpmDTO {
    private  String lastMonthComplete;
 
    @ApiModelProperty(value = "采购计划信息")
-   List CGJHXX;
+   @JsonProperty("CGJHXX")
+   List<PlanHeaderInfoToBpmDTO> cgjhxx;
 
+   @ApiModelProperty(value = "附件信息")
+   @JsonProperty("ATTACHMENTS1")
+   List<PlanHeaderAttachementToBpmDTO> attachments1;
+
+   public String getFSubject() {
+      return fSubject;
+   }
+
+   public void setFSubject(String FSubject) {
+      this.fSubject = FSubject;
+   }
+
+   public String getCompany() {
+      return company;
+   }
+
+   public void setCompany(String company) {
+      this.company = company;
+   }
+
+   public String getAddFlag() {
+      return addFlag;
+   }
+
+   public void setAddFlag(String addFlag) {
+      this.addFlag = addFlag;
+   }
+
+   public String getThisMonthNumber() {
+      return thisMonthNumber;
+   }
+
+   public void setThisMonthNumber(String thisMonthNumber) {
+      this.thisMonthNumber = thisMonthNumber;
+   }
+
+   public String getNumber() {
+      return number;
+   }
+
+   public void setNumber(String number) {
+      this.number = number;
+   }
+
+   public String getMoney() {
+      return money;
+   }
+
+   public void setMoney(String money) {
+      this.money = money;
+   }
+
+   public String getLastMonthNumber() {
+      return lastMonthNumber;
+   }
+
+   public void setLastMonthNumber(String lastMonthNumber) {
+      this.lastMonthNumber = lastMonthNumber;
+   }
+
+   public String getLastMonthComplete() {
+      return lastMonthComplete;
+   }
+
+   public void setLastMonthComplete(String lastMonthComplete) {
+      this.lastMonthComplete = lastMonthComplete;
+   }
+
+   public List<PlanHeaderInfoToBpmDTO> getCgjhxx() {
+      return cgjhxx;
+   }
+
+   public void setCgjhxx(List<PlanHeaderInfoToBpmDTO> cgjhxx) {
+      this.cgjhxx = cgjhxx;
+   }
+
+   public List<PlanHeaderAttachementToBpmDTO> getAttachments1() {
+      return attachments1;
+   }
+
+   public void setAttachments1(List<PlanHeaderAttachementToBpmDTO> attachments1) {
+      this.attachments1 = attachments1;
+   }
+
+   @Override
+   public String toString() {
+      return "PlanHeaderToBpmDTO{" +
+              "fSubject='" + fSubject + '\'' +
+              ", company='" + company + '\'' +
+              ", addFlag='" + addFlag + '\'' +
+              ", thisMonthNumber='" + thisMonthNumber + '\'' +
+              ", number='" + number + '\'' +
+              ", money='" + money + '\'' +
+              ", lastMonthNumber='" + lastMonthNumber + '\'' +
+              ", lastMonthComplete='" + lastMonthComplete + '\'' +
+              ", cgjhxx=" + cgjhxx +
+              ", attachments1=" + attachments1 +
+              '}';
+   }
 }

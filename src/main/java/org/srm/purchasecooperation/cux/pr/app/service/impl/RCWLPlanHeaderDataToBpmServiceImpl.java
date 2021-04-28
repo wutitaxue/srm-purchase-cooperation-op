@@ -8,10 +8,16 @@ import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.profile.ProfileClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO;
+import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderInfoToBpmDTO;
+import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPlanHeaderDataToBpmService;
-import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
+import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,7 +39,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
      * @param organizationId
      */
     @Override
-    public void sendDataToBpm(List<PlanHeader> list, Long organizationId) throws IOException {
+    public void sendDataToBpm(List<PlanHeaderVO> list, Long organizationId) throws IOException {
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQSRCSYS");
         String reqTarSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQTARSYS");
 
@@ -50,12 +56,51 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         rcwlGxBpmStartDataDTO.setBoid(list.get(0).getProcessNum());
         rcwlGxBpmStartDataDTO.setProcinstId("0");
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
+        ObjectMapper mapper = new ObjectMapper();
 
-        rcwlGxBpmStartDataDTO.setData("");
+        //获取封装数据
+        PlanHeaderToBpmDTO planHeaderToBpmDTO = this.initData(list, organizationId);
+        rcwlGxBpmStartDataDTO.setData(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(planHeaderToBpmDTO));
 
-            //调用bpm接口
-         responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
+        //调用bpm接口
+        responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
     }
+
+    private PlanHeaderToBpmDTO initData(List<PlanHeaderVO> list, Long organizationId) {
+        PlanHeaderToBpmDTO bpmDTO = new PlanHeaderToBpmDTO();
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        String cur_month = sdf.format(date);
+        String fSubject = "采购计划-" + list.get(0).getCompanyName() + "-" + cur_month;
+        bpmDTO.setFSubject(fSubject);
+        bpmDTO.setCompany(list.get(0).getCompanyName());
+        bpmDTO.setAddFlag(list.get(0).getAddFlagMeaning());
+        bpmDTO.setNumber(String.valueOf(list.size()));
+
+        BigDecimal projectAmount = new BigDecimal(0);
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getProjectAmount() == null) {
+                projectAmount.add(new BigDecimal(0));
+            }
+            projectAmount.add(list.get(i).getProjectAmount());
+        }
+        bpmDTO.setMoney(String.valueOf(projectAmount));
+
+        List<PlanHeaderInfoToBpmDTO> planHeaderInfoToBpmDTOS = this.initPlanHeaderInfo(list, organizationId);
+        bpmDTO.setCgjhxx(planHeaderInfoToBpmDTOS);
+        List<PlanHeaderAttachementToBpmDTO> attachementToBpmDTOList = this.initPlanHeaderAttachment(list, organizationId);
+        bpmDTO.setAttachments1(attachementToBpmDTOList);
+        return bpmDTO;
+    }
+
+    private List<PlanHeaderAttachementToBpmDTO> initPlanHeaderAttachment(List<PlanHeaderVO> list, Long organizationId) {
+        return null;
+    }
+
+
+    private List<PlanHeaderInfoToBpmDTO> initPlanHeaderInfo(List<PlanHeaderVO> list, Long organizationId) {
+        return null;
+    }
+
+
 }

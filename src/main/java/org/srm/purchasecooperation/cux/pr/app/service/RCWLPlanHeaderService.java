@@ -9,6 +9,7 @@ import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -64,5 +65,5 @@ public interface RCWLPlanHeaderService {
      * @return
      */
 
-    PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId);
+    PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) throws IOException;
 }
