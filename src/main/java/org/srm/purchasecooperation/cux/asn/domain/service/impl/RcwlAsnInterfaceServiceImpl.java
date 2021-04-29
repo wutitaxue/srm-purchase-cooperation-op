@@ -59,10 +59,10 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
             item.setTenantId(tenantId);
             if (item.getBusinessType().equals("2")) {
                 rcwlAsnInterfaceMapper.deleteSinvLineReturn(item);
+                returnDto.setErrorFlag(0);
+                returnDto.setErrorMessage("已清空入库数量及单据编号允许反审核!");
             }
         }
-        returnDto.setErrorFlag(0);
-        returnDto.setErrorMessage("已清空入库数量及单据编号允许反审核!");
         return returnDto;
     }
 }
