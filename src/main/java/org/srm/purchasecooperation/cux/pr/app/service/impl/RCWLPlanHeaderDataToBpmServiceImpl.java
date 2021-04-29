@@ -50,7 +50,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
      * @param organizationId
      */
     @Override
-    public void sendDataToBpm(List<PlanHeaderVO> list, Long organizationId) throws IOException {
+    public void sendDataToBpm(List<PlanHeaderVO> list, Long organizationId,String processNum) throws IOException {
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQSRCSYS");
         String reqTarSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQTARSYS");
 
@@ -64,7 +64,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
         rcwlGxBpmStartDataDTO.setUserId(userName);
         rcwlGxBpmStartDataDTO.setBtid("RCWLSRMCGJH");
-        rcwlGxBpmStartDataDTO.setBoid(list.get(0).getProcessNum());
+        rcwlGxBpmStartDataDTO.setBoid(processNum);
         rcwlGxBpmStartDataDTO.setProcinstId("0");
 
         ObjectMapper mapper = new ObjectMapper();
@@ -158,7 +158,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
                 planHeaderInfoToBpmDTO.setProjectAmount(String.valueOf(projectAmount));
             }
             planHeaderInfoToBpmDTO.setBidMethod(item.getBidMethodMeaning());
-            planHeaderInfoToBpmDTO.setDePlanFinTime(String.valueOf(item.getDeApprFinTime()));
+            planHeaderInfoToBpmDTO.setDePlanFinTime(String.valueOf(item.getDePlanFinTime()));
             planHeaderInfoToBpmDTO.setPlanFinVenTime(String.valueOf(item.getPlanFinVenTime()));
             planHeaderInfoToBpmDTO.setPlanFinApprTime(String.valueOf(item.getPlanFinApprTime()));
             planHeaderInfoToBpmDTO.setPlanFinBidTime(String.valueOf((item.getPlanFinBidTime())));

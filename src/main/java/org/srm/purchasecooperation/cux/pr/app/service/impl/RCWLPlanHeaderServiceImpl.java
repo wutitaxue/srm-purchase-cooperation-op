@@ -287,7 +287,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         planHeaderVO.setUrl(url);
 
          //调用bpm接口
-        this.dataToBpmService.sendDataToBpm(planHeaderVOS,organizationId);
+        this.dataToBpmService.sendDataToBpm(planHeaderVOS,organizationId,processNum);
 
         return planHeaderVO;
     }
