@@ -66,9 +66,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         rcwlGxBpmStartDataDTO.setBtid("RCWLSRMCGJH");
         rcwlGxBpmStartDataDTO.setBoid(processNum);
         rcwlGxBpmStartDataDTO.setProcinstId("0");
-
         ObjectMapper mapper = new ObjectMapper();
-
         //获取封装数据
         PlanHeaderToBpmDTO planHeaderToBpmDTO = this.initData(list, organizationId);
         logger.info("封装DTO==================================================");
