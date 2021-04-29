@@ -124,16 +124,16 @@ public class PlanHeaderVO  {
 
     @ApiModelProperty(value = "立项金额（万元）")
     private BigDecimal projectAmount;
-    @ApiModelProperty(value = "定标金额")
+ //   @ApiModelProperty(value = "定标金额")
     private BigDecimal bidAmount;
-    @ApiModelProperty(value = "合同金额")
+  //  @ApiModelProperty(value = "合同金额")
     private BigDecimal contractAmount;
 
     @JsonFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "需求计划完成时间")
     private LocalDate dePlanFinTime;
 
-    @ApiModelProperty(value = "需求审批完成时间")
+   // @ApiModelProperty(value = "需求审批完成时间")
     @JsonFormat(pattern = Constants.Pattern.DATE)
     private LocalDate deApprFinTime;
 
@@ -210,6 +210,14 @@ public class PlanHeaderVO  {
     private String approvalStatusMeaning;
     @ApiModelProperty(value = "返回url")
     private String url;
+    //原计划头上字段需求审批时间，定标金额，合同金额改为取需求行上
+    @ApiModelProperty(value = "需求审批完成时间")
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    private LocalDate attributeDate6;
+    @ApiModelProperty(value = "定标金额")
+    private String attributeVarchar6;
+    @ApiModelProperty(value = "合同金额")
+    private String attributeVarchar7;
 
     public PlanHeaderVO() {
     }
@@ -684,5 +692,29 @@ public class PlanHeaderVO  {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public LocalDate getAttributeDate6() {
+        return attributeDate6;
+    }
+
+    public void setAttributeDate6(LocalDate attributeDate6) {
+        this.attributeDate6 = attributeDate6;
+    }
+
+    public String getAttributeVarchar6() {
+        return attributeVarchar6;
+    }
+
+    public void setAttributeVarchar6(String attributeVarchar6) {
+        this.attributeVarchar6 = attributeVarchar6;
+    }
+
+    public String getAttributeVarchar7() {
+        return attributeVarchar7;
+    }
+
+    public void setAttributeVarchar7(String attributeVarchar7) {
+        this.attributeVarchar7 = attributeVarchar7;
     }
 }
