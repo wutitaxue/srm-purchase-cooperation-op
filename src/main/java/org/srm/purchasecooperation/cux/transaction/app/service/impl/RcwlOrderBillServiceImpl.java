@@ -47,9 +47,9 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendOrderBillOne(Long tenantId,Long rcvTrxLineId,String type) {
         RcwlOrderBillDTO rcwlOrderBillDTO;
-        if (type == "ASN"){
+        if ("ASN".equals(type)){
              rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAsn(tenantId,rcvTrxLineId);
-        }else if(type == "ORDER"){
+        }else if("ORDER".equals(type)){
             rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
         }else {
             throw new CommonException("输入单据类型错误");
@@ -65,7 +65,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         String code = asJsonObject.get("code").getAsString();
         String message = asJsonObject.get("message").getAsString();
         String codecg = "E";
-        if (code=="0"){
+        if ("0".equals(code)){
             codecg = "S";
             //更新物料smdm_item物料表 attribute_varchar1字段改为false
             rcwlOrderBillMapper.updateItem(tenantId,rcwlOrderBillDTO.getfMaterialId());
