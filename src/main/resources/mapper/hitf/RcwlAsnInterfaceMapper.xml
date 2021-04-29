@@ -15,6 +15,16 @@
                 and srth.trx_num = #{sinv.acceptanceNumber}) a)
     </update>
 
+    <select id="checkSinvLineReturn" resultType="java.lang.Long">
+        select
+            count(*)
+            from
+            sinv_rcv_trx_line srtl
+            left join sinv_rcv_trx_header srth on srth.rcv_trx_header_id = srtl.rcv_trx_header_id
+            where srtl.tenant_id = #{sinv.tenantId} and srtl.trx_line_num = #{sinv.lineNumber}
+            and srth.trx_num = #{sinv.acceptanceNumber}
+    </select>
+
     <select id="selectSinvStatusCount" resultType="java.lang.Long">
         select
         count(*)
