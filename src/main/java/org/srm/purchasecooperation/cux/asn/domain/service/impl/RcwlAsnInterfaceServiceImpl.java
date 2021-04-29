@@ -50,6 +50,7 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
                 Long exists = rcwlAsnInterfaceMapper.selectSinvStatusCount(item);
                 if (exists > 0) {
                     returnDto.setErrorFlag(1);
+                    returnDto.setReturnFlag("N");
                     returnDto.setErrorMessage("单据:" + item.getAcceptanceNumber()
                             + "行号:" + item.getLineNumber() + "采购平台已结算，不允许反审核!");
                     List<RcwlAsnAcceptOrRcvDTO> returnDtolist = new ArrayList<>();
@@ -69,6 +70,7 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
             if (item.getBusinessType().equals("2")) {
                 rcwlAsnInterfaceMapper.deleteSinvLineReturn(item);
                 returnDto.setErrorFlag(0);
+                returnDto.setReturnFlag("Y");
                 returnDto.setErrorMessage("已清空入库数量及单据编号允许反审核!");
             }
         }

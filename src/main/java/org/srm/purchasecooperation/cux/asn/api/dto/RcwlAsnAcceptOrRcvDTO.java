@@ -60,6 +60,16 @@ public class RcwlAsnAcceptOrRcvDTO extends ItfBaseBO{
      */
     private String purchaseOrderNo;
 
+    private String returnFlag;
+
+    public String getReturnFlag() {
+        return returnFlag;
+    }
+
+    public void setReturnFlag(String returnFlag) {
+        this.returnFlag = returnFlag;
+    }
+
     public RcwlAsnAcceptOrRcvDTO() {
     }
 
