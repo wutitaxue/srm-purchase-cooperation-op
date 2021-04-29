@@ -67,7 +67,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         String code = asJsonObject.get("code").getAsString();
         String message = asJsonObject.get("message").getAsString();
         String codecg = "E";
-        if ("0".equals(code)){
+        if ("0".equals(code) || "102".equals(code)){
             codecg = "S";
             //更新物料smdm_item物料表 attribute_varchar1字段改为false
             rcwlOrderBillMapper.updateItem(tenantId,rcwlOrderBillDTO.getfMaterialId());
