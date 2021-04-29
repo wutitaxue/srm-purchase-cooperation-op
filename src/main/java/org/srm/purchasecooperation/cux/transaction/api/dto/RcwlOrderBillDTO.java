@@ -58,10 +58,15 @@ public class RcwlOrderBillDTO {
     @JSONField(name="FModel")
     private String fModel;
 
+    @ApiModelProperty("物料是否需要新增int")
+    @NotBlank
+    @JSONField(name="FIsNewInt")
+    private String fIsNewInt;
+
     @ApiModelProperty("物料是否需要新增")
     @NotBlank
     @JSONField(name="FIsNew")
-    private String fIsNew;
+    private Boolean fIsNew;
 
     @ApiModelProperty("结算币别编码")
     @NotBlank
@@ -133,6 +138,13 @@ public class RcwlOrderBillDTO {
     private String fIsVatinvoice;
 
 
+    public String getfIsNewInt() {
+        return fIsNewInt;
+    }
+
+    public void setfIsNewInt(String fIsNewInt) {
+        this.fIsNewInt = fIsNewInt;
+    }
 
     @JSONField(name="FIsVatinvoice")
     public String getfIsVatinvoice() {
@@ -255,12 +267,12 @@ public class RcwlOrderBillDTO {
     }
 
     @JSONField(name="FIsNew")
-    public String getfIsNew() {
+    public Boolean getfIsNew() {
         return fIsNew;
     }
 
     @JSONField(name="FIsNew")
-    public void setfIsNew(String fIsNew) {
+    public void setfIsNew(Boolean fIsNew) {
         this.fIsNew = fIsNew;
     }
 
