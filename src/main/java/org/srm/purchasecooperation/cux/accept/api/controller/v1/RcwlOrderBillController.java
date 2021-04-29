@@ -30,9 +30,9 @@ public class RcwlOrderBillController {
             level = ResourceLevel.ORGANIZATION
     )
     @PostMapping({"/rcwl-order-bill"})
-    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,Long rcvTrxLineId,String type) {
+    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,Long rcvTrxLineId,String rcvTrxnum,String type) {
 
-        rcwlOrderBillService.sendOrderBillOne(tenantId,rcvTrxLineId,type);
+        rcwlOrderBillService.sendOrderBillOne(tenantId,rcvTrxLineId,type,rcvTrxnum);
 
         return Results.success();
     }
