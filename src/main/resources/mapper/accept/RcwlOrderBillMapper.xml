@@ -22,7 +22,7 @@
                 spl.po_line_id = srtol.from_po_line_id
             ) fMaterialGroup,
             ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
-        IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), 'false' ) fIsNew,
+        IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNew,
         ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
         (
             SELECT
@@ -89,7 +89,7 @@
                 spl.po_line_id = srtol.from_po_line_id
             ) fMaterialGroup,
             ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
-        IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), 'false' ) fIsNew,
+        IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNew,
         ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
         (
             SELECT
@@ -130,7 +130,7 @@
         WHERE srtl.tenant_id = #{tenantId} and srtl.rcv_trx_line_id = #{id}
     </select>
     <update id="updateItem">
-        update  smdm_item si set si.attribute_varchar1 = 'false'
+        update  smdm_item si set si.attribute_varchar1 = '0'
         where si.tenant_id = #{tenantId} and si.item_code = #{itemCode}
     </update>
 </mapper>
