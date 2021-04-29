@@ -129,17 +129,17 @@ public class RcwlOrderBillDTO {
 
     @ApiModelProperty("是否专票")
     @NotBlank
-    @JSONField(name="Fisvatinvoice")
+    @JSONField(name="FIsVatinvoice")
     private String fIsVatinvoice;
 
 
 
-    @JSONField(name="Fisvatinvoice")
+    @JSONField(name="FIsVatinvoice")
     public String getfIsVatinvoice() {
         return fIsVatinvoice;
     }
 
-    @JSONField(name="Fisvatinvoice")
+    @JSONField(name="FIsVatinvoice")
     public void setfIsVatinvoice(String fIsVatinvoice) {
         this.fIsVatinvoice = fIsVatinvoice;
     }
