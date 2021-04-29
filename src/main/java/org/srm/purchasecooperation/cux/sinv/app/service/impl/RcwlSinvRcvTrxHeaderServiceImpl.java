@@ -31,7 +31,6 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private SinvRcvRecordStrategyMappingRepository sinvRcvRecordStrategyMappingRepository;
 
     @Override
-    @Transactional
     public SinvRcvTrxHeaderDTO submittedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
         if (BaseConstants.Flag.YES.equals(sinvRcvTrxHeaderDTO.getExecuteUpdateFlag())) {
             this.updateSinv(tenantId, sinvRcvTrxHeaderDTO);

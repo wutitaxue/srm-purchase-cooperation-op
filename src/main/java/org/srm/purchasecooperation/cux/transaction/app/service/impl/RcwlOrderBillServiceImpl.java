@@ -37,14 +37,11 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
     private RcwlOrderBillMapper rcwlOrderBillMapper;
     @Autowired
     private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
-    @Autowired
-    private RcvTrxHeaderRepository rcvTrxHeaderRepository;
 
     /**
      * 调用资产接口
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendOrderBillOne(Long tenantId,Long rcvTrxLineId,String type) {
         RcwlOrderBillDTO rcwlOrderBillDTO;
         if ("ASN".equals(type)){
