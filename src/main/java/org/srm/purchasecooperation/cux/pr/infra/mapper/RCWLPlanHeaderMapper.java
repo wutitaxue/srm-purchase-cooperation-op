@@ -4,6 +4,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
+import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO;
@@ -50,5 +51,11 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
 
     void submitPlanHeader(@Param("list")List<PlanHeader> list, @Param("organizationId")Long organizationId);
 
+    Integer calThisMonthNumber(@Param("userId")Long userId, @Param("organizationId")Long organizationId);
 
+    Integer calLastMonthNumber(@Param("userId")Long userId, @Param("organizationId")Long organizationId);
+
+    Integer calLastMonthComplete(@Param("userId")Long userId, @Param("organizationId")Long organizationId);
+
+    List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(@Param("list")List list, @Param("organizationId")Long organizationId);
 }
