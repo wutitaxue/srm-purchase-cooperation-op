@@ -50,7 +50,7 @@ public class RcwlOrderBillController {
         if (Header == null){
             throw new CommonException("单据编码不存在!");
         }
-        if(type == "ORDER" && Header.getAttributeVarchar6()!="1"){
+        if("ORDER".equals(type) && Header.getAttributeVarchar6()!="1"){
             return Results.success();
         }
         RcvTrxLine rcvTrxLine = new RcvTrxLine();
