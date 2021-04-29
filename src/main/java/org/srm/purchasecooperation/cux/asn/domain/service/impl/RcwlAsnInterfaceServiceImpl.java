@@ -4,6 +4,8 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.srm.common.client.HiamClient;
+import org.srm.common.client.feign.HiamTenantRemoteService;
 import org.srm.purchasecooperation.cux.asn.api.dto.RcwlAsnAcceptOrRcvDTO;
 import org.srm.purchasecooperation.cux.asn.domain.service.RcwlAsnInterfaceService;
 import org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlAsnInterfaceMapper;
@@ -28,8 +30,9 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
     @Override
     public RcwlAsnAcceptOrRcvDTO returnAcceptOrRcvBack(List<RcwlAsnAcceptOrRcvDTO> list) {
         RcwlAsnAcceptOrRcvDTO returnDto = new RcwlAsnAcceptOrRcvDTO();
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        Long tenantId = userDetails.getTenantId();
+//        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+//        Long tenantId = userDetails.getTenantId();
+        Long tenantId = rcwlAsnInterfaceMapper.selectTenantIdByName("SRM-RCWL");
         for (RcwlAsnAcceptOrRcvDTO item : list) {
             item.setTenantId(tenantId);
             //业务类型 1回传数据 2单据反审核

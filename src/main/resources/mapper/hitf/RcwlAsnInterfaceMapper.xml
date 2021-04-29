@@ -15,7 +15,6 @@
                 and srth.trx_num = #{sinv.acceptanceNumber}) a)
     </update>
 
-
     <select id="selectSinvStatusCount" resultType="java.lang.Long">
         select
         count(*)
@@ -26,7 +25,6 @@
         and ss.tenant_id = #{sinv.tenantId}
         and ss.bill_status = 'BILLED'
     </select>
-
 
     <update id="deleteSinvLineReturn">
         update sinv_rcv_trx_line t
@@ -43,5 +41,8 @@
                 and srth.trx_num = #{sinv.acceptanceNumber}) a)
     </update>
 
+    <select id="selectTenantIdByName" resultType="java.lang.Long">
+        select ht.tenant_id from hpfm_tenant ht where ht.tenant_name = #{tenantName}
+    </select>
 
 </mapper>
