@@ -61,7 +61,7 @@ public class RcwlOrderBillDTO {
     @ApiModelProperty("物料是否需要新增")
     @NotBlank
     @JSONField(name="FIsNew")
-    private Boolean fIsNew;
+    private String fIsNew;
 
     @ApiModelProperty("结算币别编码")
     @NotBlank
@@ -255,12 +255,12 @@ public class RcwlOrderBillDTO {
     }
 
     @JSONField(name="FIsNew")
-    public Boolean getfIsNew() {
+    public String getfIsNew() {
         return fIsNew;
     }
 
     @JSONField(name="FIsNew")
-    public void setfIsNew(Boolean fIsNew) {
+    public void setfIsNew(String fIsNew) {
         this.fIsNew = fIsNew;
     }
 
