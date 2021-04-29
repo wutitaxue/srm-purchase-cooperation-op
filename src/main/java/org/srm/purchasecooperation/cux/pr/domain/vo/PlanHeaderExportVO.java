@@ -107,13 +107,13 @@ public class PlanHeaderExportVO  {
     private String agentMeaning;
     @ExcelColumn(title = "立项金额（万元）",order = 15)
     private BigDecimal projectAmount;
-    @ExcelColumn(title = "定标金额",order = 16)
+    // @ExcelColumn(title = "定标金额",order = 16)
     private BigDecimal bidAmount;
-    @ExcelColumn(title = "合同金额",order = 17)
+    // @ExcelColumn(title = "合同金额",order = 17)
     private BigDecimal contractAmount;
     @ExcelColumn(title = "需求计划完成时间", pattern = Constants.Pattern.DATE,order = 20)
     private LocalDate dePlanFinTime;
-    @ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE,order = 21)
+    //@ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE,order = 21)
     private LocalDate deApprFinTime;
     @ExcelColumn(title = "计划完成时间（供方入围）", pattern = Constants.Pattern.DATE,order = 22)
     private LocalDate planFinVenTime;
@@ -173,7 +173,13 @@ public class PlanHeaderExportVO  {
     private String approvalStatus;
     @ExcelColumn(title = "审批状态",order = 2)
     private String approvalStatusMeaning;
-
+    //原计划头上字段需求审批时间，定标金额，合同金额改为取需求行上
+    @ExcelColumn(title = "需求审批完成时间", pattern = Constants.Pattern.DATE,order = 21)
+    private LocalDate attributeDate6;
+    @ExcelColumn(title = "定标金额",order = 16)
+    private String attributeVarchar6;
+    @ExcelColumn(title = "合同金额",order = 17)
+    private String attributeVarchar7;
     public PlanHeaderExportVO() {
     }
 
@@ -618,5 +624,29 @@ public class PlanHeaderExportVO  {
 
     public void setApprovalStatusMeaning(String approvalStatusMeaning) {
         this.approvalStatusMeaning = approvalStatusMeaning;
+    }
+
+    public LocalDate getAttributeDate6() {
+        return attributeDate6;
+    }
+
+    public void setAttributeDate6(LocalDate attributeDate6) {
+        this.attributeDate6 = attributeDate6;
+    }
+
+    public String getAttributeVarchar6() {
+        return attributeVarchar6;
+    }
+
+    public void setAttributeVarchar6(String attributeVarchar6) {
+        this.attributeVarchar6 = attributeVarchar6;
+    }
+
+    public String getAttributeVarchar7() {
+        return attributeVarchar7;
+    }
+
+    public void setAttributeVarchar7(String attributeVarchar7) {
+        this.attributeVarchar7 = attributeVarchar7;
     }
 }
