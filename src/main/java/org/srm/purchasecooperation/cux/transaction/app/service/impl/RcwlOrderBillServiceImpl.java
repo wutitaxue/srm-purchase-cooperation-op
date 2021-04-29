@@ -19,6 +19,8 @@ import org.srm.purchasecooperation.cux.transaction.infra.constant.RcwlTrcConstan
 import org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlOrderBillMapper;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineRepository;
+import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxHeader;
+import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxHeaderRepository;
 import org.srm.web.annotation.Tenant;
 
 import java.util.HashMap;
@@ -35,6 +37,8 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
     private RcwlOrderBillMapper rcwlOrderBillMapper;
     @Autowired
     private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
+    @Autowired
+    private RcvTrxHeaderRepository rcvTrxHeaderRepository;
 
     /**
      * 调用资产接口
@@ -46,7 +50,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         if (type == "ASN"){
              rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAsn(tenantId,rcvTrxLineId);
         }else if(type == "ORDER"){
-             rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
+            rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
         }else {
             throw new CommonException("输入单据类型错误");
         }
