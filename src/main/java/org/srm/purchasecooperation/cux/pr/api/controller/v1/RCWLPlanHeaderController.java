@@ -17,6 +17,7 @@ import org.hzero.export.annotation.ExcelExport;
 import org.hzero.export.vo.ExportParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO;
@@ -30,6 +31,7 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -89,18 +91,21 @@ public class RCWLPlanHeaderController extends BaseController {
         RCWLPlanHeaderService.saveAttachment(tenantId, planHeader);
         return Results.success();
     }
-
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
     @ApiOperation(value = "批量取消采购计划")
     @Permission(level = ResourceLevel.ORGANIZATION)
 //   @Permission(permissionPublic = true)
-
     @PostMapping("/cancel")
     public ResponseEntity<List<PlanHeader>> batchCancelPlanHeader(@ApiParam(value = "租户id", required = true) @PathVariable(value = "organizationId") Long organizationId,
                                                                   @ApiParam(value = "采购计划表list") @RequestBody List<PlanHeader> planHeaderList) {
 
         return Results.success(RCWLPlanHeaderService.batchCancelPlanHeader(organizationId, planHeaderList));
     }
-
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
     @ApiOperation(value = "创建保存采购计划")
     @Permission(level = ResourceLevel.ORGANIZATION)
     //@Permission(permissionPublic = true)
@@ -111,12 +116,14 @@ public class RCWLPlanHeaderController extends BaseController {
         return Results.success();
     }
 
-
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
     @ApiOperation(value = "提交采购计划")
     @Permission(level = ResourceLevel.ORGANIZATION)
     //@Permission(permissionPublic = true)
     @PostMapping("/submit")
-    public ResponseEntity<PlanHeaderVO> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) {
+    public ResponseEntity<PlanHeaderVO> submitPlanHeader(@PathVariable Long organizationId,@RequestBody List<PlanHeaderVO> planHeaderVOS) throws IOException {
 
         PlanHeaderVO planHeaderVO =  this.RCWLPlanHeaderService.submitPlanHeader(planHeaderVOS,organizationId);
         return Results.success(planHeaderVO);
