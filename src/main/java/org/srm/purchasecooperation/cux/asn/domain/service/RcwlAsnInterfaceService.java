@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface RcwlAsnInterfaceService {
 
-    RcwlAsnAcceptOrRcvDTO returnAcceptOrRcvBack (List<RcwlAsnAcceptOrRcvDTO> list);
+    List<RcwlAsnAcceptOrRcvDTO> returnAcceptOrRcvBack (List<RcwlAsnAcceptOrRcvDTO> list);
 
 }

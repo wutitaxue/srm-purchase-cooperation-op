@@ -35,7 +35,7 @@ public class RcwlAsnInterfaceController {
             permissionPublic = true
     )
     @PostMapping({"/return-accept-rcv"})
-    public ResponseEntity<RcwlAsnAcceptOrRcvDTO> returnAcceptOrRcvBack(@RequestBody List<RcwlAsnAcceptOrRcvDTO> list) {
+    public ResponseEntity<List<RcwlAsnAcceptOrRcvDTO>> returnAcceptOrRcvBack(@RequestBody List<RcwlAsnAcceptOrRcvDTO> list) {
         return Results.success(rcwlAsnInterfaceService.returnAcceptOrRcvBack(list));
     }
 }
