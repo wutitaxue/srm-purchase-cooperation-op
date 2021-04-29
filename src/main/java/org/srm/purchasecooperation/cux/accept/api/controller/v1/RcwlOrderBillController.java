@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.accept.infra.constant.RcwlAcceptConstants;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
+import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxHeader;
+import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
+import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxHeaderRepository;
+import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxLineRepository;
+
+import java.util.List;
 
 
 @Api(
@@ -24,17 +30,32 @@ public class RcwlOrderBillController {
 
     @Autowired
     RcwlOrderBillService rcwlOrderBillService;
+    @Autowired
+    private RcvTrxHeaderRepository rcvTrxHeaderRepository;
+    @Autowired
+    private RcvTrxLineRepository rcvTrxLineRepository;
 
     @ApiOperation("资产采购订单接口重推")
     @Permission(
             level = ResourceLevel.ORGANIZATION
     )
     @PostMapping({"/rcwl-order-bill"})
-    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,Long rcvTrxLineId,String rcvTrxnum,String type) {
+    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,String rcvTrxnum,String type) {
 
-        rcwlOrderBillService.sendOrderBillOne(tenantId,rcvTrxLineId,type,rcvTrxnum);
-
+        RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
+        rcvTrxHeader.setTrxNum(rcvTrxnum);
+        rcvTrxHeader.setTenantId(tenantId);
+        RcvTrxHeader Header = rcvTrxHeaderRepository.selectOne(rcvTrxHeader);
+        if(type == "ORDER" && Header.getAttributeVarchar6()!="1"){
+            return Results.success();
+        }
+        RcvTrxLine rcvTrxLine = new RcvTrxLine();
+        rcvTrxLine.setTenantId(tenantId);
+        rcvTrxLine.setRcvTrxHeaderId(Header.getRcvTrxHeaderId());
+        rcvTrxLineRepository.select(rcvTrxLine).forEach(item -> {
+            rcwlOrderBillService.sendOrderBillOne(tenantId,item.getRcvTrxLineId(),type);
+           }
+        );
         return Results.success();
     }
-
 }

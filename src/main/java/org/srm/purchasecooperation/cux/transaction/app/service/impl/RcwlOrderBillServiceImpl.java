@@ -45,17 +45,11 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendOrderBillOne(Long tenantId,Long rcvTrxLineId,String type,String rcvTrxnum) {
+    public void sendOrderBillOne(Long tenantId,Long rcvTrxLineId,String type) {
         RcwlOrderBillDTO rcwlOrderBillDTO;
         if (type == "ASN"){
              rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAsn(tenantId,rcvTrxLineId);
         }else if(type == "ORDER"){
-            RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
-            rcvTrxHeader.setTrxNum(rcvTrxnum);
-            rcvTrxHeader.setTenantId(tenantId);
-            if(rcvTrxHeaderRepository.selectOne(rcvTrxHeader).getAttributeVarchar6()!="1"){
-                return;
-            }
             rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
         }else {
             throw new CommonException("输入单据类型错误");

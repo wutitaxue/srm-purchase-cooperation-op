@@ -52,7 +52,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             if("ASN".equals(sinvRcvRecordStrategyMapping.getOrderTypeCode())){
                 List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
                 for (SinvRcvTrxLineDTO i:sinvRcvTrxLineDTOS){
-                    rcwlOrderBillService.sendOrderBillOne(i.getTenantId(),i.getRcvTrxLineId(),"ASN",null);
+                    rcwlOrderBillService.sendOrderBillOne(i.getTenantId(),i.getRcvTrxLineId(),"ASN");
                 }
             }
             return sinvRcvTrxHeaderDTO;
