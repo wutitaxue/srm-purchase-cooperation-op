@@ -71,7 +71,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
 
         //获取封装数据
         PlanHeaderToBpmDTO planHeaderToBpmDTO = this.initData(list, organizationId);
-         logger.info("封装DTO==================================================");
+        logger.info("封装DTO==================================================");
         logger.info(planHeaderToBpmDTO.toString());
         logger.info("封装报文==================================================");
         logger.info(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(planHeaderToBpmDTO));
@@ -81,7 +81,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         try {
             //调用bpm接口
             responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw new CommonException("接口调用失败！！！");
         }
     }
@@ -94,14 +94,14 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
         String cur_month = sdf.format(date);
         String fSubject = "采购计划-" + list.get(0).getCompanyName() + "-" + cur_month;
-        bpmDTO.setFSubject(fSubject);
+        bpmDTO.setTitle(fSubject);
         bpmDTO.setCompany(list.get(0).getCompanyName());
         bpmDTO.setAddFlag(list.get(0).getAddFlagMeaning());
         bpmDTO.setNumber(String.valueOf(list.size()));
 
-        Integer thisMonthNumber =  this.rcwlPlanHeaderRepository.calThisMonthNumber(userId,organizationId);
-        Integer lastMonthNumber = this.rcwlPlanHeaderRepository.calLastMonthNumber(userId,organizationId);
-        Integer lastMonthComplete = this.rcwlPlanHeaderRepository.calLastMonthComplete(userId,organizationId);
+        Integer thisMonthNumber = this.rcwlPlanHeaderRepository.calThisMonthNumber(userId, organizationId);
+        Integer lastMonthNumber = this.rcwlPlanHeaderRepository.calLastMonthNumber(userId, organizationId);
+        Integer lastMonthComplete = this.rcwlPlanHeaderRepository.calLastMonthComplete(userId, organizationId);
         bpmDTO.setThisMonthNumber(String.valueOf(thisMonthNumber));
         bpmDTO.setLastMonthNumber(String.valueOf(lastMonthNumber));
         bpmDTO.setLastMonthComplete(String.valueOf(lastMonthComplete));
@@ -109,13 +109,13 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
         BigDecimal projectAmount = new BigDecimal(0);
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getProjectAmount() == null) {
-                projectAmount.add(new BigDecimal(0));
+                projectAmount = projectAmount.add(new BigDecimal(0));
+            } else {
+                projectAmount = projectAmount.add(list.get(i).getProjectAmount());
             }
-            projectAmount.add(list.get(i).getProjectAmount());
         }
         BigDecimal newPeojectAmount = projectAmount.setScale(2, RoundingMode.HALF_UP);
         bpmDTO.setMoney(String.valueOf(newPeojectAmount));
-
 
 
         List<PlanHeaderInfoToBpmDTO> planHeaderInfoToBpmDTOS = this.initPlanHeaderInfo(list, organizationId);
@@ -128,13 +128,13 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
     private List<PlanHeaderAttachementToBpmDTO> initPlanHeaderAttachment(List<PlanHeaderVO> list, Long organizationId) {
         List<PlanHeaderAttachementToBpmDTO> bpmDTOS = new ArrayList<>();
         List attList = new ArrayList();
-        list.forEach(item->{
-           if(!StringUtils.isEmpty(item.getAttachment())){
-               attList.add(item.getAttachment());
-           }
+        list.forEach(item -> {
+            if (!StringUtils.isEmpty(item.getAttachment())) {
+                attList.add(item.getAttachment());
+            }
         });
-        if(CollectionUtils.isNotEmpty(attList)) {
-             bpmDTOS = this.rcwlPlanHeaderRepository.batchSelectAttachmentsInfo(attList, organizationId);
+        if (CollectionUtils.isNotEmpty(attList)) {
+            bpmDTOS = this.rcwlPlanHeaderRepository.batchSelectAttachmentsInfo(attList, organizationId);
         }
         logger.info("附件行信息：===========================");
         logger.info(bpmDTOS.toString());
@@ -144,7 +144,7 @@ public class RCWLPlanHeaderDataToBpmServiceImpl implements RCWLPlanHeaderDataToB
 
     private List<PlanHeaderInfoToBpmDTO> initPlanHeaderInfo(List<PlanHeaderVO> list, Long organizationId) {
         List<PlanHeaderInfoToBpmDTO> infoToBpmDTOS = new ArrayList<>();
-        list.forEach(item-> {
+        list.forEach(item -> {
             PlanHeaderInfoToBpmDTO planHeaderInfoToBpmDTO = new PlanHeaderInfoToBpmDTO();
             planHeaderInfoToBpmDTO.setPrCategory(item.getPrCategoryMeaning());
             planHeaderInfoToBpmDTO.setFormat(item.getFormatMeaning());
