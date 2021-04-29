@@ -11,20 +11,15 @@ import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.interfaces.sdk.invoke.InterfaceInvokeSdk;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
 import org.srm.purchasecooperation.cux.transaction.infra.constant.RcwlTrcConstants;
 import org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlOrderBillMapper;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineRepository;
-import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxHeader;
-import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxHeaderRepository;
 import org.srm.web.annotation.Tenant;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -46,8 +41,18 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         RcwlOrderBillDTO rcwlOrderBillDTO;
         if ("ASN".equals(type)){
              rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAsn(tenantId,rcvTrxLineId);
+            if("1".equals(rcwlOrderBillDTO.getfIsNewInt())){
+                rcwlOrderBillDTO.setfIsNew(true);
+            }else if ("0".equals(rcwlOrderBillDTO.getfIsNewInt())){
+                rcwlOrderBillDTO.setfIsNew(false);
+            }
         }else if("ORDER".equals(type)){
             rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
+            if("1".equals(rcwlOrderBillDTO.getfIsNewInt())){
+                rcwlOrderBillDTO.setfIsNew(true);
+            }else if ("0".equals(rcwlOrderBillDTO.getfIsNewInt())){
+                rcwlOrderBillDTO.setfIsNew(false);
+            }
         }else {
             throw new CommonException("输入单据类型错误");
         }
