@@ -14,4 +14,5 @@ public interface RcwlAsnInterfaceMapper extends BaseMapper<RcwlAsnAcceptOrRcvDTO
     //如果都未产生对账单 将这些单据的加上的资产单据号”字段attribute_varchar1和 “入库数量”字段attribute_bigint1
     void deleteSinvLineReturn (@Param("sinv") RcwlAsnAcceptOrRcvDTO sinvRcvTrxLine);
 
+    Long selectTenantIdByName(String tenantName);
 }
