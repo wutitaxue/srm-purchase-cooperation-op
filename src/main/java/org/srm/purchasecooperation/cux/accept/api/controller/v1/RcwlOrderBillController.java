@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.accept.api.controller.v1;
 
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
@@ -46,6 +47,9 @@ public class RcwlOrderBillController {
         rcvTrxHeader.setTrxNum(rcvTrxnum);
         rcvTrxHeader.setTenantId(tenantId);
         RcvTrxHeader Header = rcvTrxHeaderRepository.selectOne(rcvTrxHeader);
+        if (Header == null){
+            throw new CommonException("单据编码不存在!");
+        }
         if(type == "ORDER" && Header.getAttributeVarchar6()!="1"){
             return Results.success();
         }
