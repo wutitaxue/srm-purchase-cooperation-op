@@ -18,5 +18,5 @@ public interface RCWLPlanHeaderDataToBpmService {
      * @param organizationId
      * @throws IOException
      */
-    void sendDataToBpm(List<PlanHeaderVO> list, Long organizationId) throws IOException;
+    void sendDataToBpm(List<PlanHeaderVO> list, Long organizationId,String processNum) throws IOException;
 }

@@ -14,7 +14,7 @@ public class PlanHeaderToBpmDTO {
 
    @ApiModelProperty(value = "标题")
    @JsonProperty("FSubject")
-   private  String fSubject;
+   private  String title;
 
    @ApiModelProperty(value = "管理公司")
    @JsonProperty("COMPANY")
@@ -52,12 +52,12 @@ public class PlanHeaderToBpmDTO {
    @JsonProperty("ATTACHMENTS1")
    List<PlanHeaderAttachementToBpmDTO> attachments1;
 
-   public String getFSubject() {
-      return fSubject;
+   public String getTitle() {
+      return title;
    }
 
-   public void setFSubject(String FSubject) {
-      this.fSubject = FSubject;
+   public void setTitle(String title) {
+      this.title = title;
    }
 
    public String getCompany() {
@@ -135,7 +135,7 @@ public class PlanHeaderToBpmDTO {
    @Override
    public String toString() {
       return "PlanHeaderToBpmDTO{" +
-              "fSubject='" + fSubject + '\'' +
+              "title='" + title + '\'' +
               ", company='" + company + '\'' +
               ", addFlag='" + addFlag + '\'' +
               ", thisMonthNumber='" + thisMonthNumber + '\'' +
