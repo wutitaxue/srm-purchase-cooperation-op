@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.SinvRcvTrxWaitingAsnStatusMapper">
+
+
+    <select id="selectRcvTrxWaitingAsnStatus" resultType="java.lang.String">
+    select sah.asn_status
+	from sinv_asn_header sah
+	where sah.asn_num = #{asnNum}
+	and sah.tenant_id =#{tenantId};
+
+    </select>
+</mapper>

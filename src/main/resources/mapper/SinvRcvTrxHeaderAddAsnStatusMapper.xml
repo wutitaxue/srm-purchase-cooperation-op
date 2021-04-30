@@ -436,7 +436,7 @@
     </select>
 
     <!-- 查询 待执行数据 -->
-    <select id="selectSinvRcvTrxWainting" resultType="org.srm.purchasecooperation.cux.sinv.api.controller.dto.SinvRcvTrxWaitingAddAsnStatusDTO">
+    <select id="selectSinvRcvTrxWainting" resultType="org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxWaitingDTO">
         <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
         SELECT
         spll.need_by_date,

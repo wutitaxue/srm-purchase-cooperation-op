@@ -18,12 +18,8 @@ import org.srm.web.annotation.Tenant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ExcelSheet(
-        promptKey = "spuc.common",
-        promptCode = "spuc.common.view.common.waiting"
-)
 @Tenant(TenantValue.tenantV)
-public class SinvRcvTrxWaitingAddAsnStatusDTO  extends SinvRcvTrxWaitingDTO {
+public class SinvRcvTrxWaitingAsnStatusDTO  {
 
     @ApiModelProperty("送货单头状态 SINV.ASN_HEADERS_STATUS")
     private String asnStatus;
