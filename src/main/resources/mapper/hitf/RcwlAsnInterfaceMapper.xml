@@ -29,11 +29,11 @@
         select
         count(*)
         from
-        ssta_settle ss
+        ssta_bill_line ss
         where ss.source_settle_line_num = #{sinv.lineNumber}
         and ss.source_settle_num = #{sinv.acceptanceNumber}
         and ss.tenant_id = #{sinv.tenantId}
-        and ss.bill_status = 'BILLED'
+        and ss.canceled_flag = '0'
     </select>
 
     <update id="deleteSinvLineReturn">
