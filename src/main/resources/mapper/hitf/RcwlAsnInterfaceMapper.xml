@@ -52,7 +52,7 @@
     </update>
 
     <select id="selectTenantIdByName" resultType="java.lang.Long">
-        select ht.tenant_id from hpfm_tenant ht where ht.tenant_name = #{tenantName}
+        select ht.tenant_id from hpfm_tenant ht where ht.tenant_num = #{tenantNum}
     </select>
 
 </mapper>
