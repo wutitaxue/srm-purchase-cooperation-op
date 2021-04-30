@@ -24,6 +24,7 @@ import org.srm.web.dynamic.ExtendMapper;
 @Tenant(TenantValue.tenantV)
 public interface SinvRcvTrxHeaderAddAsnStatusMapper extends SinvRcvTrxHeaderMapper, ExtendMapper<SinvRcvTrxHeader>{
 
+
     List<SinvRcvTrxWaitingDTO> selectSinvRcvTrxWainting(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
 
 }
