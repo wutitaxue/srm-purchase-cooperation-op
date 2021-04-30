@@ -41,25 +41,30 @@ public class RcwlOrderBillController {
             level = ResourceLevel.ORGANIZATION
     )
     @PostMapping({"/rcwl-order-bill"})
-    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,String rcvTrxnum,String type) {
-
-        RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
-        rcvTrxHeader.setTrxNum(rcvTrxnum);
-        rcvTrxHeader.setTenantId(tenantId);
-        RcvTrxHeader Header = rcvTrxHeaderRepository.selectOne(rcvTrxHeader);
-        if (Header == null){
-            throw new CommonException("单据编码不存在!");
+    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,String rcvTrxnum,List<Long> lineidList,String type) {
+        if (rcvTrxnum !=null){
+            RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
+            rcvTrxHeader.setTrxNum(rcvTrxnum);
+            rcvTrxHeader.setTenantId(tenantId);
+            RcvTrxHeader Header = rcvTrxHeaderRepository.selectOne(rcvTrxHeader);
+            if (Header == null){
+                throw new CommonException("单据编码不存在!");
+            }
+            if("ORDER".equals(type) && Header.getAttributeVarchar6()!="1"){
+                return Results.success();
+            }
+            RcvTrxLine rcvTrxLine = new RcvTrxLine();
+            rcvTrxLine.setTenantId(tenantId);
+            rcvTrxLine.setRcvTrxHeaderId(Header.getRcvTrxHeaderId());
+            rcvTrxLineRepository.select(rcvTrxLine).forEach(item -> {
+                        rcwlOrderBillService.sendOrderBillOne(tenantId,item.getRcvTrxLineId(),type);
+                    }
+            );
+        }else if (lineidList.size() > 0){
+            lineidList.forEach(item -> {
+                rcwlOrderBillService.sendOrderBillOne(tenantId,item,type);
+            });
         }
-        if("ORDER".equals(type) && Header.getAttributeVarchar6()!="1"){
-            return Results.success();
-        }
-        RcvTrxLine rcvTrxLine = new RcvTrxLine();
-        rcvTrxLine.setTenantId(tenantId);
-        rcvTrxLine.setRcvTrxHeaderId(Header.getRcvTrxHeaderId());
-        rcvTrxLineRepository.select(rcvTrxLine).forEach(item -> {
-            rcwlOrderBillService.sendOrderBillOne(tenantId,item.getRcvTrxLineId(),type);
-           }
-        );
         return Results.success();
     }
 }
