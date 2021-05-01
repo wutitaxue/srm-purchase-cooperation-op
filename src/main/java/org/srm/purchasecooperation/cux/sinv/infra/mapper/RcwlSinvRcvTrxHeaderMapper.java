@@ -27,6 +27,12 @@ public interface RcwlSinvRcvTrxHeaderMapper extends SinvRcvTrxHeaderMapper, Exte
     List<SinvRcvTrxFinishLineDTO> selectSinvRcvTrxFinishLine(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
     SinvRcvTrxToKpiAutoPOLineVO countTrxHeaderByClosedFlag (@Param("sinvRcvTrxHeaderDTO") SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO);
 
+    /**
+     * 收货执行-待执行添加送货单状态
+     * @param sinvRcvTrxQueryDTO
+     * @param customUserDetails
+     * @return
+     */
     @Override
     List<SinvRcvTrxWaitingDTO> selectSinvRcvTrxWainting(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
 
