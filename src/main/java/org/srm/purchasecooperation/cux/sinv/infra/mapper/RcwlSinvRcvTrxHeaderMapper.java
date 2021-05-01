@@ -29,6 +29,7 @@ public interface RcwlSinvRcvTrxHeaderMapper extends SinvRcvTrxHeaderMapper, Exte
 
     /**
      * 收货执行-待执行添加送货单状态
+     *  dengqiping 2021.04.30
      * @param sinvRcvTrxQueryDTO
      * @param customUserDetails
      * @return
