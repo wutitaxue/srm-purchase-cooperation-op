@@ -7,6 +7,7 @@ import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineV
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxFinishLineDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxQueryDTO;
+import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxWaitingDTO;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxHeaderMapper;
 import org.srm.web.annotation.Tenant;
@@ -25,6 +26,16 @@ public interface RcwlSinvRcvTrxHeaderMapper extends SinvRcvTrxHeaderMapper, Exte
     @Override
     List<SinvRcvTrxFinishLineDTO> selectSinvRcvTrxFinishLine(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
     SinvRcvTrxToKpiAutoPOLineVO countTrxHeaderByClosedFlag (@Param("sinvRcvTrxHeaderDTO") SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO);
+
+    /**
+     * 收货执行-待执行添加送货单状态
+     *  dengqiping 2021.04.30
+     * @param sinvRcvTrxQueryDTO
+     * @param customUserDetails
+     * @return
+     */
+    @Override
+    List<SinvRcvTrxWaitingDTO> selectSinvRcvTrxWainting(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
 
 
 }
