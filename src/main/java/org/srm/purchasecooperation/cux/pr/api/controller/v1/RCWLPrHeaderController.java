@@ -15,11 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
-import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrHeaderSubmitService;
+import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -192,11 +193,14 @@ public class RCWLPrHeaderController {
         Assert.notEmpty(prHeader.getPrLineList(), "error.not_null");
 
         //触发变更接口
-        this.rcwlPrItfService.submitChange(prHeader,tenantId);
+        //this.rcwlPrItfService.submitChange(prHeader,tenantId);
 
 
         Set<String> approveSet = new HashSet();
         prHeader = this.prHeaderService.changeSubmit(tenantId, prHeader, approveSet);
+        //触发变更接口
+        this.rcwlPrItfService.submitChange(prHeader,tenantId);
+
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
         if ((CollectionUtils.isNotEmpty(approveSet) || "REJECTED".equals(prHeader.getPrStatusCode())) && syncFlag) {
             this.prHeaderService.afterChangeSubmit(tenantId, prHeader);
@@ -205,4 +209,39 @@ public class RCWLPrHeaderController {
         return Results.success(prHeader);
     }
 
+    @ApiOperation("BPM审批回传调用预算接口(采购申请提交)")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @PostMapping({"/purchase-requests/after-bpm-approve"})
+    public ResponseEntity afterBpmApprove(@PathVariable("prNum") String prNum,@PathVariable("approveFlag") String approveFlag ) throws JsonProcessingException {
+        logger.info("回传数据prNum：=================="+prNum);
+        logger.info("回传数据approveFlag：=================="+approveFlag);
+
+              if(!StringUtils.isEmpty(prNum)){
+                  //bpm回传拒绝标识时触发预算释放接口
+                  if(RCWLConstants.BPMApproveFlag.REJECTED.equals(approveFlag)) {
+                      this.rcwlPrItfService.afterBpmApprove(prNum, approveFlag);
+                  }
+              }
+        return Results.success();
+    }
+
+    @ApiOperation("BPM审批回传调用预算接口(采购申请变更提交)")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @PostMapping({"/purchase-requests/after-bpm-approve-change"})
+    public ResponseEntity afterBpmApproveByChange(@PathVariable("prNum") String prNum,@PathVariable("approveFlag") String approveFlag ) throws JsonProcessingException {
+        logger.info("回传数据prNum：=================="+prNum);
+        logger.info("回传数据approveFlag：=================="+approveFlag);
+
+        if(!StringUtils.isEmpty(prNum)){
+            //bpm回传拒绝标识时触发预算接口
+            if(RCWLConstants.BPMApproveFlag.REJECTED.equals(approveFlag)) {
+                this.rcwlPrItfService.afterBpmApproveByChange(prNum, approveFlag);
+            }
+        }
+        return Results.success();
+    }
 }

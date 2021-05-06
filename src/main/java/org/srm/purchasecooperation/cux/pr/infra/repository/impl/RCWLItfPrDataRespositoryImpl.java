@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper;
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+
+import java.util.List;
 
 /**
  * @description:常量
@@ -60,5 +64,20 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     @Override
     public String selectBudgetAccountNum(Long budgetAccountId) {
         return rcwlItfPrDataMapper.selectBudgetAccountNum(budgetAccountId);
+    }
+
+    @Override
+    public PrHeader selectPrHeaderByPrNum(String prNum, Long tenantId) {
+        return rcwlItfPrDataMapper.selectPrHeaderByPrNum(prNum,tenantId);
+    }
+
+    @Override
+    public List<PrLine> selectPrLineListById(Long prHeaderId, Long tenantId) {
+        return rcwlItfPrDataMapper.selectPrLineListById(prHeaderId,tenantId) ;
+    }
+
+    @Override
+    public List<PrLine> selectPrLineListByIdOld(Long prHeaderId, Long tenantId) {
+        return rcwlItfPrDataMapper.selectPrLineListByIdOld(prHeaderId,tenantId);
     }
 }
