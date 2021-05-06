@@ -1,10 +1,16 @@
 package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+
+import java.util.List;
 
 /**
  * @author bin.zhang
  */
+@Component
 public interface RCWLItfPrDataMapper {
     /**
      * 查找sap公司编码
@@ -50,4 +56,28 @@ public interface RCWLItfPrDataMapper {
      * @return
      */
     String selectBudgetAccountName(@Param("budgetAccountId")Long budgetAccountId);
+
+    /**
+     * 获取申请头信息（接口）
+     * @param prNum
+     * @param tenantId
+     * @return
+     */
+    PrHeader selectPrHeaderByPrNum(@Param("prNum")String prNum, @Param("tenantId")Long tenantId);
+
+    /**
+     * 获取采购申请行信息（接口）
+     * @param prHeaderId
+     * @param tenantId
+     * @return
+     */
+    List<PrLine> selectPrLineListById(@Param("prHeaderId")Long prHeaderId, @Param("tenantId")Long tenantId);
+
+    /**
+     * 获取申请行信息（主要是变更前的占用金额）
+     * @param prHeaderId
+     * @param tenantId
+     * @return
+     */
+    List<PrLine> selectPrLineListByIdOld(Long prHeaderId, Long tenantId);
 }

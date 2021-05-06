@@ -91,4 +91,13 @@ public interface RCWLPrItfService {
      * @param tenantId
      */
     void submitChange(PrHeader prHeader, Long tenantId) throws JsonProcessingException;
+
+    /**
+     * bpm审批回传调用预算接口
+     * @param prNum
+     * @param approveFlag
+     */
+    void afterBpmApprove(String prNum, String approveFlag) throws JsonProcessingException;
+
+    void afterBpmApproveByChange(String prNum, String approveFlag) throws JsonProcessingException;
 }

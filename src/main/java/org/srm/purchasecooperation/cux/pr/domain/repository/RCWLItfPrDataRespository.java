@@ -1,5 +1,10 @@
 package org.srm.purchasecooperation.cux.pr.domain.repository;
 
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+
+import java.util.List;
+
 public interface RCWLItfPrDataRespository {
     /**
      * 查找sap公司编码
@@ -36,4 +41,10 @@ public interface RCWLItfPrDataRespository {
     String selectBudgetAccountName(Long budgetAccountId);
 
     String selectBudgetAccountNum(Long budgetAccountId);
+
+    PrHeader selectPrHeaderByPrNum(String prNum, Long tenantId);
+
+    List<PrLine> selectPrLineListById(Long prHeaderId, Long tenantId);
+
+    List<PrLine> selectPrLineListByIdOld(Long prHeaderId, Long tenantId);
 }
