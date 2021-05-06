@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.act.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 public class ActListHeaderDto {
     /*验收单标题*/
     @JsonProperty("TITLE")
-    private String acceptListNum;
+    private String trxNum;
     /*验收人*/
     @JsonProperty("ACCEPTORNAME")
     private String acceptOrName;
@@ -26,9 +27,7 @@ public class ActListHeaderDto {
     @JsonProperty("PCNAME")
     private String pcName;
     /*验收单编号*/
-    @JsonProperty("ACCEPTLISTNUM")
 
-    private String title;
     /*费用承担公司*/
     @JsonProperty("COMPANYID")
     private String companyId;
@@ -48,6 +47,13 @@ public class ActListHeaderDto {
     @JsonProperty("ACCEPTDETAILS")
     private String acceptDetails;
 
+    @ApiModelProperty("验收单+合同名称+验收人")
+    private String FSubject;
+
+    @JsonProperty("URL_MX")
+    @ApiModelProperty("甄云链接")
+    private String urlMX;
+
 
     /**
      * 验收行数据
@@ -58,14 +64,30 @@ public class ActListHeaderDto {
     /**
      * 附件链接
      */
-    @JsonProperty("URL")
+    @JsonProperty("ATTACHMENTS1")
     private List<ActListFilesDto> url;
 
     public List<ActListLinesDto> getYSDDH() {
         return ysddh;
     }
 
-    public void setYSDDH(List<ActListLinesDto> ysddh) {
+    public String getFSubject() {
+        return FSubject;
+    }
+
+    public void setFSubject( String FSubject ) {
+        this.FSubject = FSubject;
+    }
+
+    public String getUrlMX() {
+        return urlMX;
+    }
+
+    public void setUrlMX( String urlMX ) {
+        this.urlMX = urlMX;
+    }
+
+    public void setYSDDH( List<ActListLinesDto> ysddh ) {
         this.ysddh = ysddh;
     }
 
@@ -73,23 +95,23 @@ public class ActListHeaderDto {
         return url;
     }
 
-    public void setURL(List<ActListFilesDto> url) {
+    public void setURL( List<ActListFilesDto> url ) {
         this.url = url;
     }
 
-    public String getAcceptListNum() {
-        return acceptListNum;
+    public String gettrxNum() {
+        return trxNum;
     }
 
-    public void setAcceptListNum(String acceptListNum) {
-        this.acceptListNum = acceptListNum;
+    public void settrxNum( String trxNum ) {
+        this.trxNum = trxNum;
     }
 
     public String getAcceptOrName() {
         return acceptOrName;
     }
 
-    public void setAcceptOrName(String acceptOrName) {
+    public void setAcceptOrName( String acceptOrName ) {
         this.acceptOrName = acceptOrName;
     }
 
@@ -97,7 +119,7 @@ public class ActListHeaderDto {
         return pcNum;
     }
 
-    public void setPcNum(String pcNum) {
+    public void setPcNum( String pcNum ) {
         this.pcNum = pcNum;
     }
 
@@ -105,23 +127,15 @@ public class ActListHeaderDto {
         return pcName;
     }
 
-    public void setPcName(String pcName) {
+    public void setPcName( String pcName ) {
         this.pcName = pcName;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        title = title;
     }
 
     public String getCompanyId() {
         return companyId;
     }
 
-    public void setCompanyId(String companyId) {
+    public void setCompanyId( String companyId ) {
         this.companyId = companyId;
     }
 
@@ -129,7 +143,7 @@ public class ActListHeaderDto {
         return supplierCompanyId;
     }
 
-    public void setSupplierCompanyId(String supplierCompanyId) {
+    public void setSupplierCompanyId( String supplierCompanyId ) {
         this.supplierCompanyId = supplierCompanyId;
     }
 
@@ -137,7 +151,7 @@ public class ActListHeaderDto {
         return acceptListType;
     }
 
-    public void setAcceptListType(String acceptListType) {
+    public void setAcceptListType( String acceptListType ) {
         this.acceptListType = acceptListType;
     }
 
@@ -145,7 +159,7 @@ public class ActListHeaderDto {
         return acceptDate;
     }
 
-    public void setAcceptDate(String acceptDate) {
+    public void setAcceptDate( String acceptDate ) {
         this.acceptDate = acceptDate;
     }
 
@@ -153,7 +167,7 @@ public class ActListHeaderDto {
         return speed;
     }
 
-    public void setSpeed(String speed) {
+    public void setSpeed( String speed ) {
         this.speed = speed;
     }
 
@@ -161,7 +175,7 @@ public class ActListHeaderDto {
         return acceptDetails;
     }
 
-    public void setAcceptDetails(String acceptDetails) {
+    public void setAcceptDetails( String acceptDetails ) {
         this.acceptDetails = acceptDetails;
     }
 

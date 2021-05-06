@@ -62,7 +62,7 @@ public class ActServiceImpl implements ActService {
      */
     @Override
     @ProcessLovValue
-    public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) throws IOException {
+    public ActListHeaderDto actQuery( Long acceptListHeaderId, Long organizationId ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ActListHeaderDto actListHeaderDto = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
         actListHeaderDto.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
@@ -91,7 +91,7 @@ public class ActServiceImpl implements ActService {
         rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
         rcwlGxBpmStartDataDTO.setUserId(userName);
         rcwlGxBpmStartDataDTO.setBtid(rcwlActConstant.ACCEPT_BPM_TYPE_CODE);
-        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.getAcceptListNum());
+        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.gettrxNum());
         rcwlGxBpmStartDataDTO.setProcinstId("0");
         rcwlGxBpmStartDataDTO.setData(data);
         logger.info("rcwlGxBpmStartDataDTO：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlGxBpmStartDataDTO));
