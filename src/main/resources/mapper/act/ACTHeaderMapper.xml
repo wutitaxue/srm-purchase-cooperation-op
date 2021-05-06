@@ -79,7 +79,9 @@
 						h.creation_date,
 						'%Y-%m-%d %H:%i:%s'
 					) accept_date,
-					h.remark accept_details
+					h.remark accept_details,
+					h.attribute_varchar19,
+
 				FROM
 					sinv_rcv_trx_header h
 				WHERE

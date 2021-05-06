@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.act.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
@@ -14,6 +15,10 @@ import java.util.List;
  */
 @JsonInclude
 public class ActListHeaderDto {
+
+    @ApiModelProperty("流程id")
+    @JsonIgnore
+    private String attributeVarchar19;
     /*验收单标题*/
     @JsonProperty("TITLE")
     private String trxNum;
@@ -179,4 +184,11 @@ public class ActListHeaderDto {
         this.acceptDetails = acceptDetails;
     }
 
+    public String getAttributeVarchar19() {
+        return attributeVarchar19;
+    }
+
+    public void setAttributeVarchar19( String attributeVarchar19 ) {
+        this.attributeVarchar19 = attributeVarchar19;
+    }
 }
