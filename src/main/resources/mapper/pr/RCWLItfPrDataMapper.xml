@@ -42,4 +42,62 @@
               WHERE
               	h.budget_account_id = #{budgetAccountId}
     </select>
+    <select id="selectPrHeaderByPrNum" resultType="org.srm.purchasecooperation.pr.domain.entity.PrHeader">
+                           SELECT
+                            	h.pr_header_id,
+                            	h.tenant_id,
+                            	h.pr_num,
+                            	h.company_id,
+                            	h.creation_date
+                            FROM
+                            	sprm_pr_header h
+                            WHERE
+                            	h.pr_num = #{prNum}
+                            	AND h.tenant_id = #{tenantId}
+    </select>
+    <select id="selectPrLineListById" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+                                  SELECT
+                              	l.pr_line_id,
+                              	l.tenant_id,
+                              	l.pr_header_id,
+                              	l.tax_included_line_amount,
+                              	l.budget_account_id,
+                              	l.wbs,
+                              	l.wbs_code,
+                              	l.line_num
+                              FROM
+                              	sprm_pr_line l
+                              WHERE
+                              	l.pr_header_id = #{prHeaderId}
+                              	AND l.tenant_id = #{tenantId}
+    </select>
+    <select id="selectPrLineListByIdOld" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+                               SELECT
+                              	l.pr_line_id,
+                              	l.tenant_id,
+                              	l.pr_header_id,
+                              	(
+                              	SELECT
+                              		spa.old_value_num
+                              	FROM
+                              		sprm_pr_action spa
+                              	WHERE
+                              		spa.pr_line_id = l.pr_line_id
+                              		AND spa.tenant_id = l.tenant_id
+                              		AND spa.process_type_code = 'CHANGE'
+                              		AND spa.change_field = 'tax_included_line_amount'
+                              	ORDER BY
+                              		spa.creation_date DESC
+                              		LIMIT 1
+                              	) tax_included_line_amount,
+                              	l.budget_account_id,
+                              	l.wbs,
+                              	l.wbs_code,
+                              	l.line_num
+                              FROM
+                              	sprm_pr_line l
+                              WHERE
+                              	l.pr_header_id = #{prHeaderId}
+                              	AND l.tenant_id = #{tenantId}
+    </select>
 </mapper>

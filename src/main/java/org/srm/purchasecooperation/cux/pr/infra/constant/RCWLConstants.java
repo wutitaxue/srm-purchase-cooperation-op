@@ -23,4 +23,11 @@ public class RCWLConstants {
         public final static String INTERFACE_CODE = "RCWL_BUDGET_TOKEN_GET";
         public final static String CODE = "0";
     }
+    /**
+     * bpm审批回传标识
+     */
+    public static class BPMApproveFlag{
+       public final static String APPROVED = "1";
+       public final static String REJECTED = "0";
+    }
 }
