@@ -40,7 +40,7 @@ public class RcwlOrderBillController {
     @Permission(
             level = ResourceLevel.ORGANIZATION
     )
-    @PostMapping({"/rcwl-order-bill"})
+    @GetMapping({"/rcwl-order-bill"})
     public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,@RequestParam(value = "rcvTrxnum",required = false) String rcvTrxnum,@RequestParam(value = "lineidList",required = false) List<Long> lineidList,@RequestParam(value = "type") String type) {
         if (rcvTrxnum !=null){
             RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
@@ -60,7 +60,7 @@ public class RcwlOrderBillController {
                         rcwlOrderBillService.sendOrderBillOne(tenantId,item.getRcvTrxLineId(),type);
                     }
             );
-        }else if (lineidList.size() > 0){
+        }else if (lineidList != null && lineidList.size() > 0){
             lineidList.forEach(item -> {
                 rcwlOrderBillService.sendOrderBillOne(tenantId,item,type);
             });
