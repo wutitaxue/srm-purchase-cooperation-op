@@ -33,24 +33,20 @@
             WHERE
                 spl.po_line_id = srtol.from_po_line_id
             ) fUnitId,
-            ( SELECT spll.quantity FROM sodr_po_line spl LEFT JOIN sodr_po_line_location spll on
-             spl.po_line_id = spll.po_line_id WHERE srtol.from_po_line_id = spl.po_line_id ) fQty,
+            srtl.quantity fQty,
             DATE_FORMAT( SYSDATE(), '%Y-%m-%d' ) fDeliveryDate,
             ( SELECT ROUND( spl.unit_price, 6 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fPrice,
-            ( SELECT ROUND( spl.unit_price * spll.quantity, 2 ) FROM sodr_po_line spl LEFT JOIN sodr_po_line_location spll on
-             spl.po_line_id = spll.po_line_id WHERE srtol.from_po_line_id = spl.po_line_id ) fAmount,
+            ( SELECT ROUND( spl.unit_price * srtl.quantity, 2 ) FROM sodr_po_line spl  WHERE srtol.from_po_line_id = spl.po_line_id ) fAmount,
 
             ( SELECT ROUND( spl.entered_tax_included_price, 6 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fTaxPrice,
-            ( SELECT ROUND( spl.entered_tax_included_price * spll.quantity, 2 ) FROM sodr_po_line spl LEFT JOIN sodr_po_line_location spll on
-             spl.po_line_id = spll.po_line_id WHERE srtol.from_po_line_id = spl.po_line_id ) fallAmount,
+            ( SELECT ROUND( spl.entered_tax_included_price * srtl.quantity, 2 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fallAmount,
 
             ( SELECT ROUND( spl.tax_rate, 0 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fTaxRate,
             (
             SELECT
-                ROUND( spl.entered_tax_included_price * spll.quantity - spl.unit_price * spll.quantity, 2 )
+                ROUND( spl.entered_tax_included_price * srtl.quantity - spl.unit_price * srtl.quantity, 2 )
             FROM
-                sodr_po_line spl  LEFT JOIN sodr_po_line_location spll on
-             spl.po_line_id = spll.po_line_id
+                sodr_po_line spl
             WHERE
                 srtol.from_po_line_id = spl.po_line_id
             ) fTaxAmount,
