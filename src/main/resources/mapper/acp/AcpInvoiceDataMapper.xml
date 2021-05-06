@@ -8,10 +8,10 @@
 	fc.company_num user_id
 FROM
 	hpfm_company fc,
-	sfin_invoice_header h
+	ssta_settle_header h
 WHERE
 	fc.company_id = h.supplier_company_id and
- h.tenant_id=#{organizationId} and h.invoice_num = #{invoiceNum}
+ h.tenant_id=#{organizationId} and h.settle_num = #{invoiceNum}
     </select>
 
 </mapper>
