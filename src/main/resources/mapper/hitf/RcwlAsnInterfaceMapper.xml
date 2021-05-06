@@ -3,7 +3,7 @@
 <mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlAsnInterfaceMapper">
     <update id="updateSinvLineReturn">
         update sinv_rcv_trx_line t
-        set     t.attribute_bigint1 = #{sinv.inventoryQuantity},
+        set     t.attribute_decimal2 = #{sinv.inventoryQuantity},
                 t.attribute_varchar1 = #{sinv.receiptNo}
         where t.rcv_trx_line_id =
                (select a.rcv_trx_line_id from (select
