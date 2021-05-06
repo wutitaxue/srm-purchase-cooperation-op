@@ -133,4 +133,16 @@
         update  smdm_item si set si.attribute_varchar1 = '0'
         where si.tenant_id = #{tenantId} and si.item_code = #{itemCode}
     </update>
+
+
+    <select id="selectCategory" resultType="java.lang.String">
+        SELECT
+            IFNULL(sic.attribute_varchar11,'1') attribute_varchar11
+        FROM
+            sinv_rcv_trx_line srtl
+            LEFT JOIN sinv_rcv_trx_order_link srtol ON srtol.order_link_id = srtl.order_link_id
+			LEFT JOIN sodr_po_line spl ON srtol.from_po_line_id = spl.po_line_id
+			LEFT JOIN smdm_item_category sic ON sic.category_id = spl.category_id
+        WHERE srtl.tenant_id = #{tenantId} and srtl.rcv_trx_line_id = #{id}
+    </select>
 </mapper>

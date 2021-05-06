@@ -39,15 +39,26 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
     @Override
     public void sendOrderBillOne(Long tenantId,Long rcvTrxLineId,String type) {
         RcwlOrderBillDTO rcwlOrderBillDTO;
+        //检查品类是否需要推送资产 1推 2不推
+        String s = rcwlOrderBillMapper.selectCategory(tenantId, rcvTrxLineId);
+        if(s == "0"){
+            return;
+        }
+        //ASN为接收类型单据
         if ("ASN".equals(type)){
+            //查询接收送货单
              rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAsn(tenantId,rcvTrxLineId);
+            //IsNew字段转换
             if("1".equals(rcwlOrderBillDTO.getfIsNewInt())){
                 rcwlOrderBillDTO.setfIsNew(true);
             }else if ("0".equals(rcwlOrderBillDTO.getfIsNewInt())){
                 rcwlOrderBillDTO.setfIsNew(false);
             }
+        //ORDER为接收类型单据
         }else if("ORDER".equals(type)){
+            //查询验收单数据
             rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
+            //IsNew字段转换
             if("1".equals(rcwlOrderBillDTO.getfIsNewInt())){
                 rcwlOrderBillDTO.setfIsNew(true);
             }else if ("0".equals(rcwlOrderBillDTO.getfIsNewInt())){
@@ -56,6 +67,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         }else {
             throw new CommonException("输入单据类型错误");
         }
+        //根据返回报文更新前端显示状态返回值
         RequestPayloadDTO requestPayloadDTO = new RequestPayloadDTO();
         Map<String, RcwlOrderBillDTO> map = new HashMap<>();
         map.put("data", rcwlOrderBillDTO);
@@ -67,6 +79,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         String code = asJsonObject.get("code").getAsString();
         String message = asJsonObject.get("message").getAsString();
         String codecg = "E";
+        //0和102状态默认为是成功 其他为失败
         if ("0".equals(code) || "102".equals(code)){
             codecg = "S";
             //更新物料smdm_item物料表 attribute_varchar1字段改为false
