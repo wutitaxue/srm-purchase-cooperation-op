@@ -41,7 +41,7 @@ public class RcwlOrderBillController {
             level = ResourceLevel.ORGANIZATION
     )
     @PostMapping({"/rcwl-order-bill"})
-    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,@RequestParam(value = "rcvTrxnum") String rcvTrxnum,@RequestParam(value = "lineidList") List<Long> lineidList,@RequestParam(value = "type") String type) {
+    public ResponseEntity<Long> sendOrderBillInserface(@PathVariable("organizationId") Long tenantId,@RequestParam(value = "rcvTrxnum",required = false) String rcvTrxnum,@RequestParam(value = "lineidList",required = false) List<Long> lineidList,@RequestParam(value = "type") String type) {
         if (rcvTrxnum !=null){
             RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
             rcvTrxHeader.setTrxNum(rcvTrxnum);
