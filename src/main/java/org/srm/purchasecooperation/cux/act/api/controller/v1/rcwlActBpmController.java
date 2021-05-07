@@ -73,7 +73,7 @@ public class rcwlActBpmController {
 
     @ApiOperation(value = "验收单BPM审批通过")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/submit-to-bpm-successed")
+    @PostMapping("/submit-to-bpm-approved")
     public ResponseEntity<Void> bpmApproved( @PathVariable("organizationId") Long tenantId, String settleNum ) {
         actService.RcwlBpmApproved(tenantId, settleNum);
         return Results.success();
