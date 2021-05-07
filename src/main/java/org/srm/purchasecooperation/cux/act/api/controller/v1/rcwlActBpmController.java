@@ -16,14 +16,13 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
+import org.srm.purchasecooperation.cux.act.api.dto.RcwlBpmUrlDto;
 import org.srm.purchasecooperation.cux.act.app.service.ActService;
 import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
 import org.srm.purchasecooperation.finance.api.dto.InvoiceTransactionSearchDTO;
+import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.web.annotation.Tenant;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -53,8 +52,38 @@ public class rcwlActBpmController {
     @Permission(level = ResourceLevel.ORGANIZATION)
 //    @Permission(permissionPublic = true)
     @PostMapping("/getAct")
-    @ProcessLovValue
-    public ResponseEntity<ActListHeaderDto> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) throws IOException {
-        return Results.success(actService.actQuery(acceptListHeaderId,organizationId));
+    public ResponseEntity<ActListHeaderDto> queryList( @ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId ) throws IOException {
+        return Results.success(actService.actQuery(acceptListHeaderId, organizationId));
+    }
+
+    @ApiOperation(value = "验收单BPM提交")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/submit-to-bpm")
+    public ResponseEntity<RcwlBpmUrlDto> submitToBpm( @PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO ) throws IOException {
+        return Results.success(actService.rcwlActSubmitBpm(tenantId, sinvRcvTrxHeaderDTO));
+    }
+
+    @ApiOperation(value = "验收单BPM提交成功")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/submit-to-bpm-successed")
+    public ResponseEntity<Void> submitToBpmSuccessed( @PathVariable("organizationId") Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19 ) {
+        actService.RcwlBpmSubmitSuccess(tenantId, settleNum, attributeVarchar18, attributeVarchar19);
+        return Results.success();
+    }
+
+    @ApiOperation(value = "验收单BPM审批通过")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/submit-to-bpm-successed")
+    public ResponseEntity<Void> bpmApproved( @PathVariable("organizationId") Long tenantId, String settleNum ) {
+        actService.RcwlBpmApproved(tenantId, settleNum);
+        return Results.success();
+    }
+
+    @ApiOperation(value = "验收单BPM审批拒绝")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/submit-to-bpm-rejected")
+    public ResponseEntity<Void> bpmReject( @PathVariable("organizationId") Long tenantId, String settleNum ) {
+        actService.RcwlBpmReject(tenantId, settleNum);
+        return Results.success();
     }
 }

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActHeaderMapper">
+    <select id="settleIdQuery" resultType="java.lang.Long">
+select h.rcv_trx_header_id from sinv_rcv_trx_header h where h.trx_num = #{settleNum};
+	</select>
     <select id="actListHeaderQuery"
             parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto">
@@ -81,7 +84,15 @@
 					) accept_date,
 					h.remark accept_details,
 					h.attribute_varchar19,
-
+					(concat(((select sum(l.quantity + l.occupied_quantity)
+                from sinv_rcv_trx_line l
+                where l.rcv_trx_header_id = h.rcv_trx_header_id) / (select sum(spll.quantity)
+                                                                    from sodr_po_line_location spll
+                                                                    where spll.po_line_location_id in
+                                                                          (select l.from_po_line_location_id
+                                                                           from sinv_rcv_trx_line l
+                                                                           where l.rcv_trx_header_id = h.rcv_trx_header_id)) *
+               100), '%')) speed
 				FROM
 					sinv_rcv_trx_header h
 				WHERE

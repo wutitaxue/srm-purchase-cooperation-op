@@ -39,8 +39,6 @@ public class ActListLinesDto {
     private String acceptQuantity;
 
 
-    @LovValue(lovCode = rcwlActConstant.ACCEPT_OPINION, meaningField = "lineAcceptDescription")
-    private String acceptOpinionCode;
     /*验收意见*/
     @JsonProperty("LINEACCEPTDESCRIPTION")
     private String lineAcceptDescription;

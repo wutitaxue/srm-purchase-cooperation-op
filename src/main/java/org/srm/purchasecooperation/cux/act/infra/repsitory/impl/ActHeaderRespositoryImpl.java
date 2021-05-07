@@ -27,15 +27,20 @@ public class ActHeaderRespositoryImpl implements ActHeaderRespository {
 
     /**
      * 验收单头信息查询
+     *
      * @param acceptListHeaderId 验收单头id
-     * @param organizationId 租户id
+     * @param organizationId     租户id
      * @return ActListHeaderDto
      */
     @Override
-    @ProcessLovValue
-    public ActListHeaderDto actQuery(Long acceptListHeaderId,Long organizationId) {
-        ActListHeaderDto actListHeaderDto = actHeaderMapper.actListHeaderQuery(acceptListHeaderId,organizationId);
+    public ActListHeaderDto actQuery( Long acceptListHeaderId, Long organizationId ) {
+        ActListHeaderDto actListHeaderDto = actHeaderMapper.actListHeaderQuery(acceptListHeaderId, organizationId);
 //        actListHeaderDto.setActListLinesDtoList(actLineMapper.actListLineQuery(acceptListHeaderId,organizationId));
         return actListHeaderDto;
+    }
+
+    @Override
+    public Long settleIdQuery( String settleNum ) {
+        return actHeaderMapper.settleIdQuery(settleNum);
     }
 }

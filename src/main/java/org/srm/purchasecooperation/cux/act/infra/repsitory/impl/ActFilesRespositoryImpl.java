@@ -29,12 +29,13 @@ public class ActFilesRespositoryImpl implements ActFilesRespository {
 
     /**
      * 验收单所有附件查询（头附件+行附件）
+     *
      * @param acceptListHeaderId 验收单头id
-     * @param organizationId 验收单行ID
+     * @param organizationId     验收单行ID
      * @return List<ActListFilesDto>
      */
     @Override
-    public List<ActListFilesDto> actFilesQuery(Long acceptListHeaderId, Long organizationId) {
+    public List<ActListFilesDto> actFilesQuery( Long acceptListHeaderId, Long organizationId ) {
         return actFilesMapper.actListFilseQuery(acceptListHeaderId, organizationId);
     }
 }

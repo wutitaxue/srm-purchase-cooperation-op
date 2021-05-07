@@ -11,4 +11,6 @@ import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
  */
 public interface ActHeaderMapper {
     ActListHeaderDto actListHeaderQuery(Long acceptListHeaderId,Long organizationId);
+
+    Long settleIdQuery(String settleNum);
 }
