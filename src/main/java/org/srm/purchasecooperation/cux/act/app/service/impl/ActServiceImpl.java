@@ -30,8 +30,6 @@ import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.web.annotation.Tenant;
-import sun.security.smartcardio.SunPCSC;
-
 import java.io.IOException;
 import java.util.*;
 
