@@ -155,4 +155,11 @@ public interface RCWLPlanHeaderRepository extends BaseRepository<PlanHeader> {
    * @return
    */
   List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(List list, Long organizationId);
+
+  /**
+   * bpm回传更新状态
+   * @param processNum
+   * @param approveFlag
+   */
+    void updateStateFromBPM(String processNum, String approveFlag);
 }

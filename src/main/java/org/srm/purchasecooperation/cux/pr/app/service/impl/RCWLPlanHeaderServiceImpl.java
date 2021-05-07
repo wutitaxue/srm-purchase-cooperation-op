@@ -285,5 +285,16 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         return planHeaderVO;
     }
 
+    /**
+     * bpm回传更新审批状态
+     *
+     * @param processNum
+     * @param approveFlag
+     */
+    @Override
+    public void updateStateFromBPM(String processNum, String approveFlag) {
+        RCWLPlanHeaderRepository.updateStateFromBPM(processNum,approveFlag);
+    }
+
 
 }
