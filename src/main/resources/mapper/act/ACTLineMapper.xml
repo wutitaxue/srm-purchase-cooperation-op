@@ -4,63 +4,79 @@
     <select id="actListLineQuery"
             parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto">
-            SELECT
-	ph.po_num po_header_num,
-	pl.line_num po_line_num,
-	pl.item_name,
-	pl.quantity,
-	l.accepted_quantity,
-	(
-		pl.quantity - l.accepted_quantity
-	) can_accept_quantity,
-	l.accept_quantity,
-	l.accept_opinion_code,
-	(
-		SELECT
-			m.category_name
-		FROM
-			smdm_item_category m
-		WHERE
-			m.category_id = l.item_category_id
-	) item_category_name,
-	(
-		SELECT
-			su.uom_name
-		FROM
-			smdm_uom su
-		WHERE
-			su.uom_id = l.uom_id
-	) uom_name,
-	pl.entered_tax_included_price po_unit_price,
-	(
-		l.accept_quantity * pl.entered_tax_included_price
-	) amount,
-	DATE_FORMAT(
-		ll.need_by_date,
-		'%Y-%m-%d %H:%i:%s'
-	) needed_date,
-	(
-		SELECT
-			date_format(
-				h.accept_date,
-				'%Y-%m-%d %H:%i:%s'
-			)
-		FROM
-			spuc_accept_list_header h
-		WHERE
-			h.accept_list_header_id = l.accept_list_header_id
-	) deliver_date,
-	NULL AS budget_account_id,
-	NULL AS cost_id
-FROM
-	spuc_accept_list_line l,
-	sodr_po_header ph,
-	sodr_po_line pl,
-	sodr_po_line_location ll
-WHERE
-	l.source_line_id = pl.po_line_id
-AND pl.po_header_id = ph.po_header_id
-AND ll.po_line_id = pl.po_line_id and l.tenant_id=#{organizationId} and l.accept_list_header_id = #{acceptListHeaderId}
+			SELECT
+				sph.po_num po_header_num,
+				spl.line_num po_line_num,
+				spl.item_name,
+				spll.quantity,
+				(
+					spll.quantity - l.quantity - l.occupied_quantity
+				) accepted_quantity,
+				(
+					l.quantity - l.occupied_quantity
+				) can_accept_quantity,
+				l.quantity accept_quantity,
+				l.remark linea_accept_description,
+				(
+					SELECT
+						m.category_name
+					FROM
+						smdm_item_category m
+					WHERE
+						m.category_id = l.category_id
+				) item_category_name,
+				(
+					SELECT
+						su.uom_name
+					FROM
+						smdm_uom su
+					WHERE
+						su.uom_id = l.uom_id
+				) uom_name,
+				l.tax_included_price po_unit_price,
+				(
+					l.tax_included_price * l.quantity
+				) amount,
+				date_format(
+					spll.need_by_date,
+					'%Y-%m-%d %H:%i:%s'
+				) needed_date,
+				date_format(
+					l.trx_date,
+					'%Y-%m-%d %H:%i:%s'
+				) deliver_date,
+				(
+					SELECT
+						scc.cost_name
+					FROM
+						smdm_cost_center scc
+					WHERE
+						scc.cost_code = spl.cost_code
+				) cost_id,
+				(
+					SELECT
+						sba.budget_account_name
+					FROM
+						smdm_budget_account sba
+					WHERE
+						sba.budget_account_num = (
+							SELECT
+								pl.budget_account_num
+							FROM
+								sprm_pr_line pl
+							WHERE
+								pl.pr_line_id = spl.pr_line_id
+						)
+					AND sba.tenant_id = l.tenant_id
+				) budget_account_id
+			FROM
+				sinv_rcv_trx_line l
+			LEFT JOIN sodr_po_header sph ON sph.po_header_id = l.from_po_header_id
+			LEFT JOIN sodr_po_line spl ON spl.po_line_id = l.from_po_line_id
+			LEFT JOIN sodr_po_line_location spll ON spll.po_line_location_id = l.from_po_line_location_id
+			WHERE
+			 l.tenant_id=#{organizationId}
+			 and l.rcv_trx_header_id = #{acceptListHeaderId}
     </select>
 
 </mapper>
