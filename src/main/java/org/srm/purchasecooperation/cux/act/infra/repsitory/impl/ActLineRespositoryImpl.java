@@ -32,7 +32,6 @@ public class ActLineRespositoryImpl implements ActLineRespository {
      * @return List<ActListLinesDto>
      */
     @Override
-    @ProcessLovValue
     public List<ActListLinesDto> actQuery(Long acceptListHeaderId, Long organizationId) {
         return actLineMapper.actListLineQuery(acceptListHeaderId,organizationId);
     }

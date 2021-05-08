@@ -10,4 +10,17 @@ import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
  */
 public interface ActHeaderRespository {
     ActListHeaderDto actQuery(Long acceptListHeaderId,Long organizationId);
+
+    /**
+     * 查询验收id
+     * @param settleNum
+     * @return
+     */
+    Long settleIdQuery(String settleNum);
+
+    /**
+     * 更新bpminstanceid-》置0
+     * @param settleNum
+     */
+    void updateBpmInstanceId(String settleNum);
 }
