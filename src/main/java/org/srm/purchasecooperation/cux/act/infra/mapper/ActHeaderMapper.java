@@ -13,4 +13,10 @@ public interface ActHeaderMapper {
     ActListHeaderDto actListHeaderQuery(Long acceptListHeaderId,Long organizationId);
 
     Long settleIdQuery(String settleNum);
+
+    /**
+     * 更新bpminstanceid-》置0
+     * @param settleNum
+     */
+    void updateBpmInstanceId(String settleNum);
 }

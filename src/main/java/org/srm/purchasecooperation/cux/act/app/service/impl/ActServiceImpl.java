@@ -168,6 +168,12 @@ public class ActServiceImpl implements ActService {
         return null;
     }
 
+    @Override
+    public Void RcwlBpmReject3(Long tenantId, String settleNum) {
+        actHeaderRespository.updateBpmInstanceId(settleNum);
+        return null;
+    }
+
 
     protected void adaptorTaskCheckBeforeStatusUpdate( Long tenantId, String operationCode, Object data ) {
         String tenantNum = this.tenantMapper.queryTenantNumById(tenantId);

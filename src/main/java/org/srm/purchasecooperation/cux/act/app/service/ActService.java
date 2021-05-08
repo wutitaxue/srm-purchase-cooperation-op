@@ -52,4 +52,12 @@ public interface ActService {
      * @return
      */
     public Void RcwlBpmReject( Long tenantId, String settleNum );
+
+    /**
+     * 置0接口
+     * @param tenantId
+     * @param settleNum
+     * @return
+     */
+    public Void RcwlBpmReject3( Long tenantId, String settleNum );
 }

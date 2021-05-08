@@ -43,4 +43,9 @@ public class ActHeaderRespositoryImpl implements ActHeaderRespository {
     public Long settleIdQuery( String settleNum ) {
         return actHeaderMapper.settleIdQuery(settleNum);
     }
+
+    @Override
+    public void updateBpmInstanceId(String settleNum) {
+        actHeaderMapper.updateBpmInstanceId(settleNum);
+    }
 }

@@ -86,4 +86,12 @@ public class rcwlActBpmController {
         actService.RcwlBpmReject(tenantId, settleNum);
         return Results.success();
     }
+    @ApiOperation(value = "验收单BPM审批拒绝，置0接口")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/submit-to-bpm-rejected3")
+    public ResponseEntity<Void> bpmReject3( @PathVariable("organizationId") Long tenantId, String settleNum ) {
+        actService.RcwlBpmReject3(tenantId, settleNum);
+        return Results.success();
+    }
+
 }
