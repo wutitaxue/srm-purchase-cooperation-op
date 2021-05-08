@@ -282,7 +282,7 @@
         	hpfm_purchase_agent h
         WHERE
         	h.purchase_agent_code = trim(#{agent})
-		AND h.tenant_id = = #{tenantId}
+		AND h.tenant_id = #{tenantId}
     </select>
     <select id="selectCompanyName" resultType="java.lang.String">
         select h.company_name from hpfm_company  h
