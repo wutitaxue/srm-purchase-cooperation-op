@@ -5,25 +5,38 @@
     <select id="actListFilseQuery"
             parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto">
-
-           select
-       hf.file_name,
-       hf.file_size,
-       hf.file_url url_mx
-from hfle_file hf
-
-where hf.tenant_id = #{organizationId}
-  and exists((select 1
-              from spuc_accept_list_header h
-              where h.attachment_uuid = hf.attachment_uuid
-              and h.tenant_id = #{organizationId}
-                and h.accept_list_header_id = #{acceptListHeaderId})
-             union all
-             (select 1
-              from spuc_accept_list_line l
-              where l.attachment_uuid = hf.attachment_uuid
-              and l.tenant_id = #{organizationId}
-                and l.accept_list_header_id = #{acceptListHeaderId}))
+            SELECT
+                hf.file_name,
+                hf.file_name description,
+                hf.file_size,
+                hf.file_url url_mx
+            FROM
+                hfle_file hf
+            WHERE
+                hf.tenant_id = #{organizationId}
+            AND EXISTS (
+                (
+                    SELECT
+                        1
+                    FROM
+                        sinv_rcv_trx_header h
+                    WHERE
+                        h.sinv_header_attachment_uuid = hf.attachment_uuid
+                    AND h.tenant_id = #{organizationId}
+                    AND h.rcv_trx_header_id = #{acceptListHeaderId}
+                )
+                UNION ALL
+                    (
+                        SELECT
+                            1
+                        FROM
+                            sinv_rcv_trx_line l
+                        WHERE
+                            l.sinv_line_attachment_uuid = hf.attachment_uuid
+                        AND l.tenant_id = #{organizationId}
+                        AND l.rcv_trx_header_id = #{acceptListHeaderId}
+                    )
+            )
     </select>
 
 </mapper>

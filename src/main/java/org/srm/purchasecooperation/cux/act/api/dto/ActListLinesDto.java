@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.act.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
@@ -16,40 +17,54 @@ import javax.validation.constraints.NotBlank;
 @JsonInclude
 public class ActListLinesDto {
     /*订单号*/
+    @JsonProperty("POHEADERNUM")
     private String poHeaderNum;
     /*订单行号*/
+    @JsonProperty("POLINENUM")
     private String poLineNum;
     /*物料名称*/
+    @JsonProperty("ITEMNAME")
     private String itemName;
     /*总数量*/
+    @JsonProperty("QUANTITY")
     private String quantity;
     /*已验收数量*/
+    @JsonProperty("ACCEPTEDQUANTITY")
     private String acceptedQuantity;
     /*未验收数量*/
+    @JsonProperty("CANACCEPTQUANTITY")
     private String canAcceptQuantity;
     /*本次验收数量*/
+    @JsonProperty("ACCEPTQUANTITY")
     private String acceptQuantity;
 
 
-    @LovValue(lovCode = rcwlActConstant.ACCEPT_OPINION, meaningField = "lineAcceptDescription")
-    private String acceptOpinionCode;
     /*验收意见*/
+    @JsonProperty("LINEACCEPTDESCRIPTION")
     private String lineAcceptDescription;
     /*物料品类*/
+    @JsonProperty("ITEMCATEGORYNAME")
     private String itemCategoryName;
     /*单位*/
+    @JsonProperty("UOMNAME")
     private String uomName;
     /*单价*/
+    @JsonProperty("POUNITPRICE")
     private String poUnitPrice;
     /*金额*/
+    @JsonProperty("AMOUNT")
     private String amount;
     /*需求到货日期*/
+    @JsonProperty("NEEDEDDATE")
     private String neededDate;
     /*实际到货日期*/
+    @JsonProperty("DELIVERDATE")
     private String deliverDate;
     /*业务事项*/
+    @JsonProperty("BUDGETACCOUNTID")
     private String budgetAccountId;
     /*成本中心*/
+    @JsonProperty("COSTID")
     private String costId;
 
     public String getPoHeaderNum() {

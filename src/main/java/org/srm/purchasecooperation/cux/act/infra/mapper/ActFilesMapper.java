@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.act.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto;
 
@@ -12,5 +13,5 @@ import java.util.List;
  * @version:1.0
  */
 public interface ActFilesMapper {
-    List<ActListFilesDto> actListFilseQuery(Long acceptListHeaderId, Long organizationId);
+    List<ActListFilesDto> actListFilseQuery( @Param("acceptListHeaderId") Long acceptListHeaderId, @Param("organizationId") Long organizationId );
 }
