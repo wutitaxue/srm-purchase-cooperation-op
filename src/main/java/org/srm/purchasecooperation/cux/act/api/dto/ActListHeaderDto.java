@@ -113,14 +113,6 @@ public class ActListHeaderDto {
         this.url = url;
     }
 
-    public String gettrxNum() {
-        return trxNum;
-    }
-
-    public void settrxNum( String trxNum ) {
-        this.trxNum = trxNum;
-    }
-
     public String getAcceptOrName() {
         return acceptOrName;
     }

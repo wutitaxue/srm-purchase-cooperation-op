@@ -101,7 +101,7 @@ public class ActServiceImpl implements ActService {
         rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
         rcwlGxBpmStartDataDTO.setUserId(userName);
         rcwlGxBpmStartDataDTO.setBtid(rcwlActConstant.ACCEPT_BPM_TYPE_CODE);
-        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.gettrxNum());
+        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.getTrxNum());
         if (null != actListHeaderDto.getAttributeVarchar19() && !"".equals(actListHeaderDto.getAttributeVarchar19())) {
             rcwlGxBpmStartDataDTO.setProcinstId(actListHeaderDto.getAttributeVarchar19());
         } else {
