@@ -3,7 +3,6 @@
 <mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActFilesMapper">
     <!--    @i 相当于sql中的自定义变量，效果为给查询出来的结果自动编号，可以不用到list里面给每条数据去编号-->
     <select id="actListFilseQuery"
-            parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto">
             SELECT
                 hf.file_name,
