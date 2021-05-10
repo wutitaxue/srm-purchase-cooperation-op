@@ -198,7 +198,7 @@ public class RCWLPrHeaderController {
 
         Set<String> approveSet = new HashSet();
         prHeader = this.prHeaderService.changeSubmit(tenantId, prHeader, approveSet);
-        //触发变更接口
+//        //触发变更接口
         this.rcwlPrItfService.submitChange(prHeader,tenantId);
 
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
