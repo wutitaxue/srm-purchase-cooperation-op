@@ -3,6 +3,7 @@ package org.srm.purchasecooperation.cux.act.infra.mapper;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
+import retrofit2.http.PartMap;
 
 /**
  * @author lu.cheng01@hand-china.com
@@ -11,7 +12,7 @@ import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
  * @version:1.0
  */
 public interface ActHeaderMapper {
-    ActListHeaderDto actListHeaderQuery(@Param("acceptListHeaderId") Long acceptListHeaderId, Long organizationId);
+    ActListHeaderDto actListHeaderQuery(@Param("acceptListHeaderId") Long acceptListHeaderId, @Param("organizationId") Long organizationId);
 
     Long settleIdQuery(String settleNum);
 
