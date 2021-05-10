@@ -198,14 +198,14 @@ public class RCWLPrHeaderController {
 
         Set<String> approveSet = new HashSet();
         prHeader = this.prHeaderService.changeSubmit(tenantId, prHeader, approveSet);
-        //触发变更接口
+//        //触发变更接口
         this.rcwlPrItfService.submitChange(prHeader,tenantId);
-
-        boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
-        if ((CollectionUtils.isNotEmpty(approveSet) || "REJECTED".equals(prHeader.getPrStatusCode())) && syncFlag) {
-            this.prHeaderService.afterChangeSubmit(tenantId, prHeader);
-        }
-        this.rcwlPrToBpmService.prDataToBpm(prHeader, "change");
+//
+//        boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
+//        if ((CollectionUtils.isNotEmpty(approveSet) || "REJECTED".equals(prHeader.getPrStatusCode())) && syncFlag) {
+//            this.prHeaderService.afterChangeSubmit(tenantId, prHeader);
+//        }
+//        this.rcwlPrToBpmService.prDataToBpm(prHeader, "change");
         return Results.success(prHeader);
     }
 

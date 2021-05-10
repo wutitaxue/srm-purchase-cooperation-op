@@ -167,12 +167,12 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             prHeader = this.updatePrHeader(prHeader);
             //保存完之后触发接口
             try {
-                this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
+                this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
             prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
-            return ((PrHeaderService)this).submit(tenantId, prHeader);
+            return ((PrHeaderService) this).submit(tenantId, prHeader);
         }
     }
 
@@ -203,7 +203,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             prHeader.setChangedFlag(BaseConstants.Flag.YES);
             this.prHeaderRepository.updateByPrimaryKeySelective(prHeader);
         } else {
-            this.deleteOrInsertLines(beforePrLineMap,prHeader);
+            this.deleteOrInsertLines(beforePrLineMap, prHeader);
             prHeader.setPrLineList(this.prLineService.updatePrLines(prHeader));
             this.checkLinesAmount(prHeader.getPrLineList(), prHeader.getAmount());
         }
@@ -219,8 +219,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
 
         while (var11.hasNext()) {
             PrLine prLine = (PrLine) var11.next();
-            PrLine beforePrLine =  beforePrLineMap.get(prLine.getPrLineId());
-            if(!ObjectUtils.isEmpty(beforePrLine)){
+            PrLine beforePrLine = beforePrLineMap.get(prLine.getPrLineId());
+            if (!ObjectUtils.isEmpty(beforePrLine)) {
                 PrLine afterPrLine = afterPrLineMap.get(prLine.getPrLineId());
                 insertPrActions.addAll(this.prActionService.createChangeAction(beforePrLine, afterPrLine, lineConfigs, prHeader, approveSet));
             }
@@ -247,17 +247,17 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private void deleteOrInsertLines(Map<Long, PrLine> beforePrLineMap, PrHeader prHeader) {
         Set<Long> ids = new TreeSet<>();
         List<PrLine> prDeleteLines = new ArrayList<>();
-        prHeader.getPrLineList().forEach(line->{
-            if(beforePrLineMap.keySet().contains(line.getPrLineId())){
+        prHeader.getPrLineList().forEach(line -> {
+            if (beforePrLineMap.keySet().contains(line.getPrLineId())) {
                 ids.add(line.getPrLineId());
             }
         });
-        beforePrLineMap.entrySet().forEach(e->{
-            if(!ids.contains(e.getValue().getPrLineId())){
+        beforePrLineMap.entrySet().forEach(e -> {
+            if (!ids.contains(e.getValue().getPrLineId())) {
                 prDeleteLines.add(e.getValue());
             }
         });
-        this.prLineService.deleteLines(prHeader.getPrHeaderId(),prDeleteLines);
+        this.prLineService.deleteLines(prHeader.getPrHeaderId(), prDeleteLines);
     }
 
     private void checkLinesAmount(List<PrLine> prLineList, BigDecimal amount) {
@@ -265,7 +265,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         for (PrLine line : prLineList) {
             lineAmount = lineAmount.add(line.getTaxIncludedLineAmount());
         }
-        if(lineAmount.compareTo(amount)>=1){
+        if (lineAmount.compareTo(amount) >= 1) {
             throw new CommonException("error.lineAmount.lessThan.amount");
         }
 
@@ -298,18 +298,22 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     }
 
     private void checkLines(List<PrLine> prLineList) {
-        HashSet<Long> costIdSet = new HashSet<>();
-        HashSet<String> wbsCodeSet = new HashSet<>();
-//        HashSet<Long> costIdSet = new HashSet<>();
-        prLineList.forEach(line -> {
-            costIdSet.add(line.getCostId());
-            wbsCodeSet.add(line.getWbsCode());
-        });
-        if (costIdSet.size() > 1 ||
-                wbsCodeSet.size() > 1
-        ) {
-            throw new CommonException("error.cost.different");
+        if(CollectionUtils.isNotEmpty(prLineList)){
+            HashSet<Long> costIdSet = new HashSet<>();
+            HashSet<String> wbsCodeSet = new HashSet<>();
+            HashSet<Long> budgetAccountIds = new HashSet<>();
+            prLineList.forEach(line -> {
+                costIdSet.add(line.getCostId());
+                wbsCodeSet.add(line.getWbsCode());
+                budgetAccountIds.add(line.getBudgetAccountId());
+            });
+            if (costIdSet.size() > 1 ||
+                    wbsCodeSet.size() > 1 || budgetAccountIds.size() > 1
+            ) {
+                throw new CommonException("error.cost.different");
+            }
         }
+
     }
 
     private void checkUnit(PrHeader prHeader) {

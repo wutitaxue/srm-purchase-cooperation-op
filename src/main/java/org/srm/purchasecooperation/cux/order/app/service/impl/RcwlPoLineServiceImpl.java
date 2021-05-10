@@ -78,6 +78,8 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
                     }
                 });
                 page.setContent(list);
+                page.setTotalElements(Long.valueOf(list.size()));
+                page.setTotalPages((list.size()+page.getNumberOfElements()-1)/page.getNumberOfElements());
             }
 
             this.queryDefaultSupplier(poHeaderAccordingToLineOfReferenceDTO, content);
