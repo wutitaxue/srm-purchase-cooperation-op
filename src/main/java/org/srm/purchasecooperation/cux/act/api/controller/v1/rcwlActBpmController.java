@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  * @date 2021/4/6 9:59
  * @version:1.0
  */
-@Tenant(rcwlActConstant.TENANT_NUMBER)
+//@Tenant(rcwlActConstant.TENANT_NUMBER)
 @RestController("rcwlActBpmController.v1")
 @RequestMapping("/v1/{organizationId}/act")
 public class rcwlActBpmController {
