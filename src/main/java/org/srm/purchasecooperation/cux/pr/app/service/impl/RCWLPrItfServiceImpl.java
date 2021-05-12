@@ -189,8 +189,12 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                 payload);
 
         RCWLTokenGetResponseDTO responseDTO = new RCWLTokenGetResponseDTO();
+          try{
+              responseDTO = JSONObject.parseObject(responsePayloadDTO.getPayload(), RCWLTokenGetResponseDTO.class);
+          }catch(Exception e){
+              throw new CommonException("token接口调用失败"+e.getMessage());
+          }
 
-        responseDTO = JSONObject.parseObject(responsePayloadDTO.getPayload(), RCWLTokenGetResponseDTO.class);
         String token = responseDTO.getToken();
 
         return token;
