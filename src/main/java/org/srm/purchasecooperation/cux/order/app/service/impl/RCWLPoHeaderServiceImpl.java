@@ -69,10 +69,11 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
                 item.setItemCode(categoryCode + str);
                 item.setQueryItemCode(categoryCode + str);
             });
+            logger.info("物料封装数据:" + rcwlItemInfoVOList.toString());
+            //批量插入物料表
+            poHeaderRepository.batchInsertItem(rcwlItemInfoVOList);
         }
-        logger.info("物料封装数据:" + rcwlItemInfoVOList.toString());
-        //批量插入物料表
-        poHeaderRepository.batchInsertItem(rcwlItemInfoVOList);
+
 
 
         List<Long> lineIds = rcwlItemInfoVOList.stream().map(RCWLItemInfoVO::getPoLineId).distinct().collect(Collectors.toList());
@@ -88,10 +89,11 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
                 itemCategoryAssign.setCategoryId(item.getCategoryId());
                 itemCategoryAssignList.add(itemCategoryAssign);
             });
+            logger.info("品类封装数据:" + itemCategoryAssignList.toString());
+            //批量插入物料分配品类表
+            itemCategoryAssignRepository.batchInsertSelective(itemCategoryAssignList);
         }
-        logger.info("品类封装数据:" + itemCategoryAssignList.toString());
-        //批量插入物料分配品类表
-        itemCategoryAssignRepository.batchInsertSelective(itemCategoryAssignList);
+
 
         //把item_id item_code回写到订单行
         List<RCWLItemInfoVO> poLineList = new ArrayList<>();
