@@ -82,9 +82,9 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
 
         List<Long> ids = planHeaderList.stream().map(PlanHeader::getPlanId).distinct().collect(Collectors.toList());
 
-        logger.info("ids:"+ids);
+        logger.info("ids:" + ids);
         List<PlanHeader> planHeaderList1 = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
-        logger.info("planHeaderList1:"+planHeaderList1.toString());
+        logger.info("planHeaderList1:" + planHeaderList1.toString());
         if (!CollectionUtils.isEmpty(planHeaderList1)) {
             planHeaderList1.forEach(planHeaderVo -> {
                 if (Constants.PlanHeaderApprovalStatus.CANCEL.equals(planHeaderVo.getApprovalStatus())) {
@@ -96,7 +96,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 //状态设置为取消
                 planHeaderVo.setApprovalStatus(Constants.PlanHeaderApprovalStatus.CANCEL);
                 //更改申请行的计划编号为空
-               //  RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
+                //  RCWLPrLineRepository.updatePrLine(planHeaderVo.getPlanId(), organizationId);
 
             });
         }
@@ -132,7 +132,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 logger.info("计划id:{}" + planHeaderParam.getPlanId());
 
                 //申请行表插入编号
-              //  PrLine prLine = this.RCWLPrLineRepository.selectPrLineRecord(planHeaderParam.getPrLineId());
+                //  PrLine prLine = this.RCWLPrLineRepository.selectPrLineRecord(planHeaderParam.getPrLineId());
 //                PrLine prLine = this.prLineRepository.selectByPrimaryKey(planHeaderParam.getPrLineId());
 //                logger.info("查询采购申请行:{}" + prLine.toString());
 //                prLine.setAttributeBigint1(planHeaderParam.getPlanId());
@@ -215,35 +215,38 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
                 importData.addErrorMsg("已存在重复的采购申请头和行");
                 return false;
             }
-            return true;
+
         } else if (planHeaderImportVO.getCompanyName() != null) {
             boolean check = RCWLPlanHeaderRepository.checkCompanyExist(planHeaderImportVO.getCompanyName());
             if (!check) {
                 importData.addErrorMsg("该公司编码不存在");
                 return false;
             }
-            return true;
-        } else if (planHeaderImportVO.getBudgetAccount() != null) {
+
+        }
+        if (planHeaderImportVO.getBudgetAccount() != null) {
             boolean check = RCWLPlanHeaderRepository.checkBudgetAccountExist(planHeaderImportVO.getBudgetAccount(), tenantId);
             if (!check) {
                 importData.addErrorMsg("该预算科目不存在");
                 return false;
             }
-            return true;
-        } else if (planHeaderImportVO.getDemanders() != null) {
+
+        }
+        if (planHeaderImportVO.getDemanders() != null) {
             boolean check = RCWLPlanHeaderRepository.checkDemandersExist(planHeaderImportVO.getDemanders(), tenantId);
             if (!check) {
                 importData.addErrorMsg("该需求人不存在");
                 return false;
             }
-            return true;
-        } else if (planHeaderImportVO.getAgent() != null) {
+
+        }
+        if (planHeaderImportVO.getAgent() != null) {
             boolean check = RCWLPlanHeaderRepository.checkAgentExist(planHeaderImportVO.getAgent(), tenantId);
             if (!check) {
                 importData.addErrorMsg("该经办人不存在");
                 return false;
             }
-            return true;
+
         }
         return true;
     }
@@ -256,7 +259,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
      * @return
      */
     @Override
-    public PlanHeaderVO  submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) throws IOException {
+    public PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) throws IOException {
         List<Long> ids = planHeaderVOS.stream().map(PlanHeaderVO::getPlanId).distinct().collect(Collectors.toList());
         List<PlanHeader> planHeaderList = RCWLPlanHeaderRepository.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
         logger.info("planHeaderList:" + planHeaderList);
@@ -279,10 +282,21 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         PlanHeaderVO planHeaderVO = new PlanHeaderVO();
         planHeaderVO.setUrl(url);
 
-         //调用bpm接口
-        this.dataToBpmService.sendDataToBpm(planHeaderVOS,organizationId,processNum);
+        //调用bpm接口
+        this.dataToBpmService.sendDataToBpm(planHeaderVOS, organizationId, processNum);
 
         return planHeaderVO;
+    }
+
+    /**
+     * bpm回传更新审批状态
+     *
+     * @param processNum
+     * @param approveFlag
+     */
+    @Override
+    public void updateStateFromBPM(String processNum, String approveFlag) {
+        RCWLPlanHeaderRepository.updateStateFromBPM(processNum, approveFlag);
     }
 
 
