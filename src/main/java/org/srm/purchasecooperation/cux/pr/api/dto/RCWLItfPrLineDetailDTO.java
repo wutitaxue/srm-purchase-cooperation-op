@@ -39,32 +39,6 @@ public class RCWLItfPrLineDetailDTO {
     @ApiModelProperty(value = "预留字段")
     private String YLZDB2;
 
-//    public  RCWLItfPrLineDetailDTO initOccupyDetail(PrLine prDetailLine, Long tenantId) {
-//        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
-//        rcwlItfPrLineDetailDTO.setYSZYJE(prDetailLine.getTaxIncludedLineAmount().toString());
-//        rcwlItfPrLineDetailDTO.setYWYTCODE(prDetailLine.getBudgetAccountNum());
-//        String budgetAccountName = rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(),tenantId);
-//        System.out.println("预算科目"+budgetAccountName);
-//        rcwlItfPrLineDetailDTO.setYWYTNAME(budgetAccountName);
-//        rcwlItfPrLineDetailDTO.setCPLXCODE(prDetailLine.getWbsCode());
-//        String wbsName = rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),tenantId);
-//        rcwlItfPrLineDetailDTO.setCPLXNAME(wbsName);
-//        rcwlItfPrLineDetailDTO.setLINE(prDetailLine.getLineNum().toString());
-//        return rcwlItfPrLineDetailDTO;
-//    }
-//
-//    public  RCWLItfPrLineDetailDTO initDetail(PrLineVO prDetailLine, Long tenantId) {
-//        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
-//        rcwlItfPrLineDetailDTO.setYSZYJE(prDetailLine.getTaxIncludedLineAmount().toString());
-//        rcwlItfPrLineDetailDTO.setYWYTCODE(prDetailLine.getBudgetAccountNum());
-//        String budgetAccountName = rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountNum(),tenantId);
-//        rcwlItfPrLineDetailDTO.setYWYTNAME(budgetAccountName);
-//        rcwlItfPrLineDetailDTO.setCPLXCODE(prDetailLine.getWbsCode());
-//        String wbsName = rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(),tenantId);
-//        rcwlItfPrLineDetailDTO.setCPLXNAME(wbsName);
-//        rcwlItfPrLineDetailDTO.setLINE(prDetailLine.getLineNum().toString());
-//        return rcwlItfPrLineDetailDTO;
-//    }
 
 
     public String getYszyje() {
