@@ -19,8 +19,6 @@ import java.text.SimpleDateFormat;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RCWLItfPrLineDTO {
 
-    @Autowired
-    private static RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     @ApiModelProperty(value = "单据日期")
     @JsonProperty("BILLDATE")
@@ -42,13 +40,6 @@ public class RCWLItfPrLineDTO {
     @JsonProperty("PAYMENTBILLCODE")
     private String paymentbillcode;
 
-    public static RCWLItfPrDataRespository getRcwlItfPrDataRespository() {
-        return rcwlItfPrDataRespository;
-    }
-
-    public static void setRcwlItfPrDataRespository(RCWLItfPrDataRespository rcwlItfPrDataRespository) {
-        RCWLItfPrLineDTO.rcwlItfPrDataRespository = rcwlItfPrDataRespository;
-    }
 
     public String getBilldate() {
         return billdate;
@@ -97,31 +88,6 @@ public class RCWLItfPrLineDTO {
     public void setPaymentbillcode(String paymentbillcode) {
         this.paymentbillcode = paymentbillcode;
     }
-
-//    public static RCWLItfPrLineDTO initOccupy(PrHeader prHeader, Long tenantId, String flag) {
-//        RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
-//        itfPrLineDTO.setMexternalsysid("CG");
-//        //01占用 02释放
-//        if("O".equals(flag)){
-//            itfPrLineDTO.setYslx("01");
-//        }else if("R".equals(flag)){
-//            itfPrLineDTO.setYslx("02");
-//        }
-//
-//        itfPrLineDTO.setCreateuser("jg");
-//        SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-DD");
-//        String dateString = formatter.format(prHeader.getCreationDate());
-//        itfPrLineDTO.setBilldate(dateString);
-//        itfPrLineDTO.setPaymentbillcode(prHeader.getPrNum());
-//        //测试使用
-//      //  itfPrLineDTO.setUnitcode("01");
-//        String unitCode = rcwlItfPrDataRespository.selectSapCode(prHeader.getCompanyId(),tenantId);
-//        if(StringUtils.isEmpty(unitCode)){
-//            throw new CommonException("组织机构不能为空");
-//        }
-//        itfPrLineDTO.setUnitcode(unitCode);
-//        return itfPrLineDTO;
-//    }
 
 
 }
