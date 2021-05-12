@@ -214,5 +214,16 @@ public class RCWLPlanHeaderRepositoryImpl extends BaseRepositoryImpl<PlanHeader>
         return rcwlPlanHeaderMapper.batchSelectAttachmentsInfo(list,organizationId);
     }
 
+    /**
+     * bpm回传更新状态
+     *
+     * @param processNum
+     * @param approveFlag
+     */
+    @Override
+    public void updateStateFromBPM(String processNum, String approveFlag) {
+        this.rcwlPlanHeaderMapper.updateStateFromBPM(processNum,approveFlag);
+    }
+
 
 }

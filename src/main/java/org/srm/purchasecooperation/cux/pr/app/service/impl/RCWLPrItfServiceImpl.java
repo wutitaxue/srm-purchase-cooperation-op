@@ -55,7 +55,12 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrItfServiceImpl.class);
+    private static final String NAME_SPACE = "SRM-RCWL";
+    private static final String RCWL_BUDGET = "RCWL_BUDGET";
+    private static final String SRM_RCWL_BUDGET = "SRM-RCWL-BUDGET";
 
+    private static final String RCWL_BUDGET_TOKEN_GET = "RCWL_BUDGET_TOKEN_GET";
+    private static final String SERVE_CODE = "SRM-RCWL";
     /**
      * 预算占用接口调用
      *
@@ -68,9 +73,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         //接口请求数据获取
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
 
-        String namespace = "SRM-RCWL";
-        String interfaceCode = "RCWL_BUDGET";
-        String serverCode = "SRM-RCWL-BUDGET";
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
         Map<String, String> headerMap = new HashMap<>();
@@ -82,9 +84,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         logger.info("报文2+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
         payload.setMediaType("application/json");
 
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(namespace,
-                serverCode,
-                interfaceCode,
+        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                SRM_RCWL_BUDGET,
+                RCWL_BUDGET,
                 payload);
         String response = responsePayloadDTO.getPayload().toString();
         logger.info("预算接口返回" + response);
@@ -108,9 +110,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
             if (StringUtils.isEmpty(simpleMessage)) {
                 throw new CommonException(detailsMsg);
+            }else {
+                throw new CommonException(simpleMessage + "，采购申请不可提交");
             }
-            throw new CommonException(simpleMessage + "，采购申请不可提交");
-
         }
 
 
@@ -175,21 +177,16 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     public String getToken() {
         RCWLTokenGetRequestDTO requestDTO = new RCWLTokenGetRequestDTO();
         requestDTO.setOpenid(RCWLConstants.InterfaceInitValue.OPEN_ID);
-
-        String namespace = "SRM-RCWL";
-        String interfaceCode = "RCWL_BUDGET_TOKEN_GET";
-        String serverCode = "SRM-RCWL";
         RequestPayloadDTO payload = new RequestPayloadDTO();
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("Content-Type", "application/json");
         payload.setHeaderParamMap(headerMap);
         payload.setPayload(JSON.toJSONString(requestDTO));
         payload.setMediaType("application/json");
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(namespace,
-                serverCode,
-                interfaceCode,
+        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                SERVE_CODE,
+                RCWL_BUDGET_TOKEN_GET,
                 payload);
-
 
         RCWLTokenGetResponseDTO responseDTO = new RCWLTokenGetResponseDTO();
 
@@ -236,9 +233,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         //接口请求数据获取
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "R");
 
-        String namespace = "SRM-RCWL";
-        String interfaceCode = "RCWL_BUDGET";
-        String serverCode = "SRM-RCWL-BUDGET";
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
         Map<String, String> headerMap = new HashMap<>();
@@ -251,9 +245,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         logger.info("报文2+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
         payload.setMediaType("application/json");
 
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(namespace,
-                serverCode,
-                interfaceCode,
+        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                SRM_RCWL_BUDGET,
+                RCWL_BUDGET,
                 payload);
         String response = responsePayloadDTO.getPayload().toString();
         logger.info("预算接口返回" + response);
@@ -292,9 +286,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetItfDataLine(prLineVOS, tenantId, "R");
 
         //调用接口
-        String namespace = "SRM-RCWL";
-        String interfaceCode = "RCWL_BUDGET";
-        String serverCode = "SRM-RCWL-BUDGET";
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
         Map<String, String> headerMap = new HashMap<>();
@@ -304,9 +295,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
         payload.setMediaType("application/json");
 
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(namespace,
-                serverCode,
-                interfaceCode,
+        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                SRM_RCWL_BUDGET,
+                RCWL_BUDGET,
                 payload);
         String response = responsePayloadDTO.getPayload().toString();
         logger.info("预算接口返回" + response);
@@ -386,11 +377,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetItfDataLineDTO(prLineDTO, tenantId, "R");
 
         //调用接口
-        String namespace = "SRM-RCWL";
-        String interfaceCode = "RCWL_BUDGET";
-        String serverCode = "SRM-RCWL-BUDGET";
         RequestPayloadDTO payload = new RequestPayloadDTO();
-
         Map<String, String> headerMap = new HashMap<>();
         headerMap.put("Content-Type", "application/json");
         payload.setHeaderParamMap(headerMap);
@@ -398,9 +385,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
         payload.setMediaType("aplication/json");
 
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(namespace,
-                serverCode,
-                interfaceCode,
+        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                SRM_RCWL_BUDGET,
+                RCWL_BUDGET,
                 payload);
         String response = responsePayloadDTO.getPayload().toString();
         logger.info("预算接口返回" + response);
@@ -438,18 +425,11 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     @Override
     public RCWLItfPrHeaderDTO getBudgetItfDataLineDTO(PrLineDTO prLineDTO, Long tenantId, String r) {
         Long prHeaderId = prLineDTO.getPrHeaderId();
-
         PrHeader prHeader = prHeaderRepository.selectByPrimaryKey(prHeaderId);
-
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.initOccupyHeader();
-
         RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
-
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, r);
-
-
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-
         PrLine prLine = new PrLine();
         BeanUtils.copyProperties(prLineDTO, prLine);
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prLine, tenantId);
