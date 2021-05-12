@@ -9,6 +9,7 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.base.BaseController;
@@ -128,7 +129,15 @@ public class RCWLPlanHeaderController extends BaseController {
         PlanHeaderVO planHeaderVO =  this.RCWLPlanHeaderService.submitPlanHeader(planHeaderVOS,organizationId);
         return Results.success(planHeaderVO);
     }
-
-
+    @ApiOperation(value = "BPM回传更新采购计划审批状态")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    //@Permission(permissionPublic = true)
+    @PostMapping("/bpm-approve")
+    public ResponseEntity bpmApproveToPlanHeader(@RequestParam(value = "processNum") String processNum,@RequestParam(value = "approveFlag") String approveFlag){
+        if(StringUtils.isNotEmpty(processNum)&&StringUtils.isNotEmpty(approveFlag)) {
+            this.RCWLPlanHeaderService.updateStateFromBPM(processNum, approveFlag);
+        }
+        return Results.success();
+    }
 
 }

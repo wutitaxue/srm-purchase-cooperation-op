@@ -94,6 +94,11 @@
             where plan_id = #{planHeader.planId} and tenant_id = #{planHeader.tenantId}
         </foreach>
     </update>
+    <update id="updateStateFromBPM">
+                      update scux_rcwl_plan_header
+              set approval_status = #{approveFlag}
+              where process_num = #{processNum}
+    </update>
 
     <select id="listPlanHeader" parameterType="org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO"
             resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO">
@@ -277,7 +282,7 @@
         	hpfm_purchase_agent h
         WHERE
         	h.purchase_agent_code = trim(#{agent})
-		AND h.tenant_id = = #{tenantId}
+		AND h.tenant_id = #{tenantId}
     </select>
     <select id="selectCompanyName" resultType="java.lang.String">
         select h.company_name from hpfm_company  h

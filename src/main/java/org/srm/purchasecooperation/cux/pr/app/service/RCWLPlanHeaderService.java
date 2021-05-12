@@ -66,4 +66,11 @@ public interface RCWLPlanHeaderService {
      */
 
     PlanHeaderVO submitPlanHeader(List<PlanHeaderVO> planHeaderVOS, Long organizationId) throws IOException;
+
+    /**
+     * bpm回传更新审批状态
+     * @param processNum
+     * @param approveFlag
+     */
+    void updateStateFromBPM(String processNum, String approveFlag);
 }
