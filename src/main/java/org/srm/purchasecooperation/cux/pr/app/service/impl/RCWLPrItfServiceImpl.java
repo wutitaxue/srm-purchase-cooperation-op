@@ -110,9 +110,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
             if (StringUtils.isEmpty(simpleMessage)) {
                 throw new CommonException(detailsMsg);
+            }else {
+                throw new CommonException(simpleMessage + "，采购申请不可提交");
             }
-            throw new CommonException(simpleMessage + "，采购申请不可提交");
-
         }
 
 
