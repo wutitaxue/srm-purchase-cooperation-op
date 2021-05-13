@@ -45,4 +45,12 @@ public interface RCWLPoHeaderRepository {
      */
 
     void batchInsertItemTl(List<RCWLItemInfoVO> poLineList);
+
+    /**
+     * 查找来源电商平台
+     * @param poHeaderId
+     * @param tenantId
+     * @return
+     */
+    String selectShopMallSupplier(Long poHeaderId, Long tenantId);
 }

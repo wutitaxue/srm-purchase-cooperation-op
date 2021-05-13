@@ -49,4 +49,12 @@ public interface RCWLPoHeaderMapper {
      * @param poLineList
      */
     void batchInsertItemTl(@Param("poLineList")List<RCWLItemInfoVO> poLineList);
+
+    /**
+     * 查找来源电商平台
+     * @param poHeaderId
+     * @param tenantId
+     * @return
+     */
+    String selectShopMallSupplier(@Param("poHeaderId")Long poHeaderId, @Param("tenantId")Long tenantId);
 }
