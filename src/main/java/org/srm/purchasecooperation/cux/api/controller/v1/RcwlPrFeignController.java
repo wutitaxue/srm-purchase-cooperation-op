@@ -16,7 +16,7 @@ import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 
 
 @Api(
-        tags = {"Pr Header (Org Level)"}
+        tags = {"Rcwl Pr Header (Org Level)"}
 )
 @RestController("rcwlPrFeignController.v1")
 @RequestMapping({"/v1/{organizationId}"})
