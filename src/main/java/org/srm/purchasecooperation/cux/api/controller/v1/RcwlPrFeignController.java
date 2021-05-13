@@ -48,7 +48,7 @@ public class RcwlPrFeignController {
     )
     @GetMapping({"/purchase-requests/processend"})
     @ProcessLovValue
-    public ResponseEntity<PrHeader> prMaintainablePrSummaries(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestParam("prHeaderId") Long prHeaderId) {
+    public ResponseEntity<PrHeader> prProcessend(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestParam("prHeaderId") Long prHeaderId) {
         PrHeader prHeader = new PrHeader();
         prHeader.setTenantId(tenantId);
         prHeader.setPrHeaderId(prHeaderId);
