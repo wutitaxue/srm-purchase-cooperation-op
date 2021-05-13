@@ -125,7 +125,7 @@ public class ActServiceImpl implements ActService {
             sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
         }
         //调用bpm接口
-        ActListHeaderDto actListHeaderDto = this.actQuery(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+        ActListHeaderDto actListHeaderDto = this.actQuery(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(),tenantId);
         RcwlBpmUrlDto rcwlBpmUrlDto = new RcwlBpmUrlDto();
         String ip = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
         rcwlBpmUrlDto.setUrl("http://" + ip + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMYSDSP&BOID=" + sinvRcvTrxHeaderDTO.getTrxNum());
