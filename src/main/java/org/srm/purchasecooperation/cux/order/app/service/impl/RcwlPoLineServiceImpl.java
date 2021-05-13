@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.domain.PageInfo;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,6 +24,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLineSupplier;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineSupplierRepository;
 import org.srm.web.annotation.Tenant;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,37 +55,38 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
             poHeaderAccordingToLineOfReferenceDTO.assignFilter(this.customizeSettingHelper);
             poHeaderAccordingToLineOfReferenceDTO.executionStrategyFilter(this.customizeSettingHelper);
             poHeaderAccordingToLineOfReferenceDTO.setCurrentDate(new Date());
-            Page<PoHeaderAccordingToLineOfReferenceVO> page = PageHelper.doPageAndSort(pageRequest, () -> {
-                return  this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
-            });
-            List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
+//            Page<PoHeaderAccordingToLineOfReferenceVO> page = PageHelper.doPageAndSort(pageRequest, () -> {
+//                return  this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
+//            });
+            List<PoHeaderAccordingToLineOfReferenceVO> voList = this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
+//            List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             String attributeVarchar40 = poHeaderAccordingToLineOfReferenceDTO.getAttributeVarchar40();
             //融创需求池二开内容
             if(StringUtils.isNotBlank(attributeVarchar40)&&"rcwl".equals(attributeVarchar40)){
-                List<PoHeaderAccordingToLineOfReferenceVO> list = new ArrayList<>();
                 Set<String> prTypeCodes = new TreeSet<>();
                 prTypeCodes.add(PrConstant.PrType.PR_TYPE_STANDARD);
                 prTypeCodes.add(PrConstant.PrType.PR_TYPE_EMERGENCY);
                 prTypeCodes.add(PrConstant.PrType.PR_TYPE_PROJECT);
                 prTypeCodes.add(PrConstant.PrType.PR_TYPE_SPORADIC);
-                content.forEach(e->{
+                voList.forEach(e->{
                     //当申请类型为“标准申请”STANDARD“项目申请”PROJECT“紧急申请”EMERGENCY“零星申请”SPORADIC  时,剩余可下单数量不等于本次下单数量时，这条数据不显示。
                     String prTypeCode = ObjectUtils.isEmpty(e.getPrTypeCode()) ? "" : e.getPrTypeCode();
                     if (prTypeCodes.contains(prTypeCode)){
-                        if(e.getRestPoQuantity().compareTo(e.getThisOrderQuantity())==1){
-                            list.add(e);
+                        if(e.getOccupiedQuantity().compareTo(BigDecimal.ZERO)!=1){
+//                            list.add(e);
+                            voList.remove(e);
                         }
-                    }else{
-                        list.add(e);
                     }
+//                    else{
+//                        list.add(e);
+//                    }
                 });
-                page.setContent(list);
-                page.setTotalElements(Long.valueOf(list.size()));
-                page.setTotalPages((list.size()+page.getNumberOfElements()-1)/page.getNumberOfElements());
             }
-
+            int total = voList.size();
+            Page<PoHeaderAccordingToLineOfReferenceVO> page = new Page(voList, new PageInfo(0, total == 0 ? 1 : total), (long) total);
+            List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             this.queryDefaultSupplier(poHeaderAccordingToLineOfReferenceDTO, content);
-            List<Long> prLineIds = (List) content.stream().map(PoHeaderAccordingToLineOfReferenceVO::getPrLineId).collect(Collectors.toList());
+            List<Long> prLineIds =  content.stream().map(PoHeaderAccordingToLineOfReferenceVO::getPrLineId).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(prLineIds)) {
                 Page p = new Page();
                 p.setContent(Collections.emptyList());
