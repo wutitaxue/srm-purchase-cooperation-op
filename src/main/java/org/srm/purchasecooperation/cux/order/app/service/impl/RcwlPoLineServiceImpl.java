@@ -73,7 +73,7 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
                     //当申请类型为“标准申请”STANDARD“项目申请”PROJECT“紧急申请”EMERGENCY“零星申请”SPORADIC  时,剩余可下单数量不等于本次下单数量时，这条数据不显示。
                     String prTypeCode = ObjectUtils.isEmpty(e.getPrTypeCode()) ? "" : e.getPrTypeCode();
                     if (prTypeCodes.contains(prTypeCode)){
-                        if(e.getOccupiedQuantity().compareTo(BigDecimal.ZERO)!=1){
+                        if(e.getOccupiedQuantity().compareTo(BigDecimal.ZERO)==0){
 //                            list.add(e);
                             newList.add(e);
                         }
