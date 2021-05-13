@@ -59,6 +59,7 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
 //                return  this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
 //            });
             List<PoHeaderAccordingToLineOfReferenceVO> voList = this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
+            List<PoHeaderAccordingToLineOfReferenceVO> newList = new ArrayList<>();
 //            List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             String attributeVarchar40 = poHeaderAccordingToLineOfReferenceDTO.getAttributeVarchar40();
             //融创需求池二开内容
@@ -74,13 +75,14 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
                     if (prTypeCodes.contains(prTypeCode)){
                         if(e.getOccupiedQuantity().compareTo(BigDecimal.ZERO)!=1){
 //                            list.add(e);
-                            voList.remove(e);
+                            newList.add(e);
                         }
                     }
 //                    else{
 //                        list.add(e);
 //                    }
                 });
+                voList=newList;
             }
             int total = voList.size();
             Page<PoHeaderAccordingToLineOfReferenceVO> page = new Page(voList, new PageInfo(0, total == 0 ? 1 : total), (long) total);
