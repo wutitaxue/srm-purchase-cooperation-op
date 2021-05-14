@@ -4,8 +4,15 @@
 
 
     <select id="selectSapCode" resultType="java.lang.String">
-        select h.attribute_varchar1 from spfm_company_basic h
-        where h.company_id = #{companyId} and h.group_id = #{tenantId}
+        SELECT
+        	scb.attribute_varchar1
+        FROM
+        	spfm_company_basic scb
+        	LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
+        WHERE
+        	h.company_id = #{companyId}
+        	AND h.tenant_id = #{tenantId}
+        	AND scb.process_status = 'COMPLETE'
     </select>
 
     <select id="selectWbsName" resultType="java.lang.String">
