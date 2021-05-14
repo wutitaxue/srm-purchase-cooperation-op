@@ -214,7 +214,7 @@ public class RCWLPrHeaderController {
             level = ResourceLevel.ORGANIZATION
     )
     @PostMapping({"/purchase-requests/after-bpm-approve"})
-    public ResponseEntity afterBpmApprove(@RequestParam(value = "prNum") String prNum,@RequestParam(value ="approveFlag") String approveFlag ) throws JsonProcessingException {
+    public ResponseEntity afterBpmApprove(@PathVariable("organizationId") Long tenantId,@RequestParam(value = "prNum") String prNum,@RequestParam(value ="approveFlag") String approveFlag ) throws JsonProcessingException {
         logger.info("回传数据prNum：=================="+prNum);
         logger.info("回传数据approveFlag：=================="+approveFlag);
 
@@ -232,7 +232,7 @@ public class RCWLPrHeaderController {
             level = ResourceLevel.ORGANIZATION
     )
     @PostMapping({"/purchase-requests/after-bpm-approve-change"})
-    public ResponseEntity afterBpmApproveByChange(@RequestParam(value = "prNum") String prNum,@RequestParam(value ="approveFlag") String approveFlag ) throws JsonProcessingException {
+    public ResponseEntity afterBpmApproveByChange(@PathVariable("organizationId") Long tenantId,@RequestParam(value = "prNum") String prNum,@RequestParam(value ="approveFlag") String approveFlag ) throws JsonProcessingException {
         logger.info("回传数据prNum：=================="+prNum);
         logger.info("回传数据approveFlag：=================="+approveFlag);
 
