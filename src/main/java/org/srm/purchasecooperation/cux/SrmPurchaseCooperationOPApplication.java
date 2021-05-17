@@ -2,7 +2,6 @@ package org.srm.purchasecooperation.cux;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 import org.srm.autoconfigure.purchasecooperation.EnableSrmPurchaseCooperationOP;
 
@@ -13,7 +12,6 @@ import org.srm.autoconfigure.purchasecooperation.EnableSrmPurchaseCooperationOP;
  */
 @SpringBootApplication
 @EnableSrmPurchaseCooperationOP
-@ComponentScan(basePackages ={"gxbpm.service" })
 public class SrmPurchaseCooperationOPApplication {
 
     public static void main(String[] args) {

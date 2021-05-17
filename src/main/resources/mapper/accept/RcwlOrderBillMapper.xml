@@ -4,141 +4,145 @@
     <select id="selectSendAsn" parameterType="java.lang.Long" resultType="org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO">
         SELECT
             '01' fsrmBillType,
-            ( SELECT sph.po_num FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fsrmOrderBillNo,
-            srth.trx_num fsrmStoreBillNo,
-            srtl.trx_line_num fsrmStoreRowNo,
-            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb WHERE scb.company_id = srth.company_id LIMIT 1 ) fPurchaseOrgId,
-            ( SELECT ssb.attribute_varchar39 FROM sslm_supplier_basic ssb WHERE ssb.supplier_company_id = srth.supplier_company_id LIMIT 1 ) fSupplierId,
-            srth.received_by fProviderContactName,
-            srtl.item_code fMaterialId,
-            srtl.item_name fMaterialName,
+            (
+            SELECT
+                sph.po_num
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_header sph ON spll.po_header_id = sph.po_header_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fsrmOrderBillNo,
+            sah.asn_num fsrmStoreBillNo,
+            sal.asn_line_num fsrmStoreRowNo,
+            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb WHERE scb.company_id = sah.company_id LIMIT 0, 1 ) fPurchaseOrgId,
+            ( SELECT sss.erp_supplier_num FROM sslm_supplier_synced sss WHERE sss.supplier_company_id = sah.supplier_company_id LIMIT 0, 1 ) fSupplierId,
+            sal.item_code,
+            sal.item_name,
+            ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = sal.item_id ) fModel,
             (
             SELECT
                 sic.category_code
             FROM
-                sodr_po_line spl
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
                 LEFT JOIN smdm_item_category sic ON sic.category_id = spl.category_id
             WHERE
-                spl.po_line_id = srtol.from_po_line_id
+                spll.po_line_location_id = sal.po_line_location_id
             ) fMaterialGroup,
-            ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
-        IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNewInt,
-        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
-        (
-            SELECT
-                su.uom_code
-            FROM
-                sodr_po_line spl
-                LEFT JOIN smdm_uom su ON su.uom_id = spl.uom_id
-            WHERE
-                spl.po_line_id = srtol.from_po_line_id
-            ) fUnitId,
-            srtl.quantity fQty,
-            DATE_FORMAT( SYSDATE(), '%Y-%m-%d' ) fDeliveryDate,
-            ( SELECT ROUND( spl.unit_price, 6 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fPrice,
-            ( SELECT ROUND( spl.unit_price * srtl.quantity, 2 ) FROM sodr_po_line spl  WHERE srtol.from_po_line_id = spl.po_line_id ) fAmount,
-
-            ( SELECT ROUND( spl.entered_tax_included_price, 6 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fTaxPrice,
-            ( SELECT ROUND( spl.entered_tax_included_price * srtl.quantity, 2 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fallAmount,
-
-            ( SELECT ROUND( spl.tax_rate, 0 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fTaxRate,
+            ( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = sal.item_id ) fIsNew,
+            sah.currency_code fSettleCurrId,
+            NULL FExchangeRate,
+            ( SELECT su.uom_code FROM smdm_uom su WHERE su.uom_id = sal.uom_id ) fUnitId,
+            sal.receive_quantity fQty,
+            DATE_FORMAT(sal.promised_date, '%Y-%m-%d') fDeliveryDate,
             (
             SELECT
-                ROUND( spl.entered_tax_included_price * srtl.quantity - spl.unit_price * srtl.quantity, 2 )
+                FORMAT( spl.unit_price, 6 )
             FROM
-                sodr_po_line spl
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
             WHERE
-                srtol.from_po_line_id = spl.po_line_id
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fPrice,
+            (
+            SELECT
+                FORMAT( spl.unit_price * spl.quantity, 2 )
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fAmount,
+            (
+            SELECT
+                FORMAT( spl.entered_tax_included_price, 6 )
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fTaxPrice,
+            (
+            SELECT
+                FORMAT( spl.entered_tax_included_price * spl.quantity, 2 )
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fallAmount,
+            (
+            SELECT
+                FORMAT( tax_rate / 100, 2 )
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fTaxRate,
+            (
+            SELECT
+                FORMAT( spl.entered_tax_included_price * spl.quantity - spl.unit_price * spl.quantity, 2 )
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
             ) fTaxAmount,
-            srth.remark fNote,
+            sal.remark fNote,
+            ( SELECT hi.inventory_code FROM hpfm_inventory hi WHERE hi.inventory_id = sal.inventory_id ) fStockId,
             (
             SELECT
-                hi.inventory_code
-            FROM hpfm_inventory hi where hi.inventory_id = srtl.inventory_id
-            ) fStockId,
-            ( SELECT spl.cost_code FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fCostCenterNo,
-            ( SELECT sph.attribute_varchar13 FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fisvatinvoice
+                spl.cost_code
+            FROM
+                sodr_po_line_location spll
+                LEFT JOIN sodr_po_line spl ON spll.po_line_id = spl.po_line_id
+            WHERE
+                spll.po_line_location_id = sal.po_line_location_id
+            ) fCostCenterNo
         FROM
-            sinv_rcv_trx_line srtl
-            LEFT JOIN sinv_rcv_trx_header srth ON srtl.rcv_trx_header_id = srth.rcv_trx_header_id
-            LEFT JOIN sinv_rcv_trx_order_link srtol ON srtol.order_link_id = srtl.order_link_id
-        WHERE srtl.tenant_id = #{tenantId} and srtl.rcv_trx_line_id = #{id}
+            sinv_asn_line sal
+            LEFT JOIN sinv_asn_header sah ON sal.asn_header_id = sah.asn_header_id
+        WHERE sal.asn_line_id = #{id}
     </select>
     <select id="selectSendAccept" parameterType="java.lang.Long" resultType="org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO">
         SELECT
             '02' fsrmBillType,
-            ( SELECT sph.po_num FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fsrmOrderBillNo,
-            srth.trx_num fsrmStoreBillNo,
-            srtl.trx_line_num fsrmStoreRowNo,
-            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb WHERE scb.company_id = srth.company_id LIMIT 1 ) fPurchaseOrgId,
-            ( SELECT ssb.attribute_varchar39 FROM sslm_supplier_basic ssb WHERE ssb.supplier_company_id = srth.supplier_company_id LIMIT 1 ) fSupplierId,
-            srth.received_by fProviderContactName,
-            srtl.item_code fMaterialId,
-            srtl.item_name fMaterialName,
-            (
-            SELECT
-                sic.category_code
-            FROM
-                sodr_po_line spl
-                LEFT JOIN smdm_item_category sic ON sic.category_id = spl.category_id
-            WHERE
-                spl.po_line_id = srtol.from_po_line_id
-            ) fMaterialGroup,
-            ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
-        IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNewInt,
-        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
+            ( SELECT sph.po_num FROM sodr_po_header sph WHERE sph.po_header_id = sall.source_id ) fsrmOrderBillNo,
+            salh.accept_list_num fsrmStoreBillNo,
+            sall.line_num fsrmStoreRowNo,
+            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb WHERE scb.company_id = salh.company_id LIMIT 0, 1 ) fPurchaseOrgId,
+            ( SELECT sss.erp_supplier_num FROM sslm_supplier_synced sss WHERE sss.supplier_company_id = salh.supplier_company_id LIMIT 0, 1 ) fSupplierId,
+            ( SELECT si.item_code FROM smdm_item si WHERE si.item_id = sall.item_id ) item_code,
+            sall.item_name,
+            ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = sall.item_id ) fModel,
+        ( SELECT sic.category_code FROM smdm_item_category sic WHERE sic.category_id = sall.item_category_id ) fMaterialGroup,
+        ( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = sall.item_id ) fIsNew,
+        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = sall.source_id ) fSettleCurrId,
+        NULL FExchangeRate,
+        ( SELECT su.uom_code FROM smdm_uom su WHERE su.uom_id = sall.uom_id ) fUnitId,
+        sall.accept_quantity fQty,
+        DATE_FORMAT( salh.accept_date, '%Y-%m-%d' ) fDeliveryDate,
+        ( SELECT FORMAT( spl.unit_price, 6 ) FROM sodr_po_line spl WHERE spl.po_line_id = sall.source_line_id ) fPrice,
+        ( SELECT FORMAT( spl.unit_price * spl.quantity, 2 ) FROM sodr_po_line spl WHERE spl.po_line_id = sall.source_line_id ) fAmount,
+        ( SELECT FORMAT( spl.entered_tax_included_price, 6 ) FROM sodr_po_line spl WHERE spl.po_line_id = sall.source_line_id ) fTaxPrice,
+        ( SELECT FORMAT( spl.entered_tax_included_price * spl.quantity, 2 ) FROM sodr_po_line spl WHERE spl.po_line_id = sall.source_line_id ) fallAmount,
+        ( SELECT FORMAT( tax_rate / 100, 2 ) FROM sodr_po_line spl WHERE spl.po_line_id = sall.source_line_id ) fTaxRate,
         (
             SELECT
-                su.uom_code
-            FROM
-                sodr_po_line spl
-                LEFT JOIN smdm_uom su ON su.uom_id = spl.uom_id
-            WHERE
-                spl.po_line_id = srtol.from_po_line_id
-            ) fUnitId,
-            ( SELECT spl.quantity FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fQty,
-            DATE_FORMAT( SYSDATE(), '%Y-%m-%d' ) fDeliveryDate,
-            ( SELECT ROUND( spl.unit_price, 6 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fPrice,
-            ( SELECT ROUND( spl.unit_price * spl.quantity, 2 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fAmount,
-            ( SELECT ROUND( spl.entered_tax_included_price, 6 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fTaxPrice,
-            ( SELECT ROUND( spl.entered_tax_included_price * spl.quantity, 2 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fallAmount,
-            ( SELECT ROUND( spl.tax_rate, 0 ) FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fTaxRate,
-            (
-            SELECT
-                ROUND( spl.entered_tax_included_price * spl.quantity - spl.unit_price * spl.quantity, 2 )
+                FORMAT( spl.entered_tax_included_price * spl.quantity - spl.unit_price * spl.quantity, 2 )
             FROM
                 sodr_po_line spl
             WHERE
-                srtol.from_po_line_id = spl.po_line_id
+                spl.po_line_id = sall.source_line_id
             ) fTaxAmount,
-            srth.remark fNote,
-            (
-            SELECT
-                hi.inventory_code
-            FROM hpfm_inventory hi where hi.inventory_id = srtl.inventory_id
-            ) fStockId,
-            ( SELECT spl.cost_code FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fCostCenterNo,
-            ( SELECT sph.attribute_varchar13 FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fisvatinvoice
+            NULL fNote,
+            NULL fStockId,
+            ( SELECT spl.cost_code FROM sodr_po_line spl WHERE spl.po_line_id = sall.source_line_id ) fCostCenterNo
         FROM
-            sinv_rcv_trx_line srtl
-            LEFT JOIN sinv_rcv_trx_header srth ON srtl.rcv_trx_header_id = srth.rcv_trx_header_id
-            LEFT JOIN sinv_rcv_trx_order_link srtol ON srtol.order_link_id = srtl.order_link_id
-        WHERE srtl.tenant_id = #{tenantId} and srtl.rcv_trx_line_id = #{id}
-    </select>
-    <update id="updateItem">
-        update  smdm_item si set si.attribute_varchar1 = '0'
-        where si.tenant_id = #{tenantId} and si.item_code = #{itemCode}
-    </update>
-
-
-    <select id="selectCategory" resultType="java.lang.String">
-        SELECT
-            IFNULL(sic.attribute_varchar11,'1') attribute_varchar11
-        FROM
-            sinv_rcv_trx_line srtl
-            LEFT JOIN sinv_rcv_trx_order_link srtol ON srtol.order_link_id = srtl.order_link_id
-			LEFT JOIN sodr_po_line spl ON srtol.from_po_line_id = spl.po_line_id
-			LEFT JOIN smdm_item_category sic ON sic.category_id = spl.category_id
-        WHERE srtl.tenant_id = #{tenantId} and srtl.rcv_trx_line_id = #{id}
+            spuc_accept_list_line sall
+            LEFT JOIN spuc_accept_list_header salh ON sall.accept_list_header_id = salh.accept_list_header_id
+        WHERE sall.accept_list_line_id = #{id}
     </select>
 </mapper>

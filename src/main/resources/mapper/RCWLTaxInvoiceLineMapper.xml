@@ -13,6 +13,5 @@
         SELECT *
         FROM `sfin_tax_invoice_line` stil
         WHERE stil.invoice_header_id = #{invoiceHeaderId}
-        and stil.invoice_number = #{invoiceNumber}
     </select>
 </mapper>
