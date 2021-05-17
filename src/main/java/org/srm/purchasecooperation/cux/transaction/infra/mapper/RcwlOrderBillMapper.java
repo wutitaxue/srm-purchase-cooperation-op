@@ -1,12 +1,18 @@
 package org.srm.purchasecooperation.cux.transaction.infra.mapper;
 
 
+import org.apache.ibatis.annotations.Param;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 
 public interface RcwlOrderBillMapper{
 
     //查询接收送货单
-    RcwlOrderBillDTO selectSendAsn(Long id);
+    RcwlOrderBillDTO selectSendAsn(@Param("tenantId")Long tenantId,@Param("id") Long id);
     //查询验收单
-    RcwlOrderBillDTO selectSendAccept(Long id);
+    RcwlOrderBillDTO selectSendAccept(@Param("tenantId")Long tenantId,@Param("id")Long id);
+    //更新物料表
+    void updateItem(@Param("tenantId")Long tenantId,@Param("itemCode")String itemCode);
+    //查询事务行的品类是否推送资产
+    String selectCategory(@Param("tenantId")Long tenantId,@Param("id")Long id);
+
 }

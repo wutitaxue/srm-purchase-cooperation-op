@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyPoHeaderMapper">
+    <select id="rcwlSelect" resultType="java.lang.String">
+         SELECT
+        case when
+        ( SELECT sum( t.net_received_quantity ) FROM sodr_po_line_location t WHERE t.po_header_id = sph3.po_header_id ) > 0 and not EXISTS (select 1 from sslm_kpi_eval_header skeh where skeh.attribute_varchar2 = sph3.po_num) THEN
+        1 ELSE 0
+        END
+        FROM
+        sodr_po_header sph3
+        WHERE
+        sph3.po_header_id = #{poHeaderId}
+
+    </select>
+</mapper>

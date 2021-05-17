@@ -1,0 +1,792 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.CuxRCWLPrLineMapper">
+
+
+    <sql id="base_pageAssignList_where">
+        WHERE
+        1 = 1
+        AND spl.tenant_id=#{tenantId,jdbcType=DECIMAL}
+        <!--添加查询条件 -->
+        <if test="attributeBigint1 != null">
+            AND spl.attribute_bigint1 = #{attributeBigint1}
+        </if>
+        <!--添加查询条件 end-->
+
+        <if test="erpControlFlag != null and erpControlFlag == 1">
+            AND (spl.erp_edit_status = 'N' OR sph.pr_source_platform != 'ERP')
+        </if>
+        <if test="waitAssignRequestFlag != null and waitAssignRequestFlag == 1">
+            and spl.execution_status_code is null
+            and spl.execution_header_bill_num is null
+        </if>
+        <if test="cancelledFlag != null">
+            AND spl.cancelled_flag = #{cancelledFlag}
+        </if>
+        <if test="executorName != null and executorName != ''">
+            <bind name="executorNameLike" value="'%'+ executorName +'%'"/>
+            AND EXISTS (
+            SELECT
+            1
+            FROM
+            sprm_pr_line_assign spla
+            JOIN iam_user iu ON spla.user_id = iu.id
+            WHERE
+            spla.tenant_id = spl.tenant_id
+            AND spla.pr_header_id = spl.pr_header_id
+            AND spl.pr_line_id = spla.pr_line_id
+            AND iu.real_name LIKE #{executorNameLike}
+            )
+        </if>
+        <if test="itemCode != null and itemCode != ''">
+            <bind name="itemCodeLike" value="'%'+ itemCode +'%'"/>
+            and spl.item_code like #{itemCodeLike}
+        </if>
+        <if test="itemName != null and itemName != ''">
+            <bind name="itemNameLike" value="'%'+ itemName +'%'"/>
+            and spl.item_name like #{itemNameLike}
+        </if>
+        <if test="itemModel != null and itemModel != ''">
+            <bind name="itemModelLike" value="'%'+ itemModel +'%'"/>
+            and spl.item_model like #{itemModelLike}
+        </if>
+        <if test="itemSpecs != null and itemSpecs != ''">
+            <bind name="itemSpecsLike" value="'%'+ itemSpecs +'%'"/>
+            and spl.item_specs like #{itemSpecsLike}
+        </if>
+        <if test="inventoryId != null">
+            AND spl.inventory_id = #{inventoryId}
+        </if>
+        <if test="wbsCode != null and wbsCode != ''">
+            AND spl.wbs_code = #{wbsCode}
+        </if>
+        <if test="costId != null">
+            AND spl.cost_id = #{costId}
+        </if>
+        <if test="displayPrNum != null and  displayPrNum != ''">
+            <bind name="displayPrNumLike" value="'%'+ displayPrNum +'%'"/>
+            AND (sph.display_pr_num LIKE #{displayPrNumLike}
+            OR sph.pr_num LIKE #{displayPrNumLike})
+        </if>
+        <if test="prSourcePlatform != null and prSourcePlatform != ''">
+            AND sph.pr_source_platform = #{prSourcePlatform}
+        </if>
+        <if test="executedBy != null">
+            AND spl.executed_by = #{executedBy}
+        </if>
+        <if test="neededDateStart != null">
+            AND spl.needed_date &gt;= #{neededDateStart}
+        </if>
+        <if test="neededDateEnd != null">
+            AND spl.needed_date &lt;= #{neededDateEnd}
+        </if>
+        <if test="prHeaderId != null">
+            AND spl.pr_header_id = #{prHeaderId}
+        </if>
+
+        <if test="createdDateStart != null">
+            AND spl.creation_date &gt;= #{createdDateStart}
+        </if>
+        <if test="createdDateEnd != null">
+            AND spl.creation_date &lt; #{createdDateEnd}
+        </if>
+        <if test="assignedDateStart != null">
+            AND spl.assigned_date &gt;= #{assignedDateStart}
+        </if>
+        <if test="assignedDateEnd != null">
+            AND spl.assigned_date &lt; #{assignedDateEnd}
+        </if>
+
+
+        <!-- 新增查询-->
+        <if test="changeOrderCode != null">
+            AND spl.change_order_code = #{changeOrderCode}
+        </if>
+        <!--            <if test="purchaseAgentId != null">-->
+        <!--                AND spl.purchase_agent_id = #{purchaseAgentId}-->
+        <!--            </if>-->
+        <if test="categoryId != null">
+            AND spl.category_id = #{categoryId}
+        </if>
+        <if test="ouId != null">
+            AND spl.ou_id = #{ouId}
+        </if>
+        <if test="invOrganizationId != null">
+            AND spl.inv_organization_id = #{invOrganizationId}
+        </if>
+        <if test="itemId != null">
+            AND spl.item_id = #{itemId}
+        </if>
+        <if test="createdBys != null and createdBys.size() > 0">
+            AND spl.created_by IN
+            <foreach collection="createdBys" item="createdBy" index="index" open="(" close=")" separator=",">
+                #{createdBy}
+            </foreach>
+        </if>
+        <if test="creatorName != null and creatorName != ''">
+            <bind name="creatorNameLike" value="'%'+ creatorName +'%'"/>
+            AND iu2.real_name LIKE #{creatorNameLike}
+        </if>
+        <if test="assignedFlag != null">
+            AND spl.assigned_flag = #{assignedFlag}
+        </if>
+        <if test="suspendFlag != null">
+            AND spl.suspend_flag = #{suspendFlag}
+        </if>
+        <if test="closedFlag != null">
+            AND spl.closed_flag = #{closedFlag}
+        </if>
+        <if test="prStatusCode != null and prStatusCode!=''">
+            AND sph.pr_status_code = #{prStatusCode}
+        </if>
+        <if test="itemAbcClass != null and itemAbcClass!=''">
+            AND spl.item_abc_class = #{itemAbcClass}
+        </if>
+        <if test="unitId != null">
+            AND sph.unit_id = #{unitId}
+        </if>
+        <if test="urgentFlag != null">
+            AND spl.urgent_flag = #{urgentFlag}
+        </if>
+        <if test="title != null and title != ''">
+            <bind name="titleLike" value="'%'+title+'%'"/>
+            AND sph.title LIKE #{titleLike}
+        </if>
+        <!-- 订单导出时处理订单头ID -->
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND spl.pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" index="index" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
+
+        <if test="prLineStatusCode != null and prLineStatusCode != ''">
+            <choose>
+                <when test="prLineStatusCode == 'ASSIGNED'">
+                    AND spl.assigned_flag = 1
+                    AND spl.suspend_flag = 0
+                    AND spl.cancelled_flag = 0
+                    AND spl.closed_flag = 0
+                </when>
+                <when test="prLineStatusCode == 'SUSPEND'">
+                    AND spl.suspend_flag = 1
+                    AND spl.cancelled_flag = 0
+                    AND spl.closed_flag = 0
+                </when>
+                <when test="prLineStatusCode == 'CLOSED'">
+                    AND spl.closed_flag = 1
+                    AND spl.cancelled_flag = 0
+                </when>
+                <when test="prLineStatusCode == 'CANCELLED'">
+                    AND spl.cancelled_flag = 1
+                </when>
+                <otherwise>
+                    AND sph.pr_status_code = #{prLineStatusCode}
+                    AND spl.assigned_flag = 0
+                    AND spl.suspend_flag = 0
+                    AND spl.cancelled_flag = 0
+                    AND spl.closed_flag = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test='"SOURCE".equals(sourceFrom)'>
+            AND sph.pr_source_platform in ('ERP','SRM')
+        </if>
+        <if test="prRequestedName != null and  prRequestedName != ''">
+            <bind name="prRequestedNameLike" value="'%'+ prRequestedName +'%'"/>
+            AND (CASE WHEN spl.pr_requested_name IS NULL THEN sph.pr_requested_name ELSE spl.pr_requested_name END) LIKE #{prRequestedNameLike}
+        </if>
+        <if test='executionStatusCode!=null'>
+            AND spl.execution_status_code = #{executionStatusCode}
+        </if>
+        <if test="projectNum != null and  projectNum != ''">
+            <bind name="projectNumLike" value="'%'+ projectNum +'%'"/>
+            AND spl.project_num LIKE #{projectNumLike}
+        </if>
+        <if test="projectName != null and  projectName != ''">
+            <bind name="projectNameLike" value="'%'+ projectName +'%'"/>
+            AND spl.project_name LIKE #{projectNameLike}
+        </if>
+        <if test='prTypeId!=null'>
+            AND sph.pr_type_id = #{prTypeId}
+        </if>
+        <if test='companyId!=null'>
+            AND spl.company_id = #{companyId}
+        </if>
+        <if test="executorBys != null and executorBys.size() > 0 ">
+            <choose>
+                <when test="autoAssignType == null or autoAssignType == ''">
+                    AND EXISTS (
+                    SELECT
+                    1
+                    FROM
+                    sprm_pr_line_assign spla
+                    WHERE spl.tenant_id = spla.tenant_id
+                    AND spl.pr_header_id = spla.pr_header_id
+                    AND spl.pr_line_id = spla.pr_line_id
+                    AND spla.user_id IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    )
+                </when>
+                <when test="autoAssignType == 'ITEM_CATEGORY'">
+                    AND EXISTS (
+                    SELECT
+                    1
+                    FROM
+                    smdm_item_category_pc i_sicp
+                    JOIN hpfm_purchase_agent i_hpa ON i_hpa.purchase_agent_id = i_sicp.purchase_agent_id
+                    JOIN hpfm_purchase_agent_user i_hpau ON i_hpa.purchase_agent_id = i_hpau.purchase_agent_id
+                    WHERE spl.assigned_flag = 0
+                    AND i_sicp.category_id = spl.category_id
+                    AND i_sicp.main_purchase_flag = 1
+                    AND i_hpau.user_id IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    UNION
+                    SELECT
+                    1
+                    FROM
+                    sprm_pr_line_assign spla
+                    WHERE
+                    spl.tenant_id = spla.tenant_id
+                    AND spl.pr_header_id = spla.pr_header_id
+                    AND spl.pr_line_id = spla.pr_line_id
+                    AND spla.user_id IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    )
+                </when>
+                <when test="autoAssignType == 'PURCHASER'">
+                    AND EXISTS (
+                    SELECT
+                    1
+                    FROM  hpfm_purchase_agent_user p_hpau
+                    WHERE spl.assigned_flag = 0
+                    AND spl.purchase_agent_id = p_hpau.purchase_agent_id
+                    AND p_hpau.user_id IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    UNION
+                    SELECT
+                    1
+                    FROM
+                    sprm_pr_line_assign spla
+                    WHERE
+                    spl.tenant_id = spla.tenant_id
+                    AND spl.pr_header_id = spla.pr_header_id
+                    AND spl.pr_line_id = spla.pr_line_id
+                    AND spla.user_id IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    )
+                </when>
+                <when test="autoAssignType == 'EXECUTOR'">
+                    AND EXISTS (
+                    SELECT
+                    1
+                    FROM smdm_item e_si
+                    JOIN smdm_item_executor e_sie ON e_si.item_id = e_sie.item_id
+                    WHERE spl.assigned_flag = 0
+                    AND e_si.item_id = spl.item_id
+                    AND e_sie.demand_executor_by IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    UNION
+                    SELECT
+                    1
+                    FROM smdm_item_org_rel e_sior
+                    JOIN smdm_item_org_rel_executor e_siore ON e_siore.org_relation_id = e_sior.org_relation_id
+                    WHERE spl.assigned_flag = 0
+                    AND e_sior.item_id = spl.item_id
+                    AND e_sior.organization_id = spl.inv_organization_id
+                    AND e_siore.demand_executor_by IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    UNION
+                    SELECT
+                    1
+                    FROM
+                    sprm_pr_line_assign spla
+                    WHERE
+                    spl.tenant_id = spla.tenant_id
+                    AND spl.pr_header_id = spla.pr_header_id
+                    AND spl.pr_line_id = spla.pr_line_id
+                    AND spla.user_id IN
+                    <foreach collection="executorBys" item="executorBy" open="(" close=")" separator=",">
+                        #{executorBy}
+                    </foreach>
+                    )
+                </when>
+                <otherwise>
+                    AND 1 = 2
+                </otherwise>
+            </choose>
+        </if>
+        <if test="executeBillType != null and  executeBillType != ''">
+            AND EXISTS (
+            SELECT 1
+            FROM sprm_pr_change_history spch
+            where spl.pr_line_id = spch.pr_line_id
+            AND spch.execute_bill_type = #{executeBillType}
+            )
+        </if>
+        <if test="projectCategory != null and projectCategory != ''">
+            AND spl.project_category = #{projectCategory}
+        </if>
+        <if test="displayLineNum != null and displayLineNum != ''">
+            <bind name="displayLineNumLike" value="'%'+displayLineNum+'%'"/>
+            AND spl.display_line_num like #{displayLineNumLike}
+        </if>
+        <if test="invoiceCompanyId != null">
+            AND sph.invoice_company_id = #{invoiceCompanyId}
+        </if>
+        <if test="companyId != null">
+            AND spl.company_id = #{companyId}
+        </if>
+        <if test="categoryId != null">
+            AND spl.category_id = #{categoryId}
+        </if>
+        <if test="executionHeaderBillNum != null and executionHeaderBillNum != ''">
+            <bind name="executionHeaderBillNumLike" value="'%'+executionHeaderBillNum+'%'"/>
+            AND spl.execution_header_bill_num like #{executionHeaderBillNumLike}
+        </if>
+        <if test="purchaseAgentName != null and purchaseAgentName != ''">
+            <bind name="purchaseAgentNameLike" value="'%'+purchaseAgentName+'%'"/>
+            AND hpa.purchase_agent_name like #{purchaseAgentNameLike}
+        </if>
+        <if test="requestDateStart != null">
+            AND sph.request_date &gt;= #{requestDateStart}
+        </if>
+        <if test="requestDateEnd != null">
+            AND sph.request_date &lt;= #{requestDateEnd}
+        </if>
+        <if test="assignFlag != null and assignFlag == 1">
+            <bind name="userDetails" value="@io.choerodon.core.oauth.DetailsHelper@getUserDetails()"/>
+            AND EXISTS ( SELECT 1 FROM sprm_pr_line_assign spla WHERE
+            spl.tenant_id = spla.tenant_id
+            and spl.pr_header_id = spla.pr_header_id
+            AND spl.pr_line_id = spla.pr_line_id
+            AND spla.user_id = #{userDetails.userId})
+        </if>
+        <if test="executionStrategyCode != null and executionStrategyCode != ''">
+            AND spl.execution_strategy_code = #{executionStrategyCode}
+        </if>
+        <if test="changeHistoryTag !=null">
+            AND (spl.quantity > spl.occupied_quantity OR spl.occupied_quantity IS NULL)
+            <choose>
+                <when test="changeHistoryTag == 'ORDER'">
+                    AND EXISTS
+                    (select 1 from sprm_pr_line spl2 where spl2.pr_line_id = spl.pr_line_id
+                    and spl2.execution_strategy_code = 'ORDER' )
+                </when>
+                <when test="changeHistoryTag == 'OTHER'">
+                    AND NOT EXISTS
+                    (select 1 from sprm_pr_line spl2 where spl2.pr_line_id = spl.pr_line_id
+                    and spl2.execution_strategy_code = 'ORDER' )
+                </when>
+
+            </choose>
+        </if>
+        <!--        <if test="purchaseOrgId != null">-->
+        <!--            and spl.purchase_org_id = #{purchaseOrgId}-->
+        <!--        </if>-->
+        <!--        <if test="purchaseAgentId != null">-->
+        <!--            and spl.purchase_agent_id = #{purchaseAgentId}-->
+        <!--        </if>-->
+        <if test="purchaseOrgIds != null and purchaseOrgIds.size() > 0">
+            AND spl.purchase_org_id IN
+            <foreach collection="purchaseOrgIds" item="purchaseOrgId" index="index" open="(" close=")" separator=",">
+                #{purchaseOrgId}
+            </foreach>
+        </if>
+        <if test="purchaseAgentIds != null and purchaseAgentIds.size() > 0">
+            AND spl.purchase_agent_id IN
+            <foreach collection="purchaseAgentIds" item="purchaseAgentId" index="index" open="(" close=")" separator=",">
+                #{purchaseAgentId}
+            </foreach>
+        </if>
+        <if test="purchasePlatformFlag != null and purchasePlatformFlag == 1">
+            <if test="purchasePlatformQueryParam1 != null and purchasePlatformQueryParam1 != ''">
+                <bind name="purchasePlatformQueryParam1Like" value="'%'+ purchasePlatformQueryParam1 +'%'"/>
+                AND (
+                sph.display_pr_num LIKE #{purchasePlatformQueryParam1Like} OR sph.pr_num LIKE #{purchasePlatformQueryParam1Like}
+                OR sph.title LIKE #{purchasePlatformQueryParam1Like}
+                OR iu2.real_name LIKE #{purchasePlatformQueryParam1Like}
+                )
+            </if>
+            <if test="purchasePlatformQueryParam2 != null and purchasePlatformQueryParam2 != ''">
+                <bind name="purchasePlatformQueryParam2Like" value="'%'+ purchasePlatformQueryParam2 +'%'"/>
+                AND (
+                spl.item_code LIKE #{purchasePlatformQueryParam2Like}
+                OR spl.item_name LIKE #{purchasePlatformQueryParam2Like}
+                )
+            </if>
+            <if test="purchasePlatformPrLineStatusCodeList != null and purchasePlatformPrLineStatusCodeList.size() > 0">
+                AND ( 1 = 0
+                <foreach collection="purchasePlatformPrLineStatusCodeList" item="purchasePlatformPrLineStatusCode" index="index">
+                    <choose>
+                        <when test="purchasePlatformPrLineStatusCode == 'ASSIGNED'">
+                            OR (spl.assigned_flag = 1
+                            AND spl.suspend_flag = 0
+                            AND spl.cancelled_flag = 0
+                            AND spl.closed_flag = 0 )
+                        </when>
+                        <when test="purchasePlatformPrLineStatusCode == 'SUSPEND'">
+                            OR (spl.suspend_flag = 1
+                            AND spl.cancelled_flag = 0
+                            AND spl.closed_flag = 0 )
+                        </when>
+                        <when test="purchasePlatformPrLineStatusCode == 'CLOSED'">
+                            OR (spl.closed_flag = 1
+                            AND spl.cancelled_flag = 0)
+                        </when>
+                        <when test="purchasePlatformPrLineStatusCode == 'CANCELLED'">
+                            OR (spl.cancelled_flag = 1)
+                        </when>
+                        <otherwise>
+                            OR (sph.pr_status_code = #{purchasePlatformPrLineStatusCode}
+                            AND spl.assigned_flag = 0
+                            AND spl.suspend_flag = 0
+                            AND spl.cancelled_flag = 0
+                            AND spl.closed_flag = 0 )
+                        </otherwise>
+                    </choose>
+                </foreach>
+                )
+            </if>
+            <if test="rfxStatus != null and rfxStatus != ''">
+                <choose>
+                    <when test="rfxStatus == 'NOT_STARTED'">
+                        AND spre.rfx_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.rfx_status = #{rfxStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="bidStatus != null and bidStatus != ''">
+                <choose>
+                    <when test="bidStatus == 'NOT_STARTED'">
+                        AND spre.bid_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.bid_status = #{bidStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="projectStatus != null and projectStatus != ''">
+                <choose>
+                    <when test="projectStatus == 'NOT_STARTED'">
+                        AND spre.project_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.project_status = #{projectStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="contractStatus != null and contractStatus != ''">
+                <choose>
+                    <when test="contractStatus == 'NOT_STARTED'">
+                        AND spre.contract_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.contract_status = #{contractStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="orderStatus != null and orderStatus != ''">
+                <choose>
+                    <when test="orderStatus == 'NOT_STARTED'">
+                        AND spre.order_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.order_status = #{orderStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="deliveryStatus != null and deliveryStatus != ''">
+                <choose>
+                    <when test="deliveryStatus == 'NOT_STARTED'">
+                        AND spre.delivery_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.delivery_status = #{deliveryStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="receiptStatus != null and receiptStatus != ''">
+                <choose>
+                    <when test="receiptStatus == 'NOT_STARTED'">
+                        AND spre.receipt_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.receipt_status = #{receiptStatus}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="billStatus != null and billStatus != ''">
+                <choose>
+                    <when test="billStatus == 'NOT_STARTED'">
+                        AND spre.bill_status is null
+                    </when>
+                    <otherwise>
+                        AND spre.bill_status = #{billStatus}
+                    </otherwise>
+                </choose>
+            </if>
+        </if>
+    </sql>
+    <!-- 需求分配人汇总查询-->
+    <select id="pageAssignList" resultType="org.srm.purchasecooperation.pr.domain.vo.PrLineVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        sph.attachment_Uuid head_attachment_Uuid,
+        spl.pr_line_id,
+        spl.pr_header_id,
+        spl.tenant_id,
+        spl.line_num,
+        spl.display_line_num,
+        spl.company_id,
+        spl.inv_organization_id,
+        spl.item_id,
+        spl.item_code,
+        spl.item_name,
+        spl.product_id,
+        spl.product_num,
+        spl.product_name,
+        spl.catalog_id,
+        spl.catalog_name,
+        spl.category_id,
+        spl.uom_id,
+        spl.quantity,
+        spl.tax_id,
+        spl.tax_rate,
+        spl.currency_code,
+        spl.unit_price,
+        spl.tax_included_unit_price,
+        spl.line_amount,
+        spl.tax_included_line_amount,
+        spl.needed_date,
+        spl.supplier_tenant_id,
+        spl.supplier_id,
+        spl.supplier_code,
+        spl.supplier_name,
+        spl.supplier_company_id,
+        spl.supplier_company_name,
+        spl.execution_status_code,
+        spl.executed_date,
+        spl.executed_by,
+        spl.execution_bill_id,
+        spl.execution_bill_num,
+        spl.execution_bill_data,
+        sph.execution_bill_id AS header_execution_bill_id,
+        sph.execution_bill_num AS header_execution_bill_num,
+        spl.assigned_flag,
+        spl.assigned_date,
+        spl.assigned_by,
+        spl.assigned_remark,
+        spl.cancelled_flag,
+        spl.cancelled_date,
+        spl.cancelled_by,
+        spl.cancelled_remark,
+        spl.closed_flag,
+        spl.closed_date,
+        spl.closed_by,
+        spl.closed_remark,
+        spl.suspend_flag,
+        spl.suspend_date,
+        spl.suspend_remark,
+        spl.incorrect_flag,
+        spl.incorrect_date,
+        spl.incorrect_msg,
+        spl.attachment_uuid,
+        spl.remark,
+        spl.object_version_number,
+        spl.creation_date,
+        spl.created_by,
+        spl.last_updated_by,
+        spl.line_freight,
+        spl.tax_without_freight_price,
+        spl.execution_header_bill_id,
+        spl.execution_header_bill_num,
+        spl.requested_by,
+        sph.request_date,
+        (CASE WHEN spl.pr_requested_name IS NULL THEN sph.pr_requested_name ELSE spl.pr_requested_name END) pr_requested_name,
+        spl.ou_id,
+        spl.purchase_org_id,
+        spl.purchase_agent_id,
+        spl.inventory_id,
+        spl.can_vat_flag,
+        spl.erp_edit_status,
+        spl.item_abc_class,
+        spl.drawing_num,
+        spl.project_num,
+        spl.project_name,
+        spl.crane_num,
+        spl.cost_id,
+        spl.cost_code,
+        spl.account_subject_id,
+        spl.account_subject_num,
+        spl.wbs,
+        spl.wbs_code,
+        spl.inner_po_num,
+        sas.account_subject_name,
+        scc.cost_name,
+        sph.pr_num,
+        sut.uom_name,
+        su.uom_code,
+        scbl.company_name,
+        hc.company_num,
+        hou.ou_name,
+        hou.ou_code,
+        hpo.organization_name AS purchaseorgname,
+        hpa.purchase_agent_name,
+        hhpa.purchase_agent_name AS header_purchase_agent_name,
+        hio.organization_name AS invorganizationname,
+        sph.sync_status AS header_sync_status,
+        sph.sync_response_msg,
+        sph.pr_source_platform,
+        sict.category_name,
+        hiy.inventory_name,
+        sph.display_pr_num,
+        sph.pr_status_code AS pr_line_status_code,
+        st.tax_code,
+        sph.unit_id,
+        sph.unit_name,
+        CASE
+        WHEN spl.pr_requested_name IS NOT NULL THEN iur.login_name
+        ELSE NULL
+        END pr_requested_num,
+        iu2.real_name AS creator_name,
+        spl.urgent_flag,
+        spl.urgent_date,
+        sph.pr_type_id,
+        spt.pr_type_code,
+        sptl.pr_type_name,
+        sph.inventory_id as header_inventory_id,
+        hiys.inventory_name as header_inventory_name,
+        spl.item_model,
+        spl.item_specs,
+        sph.parent_unit_id,
+        hu.unit_name as parent_unit_name,
+        sph.category_id as header_category_id,
+        sicst.category_name as header_category_name,
+        spl.drawing_version,
+        spl.supplier_item_code,
+        spl.supplier_item_name,
+        sph.expense_unit_name,
+        sph.title,
+        spl.account_assign_type_id,
+        saat.account_assign_type_code,
+        spl.surface_treat_flag,
+        spl.item_properties,
+        spl.occupied_quantity,
+        spl.unit_price_batch,
+        spl.project_category,
+        spl.assets,
+        spl.asset_child_num,
+        sph.changed_flag,
+        spl.quality_standard,
+        spl.tax_included_budget_unit_price,
+        spl.budget_io_flag,
+        spl.budget_account_id,
+        sba.budget_account_num,
+        sbat.budget_account_name,
+        sph.invoice_company_id,
+        iscbl.company_name as invoice_company_name,
+        spl.jd_price,
+        spl.execution_strategy_code,
+        spl.change_order_code,
+        spl.change_order_message,
+        spl.budget_account_deptno,
+        sph.remark header_remark,
+        spl.budget_account_price,
+        spl.exp_bear_dep_id,
+        ehut.unit_name AS exp_bear_dep,
+        ehu.unit_code AS exp_bear_dep_code,
+        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc.financial_precision ELSE NULL END) AS financial_precision,
+        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc.default_precision ELSE NULL END) AS default_precision,
+        <if test="purchasePlatformFlag != null and purchasePlatformFlag == 1">
+            case when spre.rfx_status is null then 'NOT_STARTED' else spre.rfx_status end rfx_status,
+            case when spre.rfx_quantity is null then 0 else spre.rfx_quantity end rfx_quantity,
+            case when spre.bid_status is null then 'NOT_STARTED' else spre.bid_status end bid_status,
+            case when spre.bid_quantity is null then 0 else spre.bid_quantity end bid_quantity,
+            case when spre.project_status is null then 'NOT_STARTED' else spre.project_status end project_status,
+            case when spre.project_quantity is null then 0 else spre.project_quantity end project_quantity,
+            case when spre.contract_status is null then 'NOT_STARTED' else spre.contract_status end contract_status,
+            case when spre.contract_quantity is null then 0 else spre.contract_quantity end contract_quantity,
+            case when spre.order_status is null then 'NOT_STARTED' else spre.order_status end order_status,
+            case when spre.order_quantity is null then 0 else spre.order_quantity end order_quantity,
+            case when spre.delivery_status is null then 'NOT_STARTED' else spre.delivery_status end delivery_status,
+            case when spre.delivery_quantity is null then 0 else spre.delivery_quantity end delivery_quantity,
+            case when spre.receipt_status is null then 'NOT_STARTED' else spre.receipt_status end receipt_status,
+            case when spre.receipt_quantity is null then 0 else spre.receipt_quantity end receipt_quantity,
+            case when spre.bill_status is null then 'NOT_STARTED' else spre.bill_status end bill_status,
+            case when spre.bill_quantity is null then 0 else spre.bill_quantity end bill_quantity,
+        </if>
+
+        spl.receive_contact_name,
+        spl.receive_address,
+        spl.receive_tel_num,
+        sph.pr_requested_name header_pr_requested_name,
+        spl.exp_bear_dep_id,
+        ehut.unit_name AS exp_bear_dep,
+        ehu.unit_code AS exp_bear_dep_code,
+        spl.budget_account_price
+        FROM
+        sprm_pr_line spl
+        JOIN sprm_pr_header sph ON spl.pr_header_id = sph.pr_header_id
+        LEFT JOIN hpfm_company hc ON spl.company_id = hc.company_id
+        LEFT JOIN (SELECT MAX(version_number) version_number,company_id FROM spfm_company_basic WHERE process_status = 'COMPLETE' GROUP BY company_id) scba_max
+        on scba_max.company_id=hc.source_key
+        LEFT JOIN spfm_company_basic scb ON scb.company_id = scba_max.company_id AND scba_max.version_number = scb.version_number
+        LEFT JOIN spfm_company_basic_tl scbl ON scb.company_basic_id = scbl.company_basic_id
+        AND scbl.lang = #{lang}
+        LEFT JOIN hpfm_company ihc ON sph.invoice_company_id = ihc.company_id
+        LEFT JOIN (SELECT MAX(version_number) version_number,company_id FROM spfm_company_basic WHERE process_status = 'COMPLETE' GROUP BY company_id) iscba_max
+        on iscba_max.company_id=ihc.source_key
+        LEFT JOIN spfm_company_basic iscb ON iscb.company_id = iscba_max.company_id AND iscba_max.version_number = iscb.version_number
+        LEFT JOIN spfm_company_basic_tl iscbl ON iscb.company_basic_id = iscbl.company_basic_id
+        AND iscbl.lang = #{lang}
+        LEFT JOIN hpfm_operation_unit hou ON spl.ou_id = hou.ou_id
+        LEFT JOIN hpfm_inv_organization hio ON spl.inv_organization_id = hio.organization_id
+        LEFT JOIN iam_user iu2 ON spl.created_by = iu2.id
+        LEFT JOIN iam_user iur ON iur.id = spl.requested_by
+        LEFT JOIN hpfm_inventory hiy ON spl.inventory_id = hiy.inventory_id
+        LEFT JOIN smdm_uom su ON spl.uom_id = su.uom_id
+        LEFT JOIN smdm_uom_tl sut on sut.uom_id = su.uom_id and sut.lang = #{lang}
+        LEFT JOIN smdm_tax st ON spl.tax_id = st.tax_id
+        LEFT JOIN iam_user iu ON spl.executed_by = iu.id
+        LEFT JOIN smdm_item_category sic ON spl.category_id=sic.category_id
+        LEFT JOIN smdm_item_category_tl sict ON sict.category_id = sic.category_id AND sict.lang = #{lang}
+        LEFT JOIN hpfm_purchase_organization hpo ON spl.purchase_org_id = hpo.purchase_org_id
+        LEFT JOIN hpfm_purchase_agent hpa ON spl.purchase_agent_id = hpa.purchase_agent_id
+        LEFT JOIN hpfm_purchase_agent hhpa ON sph.purchase_agent_id = hhpa.purchase_agent_id
+        LEFT JOIN smdm_account_subject sas ON sas.account_subject_id = spl.account_subject_id
+        LEFT JOIN smdm_budget_account sba ON sba.budget_account_id = spl.budget_account_id
+        LEFT JOIN smdm_budget_account_tl sbat ON sbat.budget_account_id = sba.budget_account_id AND sbat.lang = #{lang}
+        LEFT JOIN smdm_cost_center scc ON scc.cost_id = spl.cost_id
+        LEFT JOIN sprm_pr_type spt ON sph.pr_type_id = spt.pr_type_id
+        LEFT JOIN sprm_pr_type_tl sptl ON sptl.pr_type_id = spt.pr_type_id AND sptl.lang = #{lang}
+        LEFT JOIN hpfm_unit hu ON sph.parent_unit_id = hu.unit_id
+        LEFT JOIN hpfm_inventory hiys ON sph.inventory_id = hiys.inventory_id
+        LEFT JOIN smdm_item_category sics ON sph.category_id=sics.category_id
+        LEFT JOIN smdm_item_category_tl sicst ON sicst.category_id = sics.category_id AND sicst.lang = #{lang}
+        LEFT JOIN sprm_account_assign_type saat ON saat.account_assign_type_id = spl.account_assign_type_id
+        LEFT JOIN sprm_pr_budget spb ON spb.pr_line_id = spl.pr_line_id
+        LEFT JOIN hpfm_unit ehu ON ehu.unit_id = spl.exp_bear_dep_id
+        LEFT JOIN hpfm_unit_tl ehut ON ehut.unit_id = ehu.unit_id AND ehut.lang = #{lang}
+        LEFT JOIN smdm_currency sc ON sph.original_currency = sc.currency_code AND sph.tenant_id = sc.tenant_id AND sc.enabled_flag = 1
+        <if test="purchasePlatformFlag != null and purchasePlatformFlag == 1">
+            LEFT JOIN sprm_pr_relation spre ON spre.pr_line_id = spl.pr_line_id
+        </if>        <include refid="base_pageAssignList_where"/>
+    </select>
+</mapper>

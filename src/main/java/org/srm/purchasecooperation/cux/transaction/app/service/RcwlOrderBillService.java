@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface RcwlOrderBillService {
 
-    void sendOrderBillList(List<RcwlOrderBillDTO> list);
+    void sendOrderBillOne(Long tenantId ,Long rcvTrxLineId,String type);
 
-    void sendOrderBillOne(RcwlOrderBillDTO rcwlOrderBillDTO);
 }

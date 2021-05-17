@@ -12,11 +12,6 @@ import java.math.BigDecimal;
 public class RcwlAsnAcceptOrRcvDTO extends ItfBaseBO{
 
 
-//    /**
-//     * 租户id
-//     */
-//    @NotBlank
-//    private String TenantId;
     @Id
     private Long id;
 
@@ -67,20 +62,19 @@ public class RcwlAsnAcceptOrRcvDTO extends ItfBaseBO{
 
     private String returnFlag;
 
-    public RcwlAsnAcceptOrRcvDTO() {
-    }
-
-    public RcwlAsnAcceptOrRcvDTO(Long sitfPkId, Integer errorFlag, String errorMessage, String errorType, String returnFlag) {
-        super(sitfPkId, errorFlag, errorMessage, errorType);
-        this.returnFlag = returnFlag;
-    }
-
     public String getReturnFlag() {
         return returnFlag;
     }
 
     public void setReturnFlag(String returnFlag) {
         this.returnFlag = returnFlag;
+    }
+
+    public RcwlAsnAcceptOrRcvDTO() {
+    }
+
+    public RcwlAsnAcceptOrRcvDTO(Long sitfPkId, Integer errorFlag, String errorMessage, String errorType) {
+        super(sitfPkId, errorFlag, errorMessage, errorType);
     }
 
     public String getBusinessType() {
@@ -154,4 +148,5 @@ public class RcwlAsnAcceptOrRcvDTO extends ItfBaseBO{
     public void setId(Long id) {
         this.id = id;
     }
+
 }
