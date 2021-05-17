@@ -91,7 +91,7 @@ public class RCWLAcpConstant {
     /**
      * 大象的接口定义
      */
-    public static class AcpInvoiceElephantInterfaceInfo {
+    public static class AcpInvoiceElephantInterfaceInfo{
         //命名空间
         public final static String NAMESPACE = "SRM-RCWL";
         //服务编码

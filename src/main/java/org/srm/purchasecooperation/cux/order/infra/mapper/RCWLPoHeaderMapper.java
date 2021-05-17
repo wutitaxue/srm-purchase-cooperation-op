@@ -1,7 +1,6 @@
 package org.srm.purchasecooperation.cux.order.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.List;
 /**
  * @author bin.zhang
  */
-@Component
 public interface RCWLPoHeaderMapper {
 
 
@@ -43,10 +41,4 @@ public interface RCWLPoHeaderMapper {
      * @param poLineList
      */
     void batchUpdatePoLine(@Param("poLineList") List<RCWLItemInfoVO> poLineList);
-
-    /**
-     * 批量插入物料名称多语言表
-     * @param poLineList
-     */
-    void batchInsertItemTl(@Param("poLineList")List<RCWLItemInfoVO> poLineList);
 }
