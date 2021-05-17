@@ -55,4 +55,5 @@
         select ht.tenant_id from hpfm_tenant ht where ht.tenant_num = #{tenantNum}
     </select>
 
+
 </mapper>

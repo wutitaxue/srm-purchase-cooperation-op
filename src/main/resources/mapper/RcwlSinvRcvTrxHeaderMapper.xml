@@ -314,5 +314,76 @@
 
         order by rcv_trx_line_id desc
     </select>
+    <select id="selectHeaderdetail" resultType="org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        srth.rcv_trx_header_id,
+        srth.trx_num,
+        srth.display_trx_num,
+        srrsm.order_type_code,
+        srrsm.order_type_name,
+        srrsm.strategy_line_id,
+        srsl.strategy_header_id,
+        concat(srsh.strategy_code, '-', srsh.strategy_name) strategy_code,
+        srsh.source_order_type,
+        srnc.node_config_code,
+        srnc.node_config_name,
+        srth.returned_flag,
+        srth.company_id,
+        hc.company_num,
+        hc.company_name,
+        srth.supplier_id,
+        (case when srth.supplier_num is null then hcc.company_num else srth.supplier_num end) supplier_num,
+        (case when srth.supplier_name is null then srth.supplier_company_name else srth.supplier_name end)
+        supplier_name,
+        hcs.company_num supplier_company_num,
+        hcs.company_name supplier_company_name,
+        iu.real_name creation_name,
+        (SELECT srem.attachment_uuid FROM sinv_rcv_ext_mapping srem
+        JOIN sinv_rcv_trx_line srtl ON srtl.rcv_trx_type_id = srem.mapping_id
+        WHERE srtl.rcv_trx_header_id = srth.rcv_trx_header_id
+        <if test="_databaseId=='mysql'">
+            limit 1
+        </if>
+        <if test="_databaseId=='oracle'">
+            rownum = 1
+        </if>) AS attachment_template_uuid,
+        (SELECT srem.rcv_type_name FROM sinv_rcv_ext_mapping srem
+        JOIN sinv_rcv_trx_line srtl ON srtl.rcv_trx_type_id = srem.mapping_id
+        WHERE srtl.rcv_trx_header_id = srth.rcv_trx_header_id
+        <if test="_databaseId=='mysql'">
+            limit 1
+        </if>
+        <if test="_databaseId=='oracle'">
+            rownum = 1
+        </if>) AS rcv_type_name,
+        srth.creation_date,
+        srth.sinv_header_attachment_uuid,
+        srth.trx_date,
+        srth.object_version_number,
+        srth.rcv_status_code,
+        srth.remark,
+        (SELECT srem.rcv_type_code
+        FROM sinv_rcv_ext_mapping srem
+        JOIN sinv_rcv_trx_line srtl ON srtl.rcv_trx_type_id = srem.mapping_id
+        WHERE srtl.rcv_trx_header_id = srth.rcv_trx_header_id
+        LIMIT 1) AS rcv_type_code
+        FROM
+        sinv_rcv_trx_header srth
+        JOIN sinv_rcv_record_strategy_mapping srrsm ON srth.rcv_trx_header_id = srrsm.rcv_trx_header_id
+        LEFT JOIN sinv_rcv_strategy_line srsl ON srrsm.strategy_line_id = srsl.strategy_line_id
+        LEFT JOIN sinv_rcv_strategy_header srsh ON srsl.strategy_header_id = srsh.node_strategy_id
+        LEFT JOIN sinv_rcv_node_config srnc ON srsl.node_config_id = srnc.node_config_id
+        LEFT JOIN hpfm_company hc ON srth.company_id = hc.company_id
+        LEFT JOIN hpfm_company hcc ON srth.supplier_company_id = hcc.company_id
+        LEFT JOIN sslm_external_supplier es ON srth.supplier_id = es.supplier_id
+        LEFT JOIN hpfm_company hcs ON hcs.company_id = srth.supplier_company_id
+        LEFT JOIN iam_user iu ON srth.created_by = iu.id
+        WHERE
+        srth.rcv_trx_header_id = #{rcvTrxHeaderId}
+        and srth.source_code = 'SRM'
+        and srth.tenant_id = #{tenantId}
+
+    </select>
 
 </mapper>
