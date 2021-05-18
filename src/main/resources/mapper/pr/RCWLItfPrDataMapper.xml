@@ -4,15 +4,21 @@
 
 
     <select id="selectSapCode" resultType="java.lang.String">
-        SELECT
-        	scb.attribute_varchar1
-        FROM
-        	spfm_company_basic scb
-        	LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
-        WHERE
-        	h.company_id = #{companyId}
-        	AND h.tenant_id = #{tenantId}
-        	AND scb.process_status = 'COMPLETE'
+            SELECT
+          	a.attribute_varchar1
+          FROM
+          	(
+          	SELECT
+          		max( scb.version_number),
+          		scb.attribute_varchar1
+          	FROM
+          		spfm_company_basic scb
+          		LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
+          	WHERE
+          		h.company_id = #{companyId}
+          		AND h.tenant_id = #{tenantId}
+          	AND scb.process_status = 'COMPLETE'
+          	) a
     </select>
 
     <select id="selectWbsName" resultType="java.lang.String">
