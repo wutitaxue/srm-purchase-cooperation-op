@@ -10,7 +10,8 @@
         srpl.item_name as item_name,
         srpl.uom_id as primary_uom_id,
         srpl.category_id as category_id,
-        srpl.po_line_id as po_line_id
+        srpl.po_line_id as po_line_id,
+        srpl.product_num as product_num
         FROM sodr_po_line srpl
         left join smdm_item_category sic on srpl.category_id = sic.category_id
         WHERE
@@ -40,6 +41,17 @@
             #{poLineId}
         </foreach>
         and si.tenant_id = #{tenantId}
+
+    </select>
+    <select id="selectShopMallSupplier" resultType="java.lang.String">
+        SELECT
+	ifnull( h.platform_code, 'NOT_DS' ) as ds_flag
+FROM
+	sodr_po_header sph
+	LEFT JOIN sprm_pr_header h ON sph.pr_header_id = h.pr_header_id
+WHERE
+	sph.po_header_id = #{poHeaderId}
+	AND sph.tenant_id = #{tenantId}
 
     </select>
 

@@ -70,5 +70,17 @@ public class RCWLPoHeaderRepositoryImpl  implements RCWLPoHeaderRepository {
         this.rcwlPoHeaderMapper.batchInsertItemTl(poLineList);
     }
 
+    /**
+     * 查找来源电商平台
+     *
+     * @param poHeaderId
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public String selectShopMallSupplier(Long poHeaderId, Long tenantId) {
+        return  this.rcwlPoHeaderMapper.selectShopMallSupplier(poHeaderId,tenantId);
+    }
+
 
 }
