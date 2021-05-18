@@ -59,15 +59,32 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
         List<ItemCategoryAssign> itemCategoryAssignList = new ArrayList<>();
         // 生成对应条编码
         if (CollectionUtils.isNotEmpty(rcwlItemInfoVOList)) {
+            //判断来自哪个电商平台
+            String dsFlag = poHeaderRepository.selectShopMallSupplier(poDTO.getPoHeaderId(),tenantId);
+
             rcwlItemInfoVOList.forEach(item -> {
+                String itemCode = null;
+                String categoryCode = item.getItemCode();
+                //电商来源的物料编码为 品类编码+来源（00，01，02等）+电商编码
+                if("CG".equals(dsFlag)){
+                    itemCode = categoryCode+"04"+item.getProductNum();
+                }else if("ZKH".equals(dsFlag)){
+                    itemCode = categoryCode+"03"+item.getProductNum();
+                }else if("JD".equals(dsFlag)){
+                    itemCode = categoryCode+"02"+item.getProductNum();
+                }else{
+                    String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
+                    itemCode = categoryCode+str;
+                }
+
                 //物料设值
                 item.setTenantId(tenantId);
-                String categoryCode = item.getItemCode();
-                String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
+                //String categoryCode = item.getItemCode();
+               // String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
                 String ruleCode = this.codeRuleBuilder.generateCode("SMDM.ITEM", (Map) null);
                 item.setItemNumber(ruleCode);
-                item.setItemCode(categoryCode + str);
-                item.setQueryItemCode(categoryCode + str);
+                item.setItemCode(itemCode);
+                item.setQueryItemCode(itemCode);
             });
             logger.info("物料封装数据:" + rcwlItemInfoVOList.toString());
             //批量插入物料表

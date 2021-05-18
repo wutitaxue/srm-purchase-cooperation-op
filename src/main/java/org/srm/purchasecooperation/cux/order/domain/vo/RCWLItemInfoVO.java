@@ -29,6 +29,8 @@ public class RCWLItemInfoVO extends ExpandDomain {
     private String itemNumber;
     @ApiModelProperty(value = "查询物料编码")
     private String queryItemCode;
+    @ApiModelProperty(value = "电商编码")
+    private String productNum;
 
     public Long getPoLineId() {
         return poLineId;
@@ -110,17 +112,28 @@ public class RCWLItemInfoVO extends ExpandDomain {
         this.queryItemCode = queryItemCode;
     }
 
+    public String getProductNum() {
+        return productNum;
+    }
+
+    public void setProductNum(String productNum) {
+        this.productNum = productNum;
+    }
+
     @Override
     public String toString() {
         return "RCWLItemInfoVO{" +
-                "poLineId=" + poLineId +
+                "tenantId=" + tenantId +
+                ", poLineId=" + poLineId +
                 ", sourceCode='" + sourceCode + '\'' +
+                ", itemId=" + itemId +
                 ", itemCode='" + itemCode + '\'' +
                 ", itemName='" + itemName + '\'' +
                 ", primaryUomId=" + primaryUomId +
                 ", categoryId=" + categoryId +
                 ", itemNumber='" + itemNumber + '\'' +
                 ", queryItemCode='" + queryItemCode + '\'' +
+                ", productNum='" + productNum + '\'' +
                 '}';
     }
 }
