@@ -124,6 +124,7 @@
         from scux_rcwl_plan_header h
         left join  iam_user iu on iu.organization_id = h.tenant_id and iu.id = h.demanders
         left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
+        and sba.enabled_flag = 1
         left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
         left join  iam_user iur on iur.organization_id = h.tenant_id and iur.id = h.created_by
         left join sprm_pr_line l on h.pr_line_id = l.pr_line_id
@@ -199,6 +200,7 @@
         from scux_rcwl_plan_header h
         left join  iam_user iu on iu.organization_id = h.tenant_id and iu.id = h.demanders
         left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
+        and sba.enabled_flag = 1
         left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
         left join  iam_user iur on iur.organization_id = h.tenant_id and iur.id = h.created_by
         left join sprm_pr_line l on h.pr_line_id = l.pr_line_id
