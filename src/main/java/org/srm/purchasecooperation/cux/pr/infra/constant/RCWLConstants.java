@@ -25,4 +25,10 @@ public class RCWLConstants {
        public final static String APPROVED = "1";
        public final static String REJECTED = "0";
     }
+    /**
+     * 通用
+     */
+    public static class Common{
+        public final static Integer IS  = 1;
+    }
 }

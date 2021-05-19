@@ -30,6 +30,7 @@ import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -462,21 +463,24 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     public void submitChange(PrHeader prHeader, Long tenantId) throws JsonProcessingException {
         //先释放原来的   后占用现在的
         //释放变更前的金额
-        PrHeader oldPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
-        if(oldPrHeader!=null){
-            //获取行信息
-            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(),tenantId);
-            oldPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetRelease(oldPrHeader,tenantId);
-        }
-
-        //占用变更后的金额
-        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
-        if(newPrHeader!=null) {
-            //获取行信息
-            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
-            newPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetOccupy(newPrHeader,tenantId);
+//        PrHeader oldPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
+//        if(oldPrHeader!=null){
+//            //获取行信息
+//            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(),tenantId);
+//            oldPrHeader.setPrLineList(prLineList);
+//            this.invokeBudgetRelease(oldPrHeader,tenantId);
+//        }
+         //判断是否触发接口
+        Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(),tenantId);
+        if(RCWLConstants.Common.IS.equals(count)) {
+            //占用变更后的金额
+            PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
+            if (newPrHeader != null) {
+                //获取行信息
+                List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
+                newPrHeader.setPrLineList(prLineList);
+                this.invokeBudgetOccupy(newPrHeader, tenantId);
+            }
         }
 
     }
@@ -566,9 +570,13 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         if(prHeader!=null) {
             //获取行信息
             List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(prHeader.getPrHeaderId(), tenantId);
+            prLineList.stream().forEach(prLine -> {
+                //审批拒绝调用占用接口，行金额固定传0
+                prLine.setTaxIncludedLineAmount(new BigDecimal(0));
+            });
             prHeader.setPrLineList(prLineList);
-            //释放接口
-            this.invokeBudgetRelease(prHeader,tenantId);
+            //占用接口
+            this.invokeBudgetOccupy(prHeader,tenantId);
         }
     }
     /**
@@ -580,14 +588,14 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     @Override
     public void afterBpmApproveByChange(String prNum, String approveFlag) throws JsonProcessingException {
         Long tenantId = DetailsHelper.getUserDetails().getTenantId();
-        //释放变更后的金额
-        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
-        if(newPrHeader!=null) {
-            //获取行信息
-            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
-            newPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetRelease(newPrHeader,tenantId);
-        }
+//        //释放变更后的金额
+//        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
+//        if(newPrHeader!=null) {
+//            //获取行信息
+//            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
+//            newPrHeader.setPrLineList(prLineList);
+//            this.invokeBudgetRelease(newPrHeader,tenantId);
+//        }
         //占用变更前的金额
         PrHeader oldPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
         if(oldPrHeader!=null){
