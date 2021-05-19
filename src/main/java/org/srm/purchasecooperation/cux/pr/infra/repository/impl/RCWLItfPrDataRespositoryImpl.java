@@ -80,4 +80,16 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     public List<PrLine> selectPrLineListByIdOld(Long prHeaderId, Long tenantId) {
         return rcwlItfPrDataMapper.selectPrLineListByIdOld(prHeaderId,tenantId);
     }
+
+    /**
+     * 校验是否可以触发接口
+     *
+     * @param prHeaderId
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public Integer validateInvokeItf(Long prHeaderId, Long tenantId) {
+        return rcwlItfPrDataMapper.validateInvokeItf(prHeaderId,tenantId);
+    }
 }

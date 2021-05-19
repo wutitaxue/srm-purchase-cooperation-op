@@ -79,5 +79,13 @@ public interface RCWLItfPrDataMapper {
      * @param tenantId
      * @return
      */
-    List<PrLine> selectPrLineListByIdOld(Long prHeaderId, Long tenantId);
+    List<PrLine> selectPrLineListByIdOld(@Param("prHeaderId")Long prHeaderId, @Param("tenantId")Long tenantId);
+    /**
+     * 校验是否可以触发接口
+     *
+     * @param prHeaderId
+     * @param tenantId
+     * @return
+     */
+    Integer validateInvokeItf(@Param("prHeaderId")Long prHeaderId, @Param("tenantId")Long tenantId);
 }

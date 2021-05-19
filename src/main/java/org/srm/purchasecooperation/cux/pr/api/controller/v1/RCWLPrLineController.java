@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.pr.api.dto.PrLineCloseResultDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
@@ -40,7 +41,8 @@ public class RCWLPrLineController {
     private PrHeaderRepository prHeaderRepository;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
-
+    @Autowired
+    private RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     @ApiOperation("采购申请行取消")
     @Permission(
@@ -68,7 +70,7 @@ public class RCWLPrLineController {
         Assert.notEmpty(prLineVOS, "error.not_null");
         SecurityTokenHelper.validToken(prLineVOS);
         PrLineCloseResultDTO prLineCloseResultDTO = this.prLineService.prLineClose(prLineVOS);
-
+        //Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prLineVOS.get(0).getPrHeaderId(),tenantId);
         //调用接口
         this.rcwlPrItfService.linesClose(prLineVOS, tenantId);
 

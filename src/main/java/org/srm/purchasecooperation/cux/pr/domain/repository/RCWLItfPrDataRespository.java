@@ -47,4 +47,12 @@ public interface RCWLItfPrDataRespository {
     List<PrLine> selectPrLineListById(Long prHeaderId, Long tenantId);
 
     List<PrLine> selectPrLineListByIdOld(Long prHeaderId, Long tenantId);
+
+    /**
+     * 校验是否可以触发接口
+     * @param prHeaderId
+     * @param tenantId
+     * @return
+     */
+    Integer validateInvokeItf(Long prHeaderId, Long tenantId);
 }

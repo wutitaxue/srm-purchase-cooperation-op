@@ -113,4 +113,14 @@
                               	l.pr_header_id = #{prHeaderId}
                               	AND l.tenant_id = #{tenantId}
     </select>
+    <select id="validateInvokeItf" resultType="java.lang.Integer">
+                              SELECT
+                              	count(1)
+                              FROM
+                              	sprm_pr_header h
+                              WHERE
+                              	h.pr_header_id = #{prHeaderId}
+                              	AND h.tenant_id = #{tenantId}
+                              	AND h.attribute_varchar39 = 'DXCG'
+	</select>
 </mapper>

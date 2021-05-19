@@ -98,6 +98,12 @@ public interface RCWLPrItfService {
      * @param approveFlag
      */
     void afterBpmApprove(String prNum, String approveFlag) throws JsonProcessingException;
-
+    /**
+     * bpm审批回传调用预算接口
+     * @param prNum
+     * @param approveFlag
+     */
     void afterBpmApproveByChange(String prNum, String approveFlag) throws JsonProcessingException;
+
+
 }
