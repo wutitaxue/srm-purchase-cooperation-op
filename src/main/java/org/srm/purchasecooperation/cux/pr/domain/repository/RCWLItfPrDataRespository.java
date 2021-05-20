@@ -3,6 +3,7 @@ package org.srm.purchasecooperation.cux.pr.domain.repository;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface RCWLItfPrDataRespository {
@@ -55,4 +56,6 @@ public interface RCWLItfPrDataRespository {
      * @return
      */
     Integer validateInvokeItf(Long prHeaderId, Long tenantId);
+
+    BigDecimal selectSumQuantity(Long prLineId, Long tenantId);
 }

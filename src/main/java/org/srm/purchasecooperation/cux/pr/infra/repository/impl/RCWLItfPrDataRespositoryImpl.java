@@ -7,6 +7,7 @@ import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -91,5 +92,10 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     @Override
     public Integer validateInvokeItf(Long prHeaderId, Long tenantId) {
         return rcwlItfPrDataMapper.validateInvokeItf(prHeaderId,tenantId);
+    }
+
+    @Override
+    public BigDecimal selectSumQuantity(Long prLineId, Long tenantId) {
+        return rcwlItfPrDataMapper.selectSumQuantity(prLineId,tenantId);
     }
 }

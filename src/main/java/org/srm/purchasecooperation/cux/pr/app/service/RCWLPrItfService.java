@@ -38,12 +38,6 @@ public interface RCWLPrItfService {
      */
     String getToken();
 
-    /**
-     * 审批拒绝调用接口
-     * @param prHeaderList
-     * @param tenantId
-     */
-    void invokeBudgetList(List<PrHeader> prHeaderList, Long tenantId);
 
     /**
      * 释放接口
@@ -105,5 +99,11 @@ public interface RCWLPrItfService {
      */
     void afterBpmApproveByChange(String prNum, String approveFlag) throws JsonProcessingException;
 
+    /**
+     * 整单关闭触发接口
+     * @param prHeader
+     * @param tenantId
+     */
 
+    void invokeBudgetOccupyClose(PrHeader prHeader, Long tenantId) throws JsonProcessingException;
 }

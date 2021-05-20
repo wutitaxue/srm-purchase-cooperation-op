@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -88,4 +89,6 @@ public interface RCWLItfPrDataMapper {
      * @return
      */
     Integer validateInvokeItf(@Param("prHeaderId")Long prHeaderId, @Param("tenantId")Long tenantId);
+
+    BigDecimal selectSumQuantity(@Param("prLineId")Long prLineId, @Param("tenantId")Long tenantId);
 }

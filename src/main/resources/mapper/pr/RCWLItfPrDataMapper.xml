@@ -123,4 +123,15 @@
                               	AND h.tenant_id = #{tenantId}
                               	AND h.attribute_varchar39 = 'DXCG'
 	</select>
+    <select id="selectSumQuantity" resultType="java.math.BigDecimal">
+             		SELECT
+             	sum( spch.execute_quantity ) execute_quantity
+             FROM
+             	sprm_pr_change_history spch
+             	LEFT JOIN sprm_pr_header sph ON spch.pr_header_id = sph.pr_header_id
+             	LEFT JOIN sprm_pr_line spl ON spch.pr_line_id = spl.pr_line_id
+             WHERE
+             	spch.tenant_id = #{tenantId}
+	AND spch.pr_line_id = #{prLineId}
+	</select>
 </mapper>
