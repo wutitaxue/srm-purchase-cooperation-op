@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.pr.api.dto.PrLineCloseResultDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
@@ -42,6 +43,8 @@ public class RCWLPrLineController {
     private PrHeaderRepository prHeaderRepository;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
+    @Autowired
+    private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
     private RCWLPrLineRepository rcwlPrLineRepository;
 

@@ -113,9 +113,9 @@ public class RCWLPrHeaderController {
     public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
         SecurityTokenHelper.validToken(prHeader, false);
 
-        // String token = this.rcwlPrItfService.getToken();
+      // String token = this.rcwlPrItfService.getToken();
 
-        // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
+     // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
 
         prHeader = this.prHeaderService.singletonSubmit(tenantId, prHeader);
         boolean syncFlag = prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
@@ -156,9 +156,10 @@ public class RCWLPrHeaderController {
         SecurityTokenHelper.validToken(prHeader, false);
         PrHeader returnCloseResults = this.prHeaderService.closeWholePrNote(tenantId, prHeader);
         //调用接口
-        this.rcwlPrItfService.invokeBudgetRelease(prHeader, tenantId);
+        this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId);
         return Results.success(returnCloseResults);
     }
+
 
 
     @ApiOperation("采购申请整单取消")
@@ -174,7 +175,7 @@ public class RCWLPrHeaderController {
         //调用接口
         PrHeader prHeader = prHeaders.get(0);
 
-        this.rcwlPrItfService.invokeBudgetRelease(prHeader, tenantId);
+        this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId);
 
         return Results.success(returnPrHeaders);
     }
@@ -186,6 +187,7 @@ public class RCWLPrHeaderController {
     @PutMapping({"/purchase-requests/submit-change"})
     @PurchaserPowerCron
     public ResponseEntity<PrHeader> changeSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
+
 
 
         Assert.notNull(prHeader, "error.not_null");
