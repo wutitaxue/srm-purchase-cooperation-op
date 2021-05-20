@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.srm.purchasecooperation.asn.app.service.SendMessageToPrService;
+import org.srm.purchasecooperation.cux.sinv.infra.mapper.SettleMapper;
 import org.srm.purchasecooperation.cux.transaction.api.dto.RcwlOrderBillDTO;
 import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
 import org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlOrderBillMapper;
@@ -60,6 +61,8 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private RcvTrxLineRepository rcvTrxLineRepository;
     @Autowired
     private RcwlOrderBillMapper rcwlOrderBillMapper;
+    @Autowired
+    private SettleMapper settleMapper;
 
     @Override
     public SinvRcvTrxHeaderDTO submittedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
@@ -125,6 +128,12 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                 List<Long> RcvTrxLineIdlist = new ArrayList<>();
                 RcvTrxLineIdlist.add(item.getRcvTrxLineId());
                 this.syncRcvTrxLineSettle(tenantId, null, RcvTrxLineIdlist, "NEW", false);
+            }else{
+                List<Long> RcvTrxLineIdlist = new ArrayList<>();
+                RcvTrxLineIdlist.add(item.getRcvTrxLineId());
+                this.syncRcvTrxLineSettle(tenantId, null, RcvTrxLineIdlist, "NEW", false);
+                //settle数量置-1 前端不显示
+                settleMapper.updateSettle(tenantId,sinvRcvTrxHeaderDTO.getTrxNum(),item.getTrxLineNum());
             }
         });
         this.sinvEcRcvTrxSendMQ(tenantId, sinvRcvTrxHeader);
