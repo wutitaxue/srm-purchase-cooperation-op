@@ -38,6 +38,8 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
                     return returnDtolist;
                 }
                 rcwlAsnInterfaceMapper.updateSinvLineReturn(item);
+                //回传settle的数量字段
+                rcwlAsnInterfaceMapper.updateSettle(item.getTenantId(),item.getAcceptanceNumber(),item.getLineNumber(),item.getInventoryQuantity());
                 returnDto.setErrorFlag(0);
                 returnDto.setErrorMessage("单据:" + item.getAcceptanceNumber()
                         + "行号:" + item.getLineNumber() + "回传成功!");
