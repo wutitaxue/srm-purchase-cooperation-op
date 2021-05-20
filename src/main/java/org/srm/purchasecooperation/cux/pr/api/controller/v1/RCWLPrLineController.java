@@ -5,19 +5,24 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.pr.api.dto.RcwlPurchaseCompanyVo;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlCompanyService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.pr.api.dto.PrLineCloseResultDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
+import org.srm.purchasecooperation.pr.domain.PurchaseCompanyVo;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
@@ -47,6 +52,8 @@ public class RCWLPrLineController {
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
     private RCWLPrLineRepository rcwlPrLineRepository;
+    @Autowired
+    private RcwlCompanyService rcwlCompanyService;
 
 
     @ApiOperation("采购申请行取消")
@@ -91,6 +98,20 @@ public class RCWLPrLineController {
         SecurityTokenHelper.validToken(prLines);
         List<PrLine> prLineList = rcwlPrLineRepository.updateSourcePrLine(prLines);
         return Results.success(prLineList);
+    }
+
+    @ApiOperation("子账户权限下的公司，业务实体")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @GetMapping({"/purchase-requests/purchase-company"})
+    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id",required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) {
+        PurchaseCompanyVo purchaseCompanyVo1 = new PurchaseCompanyVo();
+        purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
+        RcwlPurchaseCompanyVo rcwlPurchaseCompanyVo = new RcwlPurchaseCompanyVo();
+        BeanUtils.copyProperties(purchaseCompanyVo1, rcwlPurchaseCompanyVo);
+        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(),tenantId));
+        return Results.success(rcwlPurchaseCompanyVo);
     }
 
 }
