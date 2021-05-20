@@ -29,6 +29,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
+import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -54,6 +55,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     private PrLineRepository prLineRepository;
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
+    @Autowired
+    private PrLineMapper prLineMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrItfServiceImpl.class);
     private static final String NAME_SPACE = "SRM-RCWL";
@@ -226,13 +229,17 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     private RCWLItfPrHeaderDTO getBudgetAccountItfDataClose(PrHeader prHeader, Long tenantId) {
         //获取接口所需数据
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, "O");
-        List<PrLine> lineDetailList = prHeader.getPrLineList();
+
+        List<PrLineVO> lineDetailList = this.prLineMapper.listPrLines(tenantId, prHeader.getPrHeaderId());
+       // List<PrLine> lineDetailList = prHeader.getPrLineList();
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(prDetailLine -> {
-                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prDetailLine, tenantId);
+                PrLine prLine = new PrLine();
+                BeanUtils.copyProperties(prDetailLine, prLine);
+                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId);
                 rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
             });
         }
