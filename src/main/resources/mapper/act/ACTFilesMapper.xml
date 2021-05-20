@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActFilesMapper">
+    <!--    @i 相当于sql中的自定义变量，效果为给查询出来的结果自动编号，可以不用到list里面给每条数据去编号-->
+    <select id="actListFilseQuery"
+            resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListFilesDto">
+            SELECT
+                hf.file_name,
+                hf.file_name description,
+                hf.file_size,
+                hf.file_url url_mx
+            FROM
+                hfle_file hf
+            WHERE
+                hf.tenant_id = #{organizationId}
+            AND EXISTS (
+                (
+                    SELECT
+                        1
+                    FROM
+                        sinv_rcv_trx_header h
+                    WHERE
+                        h.sinv_header_attachment_uuid = hf.attachment_uuid
+                    AND h.tenant_id = #{organizationId}
+                    AND h.rcv_trx_header_id = #{acceptListHeaderId}
+                )
+                UNION ALL
+                    (
+                        SELECT
+                            1
+                        FROM
+                            sinv_rcv_trx_line l
+                        WHERE
+                            l.sinv_line_attachment_uuid = hf.attachment_uuid
+                        AND l.tenant_id = #{organizationId}
+                        AND l.rcv_trx_header_id = #{acceptListHeaderId}
+                    )
+            )
+    </select>
+
+</mapper>

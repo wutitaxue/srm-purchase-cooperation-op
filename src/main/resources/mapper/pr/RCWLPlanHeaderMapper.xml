@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPlanHeaderMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader">
+        <result column="plan_id" property="planId" jdbcType="DECIMAL"/>
+        <result column="tenant_id" property="tenantId" jdbcType="DECIMAL"/>
+        <result column="plan_num" property="planNum" jdbcType="VARCHAR"/>
+        <result column="state" property="state" jdbcType="VARCHAR"/>
+        <result column="format" property="format" jdbcType="VARCHAR"/>
+        <result column="company_name" property="companyName" jdbcType="VARCHAR"/>
+        <result column="pr_category" property="prCategory" jdbcType="VARCHAR"/>
+        <result column="pr_way" property="prWay" jdbcType="VARCHAR"/>
+        <result column="bid_method" property="bidMethod" jdbcType="VARCHAR"/>
+        <result column="demanders" property="demanders" jdbcType="VARCHAR"/>
+        <result column="creation_date_from" property="creationDateFrom" jdbcType="DATE"/>
+        <result column="creation_date_to" property="creationDateTo" jdbcType="DATE"/>
+        <result column="pr_header_id" property="prHeaderId" jdbcType="DECIMAL"/>
+        <result column="pr_num" property="prNum" jdbcType="VARCHAR"/>
+        <result column="line_num" property="lineNum" jdbcType="VARCHAR"/>
+        <result column="pr_line_id" property="prLineId" jdbcType="DECIMAL"/>
+        <result column="budget_account" property="budgetAccount" jdbcType="VARCHAR"/>
+        <result column="bidding_mode" property="biddingMode" jdbcType="VARCHAR"/>
+        <result column="agent" property="agent" jdbcType="VARCHAR"/>
+        <result column="project_amount" property="projectAmount" jdbcType="DECIMAL"/>
+        <result column="bid_amount" property="bidAmount" jdbcType="DECIMAL"/>
+        <result column="contract_amount" property="contractAmount" jdbcType="DECIMAL"/>
+        <result column="de_plan_fin_time" property="dePlanFinTime" jdbcType="DATE"/>
+        <result column="de_appr_fin_time" property="deApprFinTime" jdbcType="DATE"/>
+        <result column="plan_fin_ven_time" property="planFinVenTime" jdbcType="DATE"/>
+        <result column="plan_fin_appr_time" property="planFinApprTime" jdbcType="DATE"/>
+        <result column="plan_fin_issue_time" property="planFinIssueTime" jdbcType="DATE"/>
+        <result column="plan_fin_bid_time" property="planFinBidTime" jdbcType="DATE"/>
+        <result column="plan_fin_con_time" property="planFinConTime" jdbcType="DATE"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="attachment" property="attachment" jdbcType="VARCHAR"/>
+        <result column="add_flag" property="addFlag" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+        <result column="company_id" property="companyId" jdbcType="DECIMAL"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                 h.plan_id,
+	             h.tenant_id,
+	             h.plan_num,
+	             h.state,
+	             h.format,
+	             h.company_id,
+	             h.company_name,
+	             h.pr_category,
+	             h.pr_way,
+	             h.bid_method,
+	             h.demanders,
+	             h.creation_date_from,
+	             h.creation_date_to,
+	             h.pr_header_id,
+	             h.pr_num,
+	             h.line_num,
+	             h.pr_line_id,
+	             h.budget_account,
+	             h.bidding_mode,
+	             h.agent,
+	             h.project_amount,
+	             h.bid_amount,
+	             h.contract_amount,
+	             date_format( h.de_plan_fin_time, '%Y-%m-%d' ) AS de_plan_fin_time,
+	             date_format( h.de_appr_fin_time, '%Y-%m-%d' ) AS de_appr_fin_time,
+	             date_format( h.plan_fin_ven_time, '%Y-%m-%d' ) AS plan_fin_ven_time,
+	             date_format( h.plan_fin_appr_time, '%Y-%m-%d' ) AS plan_fin_appr_time,
+	             date_format( h.plan_fin_issue_time, '%Y-%m-%d' ) AS plan_fin_issue_time,
+	             date_format( h.plan_fin_bid_time, '%Y-%m-%d' ) AS plan_fin_bid_time,
+	             date_format( h.plan_fin_con_time, '%Y-%m-%d' ) AS plan_fin_con_time,
+	             h.remarks,
+	             h.attachment,
+	             h.add_flag,
+	             h.operation,
+	             h.creation_date,
+	             h.created_by,
+	             h.last_updated_by,
+	             h.last_update_date,
+	             h.process_num,
+	             h.approval_status
+
+
+    </sql>
+    <update id="submitPlanHeader" parameterType="java.util.List">
+        <foreach collection="list" item="planHeader" index="index"  separator=";">
+            update scux_rcwl_plan_header
+            <set>
+                process_num = #{planHeader.processNum}
+            </set>
+            where plan_id = #{planHeader.planId} and tenant_id = #{planHeader.tenantId}
+        </foreach>
+    </update>
+    <update id="updateStateFromBPM">
+                      update scux_rcwl_plan_header
+              set approval_status = #{approveFlag}
+              where process_num = #{processNum}
+    </update>
+
+    <select id="listPlanHeader" parameterType="org.srm.purchasecooperation.cux.pr.api.dto.HeaderQueryDTO"
+            resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO">
+        select
+        <include refid="Base_Column_List"/>,
+        l.attribute_varchar1,
+        l.attribute_varchar2,
+        l.attribute_varchar3,
+        l.attribute_varchar4,
+        l.attribute_varchar5,
+        l.attribute_varchar6,
+        l.attribute_varchar7,
+        date_format(l.attribute_date1, '%Y-%m-%d' ) AS attribute_date1,
+        date_format(l.attribute_date2, '%Y-%m-%d' ) AS attribute_date2,
+        date_format(l.attribute_date3, '%Y-%m-%d' ) AS attribute_date3,
+        date_format(l.attribute_date4, '%Y-%m-%d' ) AS attribute_date4,
+        date_format(l.attribute_date5, '%Y-%m-%d' ) AS attribute_date5,
+        date_format(l.attribute_date6, '%Y-%m-%d' ) AS attribute_date6,
+        iu.real_name as  demanders_meaning,
+        sba.budget_account_name as budget_account_meaning,
+        hpa.purchase_agent_name as agent_meaning,
+        iur.real_name as created_by_name
+        from scux_rcwl_plan_header h
+        left join  iam_user iu on iu.organization_id = h.tenant_id and iu.id = h.demanders
+        left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
+        and sba.enabled_flag = 1
+        left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
+        left join  iam_user iur on iur.organization_id = h.tenant_id and iur.id = h.created_by
+        left join sprm_pr_line l on h.pr_line_id = l.pr_line_id
+<where>
+    <if test="planId != null">
+        and h.plan_id = #{planId}
+    </if>
+    <if test="planNum != null">
+        and h.plan_num = #{planNum}
+    </if>
+    <if test="state != null">
+        and h.state = #{state}
+    </if>
+    <if test="format != null">
+        and h.format = #{format}
+    </if>
+    <if test="companyId != null">
+        and h.company_id = #{companyId}
+    </if>
+    <if test="companyName != null">
+        and h.company_name = #{companyName}
+    </if>
+    <if test="prCategory != null">
+        and h.pr_category = #{prCategory}
+    </if>
+    <if test="prWay != null">
+        and h.pr_way = #{prWay}
+    </if>
+    <if test="bidMethod != null">
+        and h.bid_method = #{bidMethod}
+    </if>
+    <if test="demanders != null">
+        <bind name="demanders" value="'%'+demanders+'%'"/>
+        and h.demanders like #{demanders}
+    </if>
+    <if test="creationDateFrom != null">
+        AND h.creation_date >= #{creationDateFrom}
+    </if>
+    <if test="creationDateTo != null">
+        AND h.creation_date &lt; #{creationDateTo}
+    </if>
+    <if test="createdByName != null">
+        <bind name="createdByName" value="'%'+createdByName+'%'"/>
+        and iur.real_name like #{createdByName}
+    </if>
+    <if test="approvalStatus != null">
+        and h.approval_status = #{approvalStatus}
+    </if>
+</where>
+    </select>
+    <select id="selectPrHeaderExport"  parameterType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO"
+            resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+            select
+        <include refid="Base_Column_List"/>,
+        l.attribute_varchar1,
+        l.attribute_varchar2,
+        l.attribute_varchar3,
+        l.attribute_varchar4,
+        l.attribute_varchar5,
+        l.attribute_varchar6,
+        l.attribute_date1,
+        l.attribute_date2,
+        l.attribute_date3,
+        l.attribute_date4,
+        l.attribute_date5,
+        l.attribute_date6,
+        l.attribute_date7,
+        iu.real_name as  demanders_meaning,
+        sba.budget_account_name as budget_account_meaning,
+        hpa.purchase_agent_name as agent_meaning,
+        iur.real_name as created_by_name
+        from scux_rcwl_plan_header h
+        left join  iam_user iu on iu.organization_id = h.tenant_id and iu.id = h.demanders
+        left join smdm_budget_account sba on  sba.tenant_id = h.tenant_id  and sba.budget_account_num = h.budget_account
+        and sba.enabled_flag = 1
+        left join hpfm_purchase_agent hpa on hpa.tenant_id = h.tenant_id and hpa.purchase_agent_id = h.agent
+        left join  iam_user iur on iur.organization_id = h.tenant_id and iur.id = h.created_by
+        left join sprm_pr_line l on h.pr_line_id = l.pr_line_id
+        WHERE h.tenant_id = #{tenantId}
+      <choose>
+      <when test="planIds != null and planIds.size gt 0">
+          and h.plan_id in
+          <foreach collection="planIds" index="index" item="planId" open="(" separator="," close=")">
+              #{planId}
+          </foreach>
+      </when>
+      <otherwise>
+          <if test="planNum != null">
+              and h.plan_num = #{planNum}
+          </if>
+          <if test="state != null">
+              and h.state = #{state}
+          </if>
+          <if test="format != null">
+              and h.format = #{format}
+          </if>
+          <if test="companyName != null">
+              and h.company_name = #{companyName}
+          </if>
+          <if test="prCategory != null">
+              and h.pr_category = #{prCategory}
+          </if>
+          <if test="prWay != null">
+              and h.pr_way = #{prWay}
+          </if>
+          <if test="bidMethod != null">
+              and h.bid_method = #{bidMethod}
+          </if>
+          <if test="demanders != null">
+              <bind name="demanders" value="'%'+demanders+'%'"/>
+              and h.demanders like #{demanders}
+          </if>
+          <if test="creationDateFrom != null">
+              AND h.creation_date >= #{creationDateFrom}
+          </if>
+          <if test="creationDateTo != null">
+              AND h.creation_date &lt; #{creationDateTo}
+          </if>
+          <if test="createdByName != null">
+              <bind name="createdByName" value="'%'+createdByName+'%'"/>
+              and iur.real_name like #{createdByName}
+          </if>
+          <if test="approvalStatus != null">
+              and h.approval_status = #{approvalStatus}
+          </if>
+      </otherwise>
+
+      </choose>
+    </select>
+    <select id="selectPlanIdByPrIdAndLineNum"  resultType="java.lang.Long">
+        select h.plan_id from scux_rcwl_plan_header h
+         where h.pr_header_id = #{prHeaderId} and h.line_num = #{lineNum}
+    </select>
+    <select id="checkPrNumRep" resultType="java.lang.Integer">
+        select count(1) from sprm_pr_header h
+        left join  sprm_pr_line l on h.pr_header_id = l.pr_header_id
+        where h.pr_num = #{prNum}  and l.line_num = #{lineNum}
+        and h.tenant_id = #{tenantId}
+    </select>
+    <select id="checkCompanyExist" resultType="java.lang.Integer">
+         select count(1) from hpfm_company  h
+         where h.company_num = trim(#{companyNum})
+    </select>
+    <select id="checkudgetAccountExist" resultType="java.lang.Integer">
+             select count(1) from smdm_budget_account  h where h.budget_account_name = trim(#{budgetAccount})
+            and h.tenant_id = #{tenantId}
+    </select>
+    <select id="checkDemandersExist" resultType="java.lang.Integer">
+        select count(1) from iam_user h where h.login_name = trim(#{demanders})
+        and h.organization_id = #{tenantId}
+    </select>
+    <select id="checkAgentExist" resultType="java.lang.Integer">
+          SELECT
+        	count( 1 )
+        FROM
+        	hpfm_purchase_agent h
+        WHERE
+        	h.purchase_agent_code = trim(#{agent})
+		AND h.tenant_id = #{tenantId}
+    </select>
+    <select id="selectCompanyName" resultType="java.lang.String">
+        select h.company_name from hpfm_company  h
+         where h.company_num = trim(#{companyName})
+    </select>
+    <select id="selectCompanyId" resultType="java.lang.Long">
+        select h.company_id from hpfm_company  h
+         where h.company_num = trim(#{companyName})
+    </select>
+    <select id="selectBudgetAccount" resultType="java.lang.String">
+          select h.budget_account_num from smdm_budget_account  h where h.budget_account_name = trim(#{budgetAccount})
+          and h.tenant_id = #{tenantId}
+    </select>
+    <select id="selectDemanders" resultType="java.lang.String">
+        select h.id from iam_user h where h.login_name = trim(#{demanders})
+        and h.organization_id = #{tenantId}
+    </select>
+    <select id="selectAgent" resultType="java.lang.String">
+        select  h.purchase_agent_id  from hpfm_purchase_agent h
+       where  h.purchase_agent_code = trim(#{agent})
+       and h.tenant_id = #{tenantId}
+    </select>
+    <select id="calThisMonthNumber" resultType="java.lang.Integer">
+        SELECT
+        	count(1)
+        FROM
+        	scux_rcwl_plan_header h
+        WHERE
+        	DATE_FORMAT( h.creation_date, '%Y%m' ) = DATE_FORMAT(
+        		CURDATE( ),
+        	'%Y%m'
+	     ) and h.created_by = #{userId} and h.tenant_id = #{organizationId}
+     </select>
+    <select id="calLastMonthNumber" resultType="java.lang.Integer">
+                SELECT
+                	count(1)
+                FROM
+                	scux_rcwl_plan_header h
+                	JOIN sprm_pr_line l ON h.pr_line_id = l.pr_line_id
+                WHERE
+                	l.attribute_date4 IS NOT NULL
+                	AND DATE_FORMAT( l.attribute_date4, '%Y%m' ) = DATE_FORMAT( CURDATE( ), '%Y%m' )
+                	AND h.created_by = #{userId}
+                	AND h.tenant_id = #{organizationId}
+    </select>
+    <select id="calLastMonthComplete" resultType="java.lang.Integer">
+                SELECT
+               	count(1)
+               FROM
+               	scux_rcwl_plan_header h
+               	JOIN sprm_pr_line l ON h.pr_line_id = l.pr_line_id
+               WHERE
+               	l.attribute_date4 IS NOT NULL
+               	AND ( PERIOD_DIFF( date_format( now( ), '%Y%m' ), date_format( l.attribute_date4, '%Y%m' ) ) = 1 )
+               	AND h.created_by = #{userId}
+               	AND h.tenant_id = #{organizationId}
+    </select>
+    <select id="batchSelectAttachmentsInfo"
+            resultType="org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderAttachementToBpmDTO">
+                    SELECT
+            	( @i := @i + 1 ) AS file_number,
+            	h.file_name,
+            	h.file_size,
+            	h.file_name AS description,
+            	h.file_url AS url
+            FROM
+            	( SELECT @i := 0 ) AS i,
+            	hfle_file h
+            WHERE
+            1=1
+            and h.attachment_uuid in
+            <foreach collection="list" index="index" item="uuId" open="(" separator="," close=")">
+                #{uuId}
+            </foreach>
+
+    </select>
+
+</mapper>

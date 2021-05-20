@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper">
+
+
+    <select id="selectSapCode" resultType="java.lang.String">
+                SELECT
+              	a.attribute_varchar1
+              FROM
+              	(
+              	SELECT
+              		max( scb.version_number),
+              		scb.attribute_varchar1
+              	FROM
+              		spfm_company_basic scb
+              		LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
+              	WHERE
+              		h.company_id = #{companyId}
+              		AND h.tenant_id = #{tenantId}
+              	AND scb.process_status = 'COMPLETE'
+              	) a
+    </select>
+
+    <select id="selectWbsName" resultType="java.lang.String">
+                           SELECT
+                        	l.wbs
+                        FROM
+                        	sprm_pr_line l
+                        WHERE
+                        	l.pr_line_id = #{prLineId}
+                       AND l.wbs_code = #{wbsCode}
+     </select>
+    <select id="selectWbsCode" resultType="java.lang.String">
+                       SELECT
+                        	l.wbs_code
+                        FROM
+                        	sprm_pr_line l
+                        WHERE
+                        	l.pr_line_id = #{prLineId}
+                       AND l.wbs = #{wbs}
+    </select>
+    <select id="selectBudgetAccountNum" resultType="java.lang.String">
+          SELECT
+              	h.budget_account_num
+              FROM
+              	smdm_budget_account h
+              WHERE
+              	h.budget_account_id = #{budgetAccountId}
+    </select>
+    <select id="selectBudgetAccountName" resultType="java.lang.String">
+              SELECT
+              	h.budget_account_name
+              FROM
+              	smdm_budget_account h
+              WHERE
+              	h.budget_account_id = #{budgetAccountId}
+    </select>
+    <select id="selectPrHeaderByPrNum" resultType="org.srm.purchasecooperation.pr.domain.entity.PrHeader">
+                           SELECT
+                            	h.pr_header_id,
+                            	h.tenant_id,
+                            	h.pr_num,
+                            	h.company_id,
+                            	h.creation_date
+                            FROM
+                            	sprm_pr_header h
+                            WHERE
+                            	h.pr_num = #{prNum}
+                            	AND h.tenant_id = #{tenantId}
+    </select>
+    <select id="selectPrLineListById" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+                                  SELECT
+                              	l.pr_line_id,
+                              	l.tenant_id,
+                              	l.pr_header_id,
+                              	l.tax_included_line_amount,
+                              	l.budget_account_id,
+                              	l.wbs,
+                              	l.wbs_code,
+                              	l.line_num
+                              FROM
+                              	sprm_pr_line l
+                              WHERE
+                              	l.pr_header_id = #{prHeaderId}
+                              	AND l.tenant_id = #{tenantId}
+    </select>
+    <select id="selectPrLineListByIdOld" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+                               SELECT
+                              	l.pr_line_id,
+                              	l.tenant_id,
+                              	l.pr_header_id,
+                              	(
+                              	SELECT
+                              		spa.old_value_num
+                              	FROM
+                              		sprm_pr_action spa
+                              	WHERE
+                              		spa.pr_line_id = l.pr_line_id
+                              		AND spa.tenant_id = l.tenant_id
+                              		AND spa.process_type_code = 'CHANGE'
+                              		AND spa.change_field = 'tax_included_line_amount'
+                              	ORDER BY
+                              		spa.creation_date DESC
+                              		LIMIT 1
+                              	) tax_included_line_amount,
+                              	l.budget_account_id,
+                              	l.wbs,
+                              	l.wbs_code,
+                              	l.line_num
+                              FROM
+                              	sprm_pr_line l
+                              WHERE
+                              	l.pr_header_id = #{prHeaderId}
+                              	AND l.tenant_id = #{tenantId}
+    </select>
+    <select id="validateInvokeItf" resultType="java.lang.Integer">
+                              SELECT
+                              	count(1)
+                              FROM
+                              	sprm_pr_header h
+                              WHERE
+                              	h.pr_header_id = #{prHeaderId}
+                              	AND h.tenant_id = #{tenantId}
+                              	AND h.attribute_varchar39 = 'DXCG'
+	</select>
+    <select id="selectSumQuantity" resultType="java.math.BigDecimal">
+             		SELECT
+             	sum( spch.execute_quantity ) execute_quantity
+             FROM
+             	sprm_pr_change_history spch
+             	LEFT JOIN sprm_pr_header sph ON spch.pr_header_id = sph.pr_header_id
+             	LEFT JOIN sprm_pr_line spl ON spch.pr_line_id = spl.pr_line_id
+             WHERE
+             	spch.tenant_id = #{tenantId}
+	AND spch.pr_line_id = #{prLineId}
+	</select>
+</mapper>

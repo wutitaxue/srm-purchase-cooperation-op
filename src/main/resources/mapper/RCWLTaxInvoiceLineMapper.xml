@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.infra.mapper.RCWLTaxInvoiceLineMapper">
+
+    <select id="selectOneInvoiceHeader"
+            resultType="org.srm.purchasecooperation.finance.domain.entity.InvoiceHeader">
+        SELECT *
+        FROM `sfin_invoice_header` sih
+        WHERE sih.invoice_num = #{invoiceNum}
+    </select>
+    <select id="selectOneInvoiceLine"
+            resultType="org.srm.purchasecooperation.finance.domain.entity.TaxInvoiceLine">
+        SELECT *
+        FROM `sfin_tax_invoice_line` stil
+        WHERE stil.invoice_header_id = #{invoiceHeaderId}
+        and stil.invoice_number = #{invoiceNumber}
+    </select>
+</mapper>
