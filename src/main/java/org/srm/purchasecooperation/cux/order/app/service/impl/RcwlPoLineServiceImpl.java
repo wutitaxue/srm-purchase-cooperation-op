@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
+import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.finance.api.dto.CompanyDTO;
 import org.srm.purchasecooperation.finance.infra.mapper.CompanyMapper;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  * @createTime:2021/4/14 16:29
  * @version:1.0
  */
-@Tenant
+@Tenant(RCWLAcpConstant.TENANT_NUMBER)
 @Service
 public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
     @Autowired

@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
+import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
@@ -15,7 +16,7 @@ import java.util.List;
  *
  * @author furong.tang@hand-china.com
  */
-@Tenant
+@Tenant(RCWLAcpConstant.TENANT_NUMBER)
 public interface CuxRCWLPrLineMapper extends PrLineMapper, ExtendMapper<PrLine> {
 
     /**

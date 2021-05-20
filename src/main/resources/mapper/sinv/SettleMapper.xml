@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.sinv.infra.mapper.SettleMapper">
+    <update id="updateSettle">
+        update  ssta_settle ss
+            set ss.quantity = -1
+        where si.tenant_id = #{tenantId}
+        and ss.source_settle_num = #{num}
+        and ss.source_settle_line_num = #{lineNum}
+    </update>
+</mapper>

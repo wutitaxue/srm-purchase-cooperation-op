@@ -37,5 +37,12 @@ public interface RcwlSinvRcvTrxHeaderMapper extends SinvRcvTrxHeaderMapper, Exte
     @Override
     List<SinvRcvTrxWaitingDTO> selectSinvRcvTrxWainting(@Param("sinvRcvTrxQueryDTO") SinvRcvTrxQueryDTO sinvRcvTrxQueryDTO, @Param("customUserDetails") CustomUserDetails customUserDetails);
 
+    /**
+     * 增加事物类型字段
+     * @param tenantId
+     * @param rcvTrxHeaderId
+     * @return
+     */
+    SinvRcvTrxHeaderDTO selectHeaderdetail(@Param("tenantId") Long tenantId, @Param("rcvTrxHeaderId") Long rcvTrxHeaderId);
 
 }

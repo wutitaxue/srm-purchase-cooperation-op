@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlCompanyMapper">
+
+    <select id="selectCompanyRcwlUnitName" resultType="java.lang.String">
+        select h.attribute_varchar11 from spfm_company_basic h where h.company_id =#{companyId} and h.tenant_id=#{tenantId}
+    </select>
+</mapper>

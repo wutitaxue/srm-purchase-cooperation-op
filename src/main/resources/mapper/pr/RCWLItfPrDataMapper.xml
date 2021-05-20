@@ -4,21 +4,21 @@
 
 
     <select id="selectSapCode" resultType="java.lang.String">
-            SELECT
-          	a.attribute_varchar1
-          FROM
-          	(
-          	SELECT
-          		max( scb.version_number),
-          		scb.attribute_varchar1
-          	FROM
-          		spfm_company_basic scb
-          		LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
-          	WHERE
-          		h.company_id = #{companyId}
-          		AND h.tenant_id = #{tenantId}
-          	AND scb.process_status = 'COMPLETE'
-          	) a
+                SELECT
+              	a.attribute_varchar1
+              FROM
+              	(
+              	SELECT
+              		max( scb.version_number),
+              		scb.attribute_varchar1
+              	FROM
+              		spfm_company_basic scb
+              		LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
+              	WHERE
+              		h.company_id = #{companyId}
+              		AND h.tenant_id = #{tenantId}
+              	AND scb.process_status = 'COMPLETE'
+              	) a
     </select>
 
     <select id="selectWbsName" resultType="java.lang.String">
@@ -113,4 +113,25 @@
                               	l.pr_header_id = #{prHeaderId}
                               	AND l.tenant_id = #{tenantId}
     </select>
+    <select id="validateInvokeItf" resultType="java.lang.Integer">
+                              SELECT
+                              	count(1)
+                              FROM
+                              	sprm_pr_header h
+                              WHERE
+                              	h.pr_header_id = #{prHeaderId}
+                              	AND h.tenant_id = #{tenantId}
+                              	AND h.attribute_varchar39 = 'DXCG'
+	</select>
+    <select id="selectSumQuantity" resultType="java.math.BigDecimal">
+             		SELECT
+             	sum( spch.execute_quantity ) execute_quantity
+             FROM
+             	sprm_pr_change_history spch
+             	LEFT JOIN sprm_pr_header sph ON spch.pr_header_id = sph.pr_header_id
+             	LEFT JOIN sprm_pr_line spl ON spch.pr_line_id = spl.pr_line_id
+             WHERE
+             	spch.tenant_id = #{tenantId}
+	AND spch.pr_line_id = #{prLineId}
+	</select>
 </mapper>

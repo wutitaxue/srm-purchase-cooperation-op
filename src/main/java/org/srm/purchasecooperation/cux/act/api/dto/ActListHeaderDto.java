@@ -53,7 +53,8 @@ public class ActListHeaderDto {
     private String acceptDetails;
 
     @ApiModelProperty("验收单+合同名称+验收人")
-    private String FSubject;
+    @JsonProperty("FSubject")
+    private String fSubject;
 
     @JsonProperty("URL_MX")
     @ApiModelProperty("甄云链接")
@@ -76,12 +77,20 @@ public class ActListHeaderDto {
         return ysddh;
     }
 
-    public String getFSubject() {
-        return FSubject;
+    public String getTrxNum() {
+        return trxNum;
     }
 
-    public void setFSubject( String FSubject ) {
-        this.FSubject = FSubject;
+    public void setTrxNum(String trxNum) {
+        this.trxNum = trxNum;
+    }
+
+    public String getfSubject() {
+        return fSubject;
+    }
+
+    public void setfSubject(String fSubject) {
+        this.fSubject = fSubject;
     }
 
     public String getUrlMX() {
@@ -102,14 +111,6 @@ public class ActListHeaderDto {
 
     public void setURL( List<ActListFilesDto> url ) {
         this.url = url;
-    }
-
-    public String gettrxNum() {
-        return trxNum;
-    }
-
-    public void settrxNum( String trxNum ) {
-        this.trxNum = trxNum;
     }
 
     public String getAcceptOrName() {

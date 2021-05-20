@@ -10,7 +10,6 @@
 select h.rcv_trx_header_id from sinv_rcv_trx_header h where h.trx_num = #{settleNum};
 	</select>
     <select id="actListHeaderQuery"
-            parameterType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto">
 				SELECT
 					(

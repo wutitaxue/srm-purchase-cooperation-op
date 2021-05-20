@@ -55,4 +55,13 @@
         select ht.tenant_id from hpfm_tenant ht where ht.tenant_num = #{tenantNum}
     </select>
 
+    <update id="updateSettle">
+    update  ssta_settle ss
+        set ss.quantity = #{inventoryQuantity}
+    where si.tenant_id = #{tenantId}
+    and ss.source_settle_num = #{num}
+    and ss.source_settle_line_num = #{lineNum}
+</update>
+
+
 </mapper>

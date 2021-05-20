@@ -101,7 +101,7 @@ public class ActServiceImpl implements ActService {
         rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
         rcwlGxBpmStartDataDTO.setUserId(userName);
         rcwlGxBpmStartDataDTO.setBtid(rcwlActConstant.ACCEPT_BPM_TYPE_CODE);
-        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.gettrxNum());
+        rcwlGxBpmStartDataDTO.setBoid(actListHeaderDto.getTrxNum());
         if (null != actListHeaderDto.getAttributeVarchar19() && !"".equals(actListHeaderDto.getAttributeVarchar19())) {
             rcwlGxBpmStartDataDTO.setProcinstId(actListHeaderDto.getAttributeVarchar19());
         } else {
@@ -125,7 +125,7 @@ public class ActServiceImpl implements ActService {
             sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
         }
         //调用bpm接口
-        ActListHeaderDto actListHeaderDto = this.actQuery(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+        ActListHeaderDto actListHeaderDto = this.actQuery(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(),tenantId);
         RcwlBpmUrlDto rcwlBpmUrlDto = new RcwlBpmUrlDto();
         String ip = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
         rcwlBpmUrlDto.setUrl("http://" + ip + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMYSDSP&BOID=" + sinvRcvTrxHeaderDTO.getTrxNum());
