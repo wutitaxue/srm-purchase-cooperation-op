@@ -27,6 +27,8 @@ import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
@@ -80,6 +82,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private RCWLPrItfService rcwlPrItfService;
     @Autowired
     private CustomizeClient customizeClient;
+    @Autowired
+    private RCWLItfPrDataRespository rcwlItfPrDataRespository;
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
     private static final String LOG_MSG_SPUC_PR_HEADER_UPDATE_AMOUNT = "============SPUC_PR_HEADER_UPDATE_AMOUNT-TaskNotExistException=============={}";
@@ -165,12 +169,15 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             return prHeader;
         } else {
             prHeader = this.updatePrHeader(prHeader);
+            //判断是否能触发接口
+            Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(),tenantId);
+            if(RCWLConstants.Common.IS.equals(count)){
             //保存完之后触发接口
             try {
                 this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
-            }
+            } }
             prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
             return ((PrHeaderService) this).submit(tenantId, prHeader);
         }

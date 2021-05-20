@@ -30,6 +30,7 @@ import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,9 +115,63 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                 throw new CommonException(simpleMessage + "，采购申请不可提交");
             }
         }
+    }
+    /**
+     * 整单关闭触发接口
+     *
+     * @param prHeader
+     * @param tenantId
+     */
+    @Override
+    public void invokeBudgetOccupyClose(PrHeader prHeader, Long tenantId) throws JsonProcessingException {
+        //接口请求数据获取
+        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = this.getBudgetAccountItfDataClose(prHeader, tenantId);
 
+        RequestPayloadDTO payload = new RequestPayloadDTO();
+
+        Map<String, String> headerMap = new HashMap<>();
+        headerMap.put("Content-Type", "application/json");
+        payload.setHeaderParamMap(headerMap);
+        ObjectMapper mapper = new ObjectMapper();
+        payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
+        logger.info("报文1+" + rcwlItfPrHeaderDTO);
+        logger.info("报文2+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
+        payload.setMediaType("application/json");
+
+        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                SRM_RCWL_BUDGET,
+                RCWL_BUDGET,
+                payload);
+        String response = responsePayloadDTO.getPayload().toString();
+        logger.info("预算接口返回" + response);
+
+        JsonObject res = new JsonParser().parse(response).getAsJsonObject();
+        String msg = res.get("msg").getAsString();
+        logger.info("msg" + msg);
+        String code = res.get("code").getAsString();
+        logger.info("code" + code);
+        JsonArray details = res.get("details").getAsJsonArray();
+        logger.info("details" + details);
+
+        String status = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("status").getAsString();
+        logger.info("status" + status);
+
+        if (!RCWLConstants.InterfaceInitValue.CODE.equals(code)) {
+            throw new CommonException("接口调用失败");
+        }
+        if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
+            String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+            String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
+            if (StringUtils.isEmpty(simpleMessage)) {
+                throw new CommonException(detailsMsg);
+            }else {
+                throw new CommonException(simpleMessage + "，采购申请不可提交");
+            }
+        }
 
     }
+
+
 
     /**
      * 初始化头数据（包括调用接口获取token）
@@ -168,6 +223,32 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         return rcwlItfPrHeaderDTO;
     }
 
+    private RCWLItfPrHeaderDTO getBudgetAccountItfDataClose(PrHeader prHeader, Long tenantId) {
+        //获取接口所需数据
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, "O");
+        List<PrLine> lineDetailList = prHeader.getPrLineList();
+
+        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(lineDetailList)) {
+            lineDetailList.forEach(prDetailLine -> {
+                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prDetailLine, tenantId);
+                rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+            });
+        }
+
+        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
+        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
+        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
+        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
+        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
+        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
+
+
+        rcwlItfPrHeaderDTO = rcwlPrItfService.initOccupyHeader();
+        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
+        return rcwlItfPrHeaderDTO;
+    }
     /**
      * 获取token
      *
@@ -200,31 +281,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         return token;
     }
 
-    /**
-     * 审批拒绝调用接口
-     *
-     * @param prHeaderList
-     * @param tenantId
-     */
-    @Override
-    public void invokeBudgetList(List<PrHeader> prHeaderList, Long tenantId) {
-        if (CollectionUtils.isEmpty(prHeaderList)) {
-            throw new CommonException("数据为空");
-        } else {
-            prHeaderList.forEach(prHeader -> {
-                BeanUtils.copyProperties(this.prHeaderRepository.selectByPrimaryKey(prHeader.getPrHeaderId()), prHeader, new String[]{"approvedRemark"});
-                List<PrLine> prLines = this.prLineRepository.selectByPrHeaderId(prHeader.getPrHeaderId());
-                prHeader.setPrLineList(prLines);
-                //触发释放接口
-                try {
-                    this.rcwlPrItfService.invokeBudgetRelease(prHeader, tenantId);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-            });
-
-        }
-    }
 
     /**
      * 释放接口
@@ -286,46 +342,52 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
      */
     @Override
     public void linesClose(List<PrLineVO> prLineVOS, Long tenantId) throws JsonProcessingException {
-        //将勾选行封装成报文数据
-        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetItfDataLine(prLineVOS, tenantId, "R");
 
-        //调用接口
-        RequestPayloadDTO payload = new RequestPayloadDTO();
+        //判断是否满足触发接口
+        Integer count = this .rcwlItfPrDataRespository.validateInvokeItf(prLineVOS.get(0).getPrHeaderId(),tenantId);
+        if(RCWLConstants.Common.IS.equals(count)) {
+            //将勾选行封装成报文数据
+            RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetItfDataLine(prLineVOS, tenantId, "O");
 
-        Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("Content-Type", "application/json");
-        payload.setHeaderParamMap(headerMap);
-        ObjectMapper mapper = new ObjectMapper();
-        payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
-        payload.setMediaType("application/json");
+            //调用接口
+            RequestPayloadDTO payload = new RequestPayloadDTO();
 
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
-                SRM_RCWL_BUDGET,
-                RCWL_BUDGET,
-                payload);
-        String response = responsePayloadDTO.getPayload().toString();
-        logger.info("预算接口返回" + response);
+            Map<String, String> headerMap = new HashMap<>();
+            headerMap.put("Content-Type", "application/json");
+            payload.setHeaderParamMap(headerMap);
+            ObjectMapper mapper = new ObjectMapper();
+            payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
+            payload.setMediaType("application/json");
 
-        JsonObject res = new JsonParser().parse(response).getAsJsonObject();
-        String msg = res.get("msg").getAsString();
-        logger.info("msg" + msg);
-        String code = res.get("code").getAsString();
-        logger.info("code" + code);
-        JsonArray details = res.get("details").getAsJsonArray();
-        logger.info("details" + details);
+            ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                    SRM_RCWL_BUDGET,
+                    RCWL_BUDGET,
+                    payload);
+            String response = responsePayloadDTO.getPayload().toString();
+            logger.info("预算接口返回" + response);
 
-        String status = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("status").getAsString();
-        logger.info("status" + status);
+            JsonObject res = new JsonParser().parse(response).getAsJsonObject();
+            String msg = res.get("msg").getAsString();
+            logger.info("msg" + msg);
+            String code = res.get("code").getAsString();
+            logger.info("code" + code);
+            JsonArray details = res.get("details").getAsJsonArray();
+            logger.info("details" + details);
 
-        if (!RCWLConstants.InterfaceInitValue.CODE.equals(code)) {
-            throw new CommonException("接口调用失败");
+            String status = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("status").getAsString();
+            logger.info("status" + status);
+
+            if (!RCWLConstants.InterfaceInitValue.CODE.equals(code)) {
+                throw new CommonException("接口调用失败");
+            }
+            if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
+                String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+                throw new CommonException(detailsMsg);
+            }
         }
-        if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
-            String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
-            throw new CommonException(detailsMsg);
-        }
-
     }
+
+
 
     /**
      * 将指定行数据封装成报文
@@ -351,7 +413,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         prLineVOS.forEach(prLineVO -> {
             PrLine prLine = new PrLine();
             BeanUtils.copyProperties(prLineVO, prLine);
-            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prLine, tenantId);
+            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId);
             rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
         });
         rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
@@ -367,6 +429,54 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
 
         return rcwlItfPrHeaderDTO;
+    }
+
+
+
+    private RCWLItfPrLineDetailDTO initCloseLine(PrLine prDetailLine, Long tenantId) {
+        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
+
+          //判断否存在转单情况(查询执行情况)
+        BigDecimal quantity = this.rcwlItfPrDataRespository.selectSumQuantity(prDetailLine.getPrLineId(),tenantId);
+        if(quantity==null){
+            rcwlItfPrLineDetailDTO.setYszyje("0");
+        }else {
+            BigDecimal taxIncludeAmount = quantity.multiply(prDetailLine.getTaxIncludedUnitPrice());
+            rcwlItfPrLineDetailDTO.setYszyje(taxIncludeAmount.toString());
+        }
+
+        if (prDetailLine.getBudgetAccountId() == null) {
+            throw new CommonException("业务用途为空");
+        }
+        String budgetAccountNum = this.rcwlItfPrDataRespository.selectBudgetAccountNum(prDetailLine.getBudgetAccountId());
+        String budgetAccountName = this.rcwlItfPrDataRespository.selectBudgetAccountName(prDetailLine.getBudgetAccountId());
+
+        rcwlItfPrLineDetailDTO.setYmytcode(budgetAccountNum);
+        rcwlItfPrLineDetailDTO.setYmytname(budgetAccountName);
+
+        if ((!StringUtils.isEmpty(prDetailLine.getWbsCode())) && (!StringUtils.isEmpty(prDetailLine.getWbs()))) {
+            rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
+            rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
+        }
+
+        if ((!StringUtils.isEmpty(prDetailLine.getWbsCode())) && (StringUtils.isEmpty(prDetailLine.getWbs()))) {
+            rcwlItfPrLineDetailDTO.setCplxcode(prDetailLine.getWbsCode());
+            String wbsName = this.rcwlItfPrDataRespository.selectWbsName(prDetailLine.getWbsCode(), prDetailLine.getPrLineId());
+            rcwlItfPrLineDetailDTO.setCplxname(wbsName);
+        }
+
+
+        if ((StringUtils.isEmpty(prDetailLine.getWbsCode())) && !(StringUtils.isEmpty(prDetailLine.getWbs()))) {
+            rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
+            String wbsCode = this.rcwlItfPrDataRespository.selectWbsCode(prDetailLine.getWbs(), prDetailLine.getPrLineId());
+            rcwlItfPrLineDetailDTO.setCplxcode(wbsCode);
+        }
+
+        if ((StringUtils.isEmpty(prDetailLine.getWbsCode())) && (StringUtils.isEmpty(prDetailLine.getWbs()))) {
+            throw new CommonException("产品类型为空");
+        }
+        rcwlItfPrLineDetailDTO.setLine(prDetailLine.getLineNum().toString());
+        return rcwlItfPrLineDetailDTO;
     }
 
     /**
@@ -462,21 +572,24 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     public void submitChange(PrHeader prHeader, Long tenantId) throws JsonProcessingException {
         //先释放原来的   后占用现在的
         //释放变更前的金额
-        PrHeader oldPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
-        if(oldPrHeader!=null){
-            //获取行信息
-            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(),tenantId);
-            oldPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetRelease(oldPrHeader,tenantId);
-        }
-
-        //占用变更后的金额
-        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
-        if(newPrHeader!=null) {
-            //获取行信息
-            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
-            newPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetOccupy(newPrHeader,tenantId);
+//        PrHeader oldPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
+//        if(oldPrHeader!=null){
+//            //获取行信息
+//            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(),tenantId);
+//            oldPrHeader.setPrLineList(prLineList);
+//            this.invokeBudgetRelease(oldPrHeader,tenantId);
+//        }
+         //判断是否触发接口
+        Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(),tenantId);
+        if(RCWLConstants.Common.IS.equals(count)) {
+            //占用变更后的金额
+            PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prHeader.getDisplayPrNum(), tenantId);
+            if (newPrHeader != null) {
+                //获取行信息
+                List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
+                newPrHeader.setPrLineList(prLineList);
+                this.invokeBudgetOccupy(newPrHeader, tenantId);
+            }
         }
 
     }
@@ -566,9 +679,13 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         if(prHeader!=null) {
             //获取行信息
             List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(prHeader.getPrHeaderId(), tenantId);
+            prLineList.stream().forEach(prLine -> {
+                //审批拒绝调用占用接口，行金额固定传0
+                prLine.setTaxIncludedLineAmount(new BigDecimal(0));
+            });
             prHeader.setPrLineList(prLineList);
-            //释放接口
-            this.invokeBudgetRelease(prHeader,tenantId);
+            //占用接口
+            this.invokeBudgetOccupy(prHeader,tenantId);
         }
     }
     /**
@@ -580,14 +697,14 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     @Override
     public void afterBpmApproveByChange(String prNum, String approveFlag) throws JsonProcessingException {
         Long tenantId = DetailsHelper.getUserDetails().getTenantId();
-        //释放变更后的金额
-        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
-        if(newPrHeader!=null) {
-            //获取行信息
-            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
-            newPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetRelease(newPrHeader,tenantId);
-        }
+//        //释放变更后的金额
+//        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
+//        if(newPrHeader!=null) {
+//            //获取行信息
+//            List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
+//            newPrHeader.setPrLineList(prLineList);
+//            this.invokeBudgetRelease(newPrHeader,tenantId);
+//        }
         //占用变更前的金额
         PrHeader oldPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
         if(oldPrHeader!=null){
@@ -597,4 +714,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             this.invokeBudgetOccupy(oldPrHeader,tenantId);
         }
     }
+
+
+
+
 }
