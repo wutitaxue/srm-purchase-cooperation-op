@@ -25,6 +25,7 @@ import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
+import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
@@ -58,7 +59,7 @@ import java.util.stream.Collectors;
  * @createTime:2021/3/26 16:19
  * @version:1.0
  */
-@Tenant
+@Tenant(RCWLAcpConstant.TENANT_NUMBER)
 @Service
 public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements RcwlPrheaderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RCWLPrHeaderServiceImpl.class);
