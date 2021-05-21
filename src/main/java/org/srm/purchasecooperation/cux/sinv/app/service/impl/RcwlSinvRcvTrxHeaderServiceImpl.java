@@ -52,22 +52,6 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private RcwlOrderBillService rcwlOrderBillService;
     @Autowired
     private SinvRcvRecordStrategyMappingRepository sinvRcvRecordStrategyMappingRepository;
-    @Autowired
-    private SinvTrxNodeExectorDomainService sinvRcvTrxDomainService;
-    @Autowired
-    private SendMessageToPrService sendMessageToPrService;
-    @Autowired
-    private SinvRcvTrxHeaderRepository sinvRcvTrxHeaderRepository;
-    @Autowired
-    private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
-    @Autowired
-    private PoHeaderRepository poHeaderRepository;
-    @Autowired
-    private RcvTrxLineRepository rcvTrxLineRepository;
-    @Autowired
-    private RcwlOrderBillMapper rcwlOrderBillMapper;
-    @Autowired
-    private SettleMapper settleMapper;
 
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
@@ -107,52 +91,4 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         }
     }
 
-    @Override
-    public void submittedSinvNone(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO, RcvStrategyLine rcvStrategyLine) {
-        Assert.notNull(rcvStrategyLine, "error.data_exists");
-        SinvRcvTrxHeader sinvRcvTrxHeader = (SinvRcvTrxHeader)this.sinvRcvTrxHeaderRepository.selectByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        sinvRcvTrxHeader.setRcvStatusCode("40_FINISHED");
-        this.sinvRcvTrxHeaderRepository.updateOptional(sinvRcvTrxHeader, new String[]{"rcvStatusCode"});
-        List<SinvAfterTrxNodeExectedVo> sinvAfterTrxNodeExectedVos = new ArrayList();
-        SinvAfterTrxNodeExectedVo sinvAfterTrxNodeExectedVo = new SinvAfterTrxNodeExectedVo();
-        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
-        SinvRcvRecordStrategyMapping sinvRcvRecordStrategyMapping = new SinvRcvRecordStrategyMapping();
-        sinvRcvRecordStrategyMapping.setRcvTrxHeaderId(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        sinvRcvRecordStrategyMapping = (SinvRcvRecordStrategyMapping)this.sinvRcvRecordStrategyMappingRepository.selectOne(sinvRcvRecordStrategyMapping);
-        PoHeader poHeader = (PoHeader)Optional.ofNullable(this.poHeaderRepository.selectByPrimaryKey(((SinvRcvTrxLine)sinvRcvTrxLines.get(0)).getFromPoHeaderId())).orElse(new PoHeader());
-        if ("E-COMMERCE".equals(poHeader.getPoSourcePlatform())) {
-            sinvRcvRecordStrategyMapping.setOrderTypeCode("ASN");
-        }
-
-        sinvAfterTrxNodeExectedVo.setSinvRcvTrxLineList(sinvRcvTrxLines);
-        sinvAfterTrxNodeExectedVo.setStrategyLineId(rcvStrategyLine.getStrategyLineId());
-        sinvAfterTrxNodeExectedVo.setOrderTypeCode(sinvRcvRecordStrategyMapping.getOrderTypeCode());
-        sinvAfterTrxNodeExectedVo.setFromStrategyLineId(rcvStrategyLine.getStrategyLineId());
-        sinvAfterTrxNodeExectedVo.setToStrategyLineId(rcvStrategyLine.getStrategyLineId());
-        sinvAfterTrxNodeExectedVos.add(sinvAfterTrxNodeExectedVo);
-        this.sinvRcvTrxDomainService.afterTrxNodeExected(sinvAfterTrxNodeExectedVos);
-        this.sitfSinvOut(tenantId, sinvRcvTrxHeaderDTO);
-        //循环行新增品类需要推送资产时不新增结算
-        RcvTrxLine rcvTrxLine = new RcvTrxLine();
-        rcvTrxLine.setTenantId(tenantId);
-        rcvTrxLine.setRcvTrxHeaderId(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        List<RcvTrxLine> RcvTrxLines = rcvTrxLineRepository.select(rcvTrxLine);
-        RcvTrxLines.forEach(item -> {
-            String sendToEas = rcwlOrderBillMapper.selectCategory(tenantId, item.getRcvTrxLineId());
-            if (sendToEas == "0") {
-                List<Long> RcvTrxLineIdlist = new ArrayList<>();
-                RcvTrxLineIdlist.add(item.getRcvTrxLineId());
-                this.syncRcvTrxLineSettle(tenantId, null, RcvTrxLineIdlist, "NEW", false);
-            }else{
-                List<Long> RcvTrxLineIdlist = new ArrayList<>();
-                RcvTrxLineIdlist.add(item.getRcvTrxLineId());
-                this.syncRcvTrxLineSettle(tenantId, null, RcvTrxLineIdlist, "NEW", false);
-                //settle数量置-1 前端不显示
-                settleMapper.updateSettle(tenantId,sinvRcvTrxHeaderDTO.getTrxNum(),item.getTrxLineNum());
-            }
-        });
-        this.sinvEcRcvTrxSendMQ(tenantId, sinvRcvTrxHeader);
-        List<Long> lineIdList = (List)sinvRcvTrxLines.stream().map(SinvRcvTrxLine::getRcvTrxLineId).collect(Collectors.toList());
-        this.sendMessageToPrService.sendTrxMessageToPr(tenantId, Collections.singletonList(sinvRcvTrxHeader.getRcvTrxHeaderId()), lineIdList, BaseConstants.Flag.NO);
-    }
 }
