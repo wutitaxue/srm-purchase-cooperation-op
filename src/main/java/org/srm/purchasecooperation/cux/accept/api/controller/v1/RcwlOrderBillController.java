@@ -36,6 +36,34 @@ public class RcwlOrderBillController {
     @Autowired
     private RcvTrxLineRepository rcvTrxLineRepository;
 
+    @ApiOperation("bpm资产采购订单接口")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @PostMapping({"/rcwl-order-bill2"})
+    public ResponseEntity sendOrderBillInserface2(@PathVariable("organizationId") Long tenantId,@RequestParam(value = "rcvTrxnum",required = false) String rcvTrxnum,@RequestParam(value = "type") String type) {
+        if (rcvTrxnum !=null){
+            RcvTrxHeader rcvTrxHeader = new RcvTrxHeader();
+            rcvTrxHeader.setTrxNum(rcvTrxnum);
+            rcvTrxHeader.setTenantId(tenantId);
+            RcvTrxHeader header = rcvTrxHeaderRepository.selectOne(rcvTrxHeader);
+            if (header == null){
+                throw new CommonException("单据编码不存在!");
+            }
+            if(!"ORDER".equals(type) || !"1".equals(header.getAttributeVarchar6())){
+                return Results.success();
+            }
+            RcvTrxLine rcvTrxLine = new RcvTrxLine();
+            rcvTrxLine.setTenantId(tenantId);
+            rcvTrxLine.setRcvTrxHeaderId(header.getRcvTrxHeaderId());
+            rcvTrxLineRepository.select(rcvTrxLine).forEach(item -> {
+                        rcwlOrderBillService.sendOrderBillOne(tenantId,item.getRcvTrxLineId(),type);
+                    }
+            );
+        }
+        return Results.success();
+    }
+
     @ApiOperation("资产采购订单接口重推")
     @Permission(
             level = ResourceLevel.ORGANIZATION
