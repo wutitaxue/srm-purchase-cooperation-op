@@ -4,7 +4,7 @@
     <update id="updateSettle">
         update  ssta_settle ss
             set ss.quantity = -1
-        where si.tenant_id = #{tenantId}
+        where ss.tenant_id = #{tenantId}
         and ss.source_settle_num = #{num}
         and ss.source_settle_line_num = #{lineNum}
     </update>
