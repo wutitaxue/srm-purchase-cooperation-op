@@ -60,9 +60,9 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
             rcwlOrderBillDTO = rcwlOrderBillMapper.selectSendAccept(tenantId,rcvTrxLineId);
             //IsNew字段转换
             if("1".equals(rcwlOrderBillDTO.getfIsNewInt())){
-                rcwlOrderBillDTO.setfIsNew(true);
+                rcwlOrderBillDTO.setfIsNew("true");
             }else if ("0".equals(rcwlOrderBillDTO.getfIsNewInt())){
-                rcwlOrderBillDTO.setfIsNew(false);
+                rcwlOrderBillDTO.setfIsNew("false");
             }
         }else {
             throw new CommonException("输入单据类型错误");
