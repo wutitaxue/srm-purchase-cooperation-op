@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.act.app.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
@@ -134,17 +135,23 @@ public class ActServiceImpl implements ActService {
 
     @Override
     public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess( Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19 ) {
+        ObjectMapper mapper = new ObjectMapper();
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = sinvRcvTrxHeaderService.getHeaderDetail(tenantId, settleId);
         //更新值
 //        attribute_varchar19 流程ID
 //        attribute_varchar18 BPM链接
         sinvRcvTrxHeaderDTO.setAttributeVarchar18(attributeVarchar18);
-        sinvRcvTrxHeaderDTO.setAttributeVarchar18(attributeVarchar19);
+        sinvRcvTrxHeaderDTO.setAttributeVarchar19(attributeVarchar19);
         sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
 
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);
         RcvStrategyLine rcvStrategyLine = sinvRcvTrxHeaderService.selectRcvNowNodeConfig(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), (Long) null);
+        try {
+            logger.info("-------------rcvStrategyLine:"+ mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcvStrategyLine));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         if ("WFL".equals(((RcvStrategyLine) Optional.ofNullable(rcvStrategyLine).orElse(new RcvStrategyLine())).getApproveRuleCode())) {
             sinvRcvTrxHeaderDomainService.submittedSinvToWFL(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
             return sinvRcvTrxHeaderDTO;
