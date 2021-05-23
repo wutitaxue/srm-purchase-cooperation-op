@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.act.api.controller.v1;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -10,11 +11,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.ibatis.annotations.Param;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
+import org.hzero.boot.platform.profile.ProfileClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
@@ -41,6 +44,8 @@ import java.util.logging.Logger;
 public class rcwlActBpmController {
     @Autowired
     private ActService actService;
+    @Autowired
+    private ProfileClient profileClient;
 
     /**
      * 验收单bpm接口查询
@@ -67,6 +72,7 @@ public class rcwlActBpmController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm-successed")
     public ResponseEntity<Void> submitToBpmSuccessed( @PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum, @RequestParam("attributeVarchar18") String attributeVarchar18, @RequestParam("attributeVarchar19") String attributeVarchar19 ) {
+        DetailsHelper.setCustomUserDetails(5L,"zh_CN");
         actService.RcwlBpmSubmitSuccess(tenantId, settleNum, attributeVarchar18, attributeVarchar19);
         return Results.success();
     }
