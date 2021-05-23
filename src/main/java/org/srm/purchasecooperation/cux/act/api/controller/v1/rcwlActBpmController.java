@@ -57,22 +57,22 @@ public class rcwlActBpmController {
     @Permission(level = ResourceLevel.ORGANIZATION)
 //    @Permission(permissionPublic = true)
     @PostMapping("/getAct")
-    public ResponseEntity<ActListHeaderDto> queryList( @ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId ) throws IOException {
+    public ResponseEntity<ActListHeaderDto> queryList(@ApiParam(value = "租户Id", required = true) @PathVariable("organizationId") Long organizationId, @ApiParam(value = "验收单头id", required = true) @Param("acceptListHeaderId") Long acceptListHeaderId) throws IOException {
         return Results.success(actService.actQuery(acceptListHeaderId, organizationId));
     }
 
     @ApiOperation(value = "验收单BPM提交")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm")
-    public ResponseEntity<RcwlBpmUrlDto> submitToBpm( @PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO ) throws IOException {
+    public ResponseEntity<RcwlBpmUrlDto> submitToBpm(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) throws IOException {
         return Results.success(actService.rcwlActSubmitBpm(tenantId, sinvRcvTrxHeaderDTO));
     }
 
     @ApiOperation(value = "验收单BPM提交成功")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm-successed")
-    public ResponseEntity<Void> submitToBpmSuccessed( @PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum, @RequestParam("attributeVarchar18") String attributeVarchar18, @RequestParam("attributeVarchar19") String attributeVarchar19 ) {
-        DetailsHelper.setCustomUserDetails(5L,"zh_CN");
+    public ResponseEntity<Void> submitToBpmSuccessed(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum, @RequestParam("attributeVarchar18") String attributeVarchar18, @RequestParam("attributeVarchar19") String attributeVarchar19) {
+        DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
         actService.RcwlBpmSubmitSuccess(tenantId, settleNum, attributeVarchar18, attributeVarchar19);
         return Results.success();
     }
@@ -80,7 +80,8 @@ public class rcwlActBpmController {
     @ApiOperation(value = "验收单BPM审批通过")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm-approved")
-    public ResponseEntity<Void> bpmApproved( @PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum ) {
+    public ResponseEntity<Void> bpmApproved(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum) {
+        DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
         actService.RcwlBpmApproved(tenantId, settleNum);
         return Results.success();
     }
@@ -88,14 +89,17 @@ public class rcwlActBpmController {
     @ApiOperation(value = "验收单BPM审批拒绝")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm-rejected")
-    public ResponseEntity<Void> bpmReject( @PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum ) {
+    public ResponseEntity<Void> bpmReject(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum) {
+        DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
         actService.RcwlBpmReject(tenantId, settleNum);
         return Results.success();
     }
+
     @ApiOperation(value = "验收单BPM审批拒绝，置0接口")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm-rejected3")
-    public ResponseEntity<Void> bpmReject3( @PathVariable("organizationId") Long tenantId,@RequestParam("settleNum") String settleNum ) {
+    public ResponseEntity<Void> bpmReject3(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum) {
+        DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
         actService.RcwlBpmReject3(tenantId, settleNum);
         return Results.success();
     }
