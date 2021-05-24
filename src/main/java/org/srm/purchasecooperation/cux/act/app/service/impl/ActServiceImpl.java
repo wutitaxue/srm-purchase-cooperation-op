@@ -7,6 +7,7 @@ import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.oauth.CustomClientDetails;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import javassist.Loader;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
@@ -29,9 +30,13 @@ import org.srm.purchasecooperation.cux.act.domain.repository.ActHeaderRespositor
 import org.srm.purchasecooperation.cux.act.domain.repository.ActLineRespository;
 import org.srm.purchasecooperation.cux.act.infra.repsitory.impl.ActHeaderRespositoryImpl;
 import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
+import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
+import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
+import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxLineService;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.web.annotation.Tenant;
 
@@ -57,6 +62,8 @@ public class ActServiceImpl implements ActService {
     private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
     @Autowired
     private SinvRcvTrxHeaderService sinvRcvTrxHeaderService;
+    @Autowired
+    private SinvRcvTrxLineService sinvRcvTrxLineService;
     @Autowired
     private TenantMapper tenantMapper;
     @Autowired
@@ -156,13 +163,18 @@ public class ActServiceImpl implements ActService {
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         logger.info("-------查询sinvRcvTrxHeaderDTO开始：" + settleId);
         SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = sinvRcvTrxHeaderService.getHeaderDetail(tenantId, settleId);
+        PageRequest pageRequest = new PageRequest();
+        pageRequest.setSize(100);
+        List<SinvRcvTrxLineDTO> sinvRcvTrxLineList = sinvRcvTrxLineService.pageRcvTrxLineDetail(tenantId, settleId, pageRequest);
         //更新值
 //        attribute_varchar19 流程ID
 //        attribute_varchar18 BPM链接
+        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineList);
         sinvRcvTrxHeaderDTO.setAttributeVarchar18(attributeVarchar18);
         sinvRcvTrxHeaderDTO.setAttributeVarchar19(attributeVarchar19);
         logger.info("-----------执行更新开始---------");
         sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
+        logger.info("-----------执行更新结束---------");
 
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);
         logger.info("--------adaptorTaskCheckBeforeStatusUpdate结束：------------RcvStrategyLine 策略查询开始：-----");
