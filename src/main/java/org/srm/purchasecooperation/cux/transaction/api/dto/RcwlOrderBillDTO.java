@@ -66,7 +66,7 @@ public class RcwlOrderBillDTO {
     @ApiModelProperty("物料是否需要新增")
     @NotBlank
     @JsonProperty("FIsNew")
-    private String fIsNew;
+    private Boolean fIsNew;
 
     @ApiModelProperty("结算币别编码")
     @NotBlank
@@ -233,11 +233,11 @@ public class RcwlOrderBillDTO {
         this.fIsNewInt = fIsNewInt;
     }
 
-    public String getfIsNew() {
+    public Boolean getfIsNew() {
         return fIsNew;
     }
 
-    public void setfIsNew(String fIsNew) {
+    public void setfIsNew(Boolean fIsNew) {
         this.fIsNew = fIsNew;
     }
 
