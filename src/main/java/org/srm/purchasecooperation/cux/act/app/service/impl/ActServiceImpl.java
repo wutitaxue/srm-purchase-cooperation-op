@@ -136,13 +136,16 @@ public class ActServiceImpl implements ActService {
     @Override
     public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess(Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19) {
         ObjectMapper mapper = new ObjectMapper();
+        logger.info("-------查询验收单id-----：" + settleNum + " ；attributeVarchar18：" + attributeVarchar18 + "；attributeVarchar19" + attributeVarchar19);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
+        logger.info("-------查询sinvRcvTrxHeaderDTO开始：" + settleId);
         SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = sinvRcvTrxHeaderService.getHeaderDetail(tenantId, settleId);
         //更新值
 //        attribute_varchar19 流程ID
 //        attribute_varchar18 BPM链接
         sinvRcvTrxHeaderDTO.setAttributeVarchar18(attributeVarchar18);
         sinvRcvTrxHeaderDTO.setAttributeVarchar19(attributeVarchar19);
+        logger.info("-----------执行更新开始---------");
         sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
 
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);

@@ -15,7 +15,7 @@
 					l.quantity - l.occupied_quantity
 				) can_accept_quantity,
 				l.quantity accept_quantity,
-				l.remark linea_accept_description,
+				l.remark line_accept_description,
 				(
 					SELECT
 						m.category_name
