@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
+import io.choerodon.core.oauth.CustomClientDetails;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import javassist.Loader;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
@@ -139,11 +141,16 @@ public class ActServiceImpl implements ActService {
     public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess(Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19) {
         ObjectMapper mapper = new ObjectMapper();
         logger.info("获取配置：" + profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID"));
+        CustomUserDetails customClientDetails = DetailsHelper.getUserDetails();
+        customClientDetails.setOrganizationId(tenantId);
+        customClientDetails.setTenantId(tenantId);
+        DetailsHelper.setCustomUserDetails(customClientDetails);
         try {
             logger.info("用户信息：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(DetailsHelper.getUserDetails()));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+
 
         logger.info("-------查询验收单id-----：" + settleNum + " ；attributeVarchar18：" + attributeVarchar18 + "；attributeVarchar19" + attributeVarchar19);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
