@@ -189,7 +189,7 @@ public class ActServiceImpl implements ActService {
             sinvRcvTrxHeaderDomainService.submittedSinvToWFL(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
             return sinvRcvTrxHeaderDTO;
         } else {
-            sinvRcvTrxHeaderService.submittedSinvNone(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
+            sinvRcvTrxHeaderService.submittedSinv(tenantId, sinvRcvTrxHeaderDTO);
             return sinvRcvTrxHeaderDTO;
         }
     }
