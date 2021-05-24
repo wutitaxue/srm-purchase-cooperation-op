@@ -31,6 +31,7 @@ import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.web.annotation.Tenant;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -73,7 +74,7 @@ public class ActServiceImpl implements ActService {
      * @return ActListHeaderDto
      */
     @Override
-    public ActListHeaderDto actQuery( Long acceptListHeaderId, Long organizationId ) throws IOException {
+    public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ActListHeaderDto actListHeaderDto = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
         actListHeaderDto.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
@@ -120,13 +121,12 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
-    public RcwlBpmUrlDto rcwlActSubmitBpm( Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO ) throws IOException {
+    public RcwlBpmUrlDto rcwlActSubmitBpm(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) throws IOException {
         //执行更新操作
-        if (BaseConstants.Flag.YES.equals(sinvRcvTrxHeaderDTO.getExecuteUpdateFlag())) {
-            sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
-        }
+        sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
+
         //调用bpm接口
-        ActListHeaderDto actListHeaderDto = this.actQuery(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(),tenantId);
+        ActListHeaderDto actListHeaderDto = this.actQuery(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), tenantId);
         RcwlBpmUrlDto rcwlBpmUrlDto = new RcwlBpmUrlDto();
         String ip = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
         rcwlBpmUrlDto.setUrl("http://" + ip + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMYSDSP&BOID=" + sinvRcvTrxHeaderDTO.getTrxNum());
@@ -134,7 +134,7 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
-    public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess( Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19 ) {
+    public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess(Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19) {
         ObjectMapper mapper = new ObjectMapper();
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = sinvRcvTrxHeaderService.getHeaderDetail(tenantId, settleId);
@@ -146,9 +146,11 @@ public class ActServiceImpl implements ActService {
         sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
 
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);
+        logger.info("--------adaptorTaskCheckBeforeStatusUpdate结束：------------RcvStrategyLine 策略查询开始：-----");
         RcvStrategyLine rcvStrategyLine = sinvRcvTrxHeaderService.selectRcvNowNodeConfig(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), (Long) null);
+        logger.info("-------------查询策略结束：---------------");
         try {
-            logger.info("-------------rcvStrategyLine:"+ mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcvStrategyLine));
+            logger.info("-------------rcvStrategyLine:" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcvStrategyLine));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -162,14 +164,14 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
-    public Void RcwlBpmApproved( Long tenantId, String settleNum ) {
+    public Void RcwlBpmApproved(Long tenantId, String settleNum) {
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "APPROVED");
         return null;
     }
 
     @Override
-    public Void RcwlBpmReject( Long tenantId, String settleNum ) {
+    public Void RcwlBpmReject(Long tenantId, String settleNum) {
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "30_REJECTED");
         return null;
@@ -182,7 +184,7 @@ public class ActServiceImpl implements ActService {
     }
 
 
-    protected void adaptorTaskCheckBeforeStatusUpdate( Long tenantId, String operationCode, Object data ) {
+    protected void adaptorTaskCheckBeforeStatusUpdate(Long tenantId, String operationCode, Object data) {
         String tenantNum = this.tenantMapper.queryTenantNumById(tenantId);
 
         try {

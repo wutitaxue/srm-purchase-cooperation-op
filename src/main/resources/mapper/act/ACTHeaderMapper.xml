@@ -77,7 +77,7 @@ select h.rcv_trx_header_id from sinv_rcv_trx_header h where h.trx_num = #{settle
 							)
 						),
 						h.received_by
-					) FSubject,
+					) f_subject,
 					h.trx_num,
 					h.company_name company_id,
 					h.supplier_company_name supplier_company_id,
