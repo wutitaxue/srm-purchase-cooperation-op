@@ -1,6 +1,6 @@
 package org.srm.purchasecooperation.cux.transaction.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.alibaba.fastjson.annotation.JSONField;
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.NotBlank;
 
@@ -8,133 +8,133 @@ public class RcwlOrderBillDTO {
 
     @ApiModelProperty("采购平台单据类型  01（收货单）/02（验收单）")
     @NotBlank
-    @JsonProperty("FSRMBillType")
+    @JSONField(name = "FSRMBillType")
     private String fsrmBillType;
 
     @ApiModelProperty("采购共享系统采购订单单号")
-    @JsonProperty("FSRMOrderBillNo")
+    @JSONField(name = "FSRMOrderBillNo")
     private String fsrmOrderBillNo;
 
     @ApiModelProperty("采购共享系统收货单/验收单号")
     @NotBlank
-    @JsonProperty("FSRMStoreBillNo")
+    @JSONField(name = "FSRMStoreBillNo")
     private String fsrmStoreBillNo;
 
     @ApiModelProperty("采购共享系统收货单/验收单明细行号")
     @NotBlank
-    @JsonProperty("FSRMStoreRowNo")
+    @JSONField(name = "FSRMStoreRowNo")
     private String fsrmStoreRowNo;
 
     @ApiModelProperty("采购组织编码")
     @NotBlank
-    @JsonProperty("FPurchaseOrgId")
+    @JSONField(name = "FPurchaseOrgId")
     private String fPurchaseOrgId;
 
     @ApiModelProperty("供应商编码")
     @NotBlank
-    @JsonProperty("FSupplierId")
+    @JSONField(name = "FSupplierId")
     private String fSupplierId;
 
     @ApiModelProperty("收货人姓名")
-    @JsonProperty("FProviderContactName")
+    @JSONField(name = "FProviderContactName")
     private String fProviderContactName;
 
     @ApiModelProperty("物料编码")
     @NotBlank
-    @JsonProperty("FMaterialId")
+    @JSONField(name = "FMaterialId")
     private String fMaterialId;
 
     @ApiModelProperty("物料名称")
     @NotBlank
-    @JsonProperty("FMaterialName")
+    @JSONField(name = "FMaterialName")
     private String fMaterialName;
 
     @ApiModelProperty("物料分组编码")
     @NotBlank
-    @JsonProperty("FMaterialGroup")
+    @JSONField(name = "FMaterialGroup")
     private String fMaterialGroup;
 
     @ApiModelProperty("规格型号")
-    @JsonProperty("FModel")
+    @JSONField(name = "FModel")
     private String fModel;
 
     @ApiModelProperty("物料是否需要新增int")
     @NotBlank
-    @JsonProperty("FIsNewInt")
+    @JSONField(name = "FIsNewInt")
     private String fIsNewInt;
 
     @ApiModelProperty("物料是否需要新增")
     @NotBlank
-    @JsonProperty("FIsNew")
-    private String fIsNew;
+    @JSONField(name = "FIsNew")
+    private Boolean fIsNew;
 
     @ApiModelProperty("结算币别编码")
     @NotBlank
-    @JsonProperty("FSettleCurrId")
+    @JSONField(name = "FSettleCurrId")
     private String fSettleCurrId;
 
     @ApiModelProperty("采购单位")
     @NotBlank
-    @JsonProperty("FUnitId")
+    @JSONField(name = "FUnitId")
     private String fUnitId;
 
     @ApiModelProperty("采购数量")
     @NotBlank
-    @JsonProperty("FQty")
+    @JSONField(name = "FQty")
     private Double fQty;
 
     @ApiModelProperty("交货日期")
     @NotBlank
-    @JsonProperty("FDeliveryDate")
+    @JSONField(name = "FDeliveryDate")
     private String fDeliveryDate;
 
     @ApiModelProperty("不含税单价")
     @NotBlank
-    @JsonProperty("FPrice")
+    @JSONField(name = "FPrice")
     private Double fPrice;
 
     @ApiModelProperty("不含税金额")
     @NotBlank
-    @JsonProperty("FAmount")
+    @JSONField(name = "FAmount")
     private Double fAmount;
 
     @ApiModelProperty("含税单价")
     @NotBlank
-    @JsonProperty("FTaxPrice")
+    @JSONField(name = "FTaxPrice")
     private Double fTaxPrice;
 
     @ApiModelProperty("价税合计")
     @NotBlank
-    @JsonProperty("FAllAmount")
+    @JSONField(name = "FAllAmount")
     private Double fallAmount;
 
     @ApiModelProperty("税率")
     @NotBlank
-    @JsonProperty("FTaxRate")
+    @JSONField(name = "FTaxRate")
     private Double fTaxRate;
 
     @ApiModelProperty("税额")
     @NotBlank
-    @JsonProperty("FTaxAmount")
+    @JSONField(name = "FTaxAmount")
     private Double fTaxAmount;
 
     @ApiModelProperty("备注")
-    @JsonProperty("FNote")
+    @JSONField(name = "FNote")
     private String fNote;
 
     @ApiModelProperty("仓库")
     @NotBlank
-    @JsonProperty("FStockId")
+    @JSONField(name = "FStockId")
     private String fStockId;
 
     @ApiModelProperty("成本中心编码")
     @NotBlank
-    @JsonProperty("FCostCenterNo")
+    @JSONField(name = "FCostCenterNo")
     private String fCostCenterNo;
 
     @ApiModelProperty("是否专票")
     @NotBlank
-    @JsonProperty("FIsVatinvoice")
+    @JSONField(name = "FIsVatinvoice")
     private String fIsVatinvoice;
 
     public String getFsrmBillType() {
@@ -233,11 +233,11 @@ public class RcwlOrderBillDTO {
         this.fIsNewInt = fIsNewInt;
     }
 
-    public String getfIsNew() {
+    public Boolean getfIsNew() {
         return fIsNew;
     }
 
-    public void setfIsNew(String fIsNew) {
+    public void setfIsNew(Boolean fIsNew) {
         this.fIsNew = fIsNew;
     }
 
