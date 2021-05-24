@@ -6,6 +6,7 @@ import org.srm.purchasecooperation.cux.asn.api.dto.RcwlAsnAcceptOrRcvDTO;
 import org.srm.purchasecooperation.cux.asn.domain.service.RcwlAsnInterfaceService;
 import org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlAsnInterfaceMapper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +71,8 @@ public class RcwlAsnInterfaceServiceImpl implements RcwlAsnInterfaceService {
         for (RcwlAsnAcceptOrRcvDTO item : list) {
             item.setTenantId(tenantId);
             if (item.getBusinessType().equals("2")) {
+                //清空settle的数量字段-1
+                rcwlAsnInterfaceMapper.updateSettle(item.getTenantId(),item.getAcceptanceNumber(),item.getLineNumber(), BigDecimal.valueOf(-1L));
                 rcwlAsnInterfaceMapper.deleteSinvLineReturn(item);
                 returnDto.setErrorFlag(0);
                 returnDto.setReturnFlag("Y");
