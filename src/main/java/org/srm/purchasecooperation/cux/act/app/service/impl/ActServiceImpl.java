@@ -138,6 +138,13 @@ public class ActServiceImpl implements ActService {
     @Transactional(rollbackFor = Exception.class)
     public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess(Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19) {
         ObjectMapper mapper = new ObjectMapper();
+        logger.info("获取配置：" + profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID"));
+        try {
+            logger.info("用户信息：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(DetailsHelper.getUserDetails()));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
         logger.info("-------查询验收单id-----：" + settleNum + " ；attributeVarchar18：" + attributeVarchar18 + "；attributeVarchar19" + attributeVarchar19);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         logger.info("-------查询sinvRcvTrxHeaderDTO开始：" + settleId);
