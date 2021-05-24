@@ -36,7 +36,9 @@ import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
 import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxLineService;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
+import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxHeaderRepository;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.web.annotation.Tenant;
 
@@ -62,6 +64,8 @@ public class ActServiceImpl implements ActService {
     private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
     @Autowired
     private SinvRcvTrxHeaderService sinvRcvTrxHeaderService;
+    @Autowired
+    private SinvRcvTrxHeaderRepository sinvRcvTrxHeaderRepository;
     @Autowired
     private SinvRcvTrxLineService sinvRcvTrxLineService;
     @Autowired
@@ -189,7 +193,10 @@ public class ActServiceImpl implements ActService {
             sinvRcvTrxHeaderDomainService.submittedSinvToWFL(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
             return sinvRcvTrxHeaderDTO;
         } else {
-            sinvRcvTrxHeaderService.submittedSinvNone(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
+            //直接改状态
+            SinvRcvTrxHeader sinvRcvTrxHeader = (SinvRcvTrxHeader)this.sinvRcvTrxHeaderRepository.selectByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+            sinvRcvTrxHeader.setRcvStatusCode("20_SUBMITTED");
+            this.sinvRcvTrxHeaderRepository.updateOptional(sinvRcvTrxHeader, new String[]{"rcvStatusCode"});
             return sinvRcvTrxHeaderDTO;
         }
     }
