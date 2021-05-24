@@ -197,6 +197,10 @@ public class ActServiceImpl implements ActService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Void RcwlBpmApproved(Long tenantId, String settleNum) {
+        CustomUserDetails customClientDetails = DetailsHelper.getUserDetails();
+        customClientDetails.setOrganizationId(tenantId);
+        customClientDetails.setTenantId(tenantId);
+        DetailsHelper.setCustomUserDetails(customClientDetails);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "APPROVED");
         return null;
@@ -205,6 +209,10 @@ public class ActServiceImpl implements ActService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Void RcwlBpmReject(Long tenantId, String settleNum) {
+        CustomUserDetails customClientDetails = DetailsHelper.getUserDetails();
+        customClientDetails.setOrganizationId(tenantId);
+        customClientDetails.setTenantId(tenantId);
+        DetailsHelper.setCustomUserDetails(customClientDetails);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "30_REJECTED");
         return null;
