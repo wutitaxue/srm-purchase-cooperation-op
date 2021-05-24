@@ -74,7 +74,6 @@ public class rcwlActBpmController {
     @PostMapping("/submit-to-bpm-successed")
     public ResponseEntity<Void> submitToBpmSuccessed(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum, @RequestParam("attributeVarchar18") String attributeVarchar18, @RequestParam("attributeVarchar19") String attributeVarchar19) {
         DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
-        DetailsHelper.getClientDetails().setOrganizationId(tenantId);
         actService.RcwlBpmSubmitSuccess(tenantId, settleNum, attributeVarchar18, attributeVarchar19);
         return Results.success();
     }
@@ -84,7 +83,6 @@ public class rcwlActBpmController {
     @PostMapping("/submit-to-bpm-approved")
     public ResponseEntity<Void> bpmApproved(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum) {
         DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
-        DetailsHelper.getClientDetails().setOrganizationId(tenantId);
         actService.RcwlBpmApproved(tenantId, settleNum);
         return Results.success();
     }
@@ -94,7 +92,6 @@ public class rcwlActBpmController {
     @PostMapping("/submit-to-bpm-rejected")
     public ResponseEntity<Void> bpmReject(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum) {
         DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
-        DetailsHelper.getClientDetails().setOrganizationId(tenantId);
         actService.RcwlBpmReject(tenantId, settleNum);
         return Results.success();
     }
@@ -104,7 +101,6 @@ public class rcwlActBpmController {
     @PostMapping("/submit-to-bpm-rejected3")
     public ResponseEntity<Void> bpmReject3(@PathVariable("organizationId") Long tenantId, @RequestParam("settleNum") String settleNum) {
         DetailsHelper.setCustomUserDetails(Long.parseLong(profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID")), "zh_CN");
-        DetailsHelper.getClientDetails().setOrganizationId(tenantId);
         actService.RcwlBpmReject3(tenantId, settleNum);
         return Results.success();
     }
