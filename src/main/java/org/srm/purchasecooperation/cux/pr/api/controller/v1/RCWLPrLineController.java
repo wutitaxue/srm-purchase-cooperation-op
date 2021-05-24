@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlPurchaseCompanyVo;
@@ -93,7 +94,7 @@ public class RCWLPrLineController {
     @ApiOperation("更新采购申请行信息-source服务-入围单")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping({"/purchase-requests/source/lines"})
-    public ResponseEntity<List<PrLine>> feignUpdatePrLine(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrLine> prLines){
+    public ResponseEntity<List<PrLine>> feignUpdatePrLine(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrLine> prLines) {
         Assert.notEmpty(prLines, "error.not_null");
         SecurityTokenHelper.validToken(prLines);
         List<PrLine> prLineList = rcwlPrLineRepository.updateSourcePrLine(prLines);
@@ -105,12 +106,14 @@ public class RCWLPrLineController {
             level = ResourceLevel.ORGANIZATION
     )
     @GetMapping({"/purchase-requests/purchase-company"})
-    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id",required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) {
+    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id", required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) {
         PurchaseCompanyVo purchaseCompanyVo1 = new PurchaseCompanyVo();
         purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
         RcwlPurchaseCompanyVo rcwlPurchaseCompanyVo = new RcwlPurchaseCompanyVo();
-        BeanUtils.copyProperties(purchaseCompanyVo1, rcwlPurchaseCompanyVo);
-        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(),tenantId));
+        if (!ObjectUtils.isEmpty(purchaseCompanyVo1)) {
+            BeanUtils.copyProperties(purchaseCompanyVo1, rcwlPurchaseCompanyVo);
+        }
+        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
         return Results.success(rcwlPurchaseCompanyVo);
     }
 

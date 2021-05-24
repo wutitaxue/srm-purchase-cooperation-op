@@ -3,6 +3,15 @@
 <mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlCompanyMapper">
 
     <select id="selectCompanyRcwlUnitName" resultType="java.lang.String">
-        select h.attribute_varchar11 from spfm_company_basic h where h.company_id =#{companyId} and h.tenant_id=#{tenantId}
+        select h.attribute_varchar11
+        from spfm_company_basic h
+        where h.company_id = #{companyId}
+          and h.tenant_id = #{tenantId}
+          and h.version_number = (
+            SELECT max(h.version_number)
+            FROM spfm_company_basic h
+            WHERE h.company_id = #{companyId}
+              and h.tenant_id = #{tenantId}
+        )
     </select>
 </mapper>

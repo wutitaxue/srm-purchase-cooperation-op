@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.purchasecooperation.common.infra.mapper.TenantMapper;
@@ -134,6 +135,7 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess(Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19) {
         ObjectMapper mapper = new ObjectMapper();
         logger.info("-------查询验收单id-----：" + settleNum + " ；attributeVarchar18：" + attributeVarchar18 + "；attributeVarchar19" + attributeVarchar19);
@@ -167,6 +169,7 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Void RcwlBpmApproved(Long tenantId, String settleNum) {
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "APPROVED");
@@ -174,6 +177,7 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Void RcwlBpmReject(Long tenantId, String settleNum) {
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "30_REJECTED");
@@ -181,6 +185,7 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Void RcwlBpmReject3(Long tenantId, String settleNum) {
         actHeaderRespository.updateBpmInstanceId(settleNum);
         return null;
