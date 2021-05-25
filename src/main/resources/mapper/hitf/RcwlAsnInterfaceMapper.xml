@@ -38,7 +38,7 @@
 
     <update id="deleteSinvLineReturn">
         update sinv_rcv_trx_line t
-        set     t.attribute_bigint1 = null,
+        set     t.attribute_decimal2 = null,
                 t.attribute_varchar1 = null
         where t.rcv_trx_line_id =
                (select a.rcv_trx_line_id from (select
