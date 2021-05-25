@@ -73,7 +73,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
                 }else if("JD".equals(dsFlag)){
                     itemCode = categoryCode+"02"+item.getProductNum();
                 }else{
-                    String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
+                    String str = this.codeRuleBuilder.generateCode("SODR.RCWL.ITEM_CODE", (Map) null);
                     itemCode = categoryCode+str;
                 }
 
