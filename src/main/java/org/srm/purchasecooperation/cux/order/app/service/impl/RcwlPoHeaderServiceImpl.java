@@ -396,7 +396,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 poLine.setCostId(Long.valueOf(listMap.get(0).get("attribute_varchar22")));
                 poLine.setWbs(String.valueOf(listMap.get(0).get("attribute_varchar23")));
             }else{
-                // throw new CommonException("error.po.sprm_pr_line_not_null", "");
+                throw new CommonException("error.po.sprm_pr_line_not_null", "");
+
             }
             poLine.setVersionNum(1L);
             poLineLocationList.add(poLineLocation);
