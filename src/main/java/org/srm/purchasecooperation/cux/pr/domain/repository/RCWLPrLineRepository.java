@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author bin.zhang06@hand-china.com 2021-03-16 15:49:15
  */
-public interface RCWLPrLineRepository extends BaseRepository<PrLine> {
+public interface RCWLPrLineRepository {
     /**
      * 根据计划编号查询采购申请行
      * @param planId
