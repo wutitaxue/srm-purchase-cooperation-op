@@ -486,7 +486,7 @@
         spl.receive_contact_name,
         spl.receive_tel_num,
         sba.budget_account_num,
-        ifnull(spl.budget_account_name,sbat.budget_account_name) budget_account_name,
+        ifnull(sba.budget_account_name,sbat.budget_account_name) budget_account_name,
         spl.occupied_quantity,
         spl.budget_account_deptno,
         spl.budget_account_price,
