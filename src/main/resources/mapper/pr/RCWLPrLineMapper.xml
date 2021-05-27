@@ -331,6 +331,206 @@
         <result column="budget_account_num" property="budgetAccountNum" jdbcType="VARCHAR"/>
         <result column="before_split_pr_line_id" property="beforeSplitPrLineId" jdbcType="DECIMAL"/>
     </resultMap>
+    <sql id="ListPrLines_Main">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        spl.pr_line_id,
+        spl.pr_header_id,
+        spl.tenant_id,
+        spl.line_num,
+        spl.display_line_num,
+        spl.company_id,
+        spl.inv_organization_id,
+        spl.item_id,
+        spl.item_code,
+        spl.item_name,
+        spl.product_id,
+        spl.product_num,
+        spl.product_name,
+        spl.catalog_id,
+        spl.catalog_name,
+        spl.category_id,
+        spl.uom_id,
+        spl.quantity,
+        spl.tax_id,
+        spl.tax_rate,
+        spl.currency_code,
+        spl.unit_price,
+        spl.tax_included_unit_price,
+        spl.line_amount,
+        spl.tax_included_line_amount,
+        spl.jd_price,
+        spl.needed_date,
+        spl.supplier_tenant_id,
+        spl.supplier_id,
+        spl.supplier_code,
+        spl.supplier_name,
+        spl.supplier_company_id,
+        spl.supplier_company_name,
+        spl.execution_status_code,
+        spl.executed_date,
+        spl.executed_by,
+        spl.execution_bill_id,
+        spl.execution_bill_num,
+        spl.execution_bill_data,
+        spl.assigned_flag,
+        spl.assigned_date,
+        spl.assigned_by,
+        spl.assigned_remark,
+        spl.cancelled_flag,
+        spl.cancelled_date,
+        spl.cancelled_by,
+        spl.cancelled_remark,
+        spl.closed_flag,
+        spl.closed_date,
+        spl.closed_by,
+        spl.closed_remark,
+        spl.suspend_flag,
+        spl.suspend_date,
+        spl.suspend_remark,
+        spl.incorrect_flag,
+        spl.incorrect_date,
+        spl.incorrect_msg,
+        spl.attachment_uuid,
+        spl.remark,
+        spl.object_version_number,
+        spl.creation_date,
+        spl.created_by,
+        spl.last_updated_by,
+        spl.line_freight,
+        spl.tax_without_freight_price,
+        spl.execution_header_bill_id,
+        spl.execution_header_bill_num,
+        spl.requested_by,
+        sph.request_date,
+        spl.pr_requested_name,
+        spl.ou_id,
+        spl.purchase_org_id,
+        spl.purchase_agent_id,
+        spl.inventory_id,
+        spl.can_vat_flag,
+        spl.erp_edit_status,
+        spl.item_abc_class,
+        spl.drawing_num,
+        pj.project_id,
+        spl.project_num,
+        spl.project_name,
+        spl.crane_num,
+        spl.cost_id,
+        spl.cost_code,
+        spl.account_subject_id,
+        spl.account_subject_num,
+        spl.wbs,
+        spl.exp_bear_dep_id,
+        hut.unit_name AS exp_bear_dep,
+        hut.unit_code AS exp_bear_dep_code,
+        sas.account_subject_name,
+        scc.cost_name,
+        spl.wbs_code,
+        sph.pr_status_code AS pr_line_status_code,
+        hio.organization_name AS inv_organization_name,
+        su.uom_code,
+        sut.uom_name,
+        CASE
+        WHEN spl.pr_requested_name IS NOT NULL THEN iur.login_name
+        ELSE NULL
+        END pr_requested_num,
+        iu2.real_name AS creator_name,
+        sict.category_name,
+        st.tax_code,
+        sc.currency_name,
+        sph.execution_bill_id AS header_execution_bill_id,
+        sph.execution_bill_num AS header_execution_bill_num,
+        sph.sync_status AS header_sync_status,
+        scbl.company_name,
+        hou.ou_name,
+        hpo.organization_name AS purchase_org_name,
+        hpa.purchase_agent_name,
+        sph.sync_response_msg AS header_sync_response_msg,
+        spl.last_purchase_price,
+        spl.po_line_id,
+        spl.pc_header_id,
+        hu.unit_name as parent_unit_name,
+        spl.item_model,
+        spl.item_specs,
+        spl.item_properties,
+        spl.agent_id,
+        spl.keeper_user_id,
+        spl.accepter_user_id,
+        spl.cost_payer_user_id,
+        spl.address,
+        spl.inner_po_num,
+        iuk.real_name as keeper_user_name,
+        iua.real_name as accepter_user_name,
+        iuc.real_name as cost_payer_user_name,
+        hpas.purchase_agent_name as agent_name,
+        hi.inventory_name,
+        spl.drawing_version,
+        sph.pr_source_platform,
+        spl.account_assign_type_id,
+        saat.account_assign_type_code,
+        spl.frame_agreement_num AS pc_num,
+        spl.benchmark_price,
+        spl.change_percent,
+        spl.unit_price_batch,
+        spl.project_category,
+        spl.assets,
+        spl.asset_child_num,
+        spl.freight_line_flag,
+        spl.quality_standard,
+        spl.tax_included_budget_unit_price,
+        spl.budget_io_flag,
+        spl.execution_strategy_code,
+        spl.budget_account_id,
+        spl.receive_address,
+        spl.receive_contact_name,
+        spl.receive_tel_num,
+        sba.budget_account_num,
+        ifnull(spl.budget_account_name,sbat.budget_account_name) budget_account_name,
+        spl.occupied_quantity,
+        spl.budget_account_deptno,
+        spl.budget_account_price,
+        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.financial_precision ELSE NULL END) AS financial_precision,
+        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision
+        FROM
+        sprm_pr_line spl
+        JOIN sprm_pr_header sph ON spl.pr_header_id = sph.pr_header_id
+        LEFT JOIN hpfm_inv_organization hio ON spl.inv_organization_id = hio.organization_id
+        JOIN hpfm_company hc ON spl.company_id = hc.company_id
+        LEFT JOIN (SELECT MAX(version_number) version_number,company_id FROM spfm_company_basic WHERE process_status = 'COMPLETE' GROUP BY company_id) scba_max
+        on scba_max.company_id=hc.source_key
+        LEFT JOIN spfm_company_basic scb ON scb.company_id = scba_max.company_id AND scba_max.version_number = scb.version_number
+        LEFT JOIN spfm_company_basic_tl scbl ON scb.company_basic_id = scbl.company_basic_id
+        AND scbl.lang = #{lang}
+        JOIN hpfm_operation_unit hou ON spl.ou_id = hou.ou_id
+        LEFT JOIN smdm_uom su ON spl.uom_id = su.uom_id
+        LEFT JOIN smdm_uom_tl sut on sut.uom_id = su.uom_id and sut.lang = #{lang}
+        LEFT JOIN hpfm_purchase_organization hpo ON spl.purchase_org_id = hpo.purchase_org_id
+        LEFT JOIN hpfm_purchase_agent hpa ON spl.purchase_agent_id = hpa.purchase_agent_id
+        LEFT JOIN iam_user iu ON spl.executed_by = iu.id
+        LEFT JOIN iam_user iu2 ON spl.created_by = iu2.id
+        LEFT JOIN iam_user iur ON iur.id = spl.requested_by
+        LEFT JOIN smdm_item sim ON spl.item_id = sim.item_id
+        LEFT JOIN smdm_item_category sic ON spl.category_id = sic.category_id
+        LEFT JOIN smdm_item_category_tl sict ON sict.category_id = sic.category_id AND sict.lang = #{lang}
+        LEFT JOIN smdm_tax st ON spl.tax_id = st.tax_id
+        LEFT JOIN smdm_currency sc ON spl.currency_code = sc.currency_code AND sc.tenant_id = spl.tenant_id
+        LEFT JOIN smdm_account_subject sas ON sas.account_subject_id = spl.account_subject_id
+        LEFT JOIN smdm_budget_account sba ON sba.budget_account_id = spl.budget_account_id
+        LEFT JOIN smdm_budget_account_tl sbat ON sbat.budget_account_id = sba.budget_account_id AND sbat.lang = #{lang}
+        LEFT JOIN smdm_cost_center scc ON scc.cost_id = spl.cost_id
+        LEFT JOIN hpfm_unit hu ON sph.parent_unit_id = hu.unit_id
+        LEFT JOIN iam_user iuk ON iuk.id = spl.keeper_user_id
+        LEFT JOIN iam_user iua ON iua.id = spl.accepter_user_id
+        LEFT JOIN iam_user iuc ON iuc.id = spl.cost_payer_user_id
+        LEFT JOIN hpfm_purchase_agent hpas ON spl.purchase_agent_id = hpas.purchase_agent_id
+        LEFT JOIN hpfm_inventory hi ON spl.inventory_id = hi.inventory_id
+        LEFT JOIN ssrc_project pj ON ( pj.project_num =spl.project_num AND pj.tenant_id = spl.tenant_id )
+        LEFT JOIN hpfm_unit hut ON hut.unit_id = spl.exp_bear_dep_id
+        LEFT JOIN sprm_account_assign_type saat ON saat.account_assign_type_id = spl.account_assign_type_id
+        LEFT JOIN sprm_pr_budget spb ON spb.pr_line_id = spl.pr_line_id
+        LEFT JOIN smdm_currency sc2 ON sph.original_currency = sc2.currency_code AND sph.tenant_id = sc2.tenant_id AND sc2.enabled_flag = 1
+    </sql>
     <update id="updatePrLine">
         update sprm_pr_line h set h.attribute_bigint1 = null
         where h.attribute_bigint1 = #{planId} and  h.tenant_id = #{tenantId}
@@ -355,4 +555,12 @@
     </select>
     <select id="selectPrLineRecord" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.PrLine">
     </select>
+
+    <select id="listPrLines" resultType="org.srm.purchasecooperation.pr.domain.vo.PrLineVO">
+        <include refid="ListPrLines_Main"/>
+        WHERE
+        spl.tenant_id = #{tenantId, jdbcType=DECIMAL}
+        AND spl.pr_header_id = #{prHeaderId, jdbcType=DECIMAL}
+    </select>
+
 </mapper>
