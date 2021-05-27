@@ -19,6 +19,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto;
@@ -47,6 +48,7 @@ public class rcwlActBpmController {
     private ActService actService;
     @Autowired
     private ProfileClient profileClient;
+
 
     /**
      * 验收单bpm接口查询

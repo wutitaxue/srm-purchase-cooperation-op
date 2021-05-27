@@ -102,6 +102,11 @@ public class ActServiceImpl implements ActService {
             }
         }
         actListHeaderDto.setURL(actListFilesDtoList);
+        String Url = profileClient.getProfileValueByOptions("RCWL_YS_TO_BPM_URL");
+        //设置bpm查看链接
+        actListHeaderDto.setUrlMX(Url + actListHeaderDto.getUrlMX());
+        //设置标题
+        actListHeaderDto.setfSubject(actListHeaderDto.getTrxNum() + actListHeaderDto.getPcName() + actListHeaderDto.getAcceptOrName());
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQSRCSYS");
         String reqTarSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQTARSYS");
 
@@ -194,7 +199,7 @@ public class ActServiceImpl implements ActService {
             return sinvRcvTrxHeaderDTO;
         } else {
             //直接改状态
-            SinvRcvTrxHeader sinvRcvTrxHeader = (SinvRcvTrxHeader)this.sinvRcvTrxHeaderRepository.selectByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+            SinvRcvTrxHeader sinvRcvTrxHeader = (SinvRcvTrxHeader) this.sinvRcvTrxHeaderRepository.selectByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
             sinvRcvTrxHeader.setRcvStatusCode("20_SUBMITTED");
             this.sinvRcvTrxHeaderRepository.updateOptional(sinvRcvTrxHeader, new String[]{"rcvStatusCode"});
             return sinvRcvTrxHeaderDTO;
