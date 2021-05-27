@@ -23,7 +23,7 @@
             ) fMaterialGroup,
             ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
         IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNewInt,
-        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
+        ( SELECT spl.currency_code FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fSettleCurrId,
         (
             SELECT
                 su.uom_code
@@ -86,7 +86,7 @@
             ) fMaterialGroup,
             ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
         IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNewInt,
-        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
+         ( SELECT spl.currency_code FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fSettleCurrId,
         (
             SELECT
                 su.uom_code
