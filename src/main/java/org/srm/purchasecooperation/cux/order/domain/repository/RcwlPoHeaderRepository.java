@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author bin.zhang
  */
-public interface RCWLPoHeaderRepository {
+public interface RcwlPoHeaderRepository {
 
     /**
      * 查询出需要封装的item list

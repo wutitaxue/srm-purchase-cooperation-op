@@ -38,7 +38,7 @@ import java.util.Objects;
 
 @Component
 @Tenant("SRM-RCWL")
-public class RCWLGeneratorPoByPrDomainServiceImpl extends GeneratorPoByPrDomainServiceImpl {
+public class RcwlGeneratorPoByPrDomainServiceImpl extends GeneratorPoByPrDomainServiceImpl {
     @Autowired
     private OrderTypeService orderTypeService;
     @Autowired

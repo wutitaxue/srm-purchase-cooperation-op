@@ -38,14 +38,14 @@ import java.util.List;
 /**
  * @author bin.zhang
  */
-@RestController("RCWLPoHeaderController.v1")
+@RestController("RcwlPoHeaderController.v1")
 @RequestMapping({"/v1/{organizationId}"})
 @Api(
         tags = {"Po Header"}
 )
 @Tenant("SRM-RCWL")
-public class RCWLPoHeaderController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.api.controller.v1.RCWLPoHeaderController.class);
+public class RcwlPoHeaderController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderController.class);
     @Autowired
     private PoHeaderService poHeaderService;
     @Autowired
