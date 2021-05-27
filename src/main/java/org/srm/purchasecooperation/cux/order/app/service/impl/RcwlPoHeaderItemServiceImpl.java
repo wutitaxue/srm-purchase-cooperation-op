@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
-import org.srm.purchasecooperation.cux.order.domain.repository.RCWLPoHeaderRepository;
+import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoLine;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @author bin.zhang
  */
 @Service
-public class RcwlPoHeaderItemItemServiceImpl implements RcwlPoHeaderItemService {
+public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
     @Autowired
     private RcwlPoHeaderItemService rcwlPoHeaderService;
     @Autowired
@@ -35,7 +35,7 @@ public class RcwlPoHeaderItemItemServiceImpl implements RcwlPoHeaderItemService 
     @Autowired
     private CodeRuleBuilder codeRuleBuilder;
     @Autowired
-    private RCWLPoHeaderRepository poHeaderRepository;
+    private RcwlPoHeaderRepository poHeaderRepository;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
@@ -43,7 +43,7 @@ public class RcwlPoHeaderItemItemServiceImpl implements RcwlPoHeaderItemService 
     @Autowired
     private PoHeaderRepository HeaderRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderItemItemServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderItemServiceImpl.class);
 
     @Override
     public void insertItemCode(PoDTO poDTO, Long tenantId) {
