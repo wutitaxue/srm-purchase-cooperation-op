@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.srm.purchasecooperation.cux.order.app.service.RCWLPoHeaderService;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RCWLPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
  * @author bin.zhang
  */
 @Service
-public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
+public class RcwlPoHeaderItemItemServiceImpl implements RcwlPoHeaderItemService {
     @Autowired
-    private RCWLPoHeaderService rcwlPoHeaderService;
+    private RcwlPoHeaderItemService rcwlPoHeaderService;
     @Autowired
     private PoLineRepository poLineRepository;
     @Autowired
@@ -43,7 +43,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
     @Autowired
     private PoHeaderRepository HeaderRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RCWLPoHeaderServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderItemItemServiceImpl.class);
 
     @Override
     public void insertItemCode(PoDTO poDTO, Long tenantId) {
@@ -80,7 +80,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
                 //物料设值
                 item.setTenantId(tenantId);
                 //String categoryCode = item.getItemCode();
-               // String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
+                // String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
                 String ruleCode = this.codeRuleBuilder.generateCode("SMDM.ITEM", (Map) null);
                 item.setItemNumber(ruleCode);
                 item.setItemCode(itemCode);

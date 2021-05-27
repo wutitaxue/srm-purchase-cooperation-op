@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
-import org.srm.purchasecooperation.cux.order.app.service.RCWLPoHeaderService;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
 import org.srm.purchasecooperation.order.app.service.PoChangeByContractService;
@@ -71,7 +71,7 @@ public class RCWLPoHeaderController {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private RCWLPoHeaderService rcwlPoHeaderService;
+    private RcwlPoHeaderItemService rcwlPoHeaderService;
 
     @ApiOperation("手工审批通过采购订单")
     @Permission(
