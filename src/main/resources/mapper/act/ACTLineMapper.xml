@@ -3,79 +3,37 @@
 <mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActLineMapper">
     <select id="actListLineQuery"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListLinesDto">
-			SELECT
-				sph.po_num po_header_num,
-				spl.line_num po_line_num,
-				spl.item_name,
-				spll.quantity,
-				(
-					spll.quantity - l.quantity - l.occupied_quantity
-				) accepted_quantity,
-				(
-					l.quantity - l.occupied_quantity
-				) can_accept_quantity,
-				l.quantity accept_quantity,
-				l.remark line_accept_description,
-				(
-					SELECT
-						m.category_name
-					FROM
-						smdm_item_category m
-					WHERE
-						m.category_id = l.category_id
-				) item_category_name,
-				(
-					SELECT
-						su.uom_name
-					FROM
-						smdm_uom su
-					WHERE
-						su.uom_id = l.uom_id
-				) uom_name,
-				l.tax_included_price po_unit_price,
-				(
-					l.tax_included_price * l.quantity
-				) amount,
-				date_format(
-					spll.need_by_date,
-					'%Y-%m-%d %H:%i:%s'
-				) needed_date,
-				date_format(
-					l.trx_date,
-					'%Y-%m-%d %H:%i:%s'
-				) deliver_date,
-				(
-					SELECT
-						scc.cost_name
-					FROM
-						smdm_cost_center scc
-					WHERE
-						scc.cost_code = spl.cost_code
-				) cost_id,
-				(
-					SELECT
-						sba.budget_account_name
-					FROM
-						smdm_budget_account sba
-					WHERE
-						sba.budget_account_num = (
-							SELECT
-								pl.budget_account_num
-							FROM
-								sprm_pr_line pl
-							WHERE
-								pl.pr_line_id = spl.pr_line_id
-						)
-					AND sba.tenant_id = l.tenant_id
-				) budget_account_id
-			FROM
-				sinv_rcv_trx_line l
-			LEFT JOIN sodr_po_header sph ON sph.po_header_id = l.from_po_header_id
-			LEFT JOIN sodr_po_line spl ON spl.po_line_id = l.from_po_line_id
-			LEFT JOIN sodr_po_line_location spll ON spll.po_line_location_id = l.from_po_line_location_id
-			WHERE
-			 l.tenant_id=#{organizationId}
-			 and l.rcv_trx_header_id = #{acceptListHeaderId}
+        SELECT sph.po_num                                                                             po_header_num,
+               spl.line_num                                                                           po_line_num,
+               spl.item_name,
+               spll.quantity,
+               (spll.quantity - (CASE spl.returned_flag
+                                     WHEN 1 THEN - spll.quantity - spll.net_deliver_quantity
+                                     ELSE spll.quantity - spll.net_deliver_quantity END))             accepted_quantity,
+               (CASE spl.returned_flag
+                    WHEN 1 THEN - spll.quantity - spll.net_deliver_quantity
+                    ELSE spll.quantity - spll.net_deliver_quantity END)                               can_accept_quantity,
+               l.quantity                                                                             accept_quantity,
+               l.remark                                                                               line_accept_description,
+               (SELECT m.category_name
+                FROM smdm_item_category m
+                WHERE m.category_id = l.category_id)                                                  item_category_name,
+               (SELECT su.uom_name FROM smdm_uom su WHERE su.uom_id = l.uom_id)                       uom_name,
+               round(l.tax_included_price, 2)                                                         po_unit_price,
+               round((l.tax_included_price * l.quantity), 2)                                          amount,
+               date_format(spll.need_by_date, '%Y-%m-%d %H:%i:%s')                                    needed_date,
+               date_format(l.trx_date, '%Y-%m-%d %H:%i:%s')                                           deliver_date,
+               (SELECT scc.cost_name FROM smdm_cost_center scc WHERE scc.cost_code = spl.cost_code)   cost_id,
+               (SELECT sba.budget_account_name
+                FROM smdm_budget_account sba
+                WHERE sba.budget_account_num = spl.attribute_varchar21
+                  AND sba.tenant_id = l.tenant_id)                                                    budget_account_id
+        FROM sinv_rcv_trx_line l
+                 LEFT JOIN sodr_po_header sph ON sph.po_header_id = l.from_po_header_id
+                 LEFT JOIN sodr_po_line spl ON spl.po_line_id = l.from_po_line_id
+                 LEFT JOIN sodr_po_line_location spll ON spll.po_line_location_id = l.from_po_line_location_id
+        WHERE l.tenant_id = #{organizationId}
+          AND l.rcv_trx_header_id = #{acceptListHeaderId}
     </select>
 
 </mapper>
