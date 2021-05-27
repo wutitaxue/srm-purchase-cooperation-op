@@ -83,7 +83,7 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
             List<RCWLPoLineDetailDTO>  detailDTO = this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date);
 
             detailDTO.forEach(x->{
-                LOGGER.info("------验证--------- " + x.toString());
+                LOGGER.info("------验证1--------- " + x.toString());
             });
 
             return detailDTO;
@@ -102,7 +102,7 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
         List<PoLineDetailDTO> poLineDetailDTOList = poLineDetailDTOsPage.getContent();
 
         poLineDetailDTOList.forEach(x->{
-            LOGGER.info("------验证--------- " + x.toString());
+            LOGGER.info("------验证2--------- " + x.toString());
         });
 
         try {
