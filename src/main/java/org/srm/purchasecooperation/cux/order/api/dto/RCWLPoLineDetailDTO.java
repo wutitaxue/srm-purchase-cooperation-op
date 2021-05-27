@@ -10,6 +10,19 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @ApiModelProperty("需求物料描述")
     private String attributeVarchar10;
 
+    @ApiModelProperty("业务用途")
+    private String attributeVarchar21;
+
+    @Override
+    public String getAttributeVarchar21() {
+        return attributeVarchar21;
+    }
+
+    @Override
+    public void setAttributeVarchar21(String attributeVarchar21) {
+        this.attributeVarchar21 = attributeVarchar21;
+    }
+
     @Override
     public String getAttributeVarchar10() {
         return attributeVarchar10;
@@ -24,6 +37,7 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     public String toString() {
         return "RCWLPoLineDetailDTO{" +
                 "attributeVarchar10='" + attributeVarchar10 + '\'' +
+                ", attributeVarchar21='" + attributeVarchar21 + '\'' +
                 '}';
     }
 }
