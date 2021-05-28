@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.CaseFormat;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
@@ -36,14 +37,9 @@ import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.pr.app.service.impl.PrHeaderServiceImpl;
-import org.srm.purchasecooperation.pr.domain.entity.PrAction;
-import org.srm.purchasecooperation.pr.domain.entity.PrChangeConfig;
-import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
-import org.srm.purchasecooperation.pr.domain.entity.PrLine;
-import org.srm.purchasecooperation.pr.domain.repository.PrActionRepository;
-import org.srm.purchasecooperation.pr.domain.repository.PrChangeConfigRepository;
-import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
-import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
+import org.srm.purchasecooperation.pr.domain.entity.*;
+import org.srm.purchasecooperation.pr.domain.repository.*;
+import org.srm.purchasecooperation.pr.domain.vo.PrCopyFieldsVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.web.annotation.Tenant;
@@ -85,6 +81,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private CustomizeClient customizeClient;
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
+    @Autowired
+    private PrLineSupplierRepository prLineSupplierRepository;
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
     private static final String LOG_MSG_SPUC_PR_HEADER_UPDATE_AMOUNT = "============SPUC_PR_HEADER_UPDATE_AMOUNT-TaskNotExistException=============={}";
@@ -344,5 +342,65 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             }
         }
 
+    }
+
+    @Override
+    public PrHeader copyPurchaseRequests(Long tenantId, PrHeader prHeader) {
+        LOGGER.debug("12705 copyPurchaseRequests ====用户信息:{},采购申请=:{}", DetailsHelper.getUserDetails(), JSON.toJSONString(Arrays.asList(prHeader)));
+        List<String> headCopyFields = new ArrayList(Arrays.asList(PrHeader.SRM_COPY_FIELD_LIST));
+        List<String> lineCopyFields = new ArrayList(Arrays.asList(PrLine.SRM_COPY_FIELD_LIST));
+        String tenantNum = TenantInfoHelper.selectByTenantId(tenantId).getTenantNum();
+
+        try {
+            PrCopyFieldsVO prCopyFieldsVO = new PrCopyFieldsVO();
+            TaskResultBox taskResultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_PR_COPY_FIELDS", tenantNum, prCopyFieldsVO);
+            prCopyFieldsVO = (PrCopyFieldsVO)taskResultBox.get(0, PrCopyFieldsVO.class);
+            if (StringUtils.isNotEmpty(prCopyFieldsVO.getTenantHeadCopyFields())) {
+                headCopyFields.addAll(new ArrayList(Arrays.asList(prCopyFieldsVO.getTenantHeadCopyFields().split(","))));
+            }
+
+            if (StringUtils.isNotEmpty(prCopyFieldsVO.getTenantLineCopyFields())) {
+                lineCopyFields.addAll(new ArrayList(Arrays.asList(prCopyFieldsVO.getTenantLineCopyFields().split(","))));
+            }
+        } catch (TaskNotExistException var11) {
+            LOGGER.info("============SPUC_PR_COPY_FIELDS-TaskNotExistException=============={}", new Object[]{tenantNum, var11.getMessage(), var11.getStackTrace()});
+        }
+
+        PrHeader copyPrHeader = this.prHeaderRepository.selectCopyPrHeaderFields((String)headCopyFields.stream().map((field) -> {
+            return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field);
+        }).collect(Collectors.joining(",")), prHeader.getPrHeaderId());
+        List<PrLine> copyPrLineList = this.prLineRepository.selectCopyPrLineFields((String)lineCopyFields.stream().map((field) -> {
+            return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field);
+        }).collect(Collectors.joining(",")), tenantId, prHeader.getPrHeaderId());
+        this.clearCopyPrHeaderFlagAndStatus(copyPrHeader);
+        //选中采购申请，点击复制采购申请时，需要自动给表： sprm_pr_header
+        //的字段：attribute_varchar17、attribute_varchar18自动赋值为0
+        copyPrHeader.setAttributeVarchar17("0");
+        copyPrHeader.setAttributeVarchar18("0");
+        copyPrHeader = this.addCopyPrHeader(copyPrHeader);
+        Map<Long, List<PrLineSupplier>> supplierMap = new HashMap();
+        if (CollectionUtils.isNotEmpty(copyPrLineList)) {
+            List<PrLineSupplier> prLineSuppliers = this.prLineSupplierRepository.selectByCondition(Condition.builder(PrLineSupplier.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", prHeader.getPrHeaderId())).build());
+            if (CollectionUtils.isNotEmpty(prLineSuppliers)) {
+                supplierMap.putAll((Map)prLineSuppliers.stream().collect(Collectors.groupingBy(PrLineSupplier::getPrLineId)));
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(copyPrLineList)) {
+            Iterator var14 = copyPrLineList.iterator();
+
+            while(var14.hasNext()) {
+                PrLine prLine = (PrLine)var14.next();
+                prLine.setRequestDate(copyPrHeader.getRequestDate());
+                prLine.setSupplierList((List)supplierMap.get(prLine.getCopyPrLineId()));
+                this.prLineService.clearCopyPrLineFlagAndStatus(prLine);
+            }
+        }
+
+        copyPrHeader.setIsCopy(BaseConstants.Flag.YES);
+        copyPrHeader.setPrLineList(copyPrLineList);
+        copyPrHeader.setPrLineList(this.prLineService.updatePrLines(copyPrHeader));
+
+        return copyPrHeader;
     }
 }
