@@ -1,14 +1,13 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
-import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.srm.purchasecooperation.cux.order.app.service.RCWLPoHeaderService;
-import org.srm.purchasecooperation.cux.order.domain.repository.RCWLPoHeaderRepository;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
+import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoLine;
@@ -27,15 +26,15 @@ import java.util.stream.Collectors;
  * @author bin.zhang
  */
 @Service
-public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
+public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
     @Autowired
-    private RCWLPoHeaderService rcwlPoHeaderService;
+    private RcwlPoHeaderItemService rcwlPoHeaderItemService;
     @Autowired
     private PoLineRepository poLineRepository;
     @Autowired
     private CodeRuleBuilder codeRuleBuilder;
     @Autowired
-    private RCWLPoHeaderRepository poHeaderRepository;
+    private RcwlPoHeaderRepository poHeaderRepository;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
@@ -43,7 +42,7 @@ public class RCWLPoHeaderServiceImpl implements RCWLPoHeaderService {
     @Autowired
     private PoHeaderRepository HeaderRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RCWLPoHeaderServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderItemServiceImpl.class);
 
     @Override
     public void insertItemCode(PoDTO poDTO, Long tenantId) {

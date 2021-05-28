@@ -10,7 +10,7 @@ import java.util.List;
  * @author bin.zhang
  */
 @Component
-public interface RCWLPoHeaderMapper {
+public interface RcwlPoHeaderMapper {
 
 
 
