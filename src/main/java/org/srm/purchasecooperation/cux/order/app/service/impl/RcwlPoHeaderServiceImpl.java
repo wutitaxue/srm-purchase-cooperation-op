@@ -719,7 +719,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 // opd-26
                 if(null != poLine.getPrLineId()){
-                    poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_id")));
+                    poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_num")));
                 }
                    LOGGER.info("srm-22875-poLineRepository.insertSelective-dete{}", poLine);
                 this.poLineRepository.insertSelective(poLine);
