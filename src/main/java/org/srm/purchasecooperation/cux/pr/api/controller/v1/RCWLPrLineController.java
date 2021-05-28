@@ -101,20 +101,20 @@ public class RCWLPrLineController {
         return Results.success(prLineList);
     }
 
-    @ApiOperation("子账户权限下的公司，业务实体")
-    @Permission(
-            level = ResourceLevel.ORGANIZATION
-    )
-    @GetMapping({"/purchase-requests/purchase-company"})
-    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id", required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) {
-        PurchaseCompanyVo purchaseCompanyVo1 = new PurchaseCompanyVo();
-        purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
-        RcwlPurchaseCompanyVo rcwlPurchaseCompanyVo = new RcwlPurchaseCompanyVo();
-        if (!ObjectUtils.isEmpty(purchaseCompanyVo1)) {
-            BeanUtils.copyProperties(purchaseCompanyVo1, rcwlPurchaseCompanyVo);
-        }
-        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
-        return Results.success(rcwlPurchaseCompanyVo);
-    }
+//    @ApiOperation("子账户权限下的公司，业务实体")
+//    @Permission(
+//            level = ResourceLevel.ORGANIZATION
+//    )
+//    @GetMapping({"/purchase-requests/purchase-company"})
+//    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id", required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) {
+//        PurchaseCompanyVo purchaseCompanyVo1 = new PurchaseCompanyVo();
+//        purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
+//        RcwlPurchaseCompanyVo rcwlPurchaseCompanyVo = new RcwlPurchaseCompanyVo();
+//        if (!ObjectUtils.isEmpty(purchaseCompanyVo1)) {
+//            BeanUtils.copyProperties(purchaseCompanyVo1, rcwlPurchaseCompanyVo);
+//        }
+//        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
+//        return Results.success(rcwlPurchaseCompanyVo);
+//    }
 
 }
