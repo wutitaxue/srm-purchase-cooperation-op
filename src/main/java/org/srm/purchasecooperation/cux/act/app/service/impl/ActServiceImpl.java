@@ -104,7 +104,7 @@ public class ActServiceImpl implements ActService {
         actListHeaderDto.setURL(actListFilesDtoList);
         String Url = profileClient.getProfileValueByOptions("RCWL_YS_TO_BPM_URL");
         //设置bpm查看链接
-        actListHeaderDto.setUrlMX(Url + actListHeaderDto.getUrlMX());
+        actListHeaderDto.setUrlMX(Url.replace("@param1", actListHeaderDto.getUrlMX()));
         //设置标题
         actListHeaderDto.setfSubject(actListHeaderDto.getTrxNum() + actListHeaderDto.getPcName() + actListHeaderDto.getAcceptOrName());
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQSRCSYS");
