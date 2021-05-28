@@ -12,8 +12,8 @@
     </select>
 
 	<select id="queryPrLineByKey"  resultType="map">
-        select  g.budget_account_id,
-            g.cost_id,
+        select  g.budget_account_num,
+            g.cost_code,
             g.WBS from sprm_pr_line g where g.pr_line_id = #{prLineId}
     </select>
 </mapper>
