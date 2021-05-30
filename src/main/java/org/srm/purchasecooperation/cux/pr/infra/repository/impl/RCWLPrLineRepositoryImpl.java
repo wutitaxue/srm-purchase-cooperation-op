@@ -1,5 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.infra.repository.impl;
 
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.mybatis.base.impl.BaseRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -10,6 +12,8 @@ import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPrLineMapper;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
+import org.srm.purchasecooperation.pr.infra.repository.impl.PrLineRepositoryImpl;
+import org.srm.web.annotation.Tenant;
 
 import java.util.List;
 
@@ -20,6 +24,7 @@ import java.util.List;
  * @author bin.zhang06@hand-china.com 2021-03-16 15:49:15
  */
 @Component
+@Tenant("SRM-RCWL")
 public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> implements RCWLPrLineRepository {
 
     @Autowired
@@ -93,4 +98,5 @@ public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> impleme
     public PrLine selectPrLineRecord(Long prLineId) {
         return rcwlPrLineMapper.selectPrLineRecord(prLineId) ;
     }
+
 }

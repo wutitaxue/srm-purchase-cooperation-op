@@ -6,11 +6,14 @@
         				select attribute_varchar21,attribute_varchar22,attribute_varchar23
         				    from spcm_pc_subject
         				         where pc_subject_id = #{subjectId}
+        				         	AND attribute_varchar21 IS NOT NULL
+                                    AND attribute_varchar22 IS NOT NULL
+                                    AND attribute_varchar23 IS NOT NULL
     </select>
 
 	<select id="queryPrLineByKey"  resultType="map">
-        select  g.budget_account_id,
-            g.cost_id,
+        select  g.budget_account_num,
+            g.cost_code,
             g.WBS from sprm_pr_line g where g.pr_line_id = #{prLineId}
     </select>
 </mapper>
