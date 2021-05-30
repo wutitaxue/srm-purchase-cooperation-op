@@ -48,6 +48,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
+import org.srm.purchasecooperation.transaction.infra.constant.Constants;
 import org.srm.web.annotation.Tenant;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants.autoTransferOrderFlag;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants.ConstantsOfBigDecimal;
@@ -394,6 +395,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 poLine.setAttributeVarchar21(String.valueOf(listMap.get(0).get("attribute_varchar21")));
                 poLine.setCostId(Long.valueOf(listMap.get(0).get("attribute_varchar22")));
                 poLine.setWbs(String.valueOf(listMap.get(0).get("attribute_varchar23")));
+            }else{
+                // throw new CommonException("error.po.sprm_pr_line_not_null", "");
             }
             poLine.setVersionNum(1L);
             poLineLocationList.add(poLineLocation);
@@ -716,7 +719,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 // opd-26
                 if(null != poLine.getPrLineId()){
-                    poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_id")));
+                    poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_num")));
                 }
                    LOGGER.info("srm-22875-poLineRepository.insertSelective-dete{}", poLine);
                 this.poLineRepository.insertSelective(poLine);
