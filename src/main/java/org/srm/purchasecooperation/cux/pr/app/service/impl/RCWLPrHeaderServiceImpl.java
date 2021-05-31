@@ -3,19 +3,27 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.CaseFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import org.activiti.rest.service.api.engine.variable.RestVariable;
+import org.activiti.rest.service.api.runtime.process.ProcessInstanceCreateRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.boot.customize.service.CustomizeClient;
+import org.hzero.boot.platform.plugin.hr.EmployeeHelper;
+import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.redis.RedisHelper;
+import org.hzero.core.util.ResponseUtils;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -23,7 +31,11 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
+import org.srm.boot.common.cache.impl.AbstractKeyGenerator;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
+import org.srm.boot.platform.group.GroupApproveHelper;
+import org.srm.boot.platform.group.dto.ProcessApproveDTO;
+import org.srm.boot.saga.utils.SagaClient;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
@@ -33,6 +45,7 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataResposi
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
+import org.srm.purchasecooperation.order.infra.constant.MessageCode;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
@@ -41,6 +54,7 @@ import org.srm.purchasecooperation.pr.domain.entity.*;
 import org.srm.purchasecooperation.pr.domain.repository.*;
 import org.srm.purchasecooperation.pr.domain.vo.PrCopyFieldsVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.web.annotation.Tenant;
 
@@ -81,6 +95,17 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private CustomizeClient customizeClient;
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
+    @Autowired
+    private GroupApproveHelper groupApproveHelper;
+    @Autowired
+    private WorkflowClient workflowClient;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private ScecRemoteService scecRemoteService;
+    @Autowired
+    private RedisHelper redisHelper;
+
     @Autowired
     private PrLineSupplierRepository prLineSupplierRepository;
 
@@ -181,6 +206,193 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             return ((PrHeaderService) this).submit(tenantId, prHeader);
         }
     }
+
+    /**
+     * 审批不改变状态  由bpm回传
+     * @param tenantId
+     * @param prHeader
+     * @return
+     */
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @Override
+    public PrHeader submitFunctional(Long tenantId, PrHeader prHeader) {
+        prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//        prHeader.setPrStatusCode("SUBMITTED");
+        this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+        ((PrHeaderService)this.self()).sendPrSubmittedPlatMessage(tenantId, prHeader);
+        ((PrHeaderService)this.self()).prSendWebMessageUserAsyn(prHeader, tenantId, MessageCode.SPUC_SUBMIT_PR.getMessageCode());
+        return prHeader;
+    }
+
+    /**
+     * 审批不改变状态  由bpm回传
+     * @param tenantId
+     * @param prHeader
+     * @return
+     */
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @Override
+    public PrHeader submitExternal(Long tenantId, PrHeader prHeader) {
+        prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//        prHeader.setPrStatusCode("SUBMITTED");
+        prHeader.setExternalApprovingFlag(1);
+        this.prHeaderRepository.updateOptional(prHeader, new String[]{"externalApprovingFlag", "previousPrStatusCode"});
+        ((PrHeaderService)this.self()).sendPrSubmittedPlatMessage(tenantId, prHeader);
+        ((PrHeaderService)this.self()).externalApproval(tenantId, prHeader);
+        return prHeader;
+    }
+
+
+    /**
+     * 审批不改变状态  由bpm回传
+     * @param tenantId
+     * @param prHeader
+     * @return
+     */
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @Override
+    public PrHeader submitWorkflow(Long tenantId, PrHeader prHeader) {
+        ProcessApproveDTO processApproveDTO;
+        if (!PrConstant.PrSourcePlatform.SRM.equals(prHeader.getPrSourcePlatform()) && !PrConstant.PrSourcePlatform.SHOP.equals(prHeader.getPrSourcePlatform())) {
+            if (PrConstant.PrSourcePlatform.ERP.equals(prHeader.getPrSourcePlatform())) {
+                processApproveDTO = this.initProcessApproveDTO(prHeader, PrConstant.ProcessCode.SPUC_ERP_SUBMIT_DOC, tenantId, PrConstant.PrSourcePlatform.ERP);
+                this.groupApproveHelper.approvalMethod(processApproveDTO.getVariableList(), SagaClient.getSagaKey(), PrConstant.ApprovalCode.WFL, processApproveDTO);
+                prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//                prHeader.setPrStatusCode("WORKFLOW_APPROVAL");
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+            } else if (PrConstant.PrSourcePlatform.CATALOGUE.equals(prHeader.getPrSourcePlatform())) {
+                processApproveDTO = this.initProcessApproveDTO(prHeader, PrConstant.ProcessCode.SPUC_CATALOG_SUBMIT_DOC, tenantId, PrConstant.PrSourcePlatform.CATALOGUE);
+                this.groupApproveHelper.approvalMethod(processApproveDTO.getVariableList(), SagaClient.getSagaKey(), PrConstant.ApprovalCode.WFL, processApproveDTO);
+                prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//                prHeader.setPrStatusCode("WORKFLOW_APPROVAL");
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+            } else if (PrConstant.PrSourcePlatform.E_COMMERCE.equals(prHeader.getPrSourcePlatform())) {
+                processApproveDTO = this.initProcessApproveDTO(prHeader, PrConstant.ProcessCode.SPUC_EC_SUBMIT_DOC, tenantId, PrConstant.PrSourcePlatform.E_COMMERCE);
+                this.groupApproveHelper.approvalMethod(processApproveDTO.getVariableList(), SagaClient.getSagaKey(), PrConstant.ApprovalCode.WFL, processApproveDTO);
+                prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//                prHeader.setPrStatusCode("WORKFLOW_APPROVAL");
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+            } else {
+                ProcessInstanceCreateRequest request = this.getProcessInstanceCreateRequest(prHeader);
+                this.workflowClient.procRevokeByBusinessKey(request.getBusinessKey(), prHeader.getTenantId());
+                Long userId = DetailsHelper.getUserDetails().getUserId();
+                String employeeNum = EmployeeHelper.getEmployeeNum(userId, prHeader.getTenantId());
+                this.workflowClient.startUp(prHeader.getTenantId(), employeeNum, request);
+                prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//                prHeader.setPrStatusCode("WORKFLOW_APPROVAL");
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+            }
+        } else {
+            processApproveDTO = this.initProcessApproveDTO(prHeader,  PrConstant.ProcessCode.SPUC_SRM_SUBMIT_DOC, tenantId, PrConstant.PrSourcePlatform.SRM);
+            this.groupApproveHelper.approvalMethod(processApproveDTO.getVariableList(), SagaClient.getSagaKey(), PrConstant.ApprovalCode.WFL, processApproveDTO);
+            prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//            prHeader.setPrStatusCode("WORKFLOW_APPROVAL");
+            this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+        }
+
+        return prHeader;
+    }
+
+    /**
+     * 审批不改变状态  由bpm回传
+     * @param tenantId
+     * @param prHeader
+     * @return
+     */
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @Override
+    public PrHeader submitNone(Long tenantId, PrHeader prHeader) {
+        prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//        prHeader.setPrStatusCode("SUBMITTED");
+        this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+        this.log("自动审批开始----- " + prHeader);
+        ((PrHeaderService)this.self()).prApproval(tenantId, Collections.singletonList(prHeader), Boolean.FALSE);
+        this.log("自动审批结束----- " + prHeader);
+        return prHeader;
+    }
+
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    @Override
+    public void ecSubmitSync(Long tenantId, PrHeader prHeader) {
+        if (!this.isOldMall(tenantId)) {
+            ((PrHeaderService)this.self()).ecSubmitNewMall(tenantId, prHeader);
+        } else {
+            this.log("from E_COMMERCE pr: " + prHeader);
+            ResponseEntity<String> responseEntity = this.scecRemoteService.reqSubmitOrder(tenantId, prHeader);
+            this.log("from responseEntity : " + responseEntity);
+            if (!"SUCCESS".equals(responseEntity.getBody())) {
+                try {
+                    ResponseUtils.getResponse(responseEntity, Object.class);
+                } catch (CommonException var5) {
+                    throw new CommonException("error.pr.sync_e_commerce_fail", new Object[]{prHeader.getDisplayPrNum(), responseEntity.getBody()});
+                }
+            }
+
+            prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+//            prHeader.setPrStatusCode("SUBMIT_SYNC");
+            this.prHeaderRepository.updateOptional(prHeader, new String[]{ "previousPrStatusCode"});
+        }
+
+    }
+
+
+    private Boolean isOldMall(Long tenantId) {
+        String key = AbstractKeyGenerator.getKey("scec", new String[]{"old_mall_tenant"});
+        return this.redisHelper.hshHasKey(key, tenantId.toString());
+    }
+
+
+    private void log(Object obj) {
+        if (obj != null) {
+            try {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(this.objectMapper.writeValueAsString(obj));
+                }
+            } catch (JsonProcessingException var3) {
+                LOGGER.debug("Json parse error: {}, strack: {}", var3.getMessage(), var3);
+            }
+        }
+
+    }
+
+    private ProcessInstanceCreateRequest getProcessInstanceCreateRequest(PrHeader prHeader) {
+        ProcessInstanceCreateRequest request = new ProcessInstanceCreateRequest();
+        RestVariable prHeaderId = new RestVariable();
+        prHeaderId.setName("prHeaderId");
+        prHeaderId.setValue(prHeader.getPrHeaderId());
+        prHeaderId.setType("string");
+        prHeaderId.setVariableScope(RestVariable.RestVariableScope.GLOBAL);
+        RestVariable title = new RestVariable();
+        title.setName("title");
+        title.setValue(prHeader.getTitle());
+        title.setType("string");
+        title.setVariableScope(RestVariable.RestVariableScope.GLOBAL);
+        RestVariable amount = new RestVariable();
+        amount.setName("amount");
+        amount.setValue(prHeader.getAmount());
+        amount.setType("double");
+        amount.setVariableScope(RestVariable.RestVariableScope.GLOBAL);
+        List<RestVariable> list = new ArrayList();
+        list.add(prHeaderId);
+        list.add(title);
+        list.add(amount);
+        request.setProcessDefinitionKey("SPRM.PR-WORKFLOW-REVIEW");
+        request.setBusinessKey("prHeaderId-" + prHeader.getPrHeaderId());
+        request.setVariables(list);
+        return request;
+    }
+
+
 
     @Override
     @Transactional(
