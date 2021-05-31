@@ -37,4 +37,23 @@ public interface PrConstant {
         String COST_CENTER = "SPRM.COST_CENTER";
         String WBS = "SMDM.WBS";
     }
+
+    interface PrSourcePlatform {
+        String SRM = "SRM";
+        String SHOP = "SHOP";
+        String ERP = "ERP";
+        String CATALOGUE = "CATALOGUE";
+        String E_COMMERCE = "E-COMMERCE";
+    }
+
+    interface ProcessCode {
+        String SPUC_ERP_SUBMIT_DOC = "SPUC_ERP_SUBMIT_DOC";
+        String SPUC_CATALOG_SUBMIT_DOC = "SPUC_CATALOG_SUBMIT_DOC";
+        String SPUC_EC_SUBMIT_DOC = "SPUC_EC_SUBMIT_DOC";
+        String SPUC_SRM_SUBMIT_DOC = "SPUC_SRM_SUBMIT_DOC";
+    }
+
+    interface ApprovalCode {
+        String WFL = "WFL";
+    }
 }
