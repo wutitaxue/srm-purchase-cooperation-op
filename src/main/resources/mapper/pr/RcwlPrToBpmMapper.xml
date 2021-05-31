@@ -12,7 +12,7 @@
                 and c.cost_id = #{costId}
             </if>
             <!--<if test="costCode!=null">-->
-                <!--and c.cost_code = #{costCode}-->
+            <!--and c.cost_code = #{costCode}-->
             <!--</if>-->
         </where>
     </select>
@@ -27,7 +27,7 @@
                 and c.budget_account_id = #{budgetAccountId}
             </if>
             <!--<if test="budgetAccountNum!=null">-->
-                <!--and c.budget_account_num = #{budgetAccountNum}-->
+            <!--and c.budget_account_num = #{budgetAccountNum}-->
             <!--</if>-->
         </where>
     </select>
@@ -39,11 +39,29 @@
         <where>
             and c.tenant_id = #{tenantId}
             <!--<if test="wbsId!=null">-->
-                <!--and c.wbs_id = #{wbsId}-->
+            <!--and c.wbs_id = #{wbsId}-->
             <!--</if>-->
             <if test="wbsCode!=null">
                 and c.wbs_code = #{wbsCode}
             </if>
         </where>
+    </select>
+    <select id="selectCategoryName" resultType="java.lang.String">
+        SELECT
+        c.category_name
+        FROM
+        `smdm_item_category` c
+        where
+          c.tenant_id = #{tenantId}
+          and c.category_id = #{categoryId}
+    </select>
+    <select id="selectUomName" resultType="java.lang.String">
+        SELECT
+        c.uom_name
+        FROM
+        `smdm_uom` c
+        where
+          c.tenant_id = #{tenantId}
+          and c.uom_id = #{uomId}
     </select>
 </mapper>

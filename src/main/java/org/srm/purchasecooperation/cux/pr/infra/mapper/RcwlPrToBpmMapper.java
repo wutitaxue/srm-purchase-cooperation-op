@@ -33,4 +33,19 @@ public interface RcwlPrToBpmMapper {
      * @return
      */
     String selectWbs(Long tenantId, String wbsCode);
+
+    /**
+     * 获取品类名称
+     * @param tenantId
+     * @param categoryId
+     * @return
+     */
+    String selectCategoryName(Long tenantId, Long categoryId);
+    /**
+     * 获取单位名称
+     * @param tenantId
+     * @param uomId
+     * @return
+     */
+    String selectUomName(Long tenantId, Long uomId);
 }
