@@ -99,13 +99,13 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         //设置传输值
         rcwlGxBpmStartDataDTO.setReSrcSys(reSrcSys);
         rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
-        rcwlGxBpmStartDataDTO.setUserId(userDetails.getRealName());
+        rcwlGxBpmStartDataDTO.setUserId(userDetails.getUsername());
         rcwlGxBpmStartDataDTO.setBtid("RCWLSRMCGSQ");
         rcwlGxBpmStartDataDTO.setBoid((String) typeMessage.get("prNum"));
         String procinstId = prHeader.getAttributeVarchar17();
         rcwlGxBpmStartDataDTO.setProcinstId(StringUtils.isNotBlank(procinstId) ? procinstId : "0");
         rcwlGxBpmStartDataDTO.setData(data);
-        String bpmUrl = "http://" + reqIp + "/Workflow/MTStart2.aspx?BSID=WLCGPT&BTID=RCWLSRMCGSQ&BOID=" + typeMessage.get("prNum");
+        String bpmUrl = "http://" + reqIp + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGSQ&BOID=" + typeMessage.get("prNum");
         log.info("=========================bpmUrl ===========================>" + bpmUrl);
         // 调用bpm接口
 //        int i = 1 / 0;
