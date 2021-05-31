@@ -184,7 +184,7 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
                 map.put("prNum", header.getPrNum());
                 break;
             case "change":
-                String prNum = header.getPrNum() + "-" + Math.round((Math.random() + 1) * 1000);
+                String prNum = header.getPrNum() + Math.round((Math.random() + 1) * 1000);
                 map.put("typeStr", "预算变更");
                 map.put("subject", "预算变更" + prNum);
                 map.put("prNum", prNum);
