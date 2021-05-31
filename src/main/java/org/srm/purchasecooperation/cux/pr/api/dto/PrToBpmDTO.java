@@ -50,7 +50,7 @@ public class PrToBpmDTO implements Serializable {
 
     @JSONField(name = "XQXX")
     private List<PrToBpmLineDTO> prToBpmLineDTOList;
-    @JSONField(name = "URL")
+    @JSONField(name = "ATTACHMENTS1")
     private List<PrToBpmFileDTO> prToBpmFileDTOList;
 
     public String getzYunUrl() {
