@@ -10,7 +10,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
  * @version:1.0
  */
 
-public interface RCWLPrToBpmService {
+public interface RcwlPrToBpmService {
 
     String prDataToBpm(PrHeader prHeader, String type);
 }

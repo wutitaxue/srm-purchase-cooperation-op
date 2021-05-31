@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrToBpmMapper">
+    <select id="selectCost" resultType="java.lang.String">
+        SELECT
+        c.cost_name
+        FROM
+        `smdm_cost_center` c
+        <where>
+            and c.tenant_id = #{tenantId}
+            <if test="costId!=null">
+                and c.cost_id = #{costId}
+            </if>
+            <!--<if test="costCode!=null">-->
+                <!--and c.cost_code = #{costCode}-->
+            <!--</if>-->
+        </where>
+    </select>
+    <select id="selectBudetAccount" resultType="java.lang.String">
+        SELECT
+        c.budget_account_name
+        FROM
+        `smdm_budget_account` c
+        <where>
+            and c.tenant_id = #{tenantId}
+            <if test="budgetAccountId!=null">
+                and c.budget_account_id = #{budgetAccountId}
+            </if>
+            <!--<if test="budgetAccountNum!=null">-->
+                <!--and c.budget_account_num = #{budgetAccountNum}-->
+            <!--</if>-->
+        </where>
+    </select>
+    <select id="selectWbs" resultType="java.lang.String">
+        SELECT
+        c.wbs_name
+        FROM
+        `smdm_wbs` c
+        <where>
+            and c.tenant_id = #{tenantId}
+            <!--<if test="wbsId!=null">-->
+                <!--and c.wbs_id = #{wbsId}-->
+            <!--</if>-->
+            <if test="wbsCode!=null">
+                and c.wbs_code = #{wbsCode}
+            </if>
+        </where>
+    </select>
+</mapper>
