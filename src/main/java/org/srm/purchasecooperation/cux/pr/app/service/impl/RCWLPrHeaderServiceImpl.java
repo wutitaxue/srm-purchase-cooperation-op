@@ -270,7 +270,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             approveSet.clear();
         } else {
             LOGGER.info("Purchase requisition change submitting -------------");
-            this.submit(tenantId, prHeader);
+            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "变更提交至BPM");
+//            this.submit(tenantId, prHeader);
         }
 
         LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit end -------------");
