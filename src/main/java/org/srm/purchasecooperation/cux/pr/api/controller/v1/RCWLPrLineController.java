@@ -1,14 +1,18 @@
 package org.srm.purchasecooperation.cux.pr.api.controller.v1;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import javassist.Loader;
 import org.hzero.core.util.Results;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +60,7 @@ public class RCWLPrLineController {
     @Autowired
     private RcwlCompanyService rcwlCompanyService;
 
+    private static final Logger logger = LoggerFactory.getLogger(Loader.class);
 
     @ApiOperation("采购申请行取消")
     @Permission(
@@ -106,14 +111,38 @@ public class RCWLPrLineController {
             level = ResourceLevel.ORGANIZATION
     )
     @GetMapping({"/purchase-requests/purchase-company"})
-    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id", required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) {
-        PurchaseCompanyVo purchaseCompanyVo1 = new PurchaseCompanyVo();
-        purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
+    public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id", required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) throws JsonProcessingException {
+        logger.info("-------------执行公司查询：-----------");
+        ObjectMapper mapper = new ObjectMapper();
+        PurchaseCompanyVo purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
         RcwlPurchaseCompanyVo rcwlPurchaseCompanyVo = new RcwlPurchaseCompanyVo();
+
+        logger.info("-------------26422:purchaseCompanyVo1:" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(purchaseCompanyVo1));
         if (!ObjectUtils.isEmpty(purchaseCompanyVo1)) {
-            BeanUtils.copyProperties(purchaseCompanyVo1, rcwlPurchaseCompanyVo);
+            rcwlPurchaseCompanyVo.setCompanyId(purchaseCompanyVo1.getCompanyId());
+            rcwlPurchaseCompanyVo.setCompanyName(purchaseCompanyVo1.getCompanyName());
+            rcwlPurchaseCompanyVo.setCompanyNum(purchaseCompanyVo1.getCompanyNum());
+            rcwlPurchaseCompanyVo.setAddress(purchaseCompanyVo1.getAddress());
+            rcwlPurchaseCompanyVo.setSpfmCompanyId(purchaseCompanyVo1.getSpfmCompanyId());
+            rcwlPurchaseCompanyVo.setInventoryCode(purchaseCompanyVo1.getInventoryCode());
+            rcwlPurchaseCompanyVo.setInventoryId(purchaseCompanyVo1.getInventoryId());
+            rcwlPurchaseCompanyVo.setInventoryName(purchaseCompanyVo1.getInventoryName());
+            rcwlPurchaseCompanyVo.setInvOrganizationId(purchaseCompanyVo1.getInvOrganizationId());
+            rcwlPurchaseCompanyVo.setOrganizationId(purchaseCompanyVo1.getOrganizationId());
+            rcwlPurchaseCompanyVo.setOrganizationCode(purchaseCompanyVo1.getOrganizationCode());
+            rcwlPurchaseCompanyVo.setOrganizationName(purchaseCompanyVo1.getOrganizationName());
+            rcwlPurchaseCompanyVo.setOuCode(purchaseCompanyVo1.getOuCode());
+            rcwlPurchaseCompanyVo.setOuId(purchaseCompanyVo1.getOuId());
+            rcwlPurchaseCompanyVo.setOuName(purchaseCompanyVo1.getOuName());
+            rcwlPurchaseCompanyVo.setPurchaseOrgId(purchaseCompanyVo1.getPurchaseOrgId());
+            rcwlPurchaseCompanyVo.setPurchaseOrgName(purchaseCompanyVo1.getPurchaseOrgName());
+            rcwlPurchaseCompanyVo.setTenantId(purchaseCompanyVo1.getTenantId());
+            rcwlPurchaseCompanyVo.setUserId(purchaseCompanyVo1.getUserId());
+            if (!ObjectUtils.isEmpty(purchaseCompanyVo1.getCompanyId())) {
+                rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
+            }
+            logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlPurchaseCompanyVo));
         }
-        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
         return Results.success(rcwlPurchaseCompanyVo);
     }
 
