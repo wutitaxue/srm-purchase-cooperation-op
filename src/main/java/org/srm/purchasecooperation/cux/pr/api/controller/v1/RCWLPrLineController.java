@@ -139,7 +139,9 @@ public class RCWLPrLineController {
         rcwlPurchaseCompanyVo.setPurchaseOrgName(purchaseCompanyVo1.getPurchaseOrgName());
         rcwlPurchaseCompanyVo.setTenantId(purchaseCompanyVo1.getTenantId());
         rcwlPurchaseCompanyVo.setUserId(purchaseCompanyVo1.getUserId());
-        rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
+        if (!ObjectUtils.isEmpty(purchaseCompanyVo1.getCompanyId())) {
+            rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
+        }
         logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlPurchaseCompanyVo));
         return Results.success(rcwlPurchaseCompanyVo);
     }
