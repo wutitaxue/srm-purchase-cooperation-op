@@ -128,17 +128,19 @@ public class RCWLPrLineController {
         rcwlPurchaseCompanyVo.setInventoryCode(purchaseCompanyVo1.getInventoryCode());
         rcwlPurchaseCompanyVo.setInventoryId(purchaseCompanyVo1.getInventoryId());
         rcwlPurchaseCompanyVo.setInventoryName(purchaseCompanyVo1.getInventoryName());
+        rcwlPurchaseCompanyVo.setInvOrganizationId(purchaseCompanyVo1.getInvOrganizationId());
         rcwlPurchaseCompanyVo.setOrganizationId(purchaseCompanyVo1.getOrganizationId());
         rcwlPurchaseCompanyVo.setOrganizationCode(purchaseCompanyVo1.getOrganizationCode());
         rcwlPurchaseCompanyVo.setOrganizationName(purchaseCompanyVo1.getOrganizationName());
         rcwlPurchaseCompanyVo.setOuCode(purchaseCompanyVo1.getOuCode());
         rcwlPurchaseCompanyVo.setOuId(purchaseCompanyVo1.getOuId());
+        rcwlPurchaseCompanyVo.setOuName(purchaseCompanyVo1.getOuName());
         rcwlPurchaseCompanyVo.setPurchaseOrgId(purchaseCompanyVo1.getPurchaseOrgId());
         rcwlPurchaseCompanyVo.setPurchaseOrgName(purchaseCompanyVo1.getPurchaseOrgName());
         rcwlPurchaseCompanyVo.setTenantId(purchaseCompanyVo1.getTenantId());
         rcwlPurchaseCompanyVo.setUserId(purchaseCompanyVo1.getUserId());
         rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
-        logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + rcwlPurchaseCompanyVo);
+        logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlPurchaseCompanyVo));
         return Results.success(rcwlPurchaseCompanyVo);
     }
 
