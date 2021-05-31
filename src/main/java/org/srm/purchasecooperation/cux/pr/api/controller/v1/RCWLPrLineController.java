@@ -114,35 +114,35 @@ public class RCWLPrLineController {
     public ResponseEntity<RcwlPurchaseCompanyVo> getPurchaseCompany(@PathVariable("organizationId") @ApiParam(value = "租户id", required = true) Long tenantId, @Encrypt PurchaseCompanyVo purchaseCompanyVo) throws JsonProcessingException {
         logger.info("-------------执行公司查询：-----------");
         ObjectMapper mapper = new ObjectMapper();
-        PurchaseCompanyVo purchaseCompanyVo1 = new PurchaseCompanyVo();
-
-        purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
+        PurchaseCompanyVo purchaseCompanyVo1 = this.prLineService.getPurchaseCompany(tenantId, purchaseCompanyVo);
         RcwlPurchaseCompanyVo rcwlPurchaseCompanyVo = new RcwlPurchaseCompanyVo();
 
         logger.info("-------------26422:purchaseCompanyVo1:" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(purchaseCompanyVo1));
-        rcwlPurchaseCompanyVo.setCompanyId(purchaseCompanyVo1.getCompanyId());
-        rcwlPurchaseCompanyVo.setCompanyName(purchaseCompanyVo1.getCompanyName());
-        rcwlPurchaseCompanyVo.setCompanyNum(purchaseCompanyVo1.getCompanyNum());
-        rcwlPurchaseCompanyVo.setAddress(purchaseCompanyVo1.getAddress());
-        rcwlPurchaseCompanyVo.setSpfmCompanyId(purchaseCompanyVo1.getSpfmCompanyId());
-        rcwlPurchaseCompanyVo.setInventoryCode(purchaseCompanyVo1.getInventoryCode());
-        rcwlPurchaseCompanyVo.setInventoryId(purchaseCompanyVo1.getInventoryId());
-        rcwlPurchaseCompanyVo.setInventoryName(purchaseCompanyVo1.getInventoryName());
-        rcwlPurchaseCompanyVo.setInvOrganizationId(purchaseCompanyVo1.getInvOrganizationId());
-        rcwlPurchaseCompanyVo.setOrganizationId(purchaseCompanyVo1.getOrganizationId());
-        rcwlPurchaseCompanyVo.setOrganizationCode(purchaseCompanyVo1.getOrganizationCode());
-        rcwlPurchaseCompanyVo.setOrganizationName(purchaseCompanyVo1.getOrganizationName());
-        rcwlPurchaseCompanyVo.setOuCode(purchaseCompanyVo1.getOuCode());
-        rcwlPurchaseCompanyVo.setOuId(purchaseCompanyVo1.getOuId());
-        rcwlPurchaseCompanyVo.setOuName(purchaseCompanyVo1.getOuName());
-        rcwlPurchaseCompanyVo.setPurchaseOrgId(purchaseCompanyVo1.getPurchaseOrgId());
-        rcwlPurchaseCompanyVo.setPurchaseOrgName(purchaseCompanyVo1.getPurchaseOrgName());
-        rcwlPurchaseCompanyVo.setTenantId(purchaseCompanyVo1.getTenantId());
-        rcwlPurchaseCompanyVo.setUserId(purchaseCompanyVo1.getUserId());
-        if (!ObjectUtils.isEmpty(purchaseCompanyVo1.getCompanyId())) {
-            rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
+        if (!ObjectUtils.isEmpty(purchaseCompanyVo1)) {
+            rcwlPurchaseCompanyVo.setCompanyId(purchaseCompanyVo1.getCompanyId());
+            rcwlPurchaseCompanyVo.setCompanyName(purchaseCompanyVo1.getCompanyName());
+            rcwlPurchaseCompanyVo.setCompanyNum(purchaseCompanyVo1.getCompanyNum());
+            rcwlPurchaseCompanyVo.setAddress(purchaseCompanyVo1.getAddress());
+            rcwlPurchaseCompanyVo.setSpfmCompanyId(purchaseCompanyVo1.getSpfmCompanyId());
+            rcwlPurchaseCompanyVo.setInventoryCode(purchaseCompanyVo1.getInventoryCode());
+            rcwlPurchaseCompanyVo.setInventoryId(purchaseCompanyVo1.getInventoryId());
+            rcwlPurchaseCompanyVo.setInventoryName(purchaseCompanyVo1.getInventoryName());
+            rcwlPurchaseCompanyVo.setInvOrganizationId(purchaseCompanyVo1.getInvOrganizationId());
+            rcwlPurchaseCompanyVo.setOrganizationId(purchaseCompanyVo1.getOrganizationId());
+            rcwlPurchaseCompanyVo.setOrganizationCode(purchaseCompanyVo1.getOrganizationCode());
+            rcwlPurchaseCompanyVo.setOrganizationName(purchaseCompanyVo1.getOrganizationName());
+            rcwlPurchaseCompanyVo.setOuCode(purchaseCompanyVo1.getOuCode());
+            rcwlPurchaseCompanyVo.setOuId(purchaseCompanyVo1.getOuId());
+            rcwlPurchaseCompanyVo.setOuName(purchaseCompanyVo1.getOuName());
+            rcwlPurchaseCompanyVo.setPurchaseOrgId(purchaseCompanyVo1.getPurchaseOrgId());
+            rcwlPurchaseCompanyVo.setPurchaseOrgName(purchaseCompanyVo1.getPurchaseOrgName());
+            rcwlPurchaseCompanyVo.setTenantId(purchaseCompanyVo1.getTenantId());
+            rcwlPurchaseCompanyVo.setUserId(purchaseCompanyVo1.getUserId());
+            if (!ObjectUtils.isEmpty(purchaseCompanyVo1.getCompanyId())) {
+                rcwlPurchaseCompanyVo.setRcwlUnitName(rcwlCompanyService.selectCompanyRcwlUnitName(purchaseCompanyVo1.getCompanyId(), tenantId));
+            }
+            logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlPurchaseCompanyVo));
         }
-        logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlPurchaseCompanyVo));
         return Results.success(rcwlPurchaseCompanyVo);
     }
 
