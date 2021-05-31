@@ -51,7 +51,7 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoLineRepositoryImpl.class);
 
     @Autowired
-     private RcwlPoLineMapper rcwlPoLineMapper;
+    private RcwlPoLineMapper rcwlPoLineMapper;
     @Autowired
     private PoHeaderRepository poHeaderRepository;
     @Autowired
