@@ -223,7 +223,7 @@ public class RCWLPrHeaderController {
               if(!StringUtils.isEmpty(prNum)){
                   //bpm回传拒绝标识时触发预算释放接口
                   if(RCWLConstants.BPMApproveFlag.REJECTED.equals(approveFlag)) {
-                      this.rcwlPrItfService.afterBpmApprove(prNum, approveFlag);
+                      this.rcwlPrItfService.afterBpmApprove(tenantId,prNum, approveFlag);
                   }
               }
         return Results.success();
@@ -241,7 +241,7 @@ public class RCWLPrHeaderController {
         if(!StringUtils.isEmpty(prNum)){
             //bpm回传拒绝标识时触发预算接口
             if(RCWLConstants.BPMApproveFlag.REJECTED.equals(approveFlag)) {
-                this.rcwlPrItfService.afterBpmApproveByChange(prNum, approveFlag);
+                this.rcwlPrItfService.afterBpmApproveByChange(tenantId,prNum, approveFlag);
             }
         }
         return Results.success();
