@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Component
 @Tenant("SRM-RCWL")
-public class RCWLPrLineRepositoryImpl extends PrLineRepositoryImpl implements RCWLPrLineRepository {
+public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> implements RCWLPrLineRepository {
 
     @Autowired
     private RCWLPrLineMapper rcwlPrLineMapper;
@@ -99,10 +99,4 @@ public class RCWLPrLineRepositoryImpl extends PrLineRepositoryImpl implements RC
         return rcwlPrLineMapper.selectPrLineRecord(prLineId) ;
     }
 
-    @Override
-    public List<PrLineVO> selectPrLines(PageRequest pageRequest, Long tenantId, Long prHeaderId) {
-        return PageHelper.doSort(pageRequest.getSort(), () -> {
-            return this.rcwlPrLineMapper.listPrLines(tenantId, prHeaderId);
-        });
-    }
 }

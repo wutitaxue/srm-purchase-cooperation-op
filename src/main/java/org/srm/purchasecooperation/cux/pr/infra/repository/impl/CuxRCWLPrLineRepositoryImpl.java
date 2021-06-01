@@ -1,10 +1,13 @@
 package org.srm.purchasecooperation.cux.pr.infra.repository.impl;
 
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.core.base.AopProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.CuxRCWLPrLineMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPrLineMapper;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
@@ -20,10 +23,19 @@ public class CuxRCWLPrLineRepositoryImpl extends PrLineRepositoryImpl implements
     @Autowired
     private CuxRCWLPrLineMapper cuxRCWLPrLineMapper;
 
+    @Autowired
+    private RCWLPrLineMapper rcwlPrLineMapper;
+
 
     @Override
     public List<PrLineVO> pageAssignList(PrLineDTO prLineDTO) {
         return this.cuxRCWLPrLineMapper.pageAssignList(prLineDTO);
+    }
+    @Override
+    public List<PrLineVO> selectPrLines(PageRequest pageRequest, Long tenantId, Long prHeaderId) {
+        return PageHelper.doSort(pageRequest.getSort(), () -> {
+            return this.rcwlPrLineMapper.listPrLines(tenantId, prHeaderId);
+        });
     }
 
 
