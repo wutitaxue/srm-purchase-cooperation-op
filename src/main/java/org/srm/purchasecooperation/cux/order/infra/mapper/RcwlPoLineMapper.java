@@ -11,7 +11,7 @@ import java.util.List;
  * @author 15640
  */
 @Component
-public interface RcwlPoLineMapper{
+public interface RcwlPoLineMapper {
     /**
      * 需求物料描述 二开字段查询
      * @param tenantId
