@@ -83,7 +83,8 @@ public class RcwlPrFeignController {
     @PostMapping({"/purchase-requests/prsubmit"})
     public ResponseEntity<Object> submit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrHeader> prHeaderList) {
         prHeaderList.forEach(item -> {
-            prHeaderService.submit(tenantId,item);
+            PrHeader prHeader = prHeaderRepository.selectOne(item);
+            prHeaderService.submit(tenantId,prHeader);
         });
         return Results.success(prHeaderList);
     }
