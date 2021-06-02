@@ -21,4 +21,5 @@ public interface RcwlPoLineMapper {
      */
     List<RCWLPoLineDetailDTO> listLineDetail1(@Param("tenantId") Long tenantId, @Param("poHeaderId") Long poHeaderId, @Param("nowDate") Date nowDate);
 
+    String queryWbsName(@Param("wbsCode") String wbsCode);
 }
