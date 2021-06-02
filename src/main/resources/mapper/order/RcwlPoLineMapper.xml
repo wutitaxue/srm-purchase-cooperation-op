@@ -294,4 +294,9 @@
         </if>
         ORDER BY spl.line_num, spll.line_location_num
     </select>
+
+
+    <select id="queryWbsName" resultType="java.lang.String">
+        select wbs_name from smdm_wbs where wbs_code = #{wbsCode}
+    </select>
 </mapper>
