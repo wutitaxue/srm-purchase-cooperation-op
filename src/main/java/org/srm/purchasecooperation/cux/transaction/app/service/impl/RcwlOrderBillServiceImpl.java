@@ -41,7 +41,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         RcwlOrderBillDTO rcwlOrderBillDTO;
         //检查品类是否需要推送资产 1推 2不推
         String s = rcwlOrderBillMapper.selectCategory(tenantId, rcvTrxLineId);
-        if(s == "0"){
+        if("0".equals(s)){
             return;
         }
         //ASN为接收类型单据

@@ -82,45 +82,11 @@ public class RcwlPrFeignController {
 
     @PostMapping({"/purchase-requests/prsubmit"})
     public ResponseEntity<Object> submit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrHeader> prHeaderList) {
-//        SecurityTokenHelper.validToken(prHeaderList, false);
         prHeaderList.forEach(item -> {
-            List<PrLine> prLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", item.getPrHeaderId()).andEqualTo("tenantId", tenantId)).build());
-            item.setPrLineList(prLines);
+            PrHeader prHeader = prHeaderRepository.selectOne(item);
+            prHeaderService.submit(tenantId,prHeader);
         });
-
-        List<Object> list = this.prHeaderService.batchSubmit(tenantId, prHeaderList);
-        List<ErrorDataVO> errorDataVOList = new ArrayList();
-        List<PrHeader> successList = new ArrayList();
-        Iterator var6 = list.iterator();
-
-        while(var6.hasNext()) {
-            Object obj = var6.next();
-            if (obj instanceof ErrorDataVO) {
-                errorDataVOList.add((ErrorDataVO)obj);
-            } else if (obj instanceof PrHeader) {
-                ((PrHeader)obj).setOperationFlag("I");
-                successList.add((PrHeader)obj);
-            }
-        }
-
-        successList = (List)successList.stream().filter((prHeader) -> {
-            return prHeader.checkPrSyncToSap(this.prHeaderService, this.customizeSettingHelper);
-        }).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(successList)) {
-            this.prHeaderService.exportPrToErp(tenantId, successList);
-        }
-
-        if (CollectionUtils.isNotEmpty(errorDataVOList)) {
-            return Results.success(new ErrorListVO(errorDataVOList));
-        } else {
-            if (CollectionUtils.isNotEmpty(successList)) {
-                ((PrHeader)successList.get(0)).setCustomUserDetails(DetailsHelper.getUserDetails());
-                this.prHeaderService.afterPrApprove(tenantId, successList);
-            }
-
-            this.prHeaderService.batchBudgetOccupyThrowException(tenantId, prHeaderList);
-            return Results.success(successList);
-        }
+        return Results.success(prHeaderList);
     }
 
     @ApiOperation("采购申请审批通过")
