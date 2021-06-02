@@ -6,6 +6,7 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.boot.customize.util.CustomizeHelper;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,10 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
         ZonedDateTime zdt = localDate.atStartOfDay(zoneId);
         Date date = Date.from(zdt.toInstant());
         return PageHelper.doPageAndSort(pageRequest, () -> {
-            List<RCWLPoLineDetailDTO>  detailDTO = this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date);
+
+            //过滤 个性化页面查 追加mysql值字段
+            List<RCWLPoLineDetailDTO>  detailDTO = CustomizeHelper.ignore(()-> this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date));
+            //List<RCWLPoLineDetailDTO>  detailDTO = this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date);
 
             detailDTO.forEach(x->{
                 LOGGER.info("------验证1--------- " + x.toString());
