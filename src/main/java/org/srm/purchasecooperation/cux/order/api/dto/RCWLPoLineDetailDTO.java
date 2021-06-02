@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.order.api.dto;
 
 import com.netflix.ribbon.proxy.annotation.TemplateName;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
 
 import javax.persistence.Transient;
@@ -13,17 +14,32 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @ApiModelProperty("需求物料描述")
     private String attributeVarchar10;
 
-    @ApiModelProperty("此值实际在21字段 业务用途")
-    private String attributeVarchar40;
+    @ApiModelProperty("业务用途")
+    @LovValue(
+            lovCode = "SMDM.RCWL.BUDGET_ACCOUNT1",
+            meaningField = "attributeVarchar21Meaning"
+    )
+    private String attributeVarchar21;
+    @ApiModelProperty("业务用途meaning")
+    @Transient
+    private String attributeVarchar21Meaning;
 
-    @Override
-    public String getAttributeVarchar40() {
-        return attributeVarchar40;
+    public String getAttributeVarchar21Meaning() {
+        return attributeVarchar21Meaning;
+    }
+
+    public void setAttributeVarchar21Meaning(String attributeVarchar21Meaning) {
+        this.attributeVarchar21Meaning = attributeVarchar21Meaning;
     }
 
     @Override
-    public void setAttributeVarchar40(String attributeVarchar40) {
-        this.attributeVarchar40 = attributeVarchar40;
+    public String getAttributeVarchar21() {
+        return attributeVarchar21;
+    }
+
+    @Override
+    public void setAttributeVarchar21(String attributeVarchar21) {
+        this.attributeVarchar21 = attributeVarchar21;
     }
 
     @Override
@@ -40,7 +56,8 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     public String toString() {
         return "RCWLPoLineDetailDTO{" +
                 "attributeVarchar10='" + attributeVarchar10 + '\'' +
-                ", attributeVarchar40='" + attributeVarchar40 + '\'' +
+                ", attributeVarchar21='" + attributeVarchar21 + '\'' +
+                ", attributeVarchar21Meaning='" + attributeVarchar21Meaning + '\'' +
                 '}';
     }
 }
