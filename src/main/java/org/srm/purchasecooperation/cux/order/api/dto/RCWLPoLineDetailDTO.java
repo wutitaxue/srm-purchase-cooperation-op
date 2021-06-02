@@ -15,21 +15,17 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     private String attributeVarchar10;
 
     @ApiModelProperty("业务用途")
-    @LovValue(
-            lovCode = "SMDM.RCWL.BUDGET_ACCOUNT1",
-            meaningField = "attributeVarchar21Meaning"
-    )
     private String attributeVarchar21;
-    @ApiModelProperty("业务用途meaning")
+    @ApiModelProperty("业务用途Meanings")
     @Transient
-    private String attributeVarchar21Meaning;
+    private String attributeVarchar21Meanings;
 
-    public String getAttributeVarchar21Meaning() {
-        return attributeVarchar21Meaning;
+    public String getAttributeVarchar21Meanings() {
+        return attributeVarchar21Meanings;
     }
 
-    public void setAttributeVarchar21Meaning(String attributeVarchar21Meaning) {
-        this.attributeVarchar21Meaning = attributeVarchar21Meaning;
+    public void setAttributeVarchar21Meanings(String attributeVarchar21Meanings) {
+        this.attributeVarchar21Meanings = attributeVarchar21Meanings;
     }
 
     @Override
@@ -57,7 +53,7 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
         return "RCWLPoLineDetailDTO{" +
                 "attributeVarchar10='" + attributeVarchar10 + '\'' +
                 ", attributeVarchar21='" + attributeVarchar21 + '\'' +
-                ", attributeVarchar21Meaning='" + attributeVarchar21Meaning + '\'' +
+                ", attributeVarchar21Meanings='" + attributeVarchar21Meanings + '\'' +
                 '}';
     }
 }
