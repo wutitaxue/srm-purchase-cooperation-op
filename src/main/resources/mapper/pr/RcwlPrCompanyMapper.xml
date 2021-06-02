@@ -13,5 +13,6 @@
             SELECT max(h.version_number)
             FROM spfm_company_basic h
             WHERE h.company_id = hc.source_key
+        )
     </select>
 </mapper>
