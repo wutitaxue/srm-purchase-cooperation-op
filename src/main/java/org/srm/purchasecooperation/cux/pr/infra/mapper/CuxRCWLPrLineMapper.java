@@ -29,4 +29,11 @@ public interface CuxRCWLPrLineMapper extends PrLineMapper, ExtendMapper<PrLine> 
     @Override
     List<PrLineVO> pageAssignList(PrLineDTO prLineDTO);
 
+    /**
+     *
+     * @param prLineDTO
+     * @return
+     */
+    @Override
+    List<PrLineVO> cancelList(PrLineDTO prLineDTO);
 }

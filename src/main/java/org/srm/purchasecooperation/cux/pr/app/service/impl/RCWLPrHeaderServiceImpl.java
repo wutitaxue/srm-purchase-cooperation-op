@@ -121,6 +121,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             "expenseUnitId", "parentUnitId", "expenseUnitName", "invoiceCompanyId", "accepterUserId", "inventoryId", "categoryId", "techGuidanceFlag", "techDirectorUserId",
             "prTypeId", "requestedBy", "prRequestedName", "previousPrStatusCode", "localCurrencyNoTaxSum", "localCurrencyTaxSum", "localCurrency", "originalCurrency"};
 
+
+
+    private static final String PR_CHANGE_STATUS = "CHANGE";
     /**
      * 融创采购申请更新二开接口
      *
@@ -236,6 +239,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             prHeader.setPrLineList(this.prLineService.updatePrLinesForChange(prHeader));
             prHeader.batchMaintainDateAndCountAmount(this.prLineRepository);
             prHeader.setChangedFlag(BaseConstants.Flag.YES);
+            prHeader.setPrStatusCode(PR_CHANGE_STATUS);
             this.prHeaderRepository.updateByPrimaryKeySelective(prHeader);
         } else {
             this.deleteOrInsertLines(beforePrLineMap, prHeader);
