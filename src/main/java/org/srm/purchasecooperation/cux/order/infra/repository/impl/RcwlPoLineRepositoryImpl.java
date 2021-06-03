@@ -87,8 +87,7 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
             List<RCWLPoLineDetailDTO>  detailDTO = CustomizeHelper.ignore(()-> this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date));
 
             detailDTO.forEach(x->{
-                String test = rcwlPoLineMapper.queryWbsName("1202");
-                x.setAttributeVarchar21Meanings(rcwlPoLineMapper.queryWbsName("1202"));
+                x.setAttributeVarchar21Meanings(rcwlPoLineMapper.queryWbsName(x.getAttributeVarchar21()));
             });
 
             return detailDTO;
