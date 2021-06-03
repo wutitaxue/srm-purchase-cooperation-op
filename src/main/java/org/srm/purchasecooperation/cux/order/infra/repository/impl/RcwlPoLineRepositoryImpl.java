@@ -7,6 +7,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.customize.util.CustomizeHelper;
+import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,7 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
             List<RCWLPoLineDetailDTO>  detailDTO = CustomizeHelper.ignore(()-> this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date));
 
             detailDTO.forEach(x->{
-                x.setAttributeVarchar21Meaning(rcwlPoLineMapper.queryWbsName(x.getAttributeVarchar21()));
+                x.setAttributeVarchar21Meanings(rcwlPoLineMapper.queryWbsName(x.getAttributeVarchar21()));
             });
 
             return detailDTO;
