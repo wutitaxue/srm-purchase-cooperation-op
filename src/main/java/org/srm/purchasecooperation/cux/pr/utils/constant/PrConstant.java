@@ -7,6 +7,8 @@ package org.srm.purchasecooperation.cux.pr.utils.constant;
  * @version:1.0
  */
 public interface PrConstant {
+
+    String RCWL_TENANT_CODE = "SRM-RCWL";
     /**
      * SPUC.PR_DEMAND_TYPE 申请类型值集
      * 标准申请     STANDARD
