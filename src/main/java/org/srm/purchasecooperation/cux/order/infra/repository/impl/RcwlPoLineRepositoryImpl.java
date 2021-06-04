@@ -85,10 +85,10 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
 
             //过滤 个性化页面查 追加mysql值字段
             List<RCWLPoLineDetailDTO>  detailDTO = CustomizeHelper.ignore(()-> this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date));
-
+            /*
             detailDTO.forEach(x->{
-                x.setAttributeVarchar21Meanings(rcwlPoLineMapper.queryWbsName(x.getAttributeVarchar21()));
-            });
+                x.setAttributeVarchar21Meanings(rcwlPoLineMapper.queryBudgetAccount(x.getAttributeVarchar21()));//x.getAttributeVarchar21()
+            });*/
 
             return detailDTO;
         });

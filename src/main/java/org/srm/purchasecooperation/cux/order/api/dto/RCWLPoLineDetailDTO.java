@@ -15,27 +15,25 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     private String attributeVarchar10;
 
     @ApiModelProperty("业务用途")
-    private String attributeVarchar21;
+    private String budgetAccountNum;
     @ApiModelProperty("业务用途Meanings")
     @Transient
-    private String attributeVarchar21Meanings;
+    private String budgetAccountName;
 
-    public String getAttributeVarchar21Meanings() {
-        return attributeVarchar21Meanings;
+    public String getBudgetAccountNum() {
+        return budgetAccountNum;
     }
 
-    public void setAttributeVarchar21Meanings(String attributeVarchar21Meanings) {
-        this.attributeVarchar21Meanings = attributeVarchar21Meanings;
+    public void setBudgetAccountNum(String budgetAccountNum) {
+        this.budgetAccountNum = budgetAccountNum;
     }
 
-    @Override
-    public String getAttributeVarchar21() {
-        return attributeVarchar21;
+    public String getBudgetAccountName() {
+        return budgetAccountName;
     }
 
-    @Override
-    public void setAttributeVarchar21(String attributeVarchar21) {
-        this.attributeVarchar21 = attributeVarchar21;
+    public void setBudgetAccountName(String budgetAccountName) {
+        this.budgetAccountName = budgetAccountName;
     }
 
     @Override
@@ -52,8 +50,8 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     public String toString() {
         return "RCWLPoLineDetailDTO{" +
                 "attributeVarchar10='" + attributeVarchar10 + '\'' +
-                ", attributeVarchar21='" + attributeVarchar21 + '\'' +
-                ", attributeVarchar21Meanings='" + attributeVarchar21Meanings + '\'' +
+                ", budgetAccountNum='" + budgetAccountNum + '\'' +
+                ", budgetAccountName='" + budgetAccountName + '\'' +
                 '}';
     }
 }

@@ -21,6 +21,8 @@
         sph.ship_to_location_address,
         sph.agent_id,
         spl.attribute_varchar21,
+        spl.attribute_varchar21 as budget_account_num,
+        ifnull(sba.budget_account_name,sbat.budget_account_name) as budget_account_name,
         spl.po_line_id,
         spl.line_num,
         spll.original_quantity,
@@ -283,7 +285,8 @@
         LEFT JOIN ssrc_source_result ssrpc ON ssrpc.result_id = sps.source_line_num AND spch.pc_source_code = 'SEARCH_SOURCE_RESULT'
         LEFT JOIN ssrc_rfx_line_item srlipc on srlipc.rfx_line_item_id=ssrpc.source_line_item_id AND ssrpc.source_from='RFX'
         LEFT JOIN ssrc_bid_line_item sblipc on sblipc.bid_line_item_id=ssrpc.source_line_item_id AND ssrpc.source_from='BID'
-
+        LEFT JOIN smdm_budget_account sba ON sba.budget_account_num = spl.attribute_varchar21
+        LEFT JOIN smdm_budget_account_tl sbat ON sbat.budget_account_id = sba.budget_account_id AND sbat.lang = #{lang}
         WHERE
         1 = 1
         AND spll.po_header_id = #{poHeaderId,jdbcType=DECIMAL}
