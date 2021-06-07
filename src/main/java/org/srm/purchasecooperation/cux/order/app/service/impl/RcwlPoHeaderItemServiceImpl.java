@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
+import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
     @Autowired
-    private RcwlPoHeaderItemService rcwlPoHeaderService;
+    private RcwlPoHeaderItemService rcwlPoHeaderItemService;
     @Autowired
     private PoLineRepository poLineRepository;
     @Autowired
@@ -72,18 +73,20 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
                 }else if("JD".equals(dsFlag)){
                     itemCode = categoryCode+"02"+item.getProductNum();
                 }else{
-                    String str = this.codeRuleBuilder.generateCode("SODR.RCWL.ITEM_CODE", (Map) null);
+                    String str = this.codeRuleBuilder.generateCode("SODR.RCWL.ITEM_CODE",  (Map) null);
                     itemCode = categoryCode+str;
                 }
 
                 //物料设值
                 item.setTenantId(tenantId);
                 //String categoryCode = item.getItemCode();
-                // String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
+               // String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SODR.RCWL.ITEM_CODE", "GLOBAL", "GLOBAL", (Map) null);
                 String ruleCode = this.codeRuleBuilder.generateCode("SMDM.ITEM", (Map) null);
                 item.setItemNumber(ruleCode);
                 item.setItemCode(itemCode);
                 item.setQueryItemCode(itemCode);
+                item.setSpecifications(item.getSpecifications());
+                item.setModel(item.getModel());
             });
             logger.info("物料封装数据:" + rcwlItemInfoVOList.toString());
             //批量插入物料表
