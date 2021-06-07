@@ -20,8 +20,11 @@ import org.hzero.core.base.BaseConstants.Flag;
 import org.hzero.core.convert.CommonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
+import org.srm.purchasecooperation.cux.pr.domain.vo.BudgetAccountVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPrLineMapper;
 import org.srm.purchasecooperation.order.api.dto.UserCacheDTO;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderCurrencyDto;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
@@ -53,7 +56,8 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
     private PrLineRepository prLineRepository;
     @Autowired
     private CustomizeSettingHelper customizeSettingHelper;
-
+    @Autowired
+    private RCWLPrLineMapper rcwlPrLineMapper;
     public RcwlPrLineImportServiceImpl() {
     }
 
@@ -105,6 +109,13 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
             PrLine prLineTmp = this.prImportMapper.queryInvOrganizationInfo(prLineImportVO);
             prLine.setInvOrganizationId(prLineTmp.getInvOrganizationId());
             prLine.setInvOrganizationName(prLineTmp.getInvOrganizationName());
+            //新增业务用途字段
+            if (StringUtils.isNotEmpty(prLineImportVO.getBudgetAccountNum())) {
+                BudgetAccountVO budgetAccountVO = this.rcwlPrLineMapper.selectBudgetAccount(prLineImportVO.getBudgetAccountNum(),tenantId);
+                if(!ObjectUtils.isEmpty(budgetAccountVO)){
+                    prLine.setBudgetAccountId(budgetAccountVO.getBudgetAccountId());
+                }
+            }
             if (StringUtils.isNotEmpty(prLineImportVO.getInventoryCode())) {
                 prLineTmp = this.prImportMapper.queryInventoryInfo(prLineImportVO);
                 prLine.setInventoryId(prLineTmp.getInventoryId());
