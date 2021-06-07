@@ -20,6 +20,7 @@
         sph.purchase_org_id,
         sph.ship_to_location_address,
         sph.agent_id,
+        spl.attribute_varchar21 as attribute_varchar210,
         spl.po_line_id,
         spl.line_num,
         spll.original_quantity,

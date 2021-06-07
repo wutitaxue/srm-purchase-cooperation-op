@@ -679,8 +679,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
      * @param approveFlag
      */
     @Override
-    public void afterBpmApprove(String prNum, String approveFlag) throws JsonProcessingException {
-        Long tenantId = DetailsHelper.getUserDetails().getTenantId();
+    public void afterBpmApprove(Long tenantId,String prNum, String approveFlag) throws JsonProcessingException {
+      //  Long tenantId = DetailsHelper.getUserDetails().getTenantId();
         //获取申请头信息
         PrHeader prHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
         if(prHeader!=null) {
@@ -702,8 +702,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
      * @param approveFlag
      */
     @Override
-    public void afterBpmApproveByChange(String prNum, String approveFlag) throws JsonProcessingException {
-        Long tenantId = DetailsHelper.getUserDetails().getTenantId();
+    public void afterBpmApproveByChange(Long tenantId,String prNum, String approveFlag) throws JsonProcessingException {
+      //  Long tenantId = DetailsHelper.getUserDetails().getTenantId();
 //        //释放变更后的金额
 //        PrHeader newPrHeader = this.rcwlItfPrDataRespository.selectPrHeaderByPrNum(prNum, tenantId);
 //        if(newPrHeader!=null) {

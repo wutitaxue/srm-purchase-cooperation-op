@@ -72,7 +72,7 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
                 }else if("JD".equals(dsFlag)){
                     itemCode = categoryCode+"02"+item.getProductNum();
                 }else{
-                    String str = this.codeRuleBuilder.generateCode("SODR.RCWL.ITEM_CODE", (Map) null);
+                    String str = this.codeRuleBuilder.generateCode("SODR.RCWL.ITEM_CODE",  (Map) null);
                     itemCode = categoryCode+str;
                 }
 
@@ -84,6 +84,8 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
                 item.setItemNumber(ruleCode);
                 item.setItemCode(itemCode);
                 item.setQueryItemCode(itemCode);
+                item.setSpecifications(item.getSpecifications());
+                item.setModel(item.getModel());
             });
             logger.info("物料封装数据:" + rcwlItemInfoVOList.toString());
             //批量插入物料表

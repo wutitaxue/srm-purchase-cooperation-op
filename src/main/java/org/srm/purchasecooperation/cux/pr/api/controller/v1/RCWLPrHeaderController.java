@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
-import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrToBpmService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrToBpmService;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
@@ -58,7 +58,7 @@ public class RCWLPrHeaderController {
    // @Autowired
    //private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
     @Autowired
-    private RCWLPrToBpmService rcwlPrToBpmService;
+    private RcwlPrToBpmService rcwlPrToBpmService;
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
 
 
@@ -125,7 +125,8 @@ public class RCWLPrHeaderController {
             prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
             this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
         }
-        this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
+        String dataToBpmUrl = this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
+        prHeader.setAttributeVarchar37(dataToBpmUrl);
         return Results.success(prHeader);
     }
 
@@ -207,7 +208,8 @@ public class RCWLPrHeaderController {
         if ((CollectionUtils.isNotEmpty(approveSet) || "REJECTED".equals(prHeader.getPrStatusCode())) && syncFlag) {
             this.prHeaderService.afterChangeSubmit(tenantId, prHeader);
         }
-        this.rcwlPrToBpmService.prDataToBpm(prHeader, "change");
+        String prDataToBpm = this.rcwlPrToBpmService.prDataToBpm(prHeader, "change");
+        prHeader.setAttributeVarchar37(prDataToBpm);
         return Results.success(prHeader);
     }
 
@@ -223,7 +225,7 @@ public class RCWLPrHeaderController {
               if(!StringUtils.isEmpty(prNum)){
                   //bpm回传拒绝标识时触发预算释放接口
                   if(RCWLConstants.BPMApproveFlag.REJECTED.equals(approveFlag)) {
-                      this.rcwlPrItfService.afterBpmApprove(prNum, approveFlag);
+                      this.rcwlPrItfService.afterBpmApprove(tenantId,prNum, approveFlag);
                   }
               }
         return Results.success();
@@ -241,7 +243,7 @@ public class RCWLPrHeaderController {
         if(!StringUtils.isEmpty(prNum)){
             //bpm回传拒绝标识时触发预算接口
             if(RCWLConstants.BPMApproveFlag.REJECTED.equals(approveFlag)) {
-                this.rcwlPrItfService.afterBpmApproveByChange(prNum, approveFlag);
+                this.rcwlPrItfService.afterBpmApproveByChange(tenantId,prNum, approveFlag);
             }
         }
         return Results.success();
