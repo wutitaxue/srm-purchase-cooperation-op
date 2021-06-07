@@ -1,9 +1,13 @@
 package org.srm.purchasecooperation.cux.act.app.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
+import io.choerodon.core.oauth.CustomClientDetails;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import javassist.Loader;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
@@ -13,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.purchasecooperation.common.infra.mapper.TenantMapper;
@@ -25,11 +30,18 @@ import org.srm.purchasecooperation.cux.act.domain.repository.ActHeaderRespositor
 import org.srm.purchasecooperation.cux.act.domain.repository.ActLineRespository;
 import org.srm.purchasecooperation.cux.act.infra.repsitory.impl.ActHeaderRespositoryImpl;
 import org.srm.purchasecooperation.cux.act.infra.utils.rcwlActConstant;
+import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
+import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
+import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxLineService;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
+import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxHeaderRepository;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.web.annotation.Tenant;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -53,6 +65,10 @@ public class ActServiceImpl implements ActService {
     @Autowired
     private SinvRcvTrxHeaderService sinvRcvTrxHeaderService;
     @Autowired
+    private SinvRcvTrxHeaderRepository sinvRcvTrxHeaderRepository;
+    @Autowired
+    private SinvRcvTrxLineService sinvRcvTrxLineService;
+    @Autowired
     private TenantMapper tenantMapper;
     @Autowired
     private SinvRcvTrxHeaderDomainService sinvRcvTrxHeaderDomainService;
@@ -72,7 +88,7 @@ public class ActServiceImpl implements ActService {
      * @return ActListHeaderDto
      */
     @Override
-    public ActListHeaderDto actQuery( Long acceptListHeaderId, Long organizationId ) throws IOException {
+    public ActListHeaderDto actQuery(Long acceptListHeaderId, Long organizationId) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ActListHeaderDto actListHeaderDto = actHeaderRespository.actQuery(acceptListHeaderId, organizationId);
         actListHeaderDto.setYSDDH(actLineRespository.actQuery(acceptListHeaderId, organizationId));
@@ -86,6 +102,11 @@ public class ActServiceImpl implements ActService {
             }
         }
         actListHeaderDto.setURL(actListFilesDtoList);
+        String Url = profileClient.getProfileValueByOptions("RCWL_YS_TO_BPM_URL");
+        //设置bpm查看链接
+        actListHeaderDto.setUrlMX(Url.replace("@param1", actListHeaderDto.getUrlMX()));
+        //设置标题
+        actListHeaderDto.setfSubject(actListHeaderDto.getTrxNum() + actListHeaderDto.getPcName() + actListHeaderDto.getAcceptOrName());
         String reSrcSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQSRCSYS");
         String reqTarSys = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_REQTARSYS");
 
@@ -119,13 +140,12 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
-    public RcwlBpmUrlDto rcwlActSubmitBpm( Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO ) throws IOException {
+    public RcwlBpmUrlDto rcwlActSubmitBpm(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) throws IOException {
         //执行更新操作
-        if (BaseConstants.Flag.YES.equals(sinvRcvTrxHeaderDTO.getExecuteUpdateFlag())) {
-            sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
-        }
+        sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
+
         //调用bpm接口
-        ActListHeaderDto actListHeaderDto = this.actQuery(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(),tenantId);
+        ActListHeaderDto actListHeaderDto = this.actQuery(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), tenantId);
         RcwlBpmUrlDto rcwlBpmUrlDto = new RcwlBpmUrlDto();
         String ip = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_BPM_URLIP");
         rcwlBpmUrlDto.setUrl("http://" + ip + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMYSDSP&BOID=" + sinvRcvTrxHeaderDTO.getTrxNum());
@@ -133,49 +153,92 @@ public class ActServiceImpl implements ActService {
     }
 
     @Override
-    public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess( Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19 ) {
+    @Transactional(rollbackFor = Exception.class)
+    public SinvRcvTrxHeaderDTO RcwlBpmSubmitSuccess(Long tenantId, String settleNum, String attributeVarchar18, String attributeVarchar19) {
+        ObjectMapper mapper = new ObjectMapper();
+        logger.info("获取配置：" + profileClient.getProfileValueByOptions(tenantId, null, null, "RCWL_USER_ID"));
+        CustomUserDetails customClientDetails = DetailsHelper.getUserDetails();
+        customClientDetails.setOrganizationId(tenantId);
+        customClientDetails.setTenantId(tenantId);
+        DetailsHelper.setCustomUserDetails(customClientDetails);
+        try {
+            logger.info("用户信息：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(DetailsHelper.getUserDetails()));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+
+        logger.info("-------查询验收单id-----：" + settleNum + " ；attributeVarchar18：" + attributeVarchar18 + "；attributeVarchar19" + attributeVarchar19);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
+        logger.info("-------查询sinvRcvTrxHeaderDTO开始：" + settleId);
         SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = sinvRcvTrxHeaderService.getHeaderDetail(tenantId, settleId);
+        PageRequest pageRequest = new PageRequest();
+        pageRequest.setSize(100);
+        List<SinvRcvTrxLineDTO> sinvRcvTrxLineList = sinvRcvTrxLineService.pageRcvTrxLineDetail(tenantId, settleId, pageRequest);
         //更新值
 //        attribute_varchar19 流程ID
 //        attribute_varchar18 BPM链接
+        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineList);
         sinvRcvTrxHeaderDTO.setAttributeVarchar18(attributeVarchar18);
-        sinvRcvTrxHeaderDTO.setAttributeVarchar18(attributeVarchar19);
+        sinvRcvTrxHeaderDTO.setAttributeVarchar19(attributeVarchar19);
+        logger.info("-----------执行更新开始---------");
         sinvRcvTrxHeaderService.updateSinv(tenantId, sinvRcvTrxHeaderDTO);
+        logger.info("-----------执行更新结束---------");
 
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "SUBMITTED", sinvRcvTrxHeaderDTO);
+        logger.info("--------adaptorTaskCheckBeforeStatusUpdate结束：------------RcvStrategyLine 策略查询开始：-----");
         RcvStrategyLine rcvStrategyLine = sinvRcvTrxHeaderService.selectRcvNowNodeConfig(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId(), (Long) null);
+        logger.info("-------------查询策略结束：---------------");
+        try {
+            logger.info("-------------rcvStrategyLine:" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcvStrategyLine));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         if ("WFL".equals(((RcvStrategyLine) Optional.ofNullable(rcvStrategyLine).orElse(new RcvStrategyLine())).getApproveRuleCode())) {
             sinvRcvTrxHeaderDomainService.submittedSinvToWFL(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
             return sinvRcvTrxHeaderDTO;
         } else {
-            sinvRcvTrxHeaderService.submittedSinvNone(tenantId, sinvRcvTrxHeaderDTO, rcvStrategyLine);
+            //直接改状态
+            SinvRcvTrxHeader sinvRcvTrxHeader = (SinvRcvTrxHeader) this.sinvRcvTrxHeaderRepository.selectByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+            sinvRcvTrxHeader.setRcvStatusCode("20_SUBMITTED");
+            this.sinvRcvTrxHeaderRepository.updateOptional(sinvRcvTrxHeader, new String[]{"rcvStatusCode"});
             return sinvRcvTrxHeaderDTO;
         }
     }
 
     @Override
-    public Void RcwlBpmApproved( Long tenantId, String settleNum ) {
+    @Transactional(rollbackFor = Exception.class)
+    public Void RcwlBpmApproved(Long tenantId, String settleNum) {
+        CustomUserDetails customClientDetails = DetailsHelper.getUserDetails();
+        customClientDetails.setOrganizationId(tenantId);
+        customClientDetails.setTenantId(tenantId);
+        DetailsHelper.setCustomUserDetails(customClientDetails);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "APPROVED");
         return null;
     }
 
     @Override
-    public Void RcwlBpmReject( Long tenantId, String settleNum ) {
+    @Transactional(rollbackFor = Exception.class)
+    public Void RcwlBpmReject(Long tenantId, String settleNum) {
+        CustomUserDetails customClientDetails = DetailsHelper.getUserDetails();
+        customClientDetails.setOrganizationId(tenantId);
+        customClientDetails.setTenantId(tenantId);
+        DetailsHelper.setCustomUserDetails(customClientDetails);
         Long settleId = actHeaderRespository.settleIdQuery(settleNum);
         sinvRcvTrxHeaderService.workflowApprove(tenantId, settleId, "30_REJECTED");
         return null;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Void RcwlBpmReject3(Long tenantId, String settleNum) {
         actHeaderRespository.updateBpmInstanceId(settleNum);
         return null;
     }
 
 
-    protected void adaptorTaskCheckBeforeStatusUpdate( Long tenantId, String operationCode, Object data ) {
+    protected void adaptorTaskCheckBeforeStatusUpdate(Long tenantId, String operationCode, Object data) {
         String tenantNum = this.tenantMapper.queryTenantNumById(tenantId);
 
         try {

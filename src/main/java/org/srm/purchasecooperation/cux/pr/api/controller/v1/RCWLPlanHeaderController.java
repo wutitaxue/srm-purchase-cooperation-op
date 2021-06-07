@@ -133,11 +133,10 @@ public class RCWLPlanHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     //@Permission(permissionPublic = true)
     @PostMapping("/bpm-approve")
-    public ResponseEntity bpmApproveToPlanHeader(@RequestParam(value = "processNum") String processNum,@RequestParam(value = "approveFlag") String approveFlag){
+    public ResponseEntity bpmApproveToPlanHeader(@PathVariable Long organizationId,@RequestParam(value = "processNum") String processNum,@RequestParam(value = "approveFlag") String approveFlag){
         if(StringUtils.isNotEmpty(processNum)&&StringUtils.isNotEmpty(approveFlag)) {
             this.RCWLPlanHeaderService.updateStateFromBPM(processNum, approveFlag);
         }
         return Results.success();
     }
-
 }

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.pr.app.service.PrManageDomainService;
 import org.srm.purchasecooperation.common.app.MdmService;
@@ -84,7 +85,8 @@ public class RcwlGeneratorPoByPrDomainServiceImpl extends GeneratorPoByPrDomainS
         poLine.setItemName(prLine.getItemName());
         //融创新增 将物料名称插入需求物料描述
         poLine.setAttributeVarchar10(prLine.getItemName());
-
+        //融创协议编号
+        poLine.setPcNum(StringUtils.isEmpty(prLine.getAttributeVarchar40())?null:prLine.getAttributeVarchar40());
         poLine.setCategoryId(prLine.getCategoryId());
         poLine.setQuantity(prLine.getThisOrderQuantity());
         poLine.setPurchaseBatch(BigDecimal.ONE);

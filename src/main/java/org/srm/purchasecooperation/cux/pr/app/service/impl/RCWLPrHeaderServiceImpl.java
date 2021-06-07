@@ -3,19 +3,27 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.CaseFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import org.activiti.rest.service.api.engine.variable.RestVariable;
+import org.activiti.rest.service.api.runtime.process.ProcessInstanceCreateRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.boot.customize.service.CustomizeClient;
+import org.hzero.boot.platform.plugin.hr.EmployeeHelper;
+import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.redis.RedisHelper;
+import org.hzero.core.util.ResponseUtils;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -23,7 +31,11 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
+import org.srm.boot.common.cache.impl.AbstractKeyGenerator;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
+import org.srm.boot.platform.group.GroupApproveHelper;
+import org.srm.boot.platform.group.dto.ProcessApproveDTO;
+import org.srm.boot.saga.utils.SagaClient;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
@@ -33,6 +45,7 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataResposi
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
+import org.srm.purchasecooperation.order.infra.constant.MessageCode;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
@@ -41,6 +54,7 @@ import org.srm.purchasecooperation.pr.domain.entity.*;
 import org.srm.purchasecooperation.pr.domain.repository.*;
 import org.srm.purchasecooperation.pr.domain.vo.PrCopyFieldsVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.web.annotation.Tenant;
 
@@ -82,6 +96,17 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
+    private GroupApproveHelper groupApproveHelper;
+    @Autowired
+    private WorkflowClient workflowClient;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private ScecRemoteService scecRemoteService;
+    @Autowired
+    private RedisHelper redisHelper;
+
+    @Autowired
     private PrLineSupplierRepository prLineSupplierRepository;
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
@@ -94,6 +119,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             "expenseUnitId", "parentUnitId", "expenseUnitName", "invoiceCompanyId", "accepterUserId", "inventoryId", "categoryId", "techGuidanceFlag", "techDirectorUserId",
             "prTypeId", "requestedBy", "prRequestedName", "previousPrStatusCode", "localCurrencyNoTaxSum", "localCurrencyTaxSum", "localCurrency", "originalCurrency"};
 
+
+
+    private static final String PR_CHANGE_STATUS = "CHANGE";
     /**
      * 融创采购申请更新二开接口
      *
@@ -177,8 +205,10 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             } }
-            prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
-            return ((PrHeaderService) this).submit(tenantId, prHeader);
+//            prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
+//            return ((PrHeaderService) this).submit(tenantId, prHeader);
+            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "提交至BPM");
+            return prHeader;
         }
     }
 
@@ -207,6 +237,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             prHeader.setPrLineList(this.prLineService.updatePrLinesForChange(prHeader));
             prHeader.batchMaintainDateAndCountAmount(this.prLineRepository);
             prHeader.setChangedFlag(BaseConstants.Flag.YES);
+            prHeader.setPrStatusCode(PR_CHANGE_STATUS);
             this.prHeaderRepository.updateByPrimaryKeySelective(prHeader);
         } else {
             this.deleteOrInsertLines(beforePrLineMap, prHeader);
@@ -243,7 +274,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             approveSet.clear();
         } else {
             LOGGER.info("Purchase requisition change submitting -------------");
-            this.submit(tenantId, prHeader);
+            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "变更提交至BPM");
+//            this.submit(tenantId, prHeader);
         }
 
         LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit end -------------");
