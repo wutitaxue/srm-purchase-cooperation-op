@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.cux.pr.domain.vo.BudgetAccountVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
 
 /**
@@ -30,4 +31,6 @@ public interface RCWLPrLineMapper extends BaseMapper<PrLine> {
     PrHeaderVO selectByNum(@Param("prNum") String prNum, @Param("lineNum") String lineNum, @Param("tenantId") Long tenantId);
 
     PrLine selectPrLineRecord(@Param("prLineId")Long prLineId);
+
+    BudgetAccountVO selectBudgetAccount(@Param("budgetAccountNum")String budgetAccountNum, @Param("tenantId")Long tenantId);
 }

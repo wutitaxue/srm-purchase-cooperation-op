@@ -355,4 +355,14 @@
     </select>
     <select id="selectPrLineRecord" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.PrLine">
     </select>
+    <select id="selectBudgetAccount" resultType="org.srm.purchasecooperation.cux.pr.domain.vo.BudgetAccountVO">
+                           SELECT
+                   	sba.budget_account_id,
+                   	sba.budget_account_name
+                   FROM
+                   	smdm_budget_account sba
+                   WHERE
+                   	sba.budget_account_num = #{budgetAccountNum}
+                   	AND sba.tenant_id = #{tenantId}
+    </select>
 </mapper>
