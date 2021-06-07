@@ -4,10 +4,12 @@ import com.alibaba.fastjson.JSON;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import javassist.Loader;
+import org.hzero.boot.platform.profile.ProfileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.cux.acp.api.dto.*;
 import org.srm.purchasecooperation.cux.acp.app.service.RCWLAcpOcrService;
 import org.srm.purchasecooperation.cux.acp.app.service.RCWLAcpUserDataService;
@@ -42,6 +44,9 @@ public class RCWLAcpOcrServiceImpl implements RCWLAcpOcrService {
     @Autowired
     private RCWLAcpInvoiceHeaderRepository rcwlAcpInvoiceHeaderRepository;
 
+    @Autowired
+    private ProfileClient profileClient;
+
     /**
      * 获取发票以及人员信息
      */
@@ -49,6 +54,7 @@ public class RCWLAcpOcrServiceImpl implements RCWLAcpOcrService {
     public RCWLAcpOcrDTO acpGetData(RCWLAcpInvoiceData rcwlAcpInvoiceData) {
         String documentType = rcwlAcpInvoiceData.getDocumentType();
         String systemSource = rcwlAcpInvoiceData.getSystemSource();
+        String url = profileClient.getProfileValueByOptions(DetailsHelper.getUserDetails().getTenantId(), DetailsHelper.getUserDetails().getUserId(), DetailsHelper.getUserDetails().getRoleId(), "RCWL_ELEPHANT_URL");
         Long tenantId = DetailsHelper.getUserDetails().getTenantId();
         RCWLAcpUserDataDTO rcwlAcpUserDataDTO = new RCWLAcpUserDataDTO();
         RCWLAcpOcrDTO rcwlAcpOcrDTO = new RCWLAcpOcrDTO();
@@ -72,7 +78,8 @@ public class RCWLAcpOcrServiceImpl implements RCWLAcpOcrService {
         rcwlAcpUserDataDTO.setSystemSource(systemSource);
         logger.info("rcwlAcpUserDataDTO:" + JSON.toJSONString(rcwlAcpUserDataDTO));
         //base64加密
-        rcwlAcpOcrDTO.setUrl(RCWLAcpConstant.URL + Base64.getEncoder().encodeToString(JSON.toJSONString(rcwlAcpUserDataDTO).getBytes(Charset.defaultCharset())));
+        url = ObjectUtils.isEmpty(url) ? RCWLAcpConstant.URL : url;
+        rcwlAcpOcrDTO.setUrl(url + Base64.getEncoder().encodeToString(JSON.toJSONString(rcwlAcpUserDataDTO).getBytes(Charset.defaultCharset())));
         return rcwlAcpOcrDTO;
     }
 
@@ -118,7 +125,7 @@ public class RCWLAcpOcrServiceImpl implements RCWLAcpOcrService {
 
             String srcStr = RCWLAcpConstant.SRCSTR + "authorize=" + JSON.toJSONString(rcwlAcpInvoiceElephantAuthorizeDTO) + "&globalInfo=" + JSON.toJSONString(rcwlAcpInvoiceElephantGlobalInfoDTO) + "&data=" + Base64.getEncoder().encodeToString(JSON.toJSONString(rcwlAcpInvoiceElephantDataDTO).getBytes(Charset.defaultCharset()));
 
-            logger.info("data:"+JSON.toJSONString(rcwlAcpInvoiceElephantDataDTO));
+            logger.info("data:" + JSON.toJSONString(rcwlAcpInvoiceElephantDataDTO));
             logger.info(Base64.getEncoder().encodeToString(JSON.toJSONString(rcwlAcpInvoiceElephantDataDTO).getBytes(Charset.defaultCharset())));
             logger.info("srcStr:" + srcStr);
             //获取加密字符串
