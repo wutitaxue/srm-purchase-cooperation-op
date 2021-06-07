@@ -109,7 +109,7 @@ public class RCWLPlanHeaderImportServiceImpl extends BatchImportHandler {
                 String demanders = RCWLPlanHeaderRepository.selectDemanders(planHeaderVo.getDemanders(), tenantId);
                 String agent = RCWLPlanHeaderRepository.selectAgent(planHeaderVo.getAgent(), tenantId);
 
-                String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_HEADER", "GLOBAL", "GLOBAL", (Map) null);
+                String str = this.codeRuleBuilder.generateCode("SSRC.RCWL.PLAN_HEADER",  (Map) null);
                 planHeaderVo.setPlanNum(str);
 
                 planHeaderVo.setCompanyName(companyName);

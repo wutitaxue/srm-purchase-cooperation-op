@@ -116,16 +116,17 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         Assert.notNull(planHeaderParam, BaseConstants.ErrorCode.NOT_NULL);
         logger.info("test", planHeaderParam.getPrHeaderId());
         logger.info("test1", planHeaderParam.toString());
+        String str = this.codeRuleBuilder.generateCode( "SSRC.RCWL.PLAN_HEADER", (Map) null);
         if (planHeaderParam.getPlanId() == null) {
             if (planHeaderParam.getPrHeaderId() == null) {
                 planHeaderParam.setState(Constants.PlanHeaderState.NOT);
-                String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_HEADER", "GLOBAL", "GLOBAL", (Map) null);
+//                String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_HEADER", "GLOBAL", "GLOBAL", (Map) null);
                 planHeaderParam.setPlanNum(str);
                 RCWLPlanHeaderRepository.insertSelective(planHeaderParam);
                 logger.info("计划id:{}" + planHeaderParam.getPlanId());
             } else {
                 planHeaderParam.setState(Constants.PlanHeaderState.ALREADY);
-                String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_HEADER", "GLOBAL", "GLOBAL", (Map) null);
+//                String str = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_HEADER", "GLOBAL", "GLOBAL", (Map) null);
                 planHeaderParam.setPlanNum(str);
                 logger.info("plan_num:{}" + str);
                 RCWLPlanHeaderRepository.insertSelective(planHeaderParam);
@@ -265,7 +266,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         logger.info("planHeaderList:" + planHeaderList);
 
         List<PlanHeader> list = new ArrayList<>();
-        String processNum = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_BPM", "GLOBAL", "GLOBAL", (Map) null);
+        String processNum = this.codeRuleBuilder.generateCode( "SSRC.RCWL.PLAN_BPM",(Map) null);
         planHeaderList.forEach(planHeader -> {
             if (!Constants.PlanHeaderApprovalStatus.NEW.equals(planHeader.getApprovalStatus())) {
                 throw new CommonException("只有审批状态为新建的单据才可以提交");
