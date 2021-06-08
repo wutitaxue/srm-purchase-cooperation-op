@@ -119,7 +119,19 @@
         --             CONCAT(sprh.display_pr_num,CONCAT('|',sprl.display_line_num)) as display_pr_num_and_display_pr_line_num,
         spl.catalog_name,
         spl.ladder_inquiry_flag,
-        (case when spch.pc_num is null then concat(spchd.pc_num,CONCAT('|',spsj.line_num)) else concat(spch.pc_num,CONCAT('|',sps.line_num)) end) AS  contract_num,
+       -- (case when spch.pc_num is null then concat(spchd.pc_num,CONCAT('|',spsj.line_num)) else concat(spch.pc_num,CONCAT('|',sps.line_num)) end) AS  contract_num,
+        IFNULL((
+        CASE
+        WHEN spch.pc_num IS NULL THEN
+        concat(
+        spchd.pc_num,
+        CONCAT( '|', spsj.line_num )) ELSE concat(
+        spch.pc_num,
+        CONCAT( '|', sps.line_num ))
+        END
+        ),
+        spl.pc_num
+        ) AS contract_num,
 
         --             查询出订单来源的申请信息
         --             case when spch.pc_source_code='PURCHASE_NEED' then concat(sps.source_code,CONCAT('|',sps.source_line_num)) else CONCAT(sprh.display_pr_num,CONCAT('|',sprl.display_line_num))
