@@ -1888,4 +1888,8 @@
         sph.tenant_id = #{tenantId}
         and sph.mall_pr_num = #{mallPrNum}
     </select>
+
+    <select id="selectUserId" resultType="java.lang.Long">
+        SELECT ht.id from iam_user ht where ht.login_name = 'admin'
+    </select>
 </mapper>
