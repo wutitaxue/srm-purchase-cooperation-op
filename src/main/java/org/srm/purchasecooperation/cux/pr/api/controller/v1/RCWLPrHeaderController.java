@@ -22,6 +22,7 @@ import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrToBpmService;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrHeaderMapper;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -60,7 +61,8 @@ public class RCWLPrHeaderController {
     @Autowired
     private RcwlPrToBpmService rcwlPrToBpmService;
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
-
+    @Autowired
+    private RcwlPrHeaderMapper rcwlPrHeaderMapper;
 
 //    @ApiOperation("采购申请批量提交")
 //    @Permission(
@@ -247,5 +249,22 @@ public class RCWLPrHeaderController {
             }
         }
         return Results.success();
+    }
+
+    @ApiOperation("采购申请审批通过")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @PostMapping({"/purchase-requests/approve/approval"})
+    public ResponseEntity<List<PrHeader>> prApproval(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrHeader> prHeaderList) {
+        //增加用户
+        Long userid = rcwlPrHeaderMapper.selectUserId();
+        DetailsHelper.setCustomUserDetails(userid,"zh_CN");
+
+        List<PrHeader> prHeaderApprovalList = this.prHeaderService.prApproval(tenantId, prHeaderList, Boolean.TRUE);
+        this.prHeaderService.exportPrToErp(tenantId, prHeaderApprovalList);
+        ((PrHeader)prHeaderApprovalList.get(0)).setCustomUserDetails(DetailsHelper.getUserDetails());
+        this.prHeaderService.afterPrApprove(tenantId, prHeaderApprovalList);
+        return Results.success(prHeaderApprovalList);
     }
 }

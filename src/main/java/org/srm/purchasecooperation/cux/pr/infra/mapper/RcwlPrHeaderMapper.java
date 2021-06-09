@@ -25,6 +25,8 @@ public interface RcwlPrHeaderMapper extends PrHeaderMapper, ExtendMapper<PrHeade
     @Override
     List<PrHeaderVO> selectWorkbenchPrSummaries(PrHeaderDTO prHeaderDTO);
 
+    Long selectUserId();
+
     @Override
     List<PrHeaderVO> selectCancellablePr(PrHeaderDTO prHeaderDTO);
 }
