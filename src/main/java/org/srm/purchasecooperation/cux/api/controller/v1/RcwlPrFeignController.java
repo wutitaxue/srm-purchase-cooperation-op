@@ -95,12 +95,12 @@ public class RcwlPrFeignController {
     )
     @PostMapping({"/purchase-requests/approve/prapproval"})
     public ResponseEntity<List<PrHeader>> prApproval(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrHeader> prHeaderList) {
-        prHeaderList.forEach(item -> {
-            PrHeader prHeader = new PrHeader();
-            prHeader.setTenantId(item.getTenantId());
-            prHeader.setPrHeaderId(item.getPrHeaderId());
-            item.setObjectVersionNumber(prHeaderRepository.selectOne(item).getObjectVersionNumber());
-        });
+//        prHeaderList.forEach(item -> {
+//            PrHeader prHeader = new PrHeader();
+//            prHeader.setTenantId(item.getTenantId());
+//            prHeader.setPrHeaderId(item.getPrHeaderId());
+//            item.setObjectVersionNumber(prHeaderRepository.selectOne(item).getObjectVersionNumber());
+//        });
         List<PrHeader> prHeaderApprovalList = this.prHeaderService.prApproval(tenantId, prHeaderList, Boolean.TRUE);
         this.prHeaderService.exportPrToErp(tenantId, prHeaderApprovalList);
         ((PrHeader)prHeaderApprovalList.get(0)).setCustomUserDetails(DetailsHelper.getUserDetails());
