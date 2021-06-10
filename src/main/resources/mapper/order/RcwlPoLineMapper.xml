@@ -314,4 +314,171 @@
     <select id="queryWbsName" resultType="java.lang.String">
         select wbs_name from smdm_wbs where wbs_code = #{wbsCode}
     </select>
+    <select id="selectContractResult" resultType="org.srm.purchasecooperation.order.api.dto.ContractResultDTO">
+        SELECT
+        spc.quantity,
+        spc.chanage_order_quantity,
+        spc.quantity - spc.chanage_order_quantity AS residue_order_quantity,
+        spc.pc_subject_id,
+        spc.pc_header_id,
+        spc.tenant_id,
+        spc.line_num,
+        spc.display_line_num,
+        spc.item_id,
+        spc.item_code,
+        spc.item_name,
+        spc.specification,
+        spc.uom_id,
+        CASE
+
+        WHEN spc.uom_code IS NULL THEN
+        su.uom_code ELSE spc.uom_code
+        END AS uom_code,
+        CASE
+
+        WHEN spc.uom_name IS NULL THEN
+        su.uom_name ELSE spc.uom_name
+        END AS uom_name,
+        spc.tax_id,
+        CASE
+
+        WHEN spc.tax_rate IS NULL THEN
+        st.tax_rate ELSE spc.tax_rate
+        END AS tax_rate,
+        st.tax_code,
+        spc.currency_code,
+        sc.currency_name,
+        spc.tax_included_unit_price as entered_tax_included_price,
+        spc.tax_included_line_amount,
+        spc.unit_price,
+        spc.line_amount,
+        spc.deliver_date,
+        spc.category_id,
+        spc.remark,
+        sic.category_name,
+        sic.category_code,
+        sph.pc_num,
+        sph.pc_name,
+        sph.company_id,
+        CASE
+        WHEN sph.company_num IS NULL THEN
+        hc.company_num ELSE sph.company_num
+        END AS company_num,
+        CASE
+
+        WHEN sph.company_name IS NULL THEN
+        hc.company_name ELSE sph.company_name
+        END AS company_name,
+        iu.real_name AS created_by_name,
+        sph.creation_date,
+        hou.ou_id,
+        hou.ou_name,
+        hpo.organization_name AS purchase_org_name,
+        hpa.purchase_agent_name AS agent_name,
+        hpo.purchase_org_id ,
+        sph1.pc_num as main_pc_num,
+        hpa.purchase_agent_id AS agent_id,
+        sph.pc_kind_code,
+        sph.supplier_id,
+        sph.pc_type_id,
+        CASE
+        WHEN sph.supplier_num IS NULL THEN  sec.supplier_num
+        ELSE sph.supplier_num END as supplier_num,
+        CASE
+        WHEN sph.supplier_name IS NULL THEN  sec.supplier_name
+        ELSE sph.supplier_name END as supplier_name,
+        sph.supplier_company_id,
+        sph.supplier_company_num,
+        sph.supplier_company_name,
+        sph.supplier_tenant_id,
+        spc.model,
+        spc.specifications,
+        spt.order_quantity_flag,
+        spc.unit_price_batch,
+        spc.chart_version,
+        spc.exchange_rate,
+        spc.inv_organization_id,
+        spt.order_type_id
+        FROM
+        spcm_pc_subject spc
+        LEFT JOIN spcm_pc_header sph ON spc.pc_header_id = sph.pc_header_id
+        LEFT JOIN spcm_pc_header sph1 ON sph1.pc_header_id=sph.main_contract_id
+        LEFT JOIN smdm_uom su ON su.uom_id = spc.uom_id
+        LEFT JOIN smdm_tax st ON st.tax_id = spc.tax_id
+        LEFT JOIN smdm_item_category sic ON sic.category_id = spc.category_id
+        LEFT JOIN smdm_currency sc ON ( sc.currency_code = spc.currency_code AND sc.tenant_id = spc.tenant_id )
+        LEFT JOIN spcm_pc_subject sps ON spc.pc_subject_id = sps.pc_subject_id
+        LEFT JOIN hpfm_company hc ON hc.company_id = sph.company_id
+        LEFT JOIN sslm_external_supplier sec ON sec.supplier_id = sph.supplier_id
+        LEFT JOIN iam_user iu ON iu.id = sph.created_by
+        LEFT JOIN hpfm_operation_unit hou ON sph.ou_id = hou.ou_id
+        LEFT JOIN hpfm_purchase_agent hpa ON hpa.purchase_agent_id = sph.purchase_agent_id
+        LEFT JOIN hpfm_purchase_organization hpo ON hpo.purchase_org_id = sph.purchase_org_id
+        INNER JOIN spcm_pc_type spt ON sph.pc_type_id=spt.pc_type_id
+        WHERE
+
+        spc.tenant_id = #{tenantId}
+        and spc.delete_flag is NULL
+        AND (
+        ( sph.pc_status_code = 'EFFECTED' AND sph.electric_sign_flag = 1 )
+        OR ( sph.pc_status_code = 'CONFIRMED' AND sph.electric_sign_flag = 0 )
+        OR sph.pc_status_code = 'ARCHIVE'
+        )
+        AND sph.pc_kind_code = 'NORMAL'
+        AND ((spt.effective_time_flag=1 AND sph.end_date_active >= #{contractResult.currencyDateToDate}) OR spt.effective_time_flag=0)
+        AND ((spt.order_quantity_flag=1 and (spc.quantity - spc.chanage_order_quantity)>0) OR spt.order_quantity_flag=0)
+        /*过滤已经进入到收货执行里面的数据*/
+        AND  spc.pc_header_id NOT in (SELECT from_pc_header_id from sinv_rcv_trx_order_link srtol where srtol.tenant_id  and  srtol.from_pc_header_id  GROUP BY srtol.from_pc_header_id ,srtol.tenant_id)
+        /* AND NOT EXISTS (SELECT 1 from sinv_rcv_trx_order_link srtol where srtol.tenant_id = spc.tenant_id and  srtol.from_pc_header_id = spc.pc_header_id)*/
+        /* 查询条件*/
+        /* 采购协议编号*/
+        <if test="contractResult.pcNum != null and  contractResult.pcNum != ''">
+            <bind name="pcNumLike" value="'%'+contractResult.pcNum +'%'"></bind>
+            AND sph.pc_num like #{pcNumLike}
+        </if>
+        /* 采购协议名称*/
+        <if test="contractResult.pcName != null and  contractResult.pcName != ''">
+            <bind name="pcNameLike" value="'%'+contractResult.pcName +'%'"></bind>
+            AND sph.pc_name like #{pcNameLike}
+        </if>
+        /* 物品名称*/
+        <if test="contractResult.itemName != null and  contractResult.itemName != ''">
+            <bind name="itemNameLike" value="'%'+contractResult.itemName +'%'"></bind>
+            AND spc.item_name like #{itemNameLike}
+        </if>
+        /* 公司*/
+        <if test="contractResult.companyId != null">
+            AND sph.company_id = #{contractResult.companyId}
+        </if>
+
+        /* 协议性质*/
+        <if test="contractResult.pcKindCode != null">
+            AND sph.pc_kind_code = #{contractResult.pcKindCode}
+        </if>
+        /* 创建日期从*/
+        <if test="contractResult.creationDateFrom != null">
+            AND sph.creation_date &gt;= #{contractResult.creationDateFrom}
+        </if>
+        /* 创建日期至*/
+        <if test="contractResult.creationDateTo != null">
+            AND sph.creation_date &lt; #{contractResult.creationDateTo}
+        </if>
+        /* 协议类型*/
+        <if test="contractResult.pcTypeId != null">
+            AND sph.pc_type_id = #{contractResult.pcTypeId}
+        </if>
+        /* 创建人*/
+        <if test="contractResult.createdByName != null">
+            AND iu.real_name = #{contractResult.createdByName}
+        </if>
+        /* 主协议*/
+        <if test="contractResult.pcHeaderId != null">
+            AND sph.pc_header_id = #{contractResult.pcHeaderId}
+        </if>
+        /* 供应商 (协议对象)*/
+        <if test="contractResult.supplierCompanyId != null">
+            AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
+        </if>
+        AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )
+    </select>
 </mapper>
