@@ -86,7 +86,7 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
                 });
             }
             int total =(int)page1.getTotalElements() ;
-            Page<PoHeaderAccordingToLineOfReferenceVO> page = new Page(StringUtils.isNotBlank(attributeVarchar40)&&"rcwl".equals(attributeVarchar40)?newList:voList, new PageInfo(0, total == 0 ? 1 : total), (long) total);
+            Page<PoHeaderAccordingToLineOfReferenceVO> page = StringUtils.isNotBlank(attributeVarchar40)&&"rcwl".equals(attributeVarchar40)?new Page(newList, new PageInfo(0, total == 0 ? 1 : total), (long) total):page1;
             List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             this.queryDefaultSupplier(poHeaderAccordingToLineOfReferenceDTO, content);
             List<Long> prLineIds =  content.stream().map(PoHeaderAccordingToLineOfReferenceVO::getPrLineId).collect(Collectors.toList());
