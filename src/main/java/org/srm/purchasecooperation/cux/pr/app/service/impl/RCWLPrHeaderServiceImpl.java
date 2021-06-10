@@ -22,16 +22,19 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
+import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlCompanyService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
+import org.srm.purchasecooperation.pr.api.dto.PrHeaderCreateDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
@@ -85,6 +88,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private CustomizeClient customizeClient;
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
+    @Autowired
+    private RcwlCompanyService rcwlCompanyService;
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
     private static final String LOG_MSG_SPUC_PR_HEADER_UPDATE_AMOUNT = "============SPUC_PR_HEADER_UPDATE_AMOUNT-TaskNotExistException=============={}";
@@ -344,5 +349,71 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             }
         }
 
+    }
+
+    @Override
+    public List<PrHeader> batchCreatePrWholeOrder(List<PrHeaderCreateDTO> prHeaderCreateDTOList, String lotNum, Long tenantId) {
+        List<PrHeader> totalPrHeaders = ((PrHeaderService)this.self()).batchCreatePrWholeOrderNotSubmit(prHeaderCreateDTOList, lotNum, tenantId);
+
+        //更新头表attribute_varchar38字段 start
+        List<PrHeader> PrHeaders = new ArrayList<>();
+        totalPrHeaders.forEach(PrHeader -> {
+            PrHeader prHeadertemp = new PrHeader();
+            prHeadertemp.setObjectVersionNumber(PrHeader.getObjectVersionNumber());
+            prHeadertemp.setPrHeaderId(PrHeader.getPrHeaderId());
+            prHeadertemp.setAttributeVarchar38(rcwlCompanyService.selectCompanyRcwlUnitName(PrHeader.getCompanyId(), PrHeader.getTenantId()));
+            PrHeaders.add(prHeadertemp);
+        });
+        prHeaderRepository.batchUpdateByPrimaryKeySelective(PrHeaders);
+        //更新头表attribute_varchar38字段 end
+
+        if (CollectionUtils.isEmpty(totalPrHeaders)) {
+            return totalPrHeaders;
+        } else {
+            try {
+                List<PrHeader> autoSubmitPrHeaders = new ArrayList();
+                Map<String, List<PrHeader>> prHeadersMap = (Map)totalPrHeaders.stream().collect(Collectors.groupingBy((prHeader) -> {
+                    return prHeader.getPrSourcePlatform() + prHeader.getCompanyId();
+                }));
+                Iterator var7 = prHeadersMap.entrySet().iterator();
+
+                while(true) {
+                    List prHeaderList;
+                    String prSourcePlatform;
+                    do {
+                        Long result;
+                        do {
+                            if (!var7.hasNext()) {
+                                if (CollectionUtils.isNotEmpty(autoSubmitPrHeaders)) {
+                                    ((PrHeaderService)this.self()).autoSubmit(DetailsHelper.getUserDetails(), tenantId, autoSubmitPrHeaders);
+                                }
+
+                                return totalPrHeaders;
+                            }
+
+                            Map.Entry<String, List<PrHeader>> prHeaderMapEntry = (Map.Entry)var7.next();
+                            prHeaderList = (List)prHeaderMapEntry.getValue();
+                            HashMap<String, String> map = new HashMap();
+                            map.put("companyId", ((PrHeader)prHeaderList.get(0)).getCompanyId().toString());
+                            map.put("sourcePlatform", ((PrHeader)prHeaderList.get(0)).getPrSourcePlatform());
+                            result = 0L;
+
+                            try {
+                                result = (Long) CnfHelper.select(tenantId, "SITE.SPUC.PR.AUTO_SUBMIT_AGENT", Long.class).invokeWithParameter(map);
+                            } catch (Exception var13) {
+                                LOGGER.debug("12705 ====租户id:{},采购申请=:{},查询到的采购申请自动提交异常：{}", new Object[]{tenantId, JSON.toJSONString(prHeaderList), var13});
+                            }
+                        } while(!this.batchCreateAutoSubmitFlag(result != 0L, prHeaderList));
+
+                        prSourcePlatform = ((PrHeader)prHeaderList.get(0)).getPrSourcePlatform();
+                    } while(!StringUtils.equals("CATALOGUE", prSourcePlatform) && !StringUtils.equals("E-COMMERCE", prSourcePlatform));
+
+                    autoSubmitPrHeaders.addAll(prHeaderList);
+                }
+            } catch (Exception var14) {
+                LOGGER.error("batchCreatePrWholeOrder autoSubmit error");
+                return totalPrHeaders;
+            }
+        }
     }
 }
