@@ -657,7 +657,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             itfPrLineDTO.setYslx("02");
         }
 
-        itfPrLineDTO.setCreateuser("jg");
+        itfPrLineDTO.setCreateuser("jq");
         SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-dd");
         String dateString = formatter.format(prHeader.getCreationDate());
         itfPrLineDTO.setBilldate(dateString);
