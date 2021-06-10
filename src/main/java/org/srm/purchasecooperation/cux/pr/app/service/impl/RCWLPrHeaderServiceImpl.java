@@ -2,28 +2,23 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.CaseFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.CaseFormat;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
-import org.activiti.rest.service.api.engine.variable.RestVariable;
-import org.activiti.rest.service.api.runtime.process.ProcessInstanceCreateRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.boot.customize.service.CustomizeClient;
-import org.hzero.boot.platform.plugin.hr.EmployeeHelper;
 import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.redis.RedisHelper;
-import org.hzero.core.util.ResponseUtils;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -31,21 +26,20 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
-import org.srm.boot.common.cache.impl.AbstractKeyGenerator;
+import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.group.GroupApproveHelper;
-import org.srm.boot.platform.group.dto.ProcessApproveDTO;
-import org.srm.boot.saga.utils.SagaClient;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlCompanyService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
-import org.srm.purchasecooperation.order.infra.constant.MessageCode;
+import org.srm.purchasecooperation.pr.api.dto.PrHeaderCreateDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
@@ -96,6 +90,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
+    private RcwlCompanyService rcwlCompanyService;
+    @Autowired
     private GroupApproveHelper groupApproveHelper;
     @Autowired
     private WorkflowClient workflowClient;
@@ -120,8 +116,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             "prTypeId", "requestedBy", "prRequestedName", "previousPrStatusCode", "localCurrencyNoTaxSum", "localCurrencyTaxSum", "localCurrency", "originalCurrency"};
 
 
-
     private static final String PR_CHANGE_STATUS = "CHANGE";
+
     /**
      * 融创采购申请更新二开接口
      *
@@ -197,14 +193,15 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         } else {
             prHeader = this.updatePrHeader(prHeader);
             //判断是否能触发接口
-            Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(),tenantId);
-            if(RCWLConstants.Common.IS.equals(count)){
-            //保存完之后触发接口
-            try {
-                this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            } }
+            Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(), tenantId);
+            if (RCWLConstants.Common.IS.equals(count)) {
+                //保存完之后触发接口
+                try {
+                    this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            }
 //            prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
 //            return ((PrHeaderService) this).submit(tenantId, prHeader);
             this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "提交至BPM");
@@ -336,7 +333,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     }
 
     private void checkLines(List<PrLine> prLineList) {
-        if(CollectionUtils.isNotEmpty(prLineList)){
+        if (CollectionUtils.isNotEmpty(prLineList)) {
             HashSet<Long> costIdSet = new HashSet<>();
             HashSet<String> wbsCodeSet = new HashSet<>();
             HashSet<Long> budgetAccountIds = new HashSet<>();
@@ -386,7 +383,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         try {
             PrCopyFieldsVO prCopyFieldsVO = new PrCopyFieldsVO();
             TaskResultBox taskResultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_PR_COPY_FIELDS", tenantNum, prCopyFieldsVO);
-            prCopyFieldsVO = (PrCopyFieldsVO)taskResultBox.get(0, PrCopyFieldsVO.class);
+            prCopyFieldsVO = (PrCopyFieldsVO) taskResultBox.get(0, PrCopyFieldsVO.class);
             if (StringUtils.isNotEmpty(prCopyFieldsVO.getTenantHeadCopyFields())) {
                 headCopyFields.addAll(new ArrayList(Arrays.asList(prCopyFieldsVO.getTenantHeadCopyFields().split(","))));
             }
@@ -398,10 +395,10 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             LOGGER.info("============SPUC_PR_COPY_FIELDS-TaskNotExistException=============={}", new Object[]{tenantNum, var11.getMessage(), var11.getStackTrace()});
         }
 
-        PrHeader copyPrHeader = this.prHeaderRepository.selectCopyPrHeaderFields((String)headCopyFields.stream().map((field) -> {
+        PrHeader copyPrHeader = this.prHeaderRepository.selectCopyPrHeaderFields((String) headCopyFields.stream().map((field) -> {
             return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field);
         }).collect(Collectors.joining(",")), prHeader.getPrHeaderId());
-        List<PrLine> copyPrLineList = this.prLineRepository.selectCopyPrLineFields((String)lineCopyFields.stream().map((field) -> {
+        List<PrLine> copyPrLineList = this.prLineRepository.selectCopyPrLineFields((String) lineCopyFields.stream().map((field) -> {
             return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, field);
         }).collect(Collectors.joining(",")), tenantId, prHeader.getPrHeaderId());
         this.clearCopyPrHeaderFlagAndStatus(copyPrHeader);
@@ -414,17 +411,17 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         if (CollectionUtils.isNotEmpty(copyPrLineList)) {
             List<PrLineSupplier> prLineSuppliers = this.prLineSupplierRepository.selectByCondition(Condition.builder(PrLineSupplier.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", prHeader.getPrHeaderId())).build());
             if (CollectionUtils.isNotEmpty(prLineSuppliers)) {
-                supplierMap.putAll((Map)prLineSuppliers.stream().collect(Collectors.groupingBy(PrLineSupplier::getPrLineId)));
+                supplierMap.putAll((Map) prLineSuppliers.stream().collect(Collectors.groupingBy(PrLineSupplier::getPrLineId)));
             }
         }
 
         if (CollectionUtils.isNotEmpty(copyPrLineList)) {
             Iterator var14 = copyPrLineList.iterator();
 
-            while(var14.hasNext()) {
-                PrLine prLine = (PrLine)var14.next();
+            while (var14.hasNext()) {
+                PrLine prLine = (PrLine) var14.next();
                 prLine.setRequestDate(copyPrHeader.getRequestDate());
-                prLine.setSupplierList((List)supplierMap.get(prLine.getCopyPrLineId()));
+                prLine.setSupplierList((List) supplierMap.get(prLine.getCopyPrLineId()));
                 this.prLineService.clearCopyPrLineFlagAndStatus(prLine);
             }
         }
@@ -434,5 +431,71 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         copyPrHeader.setPrLineList(this.prLineService.updatePrLines(copyPrHeader));
 
         return copyPrHeader;
+    }
+
+    @Override
+    public List<PrHeader> batchCreatePrWholeOrder(List<PrHeaderCreateDTO> prHeaderCreateDTOList, String lotNum, Long tenantId) {
+        List<PrHeader> totalPrHeaders = ((PrHeaderService) this.self()).batchCreatePrWholeOrderNotSubmit(prHeaderCreateDTOList, lotNum, tenantId);
+
+        //更新头表attribute_varchar38字段 start
+        List<PrHeader> PrHeaders = new ArrayList<>();
+        totalPrHeaders.forEach(PrHeader -> {
+            PrHeader prHeadertemp = new PrHeader();
+            prHeadertemp.setObjectVersionNumber(PrHeader.getObjectVersionNumber());
+            prHeadertemp.setPrHeaderId(PrHeader.getPrHeaderId());
+            prHeadertemp.setAttributeVarchar38(rcwlCompanyService.selectCompanyRcwlUnitName(PrHeader.getCompanyId(), PrHeader.getTenantId()));
+            PrHeaders.add(prHeadertemp);
+        });
+        prHeaderRepository.batchUpdateByPrimaryKeySelective(PrHeaders);
+        //更新头表attribute_varchar38字段 end
+
+        if (CollectionUtils.isEmpty(totalPrHeaders)) {
+            return totalPrHeaders;
+        } else {
+            try {
+                List<PrHeader> autoSubmitPrHeaders = new ArrayList();
+                Map<String, List<PrHeader>> prHeadersMap = (Map) totalPrHeaders.stream().collect(Collectors.groupingBy((prHeader) -> {
+                    return prHeader.getPrSourcePlatform() + prHeader.getCompanyId();
+                }));
+                Iterator var7 = prHeadersMap.entrySet().iterator();
+
+                while (true) {
+                    List prHeaderList;
+                    String prSourcePlatform;
+                    do {
+                        Long result;
+                        do {
+                            if (!var7.hasNext()) {
+                                if (CollectionUtils.isNotEmpty(autoSubmitPrHeaders)) {
+                                    ((PrHeaderService) this.self()).autoSubmit(DetailsHelper.getUserDetails(), tenantId, autoSubmitPrHeaders);
+                                }
+
+                                return totalPrHeaders;
+                            }
+
+                            Map.Entry<String, List<PrHeader>> prHeaderMapEntry = (Map.Entry) var7.next();
+                            prHeaderList = (List) prHeaderMapEntry.getValue();
+                            HashMap<String, String> map = new HashMap();
+                            map.put("companyId", ((PrHeader) prHeaderList.get(0)).getCompanyId().toString());
+                            map.put("sourcePlatform", ((PrHeader) prHeaderList.get(0)).getPrSourcePlatform());
+                            result = 0L;
+
+                            try {
+                                result = (Long) CnfHelper.select(tenantId, "SITE.SPUC.PR.AUTO_SUBMIT_AGENT", Long.class).invokeWithParameter(map);
+                            } catch (Exception var13) {
+                                LOGGER.debug("12705 ====租户id:{},采购申请=:{},查询到的采购申请自动提交异常：{}", new Object[]{tenantId, JSON.toJSONString(prHeaderList), var13});
+                            }
+                        } while (!this.batchCreateAutoSubmitFlag(result != 0L, prHeaderList));
+
+                        prSourcePlatform = ((PrHeader) prHeaderList.get(0)).getPrSourcePlatform();
+                    } while (!StringUtils.equals("CATALOGUE", prSourcePlatform) && !StringUtils.equals("E-COMMERCE", prSourcePlatform));
+
+                    autoSubmitPrHeaders.addAll(prHeaderList);
+                }
+            } catch (Exception var14) {
+                LOGGER.error("batchCreatePrWholeOrder autoSubmit error");
+                return totalPrHeaders;
+            }
+        }
     }
 }
