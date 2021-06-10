@@ -19,7 +19,7 @@ import java.util.Date;
 
 @Component
 @Tenant("SRM-RCWL")
-public class RCWLPoLineRepositoryImpl extends PoLineRepositoryImpl {
+public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
     @Autowired
      private RCWLPoLineMapper rcwlPoLineMapper;
     @Override
