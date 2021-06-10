@@ -5,6 +5,7 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RCWLPoLineMapper;
 import org.srm.purchasecooperation.order.infra.repository.impl.PoLineRepositoryImpl;
@@ -30,6 +31,13 @@ public class RCWLPoLineRepositoryImpl extends PoLineRepositoryImpl {
 
         return PageHelper.doPageAndSort(pageRequest, () -> {
             return this.rcwlPoLineMapper.listLineDetail1(tenantId, poHeaderId, date);
+        });
+    }
+
+    @Override
+    public Page<ContractResultDTO> selectContractResultDTO(PageRequest pageRequest, Long tenantId, ContractResultDTO contractResultDTO) {
+        return PageHelper.doPageAndSort(pageRequest, () -> {
+            return this.rcwlPoLineMapper.selectContractResult(tenantId, contractResultDTO);
         });
     }
 }
