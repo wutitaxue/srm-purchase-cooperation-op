@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.sinv.api.dto;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxFinishLineDTO;
 
 /**
@@ -13,6 +14,30 @@ public class RcwlSinvRcvTrxFinishLineDTO extends SinvRcvTrxFinishLineDTO {
     private String assetsbillNum;
     @ApiModelProperty(value = "入库数量")
     private Long warehouseQuantity;
+    @LovValue(
+            lovCode = "SMDM.ITEM_CATEGORY",
+            meaningField="categoryName"
+    )
+    private Long categoryId;
+    private String categoryName;
+
+    @Override
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    @Override
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 
     public String getAssetsbillNum() {
         return assetsbillNum;
