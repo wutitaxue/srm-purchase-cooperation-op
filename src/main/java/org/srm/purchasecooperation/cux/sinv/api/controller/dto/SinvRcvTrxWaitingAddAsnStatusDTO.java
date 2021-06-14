@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxWaitingDTO;
 
 /**
@@ -18,5 +19,10 @@ public class SinvRcvTrxWaitingAddAsnStatusDTO extends SinvRcvTrxWaitingDTO {
 
     @ApiModelProperty("送货单头状态 SINV.ASN_HEADERS_STATUS")
     private String asnStatus;
-
+    @LovValue(
+            lovCode = "SMDM.ITEM_CATEGORY",
+            meaningField="categoryName"
+    )
+    private Long categoryId;
+    private String categoryName;
 }
