@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper">
+    <select id="selectLineIdByHeadId" resultType="java.lang.Long">
+        select pr_line_id from sprm_pr_line where pr_header_id = #{prHeaderId}
+    </select>
+    <select id="updatePoLine">
+        UPDATE sodr_po_line sple
+        SET sple.pc_num = (
+            SELECT
+                a.pc_num
+            FROM
+                (
+                SELECT
+                    ssk.pc_num
+                FROM
+                    sprm_pr_line spl
+                    LEFT JOIN smpc_sku ssk ON spl.product_num = ssk.sku_code
+                    AND ssk.source_from != 'CATA'
+                WHERE
+                    spl.pr_line_id = #{prLineId}
+                ) a
+            )
+        WHERE
+            sple.po_line_id IN (
+            SELECT
+                a.po_line_id
+            FROM
+                (
+                SELECT
+                    spl.po_line_id
+                FROM
+                    sodr_po_line spl
+                    LEFT JOIN smpc_sku ssk ON spl.product_num = ssk.sku_code
+                    AND ssk.source_from != 'CATA'
+                WHERE
+                spl.pr_line_id = #{prLineId}
+            ) a)
+    </select>
+</mapper>
