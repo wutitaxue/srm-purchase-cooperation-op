@@ -823,16 +823,16 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Override
     public PoDTO referWholePrHeaderAuto(Long tenantId, Long prHeaderId) {
         PrHeader prHeader = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
-        LOGGER.error("25140=====prHeader1 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader1 is {}", prHeader.toString());
         Assert.notNull(prHeader, "error.pr.not.exists");
         prHeader.validECRefer();
-        LOGGER.error("25140=====prHeader2 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader2 is {}", prHeader.toString());
         List<PrLine> prLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("tenantId", tenantId).andEqualTo("prHeaderId", prHeaderId)).build());
         Assert.notEmpty(prLines, "error.pr.line.not.exists");
         PrLine firstPrLine = (PrLine) prLines.get(0);
         List<PoLine> poLines = new ArrayList(prLines.size());
         PoDTO poDTO = this.buildPoHeaderByPrHeader(tenantId, prHeader, firstPrLine);
-        LOGGER.error("25140=====prHeader3 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader3 is {}", prHeader.toString());
         List<PoDTO> poDTOS = new ArrayList();
         List<PrHeader> prHeaders = new ArrayList();
         int i = 0;
@@ -879,17 +879,17 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         } catch (Exception var16) {
             LOGGER.error("=====referWholePrHeaderAuto mapping error is {}", ExceptionUtils.getMessage(var16));
         }
-        LOGGER.error("25140=====prHeader4 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader4 is {}", prHeader.toString());
         poDTO = this.poCreate(poDTO);
-        LOGGER.error("25140=====prHeader5 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader5 is {}", prHeader.toString());
         this.initPoCreatedBy(poDTO);
-        LOGGER.error("25140=====prHeader6 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader6 is {}", prHeader.toString());
         PoHeader poHeader = (PoHeader) this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
         //再次查询
         prHeader = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
-        LOGGER.error("25140=====prHeader7 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader7 is {}", prHeader.toString());
         this.prHeaderRepository.updateByPrimaryKeySelective(new PrHeader(prHeaderId, prHeader.getObjectVersionNumber(), "CLOSED", poHeader.getPoHeaderId(), poHeader.getPoNum(), poHeader.getCreatedBy(), poHeader.getCreationDate(), "PO"));
-        LOGGER.error("25140=====prHeader8 is {}", prHeader.toString());
+        LOGGER.info("25140=====prHeader8 is {}", prHeader.toString());
         List<PrLine> prLineList = this.covPoToPrEchoInfo(poDTO.getPoLineList(), prLines, new PoDTO(), true);
         this.prLineRepository.batchUpdateByPrimaryKeySelective(prLineList);
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), tenantId, "OCCUPY");
