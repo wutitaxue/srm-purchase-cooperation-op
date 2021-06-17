@@ -5,35 +5,20 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.util.Results;
-import org.hzero.mybatis.domian.Condition;
-import org.hzero.mybatis.helper.SecurityTokenHelper;
-import org.hzero.mybatis.util.Sqls;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.purchasecooperation.cux.order.app.service.impl.PrHeaderServiceImpl2;
-import org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderServiceImpl2;
-import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
-import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
-import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
-import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
-import org.srm.purchasecooperation.pr.domain.vo.ErrorDataVO;
-import org.srm.purchasecooperation.pr.domain.vo.ErrorListVO;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Api(
@@ -48,14 +33,6 @@ public class RcwlPrFeignController {
     private PrHeaderRepository prHeaderRepository;
     @Autowired
     private PrHeaderService prHeaderService;
-    @Autowired
-    private CustomizeSettingHelper customizeSettingHelper;
-    @Autowired
-    private PrLineRepository prLineRepository;
-    @Autowired
-    private RcwlPrFeignMapper rcwlPrFeignMapper;
-    @Autowired
-    private PrLineService prLineService;
     @Autowired
     private PrHeaderServiceImpl2 prHeaderServiceImpl2;
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPrFeignController.class);
