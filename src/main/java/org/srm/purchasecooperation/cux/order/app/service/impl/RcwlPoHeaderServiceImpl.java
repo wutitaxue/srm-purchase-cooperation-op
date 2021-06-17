@@ -9,6 +9,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hzero.boot.platform.lov.adapter.LovAdapter;
 import org.hzero.boot.platform.lov.dto.LovValueDTO;
 import org.hzero.core.base.BaseConstants;
@@ -38,6 +39,8 @@ import org.srm.purchasecooperation.order.domain.entity.*;
 import org.srm.purchasecooperation.order.domain.repository.*;
 import org.srm.purchasecooperation.order.domain.service.*;
 import org.srm.purchasecooperation.order.domain.vo.*;
+import org.srm.purchasecooperation.order.infra.constant.PoConstants.ConstantsOfBigDecimal;
+import org.srm.purchasecooperation.order.infra.constant.PoConstants.autoTransferOrderFlag;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
 import org.srm.purchasecooperation.order.infra.utils.FieldUtils;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderChangeDto;
@@ -45,13 +48,12 @@ import org.srm.purchasecooperation.pr.api.dto.PrLineChangeDto;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.entity.PrType;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
+import org.srm.purchasecooperation.pr.domain.repository.PrTypeRepository;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
-import org.srm.purchasecooperation.transaction.infra.constant.Constants;
 import org.srm.web.annotation.Tenant;
-import org.srm.purchasecooperation.order.infra.constant.PoConstants.autoTransferOrderFlag;
-import org.srm.purchasecooperation.order.infra.constant.PoConstants.ConstantsOfBigDecimal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,19 +73,28 @@ import java.util.stream.Collectors;
 @Service
 @Tenant(TennantValue.tenantV)
 public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
-
-    @Autowired
-    private PoheaderExtensionService poheaderExtensionService;
     @Autowired
     private PoHeaderRepository poHeaderRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private PoLineRepository poLineRepository;
+    @Autowired
+    private PrHeaderRepository prHeaderRepository;
+    @Autowired
+    private PrLineRepository prLineRepository;
     @Autowired
     private OrderTypeService orderTypeService;
     @Autowired
     private PoHeaderMapper poHeaderMapper;
+    @Autowired
+    private GeneratorPoByPrDomainService generatorPoByPrDomainService;
+    @Autowired
+    private PrTypeRepository prTypeRepository;
+    @Autowired
+    private PoHeaderSendApplyMqService poHeaderSendApplyMqService;
+    @Autowired
+    private PoheaderExtensionService poheaderExtensionService;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private ChangeHistoryRepository changeHistoryRepository;
     @Autowired
@@ -109,23 +120,15 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     private PoConfigRuleService poConfigRuleService;
     @Autowired
-    private PoHeaderSendApplyMqService poHeaderSendApplyMqService;
-    @Autowired
     private RcwlSpcmPcSubjectRepository rcwlSpcmPcSubjectRepository;
     @Autowired
     private PoCreatingRepository poCreatingRepository;
     @Autowired
     private CustomizeSettingHelper customizeSettingHelper;
     @Autowired
-    private GeneratorPoByPrDomainService generatorPoByPrDomainService;
-    @Autowired
     private PoPriceLibDomainService poPriceLibDomainService;
     @Autowired
     private PoItemBomRepository poItemBomRepository;
-    @Autowired
-    private PrHeaderRepository prHeaderRepository;
-    @Autowired
-    private PrLineRepository prLineRepository;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
@@ -140,7 +143,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         } else {
             Boolean autoTransferFlag = false;
             String autoPoStatus = null;
-            if (autoTransferOrderFlag.YES.equals(((ContractResultDTO)contractResultDTOList.get(0)).getAutoTransferOrderFlag())) {
+            if (autoTransferOrderFlag.YES.equals(((ContractResultDTO) contractResultDTOList.get(0)).getAutoTransferOrderFlag())) {
                 autoTransferFlag = true;
                 autoPoStatus = this.checkContractData(contractResultDTOList, autoPoStatus);
             }
@@ -151,8 +154,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             List<PoLine> poLineList = new ArrayList();
             Iterator var8 = contractResultDTOList.iterator();
 
-            while(var8.hasNext()) {
-                ContractResultDTO contractResultDTO = (ContractResultDTO)var8.next();
+            while (var8.hasNext()) {
+                ContractResultDTO contractResultDTO = (ContractResultDTO) var8.next();
                 if (contractResultDTO.getReceiptsOrderQuantity().compareTo(contractResultDTO.getResidueOrderQuantity()) == 1 && BaseConstants.Flag.YES.equals(contractResultDTO.getOrderQuantityFlag())) {
                     throw new CommonException("error.The.quantity.of.this.order.shall.not.be.greater.than.the.remaining.quantity", new Object[0]);
                 }
@@ -163,8 +166,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 }
             }
 
-            this.contractDealWithPoList(contractResultDTOList, poLineList, poLineDetailDTOList, (Long)null);
-            ContractResultDTO contractResultDTO = (ContractResultDTO)contractResultDTOList.get(0);
+            this.contractDealWithPoList(contractResultDTOList, poLineList, poLineDetailDTOList, (Long) null);
+            ContractResultDTO contractResultDTO = (ContractResultDTO) contractResultDTOList.get(0);
             PoDTO poDTO = new PoDTO();
             String domesticCurrencyCode;
             if (Objects.nonNull(tenantId)) {
@@ -172,8 +175,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 try {
                     TaskResultBox resultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_CONTRACT_TO_ORDER_TERM", domesticCurrencyCode, contractResultDTO);
-                    PoDTO poDTOs = (PoDTO)resultBox.get(0, PoDTO.class);
-                    poDTO = (PoDTO)Optional.ofNullable(poDTOs).orElse(poDTO);
+                    PoDTO poDTOs = (PoDTO) resultBox.get(0, PoDTO.class);
+                    poDTO = (PoDTO) Optional.ofNullable(poDTOs).orElse(poDTO);
                 } catch (Exception var21) {
                     LOGGER.error("spuc.contract.to.order.term.adaptor.execute.error", var21.getMessage());
                 }
@@ -192,12 +195,12 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poDTO.modifyDomesticAmountAndTaxIncludeAmount(poLineList, this.mdmService);
             poDTO.setSupplierTenantId(contractResultDTO.getSupplierTenantId());
             poDTO.setSupplierId(contractResultDTO.getSupplierId());
-            poDTO.setObjectVersionNumber((Long)null);
+            poDTO.setObjectVersionNumber((Long) null);
             poDTO.setStatusCode("PENDING");
             poDTO.setSourceCode("SRM");
             poDTO.setExternalSystemCode("SRM");
             poDTO.setPoSourcePlatform("SRM");
-            poDTO.setTaxIncludeAmount((BigDecimal)contractResultDTOList.stream().filter((d) -> {
+            poDTO.setTaxIncludeAmount((BigDecimal) contractResultDTOList.stream().filter((d) -> {
                 return null != d.getTaxIncludedLineAmount();
             }).map(ContractResultDTO::getTaxIncludedLineAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
             poDTO.setSourceBillTypeCode("CONTRACT_ORDER");
@@ -207,7 +210,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             if (BaseConstants.Flag.YES.equals(contractResultDTO.getAutoTransferOrderFlag())) {
                 poDTO.setPoTypeId(Objects.isNull(contractResultDTO.getOrderTypeId()) ? defaultPoTypeId : contractResultDTO.getOrderTypeId());
             } else {
-                poLineList1 = (List)contractResultDTOList.stream().map(ContractResultDTO::getOrderTypeId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+                poLineList1 = (List) contractResultDTOList.stream().map(ContractResultDTO::getOrderTypeId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
                 if (0 != poLineList1.size() && poLineList1.size() <= 1) {
                     poDTO.setPoTypeId(contractResultDTO.getOrderTypeId());
                 } else {
@@ -215,7 +218,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 }
             }
 
-            poDTO.setRemark((String)null);
+            poDTO.setRemark((String) null);
             poDTO.cancelPrInfo();
             poDTO.setVersionNum(1);
             poDTO.setIfAccoringToPrLine(true);
@@ -250,8 +253,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 List<ChangeHistory> changeHistoryList = new ArrayList();
                 Iterator var15 = res.getPoLineList().iterator();
 
-                while(var15.hasNext()) {
-                    PoLine poLine = (PoLine)var15.next();
+                while (var15.hasNext()) {
+                    PoLine poLine = (PoLine) var15.next();
                     ChangeHistory changeHistory = new ChangeHistory();
                     changeHistory.setTenantId(tenantId);
                     changeHistory.setPcHeaderId(poLine.getPcHeaderId());
@@ -262,7 +265,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     changeHistory.setExecuteBillLineId(poLine.getPoLineId());
                     changeHistory.setExecuteQuantity(poLine.getQuantity());
                     Long userId = DetailsHelper.getUserDetails().getUserId();
-                    User user = (User)this.userRepository.selectByPrimaryKey(userId);
+                    User user = (User) this.userRepository.selectByPrimaryKey(userId);
                     changeHistory.setExecuteBy(user.getRealName());
                     changeHistory.setExecuteDate(new Date());
                     changeHistoryList.add(changeHistory);
@@ -299,19 +302,19 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
     private void checkMergeRuleByPc(List<ContractResultDTO> contractResultDTOList, Long tenantId) {
         LOGGER.debug("24514-checkMergeRule-start:" + JSON.toJSONString(contractResultDTOList));
-        ContractResultDTO contractResultDTO = (ContractResultDTO)contractResultDTOList.get(0);
+        ContractResultDTO contractResultDTO = (ContractResultDTO) contractResultDTOList.get(0);
         Map<String, String> paramsMap = new HashMap();
         paramsMap.put("company", String.valueOf(contractResultDTO.getCompanyId()));
         Set<String> mergeRule = this.poConfigRuleService.getMergeRulePcOrSource(paramsMap, tenantId, "SITE.SPUC.PC_CHANGE_ORDER_MERGE_RULE");
         LovAdapter lovAdapter = (LovAdapter) ApplicationContextHelper.getContext().getBean(LovAdapter.class);
         List<LovValueDTO> lovValueDTOS = lovAdapter.queryLovValue("SPUC.PC_CHANGE_PO_MERGE_RULE", tenantId);
-        lovValueDTOS.add(LovValueDTO.build("companyId", "公司", (String)null, (String)null, (String)null, (Integer)null));
-        lovValueDTOS.add(LovValueDTO.build("supplierCompanyId", "供应商", (String)null, (String)null, (String)null, (Integer)null));
+        lovValueDTOS.add(LovValueDTO.build("companyId", "公司", (String) null, (String) null, (String) null, (Integer) null));
+        lovValueDTOS.add(LovValueDTO.build("supplierCompanyId", "供应商", (String) null, (String) null, (String) null, (Integer) null));
         contractResultDTOList.forEach((contractResultTemp) -> {
             Iterator var4 = mergeRule.iterator();
 
-            while(var4.hasNext()) {
-                String mergeRuleField = (String)var4.next();
+            while (var4.hasNext()) {
+                String mergeRuleField = (String) var4.next();
                 Object value1 = null;
 
                 try {
@@ -354,8 +357,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
         Iterator var15 = contractResultLine.iterator();
 
-        while(var15.hasNext()) {
-            ContractResultDTO contractResultDTO = (ContractResultDTO)var15.next();
+        while (var15.hasNext()) {
+            ContractResultDTO contractResultDTO = (ContractResultDTO) var15.next();
             PoLineDetailDTO poLineDetailDTO = new PoLineDetailDTO();
             BeanUtils.copyProperties(contractResultDTO, poLineDetailDTO);
             poLineDetailDTO.setSourcePlatformCode("CONTRACT_ORDER");
@@ -367,16 +370,16 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poLineLocation.setNeedByDate(contractResultDTO.getDeliverDate());
             poLineLocation.setQuantity(contractResultDTO.getReceiptsOrderQuantity());
             List<PrLine> prLineList = this.prLineMapper.selectPrLineByPc(contractResultDTO);
-            if (CollectionUtils.isNotEmpty(prLineList) && prLineList.get(0) != null && ("SRM".equals(((PrLine)prLineList.get(0)).getPrSourcePlatform()) || "SHOP".equals(((PrLine)prLineList.get(0)).getPrSourcePlatform()) || "CATALOGUE".equals(((PrLine)prLineList.get(0)).getPrSourcePlatform()) || "ERP".equals(((PrLine)prLineList.get(0)).getPrSourcePlatform())) && ((PrLine)prLineList.get(0)).getReceiveAddress() != null) {
-                poLineLocation.setShipToThirdPartyAddress(((PrLine)prLineList.get(0)).getReceiveAddress());
+            if (CollectionUtils.isNotEmpty(prLineList) && prLineList.get(0) != null && ("SRM".equals(((PrLine) prLineList.get(0)).getPrSourcePlatform()) || "SHOP".equals(((PrLine) prLineList.get(0)).getPrSourcePlatform()) || "CATALOGUE".equals(((PrLine) prLineList.get(0)).getPrSourcePlatform()) || "ERP".equals(((PrLine) prLineList.get(0)).getPrSourcePlatform())) && ((PrLine) prLineList.get(0)).getReceiveAddress() != null) {
+                poLineLocation.setShipToThirdPartyAddress(((PrLine) prLineList.get(0)).getReceiveAddress());
             }
 
             PrHeaderChangeDto prHeaderChangeDto = this.prHeaderService.selectPrHeaderByPcNumAndLineNum(contractResultDTO.getPcNum(), contractResultDTO.getLineNum(), contractResultDTO.getTenantId());
             if (prHeaderChangeDto != null) {
                 List<PrLineChangeDto> prLineDtoList = prHeaderChangeDto.getPrLineList();
                 if (CollectionUtils.isNotEmpty(prLineDtoList) && Objects.nonNull(prLineDtoList.get(0))) {
-                    poLineLocation.setInvOrganizationId(((PrLineChangeDto)prLineDtoList.get(0)).getInvOrganizationId());
-                    poLineLocation.setShipToThirdPartyAddress(((PrLineChangeDto)prLineDtoList.get(0)).getReceiveAddress());
+                    poLineLocation.setInvOrganizationId(((PrLineChangeDto) prLineDtoList.get(0)).getInvOrganizationId());
+                    poLineLocation.setShipToThirdPartyAddress(((PrLineChangeDto) prLineDtoList.get(0)).getReceiveAddress());
                 }
             }
 
@@ -385,17 +388,17 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             PoLine poLine = new PoLine();
             BeanUtils.copyProperties(contractResultDTO, poLine, FieldUtils.getExpandFields());
             if (Objects.nonNull(prHeaderChangeDto) && CollectionUtils.isNotEmpty(prHeaderChangeDto.getPrLineList()) && Objects.nonNull(prHeaderChangeDto.getPrLineList().get(0))) {
-                poLine.setPrRequestedBy(((PrLineChangeDto)prHeaderChangeDto.getPrLineList().get(0)).getRequestedBy());
-                poLine.setPrRequestedName(((PrLineChangeDto)prHeaderChangeDto.getPrLineList().get(0)).getPrRequestedName());
+                poLine.setPrRequestedBy(((PrLineChangeDto) prHeaderChangeDto.getPrLineList().get(0)).getRequestedBy());
+                poLine.setPrRequestedName(((PrLineChangeDto) prHeaderChangeDto.getPrLineList().get(0)).getPrRequestedName());
             }
 
             //opd-26
-            List<Map<String,String>>  listMap = rcwlSpcmPcSubjectRepository.querySubjectByKey(contractResultDTO.getPcSubjectId());
-            if(listMap.size()>0){
+            List<Map<String, String>> listMap = rcwlSpcmPcSubjectRepository.querySubjectByKey(contractResultDTO.getPcSubjectId());
+            if (listMap.size() > 0) {
                 poLine.setAttributeVarchar21(String.valueOf(listMap.get(0).get("attribute_varchar21")));
                 poLine.setCostId(Long.valueOf(listMap.get(0).get("attribute_varchar22")));
                 poLine.setWbs(String.valueOf(listMap.get(0).get("attribute_varchar23")));
-            }else{
+            } else {
                 // throw new CommonException("error.po.sprm_pr_line_not_null", "");
             }
             poLine.setVersionNum(1L);
@@ -410,7 +413,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poLine.setLineAmount(taxNotIncludePrice.multiply(contractResultDTO.getReceiptsOrderQuantity()));
             poLine.setQuantity(contractResultDTO.getReceiptsOrderQuantity());
             poLine.setTaxIncludedLineAmount(contractResultDTO.getEnteredTaxIncludedPrice().multiply(contractResultDTO.getReceiptsOrderQuantity()));
-            poLine.setUnitPriceBatch((BigDecimal)Optional.ofNullable(contractResultDTO.getUnitPriceBatch()).orElse(BigDecimal.ONE));
+            poLine.setUnitPriceBatch((BigDecimal) Optional.ofNullable(contractResultDTO.getUnitPriceBatch()).orElse(BigDecimal.ONE));
             poLine.setItemCode(contractResultDTO.getItemCode());
             poLine.setChartVersion(contractResultDTO.getChartVersion());
             poLine.setLineAmount(contractResultDTO.getTaxIncludedLineAmount().divide(BigDecimal.valueOf(1L).add(contractResultDTO.getTaxRate().divide(BigDecimal.valueOf(100L))), 2, 4));
@@ -420,7 +423,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
     }
 
-// ---------------------------------------------------- ------------------------------- ------------------------------------------------
+    // ---------------------------------------------------- ------------------------------- ------------------------------------------------
     @Override
     @Transactional(
             rollbackFor = {Exception.class}
@@ -438,9 +441,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             List<List<PrLine>> listPrs = this.prToPoMergeRule(prLineList);
             Iterator var9 = listPrs.iterator();
 
-            while(var9.hasNext()) {
-                List<PrLine> listPr = (List)var9.next();
-                PoDTO poDTO = ((PoHeaderService)this.self()).prHeaderAccordingToLineOfReference(tenantId, listPr, poTypeCode);
+            while (var9.hasNext()) {
+                List<PrLine> listPr = (List) var9.next();
+                PoDTO poDTO = ((PoHeaderService) this.self()).prHeaderAccordingToLineOfReference(tenantId, listPr, poTypeCode);
                 poDTOS.add(poDTO);
             }
 
@@ -454,7 +457,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 return Collections.emptyList();
             }
         } else {
-            return Collections.singletonList(((PoHeaderService)this.self()).prHeaderAccordingToLineOfReference(tenantId, prLineList, poTypeCode));
+            return Collections.singletonList(((PoHeaderService) this.self()).prHeaderAccordingToLineOfReference(tenantId, prLineList, poTypeCode));
         }
     }
 
@@ -470,7 +473,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         });
         LOGGER.debug("PoHeaderServiceImpl.prToPoMergeRule:begin param is {}", JSONObject.toJSONString(prLineMerge));
         List<List<PrLine>> list = new ArrayList();
-        Map<PrLineConfigVo, List<PrLine>> groupMerge = (Map)prLineMerge.stream().collect(Collectors.groupingBy(PrLineConfigVo::parseGroup));
+        Map<PrLineConfigVo, List<PrLine>> groupMerge = (Map) prLineMerge.stream().collect(Collectors.groupingBy(PrLineConfigVo::parseGroup));
         groupMerge.forEach((prLineConfigVo, prLineList) -> {
             Set<String> mergeRulePr = this.poConfigRuleService.getMergeRulePr(prLineConfigVo);
             List<PrLine> noSupplierPrLines = new ArrayList();
@@ -518,7 +521,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 throw new CommonException("error.po_no_suupplier_error", new Object[]{stringBuffer});
             } else {
                 org.srm.purchasecooperation.order.infra.utils.CollectionUtils collectionUtils = new org.srm.purchasecooperation.order.infra.utils.CollectionUtils();
-                Map<List<Object>,List<PrLine>> mapNoSupplier;
+                Map<List<Object>, List<PrLine>> mapNoSupplier;
                 if (CollectionUtils.isNotEmpty(supplierPrLines)) {
                     mapNoSupplier = collectionUtils.dynamicGroupListByFiled(supplierPrLines, mergeRulePr);
                     mapNoSupplier.forEach((k, v) -> {
@@ -565,13 +568,13 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         if ("CATALOGUE".equals(poDTO.getPoSourcePlatform()) && StringUtils.isNotBlank(enableMinPurchase) && enableMinPurchase.equals(BaseConstants.Flag.YES.toString())) {
             MinPurchaseConfigVO minPurchaseConfig = new MinPurchaseConfigVO();
             minPurchaseConfig.setTenantId(tenantId);
-            minPurchaseConfig.setSupplierCompanyId(((PrLine)prLineList.get(0)).getSupplierCompanyId());
+            minPurchaseConfig.setSupplierCompanyId(((PrLine) prLineList.get(0)).getSupplierCompanyId());
             minPurchaseConfig.setCurrencyCode(poDTO.getCurrencyCode());
             List<MinPurchaseConfigVO> configList = this.poHeaderRepository.queryByCondition(minPurchaseConfig);
             if (CollectionUtils.isNotEmpty(configList)) {
-                LOGGER.info("enableMinPurchase prLineId:" + ((PrLine)prLineList.get(0)).getPrLineId());
-                LOGGER.info("enableMinPurchase getTaxIncludedUnitPrice:" + ((PrLine)prLineList.get(0)).getTaxIncludedUnitPrice());
-                LOGGER.info("enableMinPurchase thisOrderQuantity:" + ((PrLine)prLineList.get(0)).getThisOrderQuantity());
+                LOGGER.info("enableMinPurchase prLineId:" + ((PrLine) prLineList.get(0)).getPrLineId());
+                LOGGER.info("enableMinPurchase getTaxIncludedUnitPrice:" + ((PrLine) prLineList.get(0)).getTaxIncludedUnitPrice());
+                LOGGER.info("enableMinPurchase thisOrderQuantity:" + ((PrLine) prLineList.get(0)).getThisOrderQuantity());
                 prLineList.forEach((x) -> {
                     if (x.getUnitPrice() != null && x.getThisOrderQuantity() != null) {
                         BigDecimal multiply = x.getTaxIncludedUnitPrice().multiply(x.getThisOrderQuantity());
@@ -579,10 +582,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     }
 
                 });
-                BigDecimal reduce = (BigDecimal)prLineList.stream().map(PrLine::getDynamicLineAmount).filter((x) -> {
+                BigDecimal reduce = (BigDecimal) prLineList.stream().map(PrLine::getDynamicLineAmount).filter((x) -> {
                     return x != null;
                 }).reduce(BigDecimal.ZERO, BigDecimal::add);
-                Long minPurchaseAmount = ((MinPurchaseConfigVO)configList.get(0)).getMinPurchaseAmount();
+                Long minPurchaseAmount = ((MinPurchaseConfigVO) configList.get(0)).getMinPurchaseAmount();
                 BigDecimal minAmount = new BigDecimal(minPurchaseAmount);
                 LOGGER.info("enableMinPurchase minPurchaseAmount:" + minPurchaseAmount);
                 LOGGER.info("enableMinPurchase reduce:" + reduce);
@@ -609,15 +612,15 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poOrderSaveDTO.setPoLineDetailDTOs(new ArrayList(res.getPoLineList().size()));
             Iterator var13 = res.getPoLineList().iterator();
 
-            while(var13.hasNext()) {
-                PoLine poLine = (PoLine)var13.next();
+            while (var13.hasNext()) {
+                PoLine poLine = (PoLine) var13.next();
                 PoLineDetailDTO poLineDetailDTO = new PoLineDetailDTO();
                 BeanUtils.copyProperties(poLine, poLineDetailDTO);
                 poOrderSaveDTO.getPoLineDetailDTOs().add(poLineDetailDTO);
             }
 
             if (Objects.nonNull(poHeaderDetailDTO) && Objects.nonNull(poHeaderDetailDTO.getSupplierCompanyId())) {
-                List<PoPriceLibReturnVO> poPriceLibReturnVOList = this.poQueryBettlePrice(tenantId, poOrderSaveDTO, serviceCode, (String)null);
+                List<PoPriceLibReturnVO> poPriceLibReturnVOList = this.poQueryBettlePrice(tenantId, poOrderSaveDTO, serviceCode, (String) null);
                 LOGGER.debug("24514_pr to po first query price lib result:{}", JSON.toJSONString(poPriceLibReturnVOList));
             }
         }
@@ -660,7 +663,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         }
 
         poHeader.validUniqueIndex(this.poHeaderRepository);
-        poHeader.setPoSourcePlatform((String)Optional.ofNullable(poHeader.getPoSourcePlatform()).orElseGet(() -> {
+        poHeader.setPoSourcePlatform((String) Optional.ofNullable(poHeader.getPoSourcePlatform()).orElseGet(() -> {
             return !StringUtils.equals(poHeader.getSourceCode(), "SRM") ? "ERP" : poHeader.getPoSourcePlatform();
         }));
         poHeader.supplierInfoSetting(this.poHeaderMapper);
@@ -686,8 +689,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         if (CollectionUtils.isNotEmpty(poLineList)) {
             Iterator var6 = poLineList.iterator();
 
-            while(var6.hasNext()) {
-                PoLine poLine = (PoLine)var6.next();
+            while (var6.hasNext()) {
+                PoLine poLine = (PoLine) var6.next();
                 poLine.setTenantId(poHeader.getTenantId());
                 poLine.setPoHeaderId(poHeader.getPoHeaderId());
                 if (poHeader.getVersionNum() != null) {
@@ -698,7 +701,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     if (StringUtils.isNotEmpty(poLine.getDisplayLineNum())) {
                         poLine.setLineNum(StringToNumberUtils.stringToLong(poLine.getDisplayLineNum()));
                     } else {
-                        Long lineNum = (Long)Optional.ofNullable(this.poLineRepository.queryMaxPoLineNum(poLine)).orElse(0L) + 1L;
+                        Long lineNum = (Long) Optional.ofNullable(this.poLineRepository.queryMaxPoLineNum(poLine)).orElse(0L) + 1L;
                         poLine.setLineNum(lineNum);
                         poLine.setDisplayLineNum(String.valueOf(lineNum));
                     }
@@ -718,10 +721,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 }
 
                 // opd-26
-                if(null != poLine.getPrLineId()){
+                if (null != poLine.getPrLineId()) {
                     poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_num")));
                 }
-                   LOGGER.info("srm-22875-poLineRepository.insertSelective-dete{}", poLine);
+                LOGGER.info("srm-22875-poLineRepository.insertSelective-dete{}", poLine);
                 this.poLineRepository.insertSelective(poLine);
                 if (CollectionUtils.isNotEmpty(poLine.getPoItemBomList())) {
                     poLine.getPoItemBomList().forEach((poItemBom) -> {
@@ -742,7 +745,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                             if (StringUtils.isNotEmpty(poLineLocation.getDisplayLineLocationNum())) {
                                 poLineLocation.setLineLocationNum(StringToNumberUtils.stringToLong(poLineLocation.getDisplayLineLocationNum()));
                             } else {
-                                Long lineLocationNum = (Long)Optional.ofNullable(this.poLineLocationRepository.queryMaxPoLineLocationNum(poLineLocation)).orElse(0L) + 1L;
+                                Long lineLocationNum = (Long) Optional.ofNullable(this.poLineLocationRepository.queryMaxPoLineLocationNum(poLineLocation)).orElse(0L) + 1L;
                                 poLineLocation.setLineLocationNum(lineLocationNum);
                                 poLineLocation.setDisplayLineLocationNum(String.valueOf(lineLocationNum));
                             }
@@ -777,39 +780,39 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         PoHeader poHeader = new PoHeader();
         List<PoLine> poLineList = poDto.getPoLineList();
         BeanUtils.copyProperties(poDto, poHeader);
-        PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(poDto.getPrHeaderId());
+        PrHeader prHeader = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(poDto.getPrHeaderId());
         if (prHeader != null) {
             poHeader.prSyncToPo(prHeader);
             this.poHeaderRepository.updateOptional(poHeader, PoHeader.PR_SYNC_FIELDS);
             BeanUtils.copyProperties(poHeader, poDto);
         }
 
-        List<PrLine> prLineList = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andIn("prLineId", (Iterable)poLineList.stream().map((item) -> {
+        List<PrLine> prLineList = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andIn("prLineId", (Iterable) poLineList.stream().map((item) -> {
             return item.getPrLineId();
         }).collect(Collectors.toList()))).build());
         if (!CollectionUtils.isEmpty(prLineList) && !CollectionUtils.isEmpty(poLineList)) {
-            Map<Long, PrHeader> prHeaderMap = (Map)this.prHeaderRepository.selectByCondition(Condition.builder(PrHeader.class).andWhere(Sqls.custom().andIn("prHeaderId", (Iterable)prLineList.stream().map((item) -> {
+            Map<Long, PrHeader> prHeaderMap = (Map) this.prHeaderRepository.selectByCondition(Condition.builder(PrHeader.class).andWhere(Sqls.custom().andIn("prHeaderId", (Iterable) prLineList.stream().map((item) -> {
                 return item.getPrHeaderId();
             }).distinct().collect(Collectors.toList()))).build()).stream().collect(Collectors.toMap((item) -> {
                 return item.getPrHeaderId();
             }, (item) -> {
                 return item;
             }));
-            Map<Long, PrLine> prLineMap = (Map)prLineList.stream().collect(Collectors.toMap((item) -> {
+            Map<Long, PrLine> prLineMap = (Map) prLineList.stream().collect(Collectors.toMap((item) -> {
                 return item.getPrLineId();
             }, (item) -> {
                 return item;
             }));
             Iterator var8 = poLineList.iterator();
 
-            while(var8.hasNext()) {
-                PoLine poLine = (PoLine)var8.next();
+            while (var8.hasNext()) {
+                PoLine poLine = (PoLine) var8.next();
                 if (prHeaderMap.get(poLine.getPrHeaderId()) != null) {
-                    prHeader = (PrHeader)prHeaderMap.get(poLine.getPrHeaderId());
+                    prHeader = (PrHeader) prHeaderMap.get(poLine.getPrHeaderId());
                 }
 
                 if (prLineMap.get(poLine.getPrLineId()) != null) {
-                    poLine.prSyncToPo(prHeader, (PrLine)prLineMap.get(poLine.getPrLineId()));
+                    poLine.prSyncToPo(prHeader, (PrLine) prLineMap.get(poLine.getPrLineId()));
                 }
             }
             this.poLineRepository.batchUpdateOptional(poLineList, PoLine.PR_SYNC_FIELDS);
@@ -817,8 +820,142 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         }
     }
 
+    @Override
+    public PoDTO referWholePrHeaderAuto(Long tenantId, Long prHeaderId) {
+        PrHeader prHeader = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
+        Assert.notNull(prHeader, "error.pr.not.exists");
+        prHeader.validECRefer();
+        List<PrLine> prLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("tenantId", tenantId).andEqualTo("prHeaderId", prHeaderId)).build());
+        Assert.notEmpty(prLines, "error.pr.line.not.exists");
+        PrLine firstPrLine = (PrLine) prLines.get(0);
+        List<PoLine> poLines = new ArrayList(prLines.size());
+        PoDTO poDTO = this.buildPoHeaderByPrHeader(tenantId, prHeader, firstPrLine);
+        List<PoDTO> poDTOS = new ArrayList();
+        List<PrHeader> prHeaders = new ArrayList();
+        int i = 0;
+        Iterator var11 = prLines.iterator();
 
+        while (var11.hasNext()) {
+            PrLine prLine = (PrLine) var11.next();
+            Assert.isTrue(prLine.getSupplierId() != null || prLine.getSupplierCompanyId() != null, "error.pr.line.supplier.id.not.null");
+            if (prLine != firstPrLine) {
+                prLine.referValidate(firstPrLine);
+            }
 
+            prLine.referInitFeild(prHeader);
+            PoLine poLine = this.referWholeToPoLineAndLocation(prLine);
+            poLine.setDepartmentId(prHeader.getUnitId());
+            poLines.add(poLine);
+            if (i == 0) {
+                poDTO.setCreatedBy(prLine.getCreatedBy());
+            }
+
+            poLine.setCreatedBy(prLine.getCreatedBy());
+            ++i;
+            String mappingCode = this.generatorPoByPrDomainService.queryPrToPoMappingConfig(prLine);
+            if (StringUtils.isNotBlank(mappingCode)) {
+                prLine.setMappingCode(mappingCode);
+                PoDTO poDTONew = new PoDTO();
+                BeanUtils.copyProperties(poDTO, poDTONew);
+                poDTONew.setPoLineList((List) null);
+                poDTONew.setPoLine(poLine);
+                poLine.setPoLineLocation((PoLineLocation) poLine.getPoLineLocationList().get(0));
+                poDTOS.add(poDTONew);
+                prHeader.setPrLine(prLine);
+                prHeaders.add(prHeader);
+            }
+        }
+
+        poDTO.setPoLineList(poLines);
+
+        try {
+            if (CollectionUtils.isNotEmpty(poDTOS)) {
+                Map<Long, List<PrLine>> map = (Map) prLines.stream().collect(Collectors.groupingBy(PrLine::getPrHeaderId));
+                this.generatorPoByPrDomainService.initTemplatePoDTO(poDTO, poDTOS, prHeaders, map.size() == 1);
+            }
+        } catch (Exception var16) {
+            LOGGER.error("=====referWholePrHeaderAuto mapping error is {}", ExceptionUtils.getMessage(var16));
+        }
+
+        poDTO = this.poCreate(poDTO);
+        this.initPoCreatedBy(poDTO);
+        PoHeader poHeader = (PoHeader) this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
+        //再次查询
+        prHeader = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
+        this.prHeaderRepository.updateByPrimaryKeySelective(new PrHeader(prHeaderId, prHeader.getObjectVersionNumber(), "CLOSED", poHeader.getPoHeaderId(), poHeader.getPoNum(), poHeader.getCreatedBy(), poHeader.getCreationDate(), "PO"));
+        List<PrLine> prLineList = this.covPoToPrEchoInfo(poDTO.getPoLineList(), prLines, new PoDTO(), true);
+        this.prLineRepository.batchUpdateByPrimaryKeySelective(prLineList);
+        this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), tenantId, "OCCUPY");
+        return poDTO;
+    }
+
+    private PoDTO buildPoHeaderByPrHeader(Long tenantId, PrHeader prHeader, PrLine firstPrLine) {
+        PoDTO poDTO = new PoDTO();
+        BeanUtils.copyProperties(prHeader, poDTO);
+        poDTO.setAgentId(prHeader.getPurchaseAgentId());
+        PoHeader.processPurchaseAgent(tenantId, poDTO, this.poHeaderRepository);
+        poDTO.setStatusCode("PENDING");
+        poDTO.setSupplierId(firstPrLine.getSupplierId());
+        poDTO.setSupplierCode(firstPrLine.getSupplierCode());
+        poDTO.setSupplierName(firstPrLine.getSupplierName());
+        poDTO.setSupplierTenantId(firstPrLine.getSupplierTenantId());
+        poDTO.setSupplierCompanyId(firstPrLine.getSupplierCompanyId());
+        poDTO.setSupplierCompanyName(firstPrLine.getSupplierCompanyName());
+        poDTO.setShipToLocationId(prHeader.getReceiverAddressId());
+        poDTO.setShipToLocationAddress(prHeader.getReceiverAddress());
+        poDTO.setBillToLocationId(prHeader.getInvoiceAddressId());
+        poDTO.setBillToLocationAddress(prHeader.getInvoiceAddress());
+        poDTO.setReceiverEmailAddress(prHeader.getReceiverEmailAddress());
+        PrType prType = (PrType) this.prTypeRepository.selectByPrimaryKey(prHeader.getPrTypeId());
+        poDTO.setPoTypeId(prType != null && prType.getOrderTypeId() != null && prType.getOrderTypeId() != 0L ? prType.getOrderTypeId() : this.orderTypeService.queryDefaultOrderType(tenantId).getOrderTypeId());
+        poDTO.setDisplayPrNum(prHeader.getPrNum());
+        poDTO.setVersionNum(1);
+        poDTO.setIfAccoringToPrLine(true);
+        poDTO.setPoSourcePlatform(prHeader.getPrSourcePlatform());
+        poDTO.setCompanyName(this.poHeaderMapper.selectCompanyNameById(prHeader.getCompanyId()));
+        if ("E-COMMERCE".equals(poDTO.getPoSourcePlatform()) || "CATALOGUE".equals(poDTO.getPoSourcePlatform())) {
+            if ("E-COMMERCE".equals(poDTO.getPoSourcePlatform())) {
+                poDTO.setDomesticCurrencyCode(prHeader.getLocalCurrency());
+            } else {
+                poDTO.setDomesticCurrencyCode(this.poHeaderMapper.queryCurrencyByCompanyId(prHeader.getCompanyId()));
+            }
+
+            poDTO.setDomesticAmount(prHeader.getLocalCurrencyNoTaxSum());
+            poDTO.setDomesticTaxIncludeAmount(prHeader.getLocalCurrencyTaxSum());
+        }
+
+        if ("CATALOGUE".equals(poDTO.getPoSourcePlatform())) {
+            if (!Objects.isNull(firstPrLine.getReceiveContactName())) {
+                poDTO.setShipToLocContName(firstPrLine.getReceiveContactName());
+            }
+
+            if (!Objects.isNull(firstPrLine.getReceiveTelNum())) {
+                poDTO.setShipToLocTelNum(firstPrLine.getReceiveTelNum());
+            }
+        }
+
+        if ("CATALOGUE".equals(poDTO.getPoSourcePlatform()) || "E-COMMERCE".equals(poDTO.getPoSourcePlatform())) {
+            PrHeader prDbRecord = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(firstPrLine.getPrHeaderId());
+            poDTO.setPurchaseUnitName(prDbRecord.getPurchaseUnitName());
+        }
+
+        return poDTO;
+    }
+
+    private List<PrLine> covPoToPrEchoInfo(List<PoLine> poLines, List<PrLine> prLines, PoDTO poDTO, boolean enableReferWhole) {
+        Long poHeaderId = poDTO.getPoHeaderId();
+        String poNum = poDTO.getPoNum();
+        String poLineIds = StringUtils.join(poLines.stream().map(PoLine::getPoLineId).toArray(), ",");
+        List<PoLine> poLines1 = this.poLineRepository.selectByIds(poLineIds);
+        return (List) prLines.stream().map((d) -> {
+            PoLine poLine = (PoLine) poLines1.stream().filter((l) -> {
+                return l.getPrLineId().equals(d.getPrLineId());
+            }).findFirst().orElseThrow(() -> {
+                return new CommonException("error.pr.line.list.not.null", new Object[0]);
+            });
+            return enableReferWhole ? new PrLine(d.getPrLineId(), 1, d.getObjectVersionNumber(), poLine.getPoLineId(), poLine.getLineNum().toString(), poLine.getCreatedBy(), poLine.getCreationDate(), "PO", poHeaderId, poNum, poLine.getQuantity()) : new PrLine(d.getPrLineId(), 1, d.getObjectVersionNumber(), poLine.getPoLineId(), poLine.getLineNum().toString(), poLine.getCreatedBy(), poLine.getCreationDate(), "PO", poHeaderId, poNum);
+        }).collect(Collectors.toList());
+    }
 
 
 }
