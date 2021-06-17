@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.purchasecooperation.common.api.dto.TenantDTO;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.app.service.PoHeaderService;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
@@ -30,10 +31,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,6 +47,9 @@ public class PrHeaderServiceImpl2 {
     private PoHeaderService poHeaderService;
     @Autowired
     private PoHeaderMapper poHeaderMapper;
+    @Autowired
+    private RcwlPrFeignMapper rcwlPrFeignMapper;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PrHeaderServiceImpl.class);
 
     @Transactional(
@@ -101,6 +102,17 @@ public class PrHeaderServiceImpl2 {
             LOGGER.error(var8.getMessage(), var8);
             throw new CommonException(var8, new Object[0]);
         } finally {
+            //查询smpc_sku表的attribute_varchar1插入到订单行sodr_po_line的pc_num上 关联条件product_num
+            List<Long> lineIdsAll = new ArrayList<>();
+            prHeaderList.forEach(item->{
+                List<Long> lineIds = rcwlPrFeignMapper.selectLineIdByHeadId(item.getPrHeaderId());
+                lineIdsAll.addAll(lineIds);
+            });
+            LOGGER.info("25140============ lineIdsAll = {}",lineIdsAll);
+            lineIdsAll.forEach(item -> {
+                rcwlPrFeignMapper.updatePoLine(item);
+                LOGGER.info("25140============ lineIdsAll = {}",item);
+            });
             SecurityContextHolder.clearContext();
         }
 
