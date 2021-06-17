@@ -33,6 +33,7 @@ import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 public class PrHeaderServiceImpl2 {
 
     @Autowired
