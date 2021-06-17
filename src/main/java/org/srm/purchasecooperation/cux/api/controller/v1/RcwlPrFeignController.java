@@ -47,13 +47,7 @@ public class RcwlPrFeignController {
     @Autowired
     private CustomizeSettingHelper customizeSettingHelper;
     @Autowired
-    private PrLineRepository prLineRepository;
-    @Autowired
     private RcwlPrFeignMapper rcwlPrFeignMapper;
-    @Autowired
-    private PrLineService prLineService;
-    @Autowired
-    private PrHeaderServiceImpl2 prHeaderServiceImpl2;
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPrFeignController.class);
 
     @ApiOperation("采购申请流程发起成功变更字段")
