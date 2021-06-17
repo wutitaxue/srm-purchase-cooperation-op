@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
+import org.srm.purchasecooperation.cux.order.app.service.impl.PrHeaderServiceImpl2;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
@@ -39,7 +40,8 @@ import java.util.stream.Collectors;
 @RequestMapping({"/v1/{organizationId}"})
 public class RcwlPrFeignController {
 
-
+    @Autowired
+    private PrHeaderServiceImpl2 prHeaderServiceImpl2;
     @Autowired
     private PrHeaderRepository prHeaderRepository;
     @Autowired
@@ -110,7 +112,9 @@ public class RcwlPrFeignController {
         List<PrHeader> prHeaderApprovalList = this.prHeaderService.prApproval(tenantId, prHeaderList, Boolean.TRUE);
         this.prHeaderService.exportPrToErp(tenantId, prHeaderApprovalList);
         ((PrHeader)prHeaderApprovalList.get(0)).setCustomUserDetails(DetailsHelper.getUserDetails());
-        this.prHeaderService.afterPrApprove(tenantId, prHeaderApprovalList);
+//        this.prHeaderService.afterPrApprove(tenantId, prHeaderApprovalList);
+        prHeaderServiceImpl2.afterPrApprove(tenantId, prHeaderApprovalList);
+
         //查询smpc_sku表的attribute_varchar1插入到订单行sodr_po_line的pc_num上 关联条件product_num
         List<Long> lineIdsAll = new ArrayList<>();
         prHeaderList.forEach(item->{
