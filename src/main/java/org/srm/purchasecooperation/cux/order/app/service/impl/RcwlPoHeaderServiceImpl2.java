@@ -74,12 +74,9 @@ public class RcwlPoHeaderServiceImpl2  {
 
     public PoDTO referWholePrHeaderAuto(Long tenantId, Long prHeaderId) {
         PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
-        LOGGER.info("25140============ 1",prHeader.toString());
         Assert.notNull(prHeader, "error.pr.not.exists");
         prHeader.validECRefer();
-        LOGGER.info("25140============ 2",prHeader.toString());
         List<PrLine> prLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("tenantId", tenantId).andEqualTo("prHeaderId", prHeaderId)).build());
-        LOGGER.info("25140============ 3",prHeader.toString());
         Assert.notEmpty(prLines, "error.pr.line.not.exists");
         PrLine firstPrLine = (PrLine)prLines.get(0);
         List<PoLine> poLines = new ArrayList(prLines.size());
@@ -134,12 +131,9 @@ public class RcwlPoHeaderServiceImpl2  {
         poDTO = poHeaderServiceImpl.poCreate(poDTO);
         poHeaderServiceImpl.initPoCreatedBy(poDTO);
         PoHeader poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
-        LOGGER.info("25140============ 4",prHeader.toString());
         //再次查询
         prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
-        LOGGER.info("25140============ 5",prHeader.toString());
         this.prHeaderRepository.updateByPrimaryKeySelective(new PrHeader(prHeaderId, prHeader.getObjectVersionNumber(), "CLOSED", poHeader.getPoHeaderId(), poHeader.getPoNum(), poHeader.getCreatedBy(), poHeader.getCreationDate(), "PO"));
-        LOGGER.info("25140============ 6",prHeader.toString());
         List<PrLine> prLineList = this.covPoToPrEchoInfo(poDTO.getPoLineList(), prLines, new PoDTO(), true);
         this.prLineRepository.batchUpdateByPrimaryKeySelective(prLineList);
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), tenantId, "OCCUPY");
