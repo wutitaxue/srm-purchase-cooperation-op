@@ -122,16 +122,16 @@ public class RcwlPrFeignController {
         prHeaderServiceImpl2.afterPrApprove(tenantId, prHeaderApprovalList);
         LOGGER.info("25140============ afterPrApprove end");
         //查询smpc_sku表的attribute_varchar1插入到订单行sodr_po_line的pc_num上 关联条件product_num
-        List<Long> lineIdsAll = new ArrayList<>();
-        prHeaderList.forEach(item->{
-            List<Long> lineIds = rcwlPrFeignMapper.selectLineIdByHeadId(item.getPrHeaderId());
-            lineIdsAll.addAll(lineIds);
-        });
-        LOGGER.info("25140============ lineIdsAll = {}",lineIdsAll);
-        lineIdsAll.forEach(item -> {
-            rcwlPrFeignMapper.updatePoLine(item);
-            LOGGER.info("25140============ lineIdsAll = {}",item);
-        });
+//        List<Long> lineIdsAll = new ArrayList<>();
+//        prHeaderList.forEach(item->{
+//            List<Long> lineIds = rcwlPrFeignMapper.selectLineIdByHeadId(item.getPrHeaderId());
+//            lineIdsAll.addAll(lineIds);
+//        });
+//        LOGGER.info("25140============ lineIdsAll = {}",lineIdsAll);
+//        lineIdsAll.forEach(item -> {
+//            rcwlPrFeignMapper.updatePoLine(item);
+//            LOGGER.info("25140============ lineIdsAll = {}",item);
+//        });
         return Results.success(prHeaderApprovalList);
     }
     @ApiOperation("采购申请审批拒绝")
