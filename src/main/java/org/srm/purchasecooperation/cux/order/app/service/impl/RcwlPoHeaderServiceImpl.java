@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Tenant("SRM-RCWL")
-public class RcwlPoHeaderService2Impl extends PoHeaderServiceImpl {
+public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     private PoHeaderRepository poHeaderRepository;
     @Autowired
@@ -58,7 +58,7 @@ public class RcwlPoHeaderService2Impl extends PoHeaderServiceImpl {
     private PrTypeRepository prTypeRepository;
     @Autowired
     private PoHeaderSendApplyMqService poHeaderSendApplyMqService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderService2Impl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
     @Override
     public PoDTO referWholePrHeaderAuto(Long tenantId, Long prHeaderId) {
         PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
