@@ -131,10 +131,6 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     private PoItemBomRepository poItemBomRepository;
     @Autowired
-    private PrHeaderRepository prHeaderRepository;
-    @Autowired
-    private PrLineRepository prLineRepository;
-    @Autowired
     private RcwlMyCostMapper rcwlMyCostMapper;
 
 
