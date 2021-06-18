@@ -18,5 +18,5 @@ public interface RCWLAcpUserDataMapper {
      */
     public RCWLAcpUserDataDTO acpGetData(Long organizationId, String invoiceNum);
 
-    String getBuyerTaxNo(@Param("organizationId") Long organizationId,@Param("documentNumber") String documentNumber);
+    String getBuyerTaxNo(@Param("organizationId") Long organizationId,@Param("invoiceNum") String invoiceNum);
 }
