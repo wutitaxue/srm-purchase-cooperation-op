@@ -15,4 +15,13 @@ public interface RCWLAcpUserDataRepository {
      * @return
      */
     public RCWLAcpUserDataDTO acpGetData(Long organizationId, String invoiceNum);
+
+    /**
+     * 获取公司税号
+     *
+     * @param tenantId
+     * @param documentNumber
+     * @return
+     */
+    String getBuyerTaxNo(Long tenantId, String documentNumber);
 }

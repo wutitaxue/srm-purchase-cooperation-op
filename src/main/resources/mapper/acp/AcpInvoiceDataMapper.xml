@@ -13,5 +13,15 @@ WHERE
 	fc.company_id = h.supplier_company_id and
  h.tenant_id=#{organizationId} and h.settle_num = #{invoiceNum}
     </select>
+    <select id="getBuyerTaxNo" resultType="java.lang.String">
+        SELECT
+            fc.unified_social_code
+        FROM
+            hpfm_company fc,
+            ssta_settle_header h
+        WHERE
+            fc.company_id = h.supplier_company_id and
+            h.tenant_id=#{organizationId} and h.settle_num = #{invoiceNum}
+    </select>
 
 </mapper>
