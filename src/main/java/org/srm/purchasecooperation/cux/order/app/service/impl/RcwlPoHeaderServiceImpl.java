@@ -30,6 +30,7 @@ import org.srm.common.TenantInfoHelper;
 import org.srm.common.util.StringToNumberUtils;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
+import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.cux.order.util.TennantValue;
 import org.srm.purchasecooperation.order.api.dto.*;
 import org.srm.purchasecooperation.order.app.service.*;
@@ -126,6 +127,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private PrHeaderRepository prHeaderRepository;
     @Autowired
     private PrLineRepository prLineRepository;
+    @Autowired
+    private RcwlMyCostMapper rcwlMyCostMapper;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
@@ -392,9 +395,12 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             //opd-26
             List<Map<String,String>>  listMap = rcwlSpcmPcSubjectRepository.querySubjectByKey(contractResultDTO.getPcSubjectId());
             if(listMap.size()>0){
+                Long costId = rcwlMyCostMapper.selectCostId(String.valueOf(listMap.get(0).get("attribute_varchar22")));
                 poLine.setAttributeVarchar21(String.valueOf(listMap.get(0).get("attribute_varchar21")));
-                poLine.setCostId(Long.valueOf(listMap.get(0).get("attribute_varchar22")));
-                poLine.setWbs(String.valueOf(listMap.get(0).get("attribute_varchar23")));
+                poLine.setCostId(costId);
+                poLine.setCostCode(String.valueOf(listMap.get(0).get("attribute_varchar22")));
+                //poLine.setWbs(String.valueOf(listMap.get(0).get("attribute_varchar23")));
+                poLine.setWbsCode(String.valueOf(listMap.get(0).get("attribute_varchar23")));
             }else{
                 // throw new CommonException("error.po.sprm_pr_line_not_null", "");
             }
