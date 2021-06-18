@@ -398,7 +398,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             //opd-26
             List<Map<String,String>>  listMap = rcwlSpcmPcSubjectRepository.querySubjectByKey(contractResultDTO.getPcSubjectId());
             if(listMap.size()>0){
-                Long costId = rcwlMyCostMapper.selectCostId(String.valueOf(listMap.get(0).get("attribute_varchar22")));
+                Long costId = rcwlMyCostMapper.selectCostId(String.valueOf(listMap.get(0).get("attribute_varchar22")),poLine.getTenantId());
                 poLine.setAttributeVarchar21(String.valueOf(listMap.get(0).get("attribute_varchar21")));
                 poLine.setCostId(costId);
                 poLine.setCostCode(String.valueOf(listMap.get(0).get("attribute_varchar22")));
