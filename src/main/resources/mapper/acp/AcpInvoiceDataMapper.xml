@@ -20,7 +20,7 @@ WHERE
             hpfm_company fc,
             ssta_settle_header h
         WHERE
-            fc.company_id = h.supplier_company_id and
+            fc.company_id = h.company_id and
             h.tenant_id=#{organizationId} and h.settle_num = #{invoiceNum}
     </select>
 
