@@ -32,4 +32,16 @@ public class RCWLAcpUserDataRepositoryImpl implements RCWLAcpUserDataRepository 
     public RCWLAcpUserDataDTO acpGetData(Long organizationId, String invoiceNum) {
         return rcwlAcpUserDataMapper.acpGetData(organizationId, invoiceNum);
     }
+
+    /**
+     * 获取公司税号
+     *
+     * @param tenantId
+     * @param documentNumber
+     * @return
+     */
+    @Override
+    public String getBuyerTaxNo(Long tenantId, String documentNumber) {
+        return rcwlAcpUserDataMapper.getBuyerTaxNo(tenantId, documentNumber);
+    }
 }

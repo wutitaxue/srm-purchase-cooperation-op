@@ -36,6 +36,10 @@ public class RCWLAcpUserDataDTO {
     @JSONField(ordinal = 5)
     private String systemSource;
 
+    @ApiModelProperty("购方税号")
+    @JSONField(ordinal = 6)
+    private String buyerTaxNo;
+
     public String getAppSecId() {
         return appSecId;
     }
