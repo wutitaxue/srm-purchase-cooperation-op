@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.acp.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.srm.purchasecooperation.cux.acp.api.dto.RCWLAcpUserDataDTO;
 
 /**
@@ -16,4 +17,6 @@ public interface RCWLAcpUserDataMapper {
      * @return
      */
     public RCWLAcpUserDataDTO acpGetData(Long organizationId, String invoiceNum);
+
+    String getBuyerTaxNo(@Param("tenantId") Long tenantId,@Param("documentNumber") String documentNumber);
 }

@@ -72,10 +72,12 @@ public class RCWLAcpOcrServiceImpl implements RCWLAcpOcrService {
         } else {
             throw new CommonException(RCWLAcpConstant.ERROR.SYSTEM_SOURCE_ERROR);
         }
+        String buyerTaxNo = rcwlAcpUserDataRepository.getBuyerTaxNo(tenantId,rcwlAcpInvoiceData.getDocumentNumber());
         rcwlAcpUserDataDTO.setAppSecId(RCWLAcpConstant.APPSECID);
         rcwlAcpUserDataDTO.setDocumentNumber(rcwlAcpInvoiceData.getDocumentNumber());
         rcwlAcpUserDataDTO.setDocumentType(documentType);
         rcwlAcpUserDataDTO.setSystemSource(systemSource);
+        rcwlAcpUserDataDTO.setBuyerTaxNo(buyerTaxNo);
         logger.info("rcwlAcpUserDataDTO:" + JSON.toJSONString(rcwlAcpUserDataDTO));
         //base64加密
         url = ObjectUtils.isEmpty(url) ? RCWLAcpConstant.URL : url;
