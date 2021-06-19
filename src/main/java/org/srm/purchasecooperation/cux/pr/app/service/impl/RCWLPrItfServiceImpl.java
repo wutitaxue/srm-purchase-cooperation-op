@@ -112,15 +112,18 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
             String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
-          String str =  details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().getAsString();
-            List<RcwlResponseMsg> dataArr = JSONArray.parseArray(str,RcwlResponseMsg.class);
-            logger.info("dataArr:"+dataArr.toString());
+            JsonArray str =  details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray();
+            logger.info("str" + str);
             String simpleMessage = "";
-            if (CollectionUtils.isNotEmpty(dataArr)) {
-                for (RcwlResponseMsg arr : dataArr) {
-                    simpleMessage = simpleMessage + arr.getSimpleMessage() + ",";
+            if(str.size()>0){
+                for(int i=0;i<str.size();i++){
+                    JsonObject jsonObject = str.get(i).getAsJsonObject();
+                    logger.info("jsonObject" + jsonObject.get("simpleMessage"));
+                    simpleMessage = simpleMessage+jsonObject.get("simpleMessage")+",";
+
                 }
             }
+            logger.info("simpleMessage" + simpleMessage);
          //   String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
             if (StringUtils.isEmpty(simpleMessage)) {
                 throw new CommonException(detailsMsg);
