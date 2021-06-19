@@ -4,6 +4,6 @@ import org.apache.ibatis.annotations.Param;
 
 
 public interface RcwlMyCostMapper {
-    Long selectCostId(@Param("") String costCode);
+    Long selectCostId(@Param("costCode") String costCode,@Param("tenantId") Long tenantId);
 
 }
