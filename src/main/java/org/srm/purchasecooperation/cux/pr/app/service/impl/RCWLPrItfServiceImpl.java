@@ -118,8 +118,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             if(str.size()>0){
                 for(int i=0;i<str.size();i++){
                     JsonObject jsonObject = str.get(i).getAsJsonObject();
-                    logger.info("jsonObject" + jsonObject.get("simpleMessage"));
-                    simpleMessage = simpleMessage+jsonObject.get("simpleMessage")+",";
+                    logger.info("jsonObject" + jsonObject.get("simplemessage"));
+                    simpleMessage = simpleMessage+jsonObject.get("simplemessage")+",";
 
                 }
             }
