@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.pr.api.dto.*;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlResponseMsg;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -111,11 +112,20 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
             String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
-            String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
+          String str =  details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().getAsString();
+            List<RcwlResponseMsg> dataArr = JSONArray.parseArray(str,RcwlResponseMsg.class);
+            logger.info("dataArr:"+dataArr.toString());
+            String simpleMessage = "";
+            if (CollectionUtils.isNotEmpty(dataArr)) {
+                for (RcwlResponseMsg arr : dataArr) {
+                    simpleMessage = simpleMessage + arr.getSimpleMessage() + ",";
+                }
+            }
+         //   String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
             if (StringUtils.isEmpty(simpleMessage)) {
                 throw new CommonException(detailsMsg);
             }else {
-                throw new CommonException(simpleMessage + "，采购申请不可提交");
+                throw new CommonException(simpleMessage + "采购申请不可提交");
             }
         }
     }
