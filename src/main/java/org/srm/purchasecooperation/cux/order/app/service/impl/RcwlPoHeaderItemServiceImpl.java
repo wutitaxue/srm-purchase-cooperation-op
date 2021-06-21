@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
+import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
 import org.slf4j.Logger;
