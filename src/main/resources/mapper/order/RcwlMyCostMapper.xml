@@ -6,6 +6,5 @@
     </select>
     <select id="selectWbs" resultType="java.lang.String">
         select t.wbs_name from smdm_wbs t where t.wbs_code = #{wbsCode} and tenant_id = #{tenantId}
-        and t.company_id = (select sph.company_id from sodr_po_header sph where sph.po_header_id = #{poHeaderId})
     </select>
 </mapper>
