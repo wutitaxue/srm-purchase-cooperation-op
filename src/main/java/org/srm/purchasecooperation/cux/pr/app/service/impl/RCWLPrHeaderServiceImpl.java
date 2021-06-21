@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.CaseFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CaseFormat;
 import io.choerodon.core.exception.CommonException;
