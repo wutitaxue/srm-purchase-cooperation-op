@@ -19,13 +19,11 @@ public class SinvRcvTrxWaitingAddAsnStatusDTO extends SinvRcvTrxWaitingDTO {
 
     @ApiModelProperty("送货单头状态 SINV.ASN_HEADERS_STATUS")
     private String asnStatus;
-    @ApiModelProperty("采购品类Id")
     @LovValue(
             lovCode = "SMDM.ITEM_CATEGORY",
             meaningField="categoryName"
     )
     private Long categoryId;
     private String categoryName;
-
 
 }
