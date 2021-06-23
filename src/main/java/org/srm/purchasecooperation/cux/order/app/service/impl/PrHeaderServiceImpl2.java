@@ -289,8 +289,9 @@ public class PrHeaderServiceImpl2 {
                                             poHeaderRepository.batchInsertItemTl(poLineList1);
                                         }
                                     }
-                                //存在则只插入订单行物料编码和物料id物料名称
+                                    //存在则只插入订单行物料编码和物料id物料名称
                                 }else {
+                                    rcwlItemInfoVO.setPoLineId(itemLine.getPoLineId());
                                     poLineList.add(rcwlItemInfoVO);
                                 }
                             });
