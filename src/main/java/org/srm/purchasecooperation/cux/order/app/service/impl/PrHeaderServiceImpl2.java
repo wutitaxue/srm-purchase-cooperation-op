@@ -213,7 +213,6 @@ public class PrHeaderServiceImpl2 {
                             List<RCWLItemInfoVO> poLineList = new ArrayList<>();
                             PoLines.forEach(itemLine-> {
                                 RCWLItemInfoVO rcwlItemInfoVO = rcwlCheckPoLineMapper.checkPoItem(itemLine.getProductNum(), itemLine.getTenantId());
-                                rcwlItemInfoVO.setPoLineId(itemLine.getPoLineId());
                                 //没有物料创建编码并插入订单
                                 if (rcwlItemInfoVO == null) {
                                     //查询需要封装的item数据集合(排除存在物料id的数据)
@@ -291,6 +290,7 @@ public class PrHeaderServiceImpl2 {
                                     }
                                     //存在则只插入订单行物料编码和物料id物料名称
                                 }else {
+                                    rcwlItemInfoVO.setPoLineId(itemLine.getPoLineId());
                                     poLineList.add(rcwlItemInfoVO);
                                 }
                             });
