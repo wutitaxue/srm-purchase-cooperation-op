@@ -406,6 +406,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         //的字段：attribute_varchar17、attribute_varchar18自动赋值为0
         copyPrHeader.setAttributeVarchar17("0");
         copyPrHeader.setAttributeVarchar18("0");
+        copyPrHeader.setAttributeVarchar38(prHeaderRepository.selectOne(prHeader).getAttributeVarchar38());
         copyPrHeader = this.addCopyPrHeader(copyPrHeader);
         Map<Long, List<PrLineSupplier>> supplierMap = new HashMap();
         if (CollectionUtils.isNotEmpty(copyPrLineList)) {
