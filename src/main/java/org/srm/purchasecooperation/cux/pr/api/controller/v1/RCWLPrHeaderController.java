@@ -1,12 +1,14 @@
 package org.srm.purchasecooperation.cux.pr.api.controller.v1;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Results;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -27,12 +29,11 @@ import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
+import org.srm.purchasecooperation.pr.domain.vo.SupplierStageVO;
+import org.srm.purchasecooperation.pr.infra.mapper.PrHeaderMapper;
 import org.srm.web.annotation.Tenant;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @description:采购申请
@@ -56,6 +57,9 @@ public class RCWLPrHeaderController {
     private PrintHelper printHelper;
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
+
+    @Autowired
+    private PrHeaderMapper prHeaderMapper;
    // @Autowired
    //private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
     @Autowired
@@ -112,7 +116,16 @@ public class RCWLPrHeaderController {
     @PostMapping({"/purchase-requests/singleton-submit"})
     public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
         SecurityTokenHelper.validToken(prHeader, false);
-
+        //采购申请提交增加校验生命周期 0628 jyb start
+        List<SupplierStageVO> supplierStageVOS = prHeaderMapper.checkPrSupplierAllowOrderV2(tenantId, prHeader.getPrHeaderId());
+        Iterator var4 = supplierStageVOS.iterator();
+        while(var4.hasNext()) {
+            SupplierStageVO supplierStageVO = (SupplierStageVO)var4.next();
+            if (!BaseConstants.Flag.YES.equals(supplierStageVO.getAllowOrders())) {
+                throw new CommonException("error.pr_supplier_stage_not_allow_order", new Object[]{supplierStageVO.getSupplierCompanyName(), supplierStageVO.getStageDescription()});
+            }
+        }
+        //采购申请提交增加校验生命周期 0628 jyb end
       // String token = this.rcwlPrItfService.getToken();
 
      // this.rcwlPrItfService.invokeBudgetOccupy(prHeader,tenantId);
