@@ -21,13 +21,12 @@ import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmFileDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmLineDTO;
-import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrToBpmService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrToBpmService;
 import org.srm.purchasecooperation.cux.pr.utils.DateTimeUtil;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -39,7 +38,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
-public class RCWLPrToBpmServiceImpl implements RCWLPrToBpmService {
+public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
     @Autowired
     private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
 
