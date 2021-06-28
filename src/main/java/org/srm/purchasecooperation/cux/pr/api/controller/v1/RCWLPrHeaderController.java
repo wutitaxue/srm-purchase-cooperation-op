@@ -117,12 +117,14 @@ public class RCWLPrHeaderController {
     public ResponseEntity<PrHeader> singletonSubmit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PrHeader prHeader) throws JsonProcessingException {
         SecurityTokenHelper.validToken(prHeader, false);
         //采购申请提交增加校验生命周期 0628 jyb start
-        List<SupplierStageVO> supplierStageVOS = prHeaderMapper.checkPrSupplierAllowOrderV2(tenantId, prHeader.getPrHeaderId());
-        Iterator var4 = supplierStageVOS.iterator();
-        while(var4.hasNext()) {
-            SupplierStageVO supplierStageVO = (SupplierStageVO)var4.next();
-            if (!BaseConstants.Flag.YES.equals(supplierStageVO.getAllowOrders())) {
-                throw new CommonException("error.pr_supplier_stage_not_allow_order", new Object[]{supplierStageVO.getSupplierCompanyName(), supplierStageVO.getStageDescription()});
+        if ("CATALOGUE".equals(prHeader.getPrSourcePlatform())) {
+            List<SupplierStageVO> supplierStageVOS = prHeaderMapper.checkPrSupplierAllowOrderV2(tenantId, prHeader.getPrHeaderId());
+            Iterator var4 = supplierStageVOS.iterator();
+            while (var4.hasNext()) {
+                SupplierStageVO supplierStageVO = (SupplierStageVO) var4.next();
+                if (!BaseConstants.Flag.YES.equals(supplierStageVO.getAllowOrders())) {
+                    throw new CommonException("error.pr_supplier_stage_not_allow_order", new Object[]{supplierStageVO.getSupplierCompanyName(), supplierStageVO.getStageDescription()});
+                }
             }
         }
         //采购申请提交增加校验生命周期 0628 jyb end
