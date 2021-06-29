@@ -134,22 +134,22 @@ public class RcwlPoHeaderServiceImpl2  {
         //再次查询
         prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
         this.prHeaderRepository.updateByPrimaryKeySelective(new PrHeader(prHeaderId, prHeader.getObjectVersionNumber(), "CLOSED", poHeader.getPoHeaderId(), poHeader.getPoNum(), poHeader.getCreatedBy(), poHeader.getCreationDate(), "PO"));
-        LOGGER.info("25140==1===poDTO", poDTO);
+        LOGGER.info("25140==1===poDTO:{}", poDTO.toString());
         List<PrLine> prLineList = this.covPoToPrEchoInfo(poDTO.getPoLineList(), prLines, new PoDTO(), true);
-        LOGGER.info("25140==1===prLineList", prLineList);
+        LOGGER.info("25140==1===prLineList:{}", prLineList.toString());
         this.prLineRepository.batchUpdateByPrimaryKeySelective(prLineList);
-        LOGGER.error("25140==2===prLineList", prLineList);
+        LOGGER.error("25140==2===prLineList:{}", prLineList.toString());
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), tenantId, "OCCUPY");
         return poDTO;
     }
 
     private List<PrLine> covPoToPrEchoInfo(List<PoLine> poLines, List<PrLine> prLines, PoDTO poDTO, boolean enableReferWhole) {
-        LOGGER.info("25140==2===poLines", poLines);
+        LOGGER.info("25140==2===poLines:{}", poLines.toString());
         Long poHeaderId = poDTO.getPoHeaderId();
         String poNum = poDTO.getPoNum();
         String poLineIds = StringUtils.join(poLines.stream().map(PoLine::getPoLineId).toArray(), ",");
         List<PoLine> poLines1 = this.poLineRepository.selectByIds(poLineIds);
-        LOGGER.info("25140==2===poLines1", poLines1);
+        LOGGER.info("25140==2===poLines1:{}", poLines1.toString());
         return (List)poLines1.stream().map((d) -> {
             PoLine poLine = (PoLine)poLines.stream().filter((l) -> {
                 return l.getPrLineId().equals(d.getPrLineId());
