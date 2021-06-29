@@ -7,7 +7,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.web.annotation.Tenant;
-import org.srm.web.dynamic.ExtendMapper;
+import io.choerodon.mybatis.helper.ExtendMapper;
 
 import java.util.List;
 

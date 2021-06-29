@@ -6,7 +6,7 @@ import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxLineMapper;
 import org.srm.web.annotation.Tenant;
-import org.srm.web.dynamic.ExtendMapper;
+import io.choerodon.mybatis.helper.ExtendMapper;
 
 import java.math.BigDecimal;
 import java.util.List;

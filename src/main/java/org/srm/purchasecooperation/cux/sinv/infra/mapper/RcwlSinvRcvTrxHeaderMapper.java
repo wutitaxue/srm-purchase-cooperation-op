@@ -11,7 +11,7 @@ import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxWaitingDTO;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxHeaderMapper;
 import org.srm.web.annotation.Tenant;
-import org.srm.web.dynamic.ExtendMapper;
+import io.choerodon.mybatis.helper.ExtendMapper;
 
 import java.util.List;
 
