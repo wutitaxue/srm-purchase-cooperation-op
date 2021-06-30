@@ -7,8 +7,8 @@
             ( SELECT sph.po_num FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fsrmOrderBillNo,
             srth.trx_num fsrmStoreBillNo,
             srtl.trx_line_num fsrmStoreRowNo,
-            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb WHERE scb.company_id = srth.company_id LIMIT 1 ) fPurchaseOrgId,
-            ( SELECT ssb.attribute_varchar39 FROM sslm_supplier_basic ssb WHERE ssb.supplier_company_id = srth.supplier_company_id LIMIT 1 ) fSupplierId,
+            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb left join hpfm_company sc on sc.source_key = scb.company_id  WHERE sc.company_id = srth.company_id ORDER BY scb.version_number desc LIMIT 1 ) fPurchaseOrgId,
+            ( SELECT ssb.attribute_varchar39 FROM sslm_supplier_basic ssb WHERE ssb.supplier_company_id = srth.supplier_company_id  LIMIT 1 ) fSupplierId,
             srth.received_by fProviderContactName,
             srtl.item_code fMaterialId,
             srtl.item_name fMaterialName,
@@ -23,7 +23,7 @@
             ) fMaterialGroup,
             ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
         IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNewInt,
-        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
+        ( SELECT spl.currency_code FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fSettleCurrId,
         (
             SELECT
                 su.uom_code
@@ -70,8 +70,8 @@
             ( SELECT sph.po_num FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fsrmOrderBillNo,
             srth.trx_num fsrmStoreBillNo,
             srtl.trx_line_num fsrmStoreRowNo,
-            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb WHERE scb.company_id = srth.company_id LIMIT 1 ) fPurchaseOrgId,
-            ( SELECT ssb.attribute_varchar39 FROM sslm_supplier_basic ssb WHERE ssb.supplier_company_id = srth.supplier_company_id LIMIT 1 ) fSupplierId,
+            ( SELECT scb.attribute_varchar1 FROM spfm_company_basic scb left join hpfm_company sc on sc.source_key = scb.company_id  WHERE sc.company_id = srth.company_id  ORDER BY scb.version_number desc LIMIT 1 ) fPurchaseOrgId,
+            ( SELECT ssb.attribute_varchar39 FROM sslm_supplier_basic ssb WHERE ssb.supplier_company_id = srth.supplier_company_id  LIMIT 1 ) fSupplierId,
             srth.received_by fProviderContactName,
             srtl.item_code fMaterialId,
             srtl.item_name fMaterialName,
@@ -86,7 +86,7 @@
             ) fMaterialGroup,
             ( SELECT CONCAT_WS( '&amp;', si.specifications, si.model ) FROM smdm_item si WHERE si.item_id = srtl.item_id ) fModel,
         IFNULL(( SELECT si.attribute_varchar1 FROM smdm_item si WHERE si.item_id = srtl.item_id ), '1' ) fIsNewInt,
-        ( SELECT sph.currency_code FROM sodr_po_header sph WHERE sph.po_header_id = srtol.from_po_header_id ) fSettleCurrId,
+         ( SELECT spl.currency_code FROM sodr_po_line spl WHERE srtol.from_po_line_id = spl.po_line_id ) fSettleCurrId,
         (
             SELECT
                 su.uom_code

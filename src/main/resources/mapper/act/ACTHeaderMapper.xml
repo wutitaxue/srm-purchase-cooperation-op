@@ -2,105 +2,71 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="org.srm.purchasecooperation.cux.act.infra.mapper.ActHeaderMapper">
     <update id="updateBpmInstanceId">
-		update sinv_rcv_trx_header h
-		set h.attribute_varchar19 = '0'
-		where h.trx_num =#{settleNum};
-	</update>
+        update sinv_rcv_trx_header h
+        set h.attribute_varchar19 = '0'
+        where h.trx_num = #{settleNum};
+    </update>
     <select id="settleIdQuery" resultType="java.lang.Long">
-select h.rcv_trx_header_id from sinv_rcv_trx_header h where h.trx_num = #{settleNum};
-	</select>
+        select h.rcv_trx_header_id
+        from sinv_rcv_trx_header h
+        where h.trx_num = #{settleNum};
+    </select>
     <select id="actListHeaderQuery"
             resultType="org.srm.purchasecooperation.cux.act.api.dto.ActListHeaderDto">
-				SELECT
-					(
-						SELECT DISTINCT
-							pol.pc_num
-						FROM
-							sodr_po_line pol
-						WHERE
-							pol.po_line_id IN (
-								SELECT DISTINCT
-									l.from_po_line_id
-								FROM
-									sinv_rcv_trx_line l
-								WHERE
-									l.rcv_trx_header_id = h.rcv_trx_header_id
-							)
-					) pc_num,
-					(
-						SELECT
-							sph.pc_name
-						FROM
-							spcm_pc_header sph
-						WHERE
-							sph.pc_num = (
-								SELECT DISTINCT
-									pol.pc_num
-								FROM
-									sodr_po_line pol
-								WHERE
-									pol.po_line_id IN (
-										SELECT DISTINCT
-											l.from_po_line_id
-										FROM
-											sinv_rcv_trx_line l
-										WHERE
-											l.rcv_trx_header_id = h.rcv_trx_header_id
-									)
-							)
-					) pc_name,
-					h.received_by AS acceptor_name,
-					concat(
-						concat(
-							h.trx_num,
-							(
-								SELECT
-									sph.pc_name
-								FROM
-									spcm_pc_header sph
-								WHERE
-									sph.pc_num = (
-										SELECT DISTINCT
-											pol.pc_num
-										FROM
-											sodr_po_line pol
-										WHERE
-											pol.po_line_id IN (
-												SELECT DISTINCT
-													l.from_po_line_id
-												FROM
-													sinv_rcv_trx_line l
-												WHERE
-													l.rcv_trx_header_id = h.rcv_trx_header_id
-											)
-									)
-							)
-						),
-						h.received_by
-					) FSubject,
-					h.trx_num,
-					h.company_name company_id,
-					h.supplier_company_name supplier_company_id,
-					h.attribute_varchar8 accept_list_type,
-					date_format(
-						h.creation_date,
-						'%Y-%m-%d %H:%i:%s'
-					) accept_date,
-					h.remark accept_details,
-					h.attribute_varchar19,
-					(concat(((select sum(l.quantity + l.occupied_quantity)
-                from sinv_rcv_trx_line l
-                where l.rcv_trx_header_id = h.rcv_trx_header_id) / (select sum(spll.quantity)
-                                                                    from sodr_po_line_location spll
-                                                                    where spll.po_line_location_id in
-                                                                          (select l.from_po_line_location_id
-                                                                           from sinv_rcv_trx_line l
-                                                                           where l.rcv_trx_header_id = h.rcv_trx_header_id)) *
-               100), '%')) speed
-				FROM
-					sinv_rcv_trx_header h
-				WHERE
-					h.tenant_id = #{organizationId}
-				AND h.rcv_trx_header_id = #{acceptListHeaderId}
+        SELECT h.rcv_trx_header_id                               url_mx,
+               (
+                   SELECT DISTINCT pol.pc_num
+                   FROM sodr_po_line pol
+                   WHERE pol.po_line_id IN (SELECT DISTINCT l.from_po_line_id
+                                            FROM sinv_rcv_trx_line l
+                                            WHERE l.rcv_trx_header_id = h.rcv_trx_header_id)
+               )                                                 pc_num,
+               (
+                   SELECT sph.pc_name
+                   FROM spcm_pc_header sph
+                   WHERE sph.pc_num = (
+                       SELECT DISTINCT pol.pc_num
+                       FROM sodr_po_line pol
+                       WHERE pol.po_line_id IN (SELECT DISTINCT l.from_po_line_id
+                                                FROM sinv_rcv_trx_line l
+                                                WHERE l.rcv_trx_header_id = h.rcv_trx_header_id)
+                   )
+               )                                                 pc_name,
+               h.received_by AS                                  acceptor_name,
+               h.trx_num,
+               h.company_name                                    company_id,
+               h.supplier_company_name                           supplier_company_id,
+               h.attribute_varchar8                              accept_list_type,
+               date_format(h.creation_date, '%Y-%m-%d %H:%i:%s') accept_date,
+               h.remark                                          accept_details,
+               h.attribute_varchar19,
+               (
+                   concat(
+                           round(((
+                                      SELECT sum(spll.quantity) - sum(CASE spl.returned_flag
+                                                                          WHEN 1
+                                                                              THEN - spll.quantity - spll.net_deliver_quantity
+                                                                          ELSE spll.quantity - spll.net_deliver_quantity END)
+                                      FROM sinv_rcv_trx_line l,
+                                           sodr_po_line spl,
+                                           sodr_po_line_location spll
+                                      WHERE l.rcv_trx_header_id = h.rcv_trx_header_id
+                                        AND spl.po_line_id = l.from_po_line_id
+                                        AND spl.po_line_id = spll.po_line_id
+                                  ) / (
+                                      SELECT sum(spll.quantity)
+                                      FROM sodr_po_line_location spll
+                                      WHERE spll.po_line_location_id IN (SELECT l.from_po_line_location_id
+                                                                         FROM sinv_rcv_trx_line l
+                                                                         WHERE l.rcv_trx_header_id = h.rcv_trx_header_id)) *
+                                  100
+                                     ),
+                                 2
+                               ),
+                           '%'
+                       ))                                        speed
+        FROM sinv_rcv_trx_header h
+        WHERE h.tenant_id = #{organizationId}
+          AND h.rcv_trx_header_id = #{acceptListHeaderId}
     </select>
 </mapper>

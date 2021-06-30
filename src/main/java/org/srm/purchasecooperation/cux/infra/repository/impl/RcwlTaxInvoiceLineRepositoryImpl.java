@@ -1,19 +1,18 @@
 package org.srm.purchasecooperation.cux.infra.repository.impl;
 
-import org.hzero.mybatis.base.BaseRepository;
 import org.hzero.mybatis.base.impl.BaseRepositoryImpl;
 import org.springframework.stereotype.Component;
-import org.srm.purchasecooperation.cux.domain.repository.RCWLTaxInvoiceLineRepository;
+import org.srm.purchasecooperation.cux.domain.repository.RcwlTaxInvoiceLineRepository;
 import org.srm.purchasecooperation.finance.domain.entity.InvoiceHeader;
 import org.srm.purchasecooperation.finance.domain.entity.TaxInvoiceLine;
-import org.srm.purchasecooperation.cux.infra.mapper.RCWLTaxInvoiceLineMapper;
+import org.srm.purchasecooperation.cux.infra.mapper.RcwlTaxInvoiceLineMapper;
 
 import javax.annotation.Resource;
 
 @Component
-public class RCWLTaxInvoiceLineRepositoryImpl extends BaseRepositoryImpl<TaxInvoiceLine> implements RCWLTaxInvoiceLineRepository {
+public class RcwlTaxInvoiceLineRepositoryImpl extends BaseRepositoryImpl<TaxInvoiceLine> implements RcwlTaxInvoiceLineRepository {
     @Resource
-    private RCWLTaxInvoiceLineMapper rcwLTaxInvoiceLineMapper;
+    private RcwlTaxInvoiceLineMapper rcwLTaxInvoiceLineMapper;
 
     @Override
     public InvoiceHeader selectOneInvoiceHeader(String InvoiceNum) {

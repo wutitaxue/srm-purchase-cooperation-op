@@ -38,7 +38,7 @@
 
     <update id="deleteSinvLineReturn">
         update sinv_rcv_trx_line t
-        set     t.attribute_bigint1 = null,
+        set     t.attribute_decimal2 = null,
                 t.attribute_varchar1 = null
         where t.rcv_trx_line_id =
                (select a.rcv_trx_line_id from (select
@@ -58,7 +58,7 @@
     <update id="updateSettle">
     update  ssta_settle ss
         set ss.quantity = #{inventoryQuantity}
-    where si.tenant_id = #{tenantId}
+    where ss.tenant_id = #{tenantId}
     and ss.source_settle_num = #{num}
     and ss.source_settle_line_num = #{lineNum}
 </update>

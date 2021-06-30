@@ -56,10 +56,11 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
             poHeaderAccordingToLineOfReferenceDTO.assignFilter(this.customizeSettingHelper);
             poHeaderAccordingToLineOfReferenceDTO.executionStrategyFilter(this.customizeSettingHelper);
             poHeaderAccordingToLineOfReferenceDTO.setCurrentDate(new Date());
-//            Page<PoHeaderAccordingToLineOfReferenceVO> page = PageHelper.doPageAndSort(pageRequest, () -> {
-//                return  this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
-//            });
-            List<PoHeaderAccordingToLineOfReferenceVO> voList = this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
+            Page<PoHeaderAccordingToLineOfReferenceVO> page1 = PageHelper.doPageAndSort(pageRequest, () -> {
+                return  this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
+            });
+//            List<PoHeaderAccordingToLineOfReferenceVO> voList = this.poLineRepository.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
+            List<PoHeaderAccordingToLineOfReferenceVO> voList = page1.getContent();
             List<PoHeaderAccordingToLineOfReferenceVO> newList = new ArrayList<>();
 //            List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             String attributeVarchar40 = poHeaderAccordingToLineOfReferenceDTO.getAttributeVarchar40();
@@ -79,14 +80,13 @@ public class RcwlPoLineServiceImpl extends PoLineServiceImpl {
                             newList.add(e);
                         }
                     }
-//                    else{
-//                        list.add(e);
-//                    }
+                    else{
+                        newList.add(e);
+                    }
                 });
-                voList=newList;
             }
-            int total = voList.size();
-            Page<PoHeaderAccordingToLineOfReferenceVO> page = new Page(voList, new PageInfo(0, total == 0 ? 1 : total), (long) total);
+            int total =(int)page1.getTotalElements() ;
+            Page<PoHeaderAccordingToLineOfReferenceVO> page = StringUtils.isNotBlank(attributeVarchar40)&&"rcwl".equals(attributeVarchar40)?new Page(newList, new PageInfo(0, total == 0 ? 1 : total), (long) total):page1;
             List<PoHeaderAccordingToLineOfReferenceVO> content = page.getContent();
             this.queryDefaultSupplier(poHeaderAccordingToLineOfReferenceDTO, content);
             List<Long> prLineIds =  content.stream().map(PoHeaderAccordingToLineOfReferenceVO::getPrLineId).collect(Collectors.toList());

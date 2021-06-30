@@ -15,8 +15,28 @@ public class PrToBpmFileDTO implements Serializable {
     private String index;
     @JSONField(name = "FILENAME")
     private String fileName;
+    @JSONField(name = "DESCRIPTION")
+    private String fileDescription;
     @JSONField(name = "FILESIZE")
     private String fileSize;
+    @JSONField(name = "URL")
+    private String fileUrl;
+
+    public String getFileDescription() {
+        return fileDescription;
+    }
+
+    public void setFileDescription(String fileDescription) {
+        this.fileDescription = fileDescription;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
 
     public String getIndex() {
         return index;

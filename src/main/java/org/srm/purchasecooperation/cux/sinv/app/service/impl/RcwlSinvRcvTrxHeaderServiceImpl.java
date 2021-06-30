@@ -37,11 +37,47 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.alibaba.fastjson.JSON;
+import io.choerodon.core.exception.CommonException;
+import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
+import org.hzero.core.base.BaseConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.srm.boot.adaptor.client.AdaptorTaskHelper;
+import org.srm.boot.adaptor.client.exception.TaskNotExistException;
+import org.srm.common.TenantInfoHelper;
+import org.srm.mq.service.producer.MessageProducer;
+import org.srm.purchasecooperation.asn.app.service.SendMessageToPrService;
+import org.srm.purchasecooperation.common.api.dto.SmdmCurrencyDTO;
+import org.srm.purchasecooperation.common.app.MdmService;
+import org.srm.purchasecooperation.common.app.impl.SpucCommonServiceImpl;
+import org.srm.purchasecooperation.cux.sinv.domain.repository.RcwlSinvRcvTrxLineRepository;
+import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
+import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
+import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
+import org.srm.purchasecooperation.order.domain.service.PoHeaderSendApplyMqService;
+import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
+import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
+import org.srm.purchasecooperation.sinv.app.service.impl.SinvRcvTrxHeaderServiceImpl;
+import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
+import org.srm.purchasecooperation.sinv.domain.repository.*;
+import org.srm.purchasecooperation.sinv.domain.service.*;
+import org.srm.web.annotation.Tenant;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 @Service
 @Tenant("SRM-RCWL")
 public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlSinvRcvTrxHeaderServiceImpl.class);
     @Autowired
     private SinvRcvTrxHeaderDomainService sinvRcvTrxHeaderDomainService;
     @Autowired
@@ -53,22 +89,55 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     @Autowired
     private SinvRcvRecordStrategyMappingRepository sinvRcvRecordStrategyMappingRepository;
     @Autowired
-    private SinvTrxNodeExectorDomainService sinvRcvTrxDomainService;
-    @Autowired
-    private SendMessageToPrService sendMessageToPrService;
-    @Autowired
     private SinvRcvTrxHeaderRepository sinvRcvTrxHeaderRepository;
-    @Autowired
-    private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
     @Autowired
     private PoHeaderRepository poHeaderRepository;
     @Autowired
-    private RcvTrxLineRepository rcvTrxLineRepository;
+    private PoLineRepository poLineRepository;
     @Autowired
-    private RcwlOrderBillMapper rcwlOrderBillMapper;
+    private PoLineLocationRepository poLineLocationRepository;
     @Autowired
-    private SettleMapper settleMapper;
+    private SinvTrxNodeExectorDomainService sinvRcvTrxDomainService;
+    @Autowired
+    private RcvStrategyLineRepository strategyLineRepository;
+    @Autowired
+    private RcvStrategyLineDomainService rcvStrategyLineDomainService;
+    @Autowired
+    private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
+    @Autowired
+    private SinvRcvTrxOrderLinkRepository sinvRcvTrxOrderLinkRepository;
+    @Autowired
+    private RcvChangeRecordRepository rcvChangeRecordRepository;
+    @Autowired
+    private RcvStrategyLineRepository rcvStrategyLineRepository;
+    @Autowired
+    private MdmService mdmService;
 
+    @Autowired
+    private SpucCommonServiceImpl spucCommonService;
+    @Autowired
+    private SinvTrxExportDomainService sinvTrxExportDomainService;
+    @Autowired
+    private SinvTrxPcDomainService sinvRcvPcDomainService;
+    @Autowired
+    private SinvTrxMinuQuantityDomainService sinvTrxMinuQuantityDomainService;
+
+    @Autowired
+    private SinvTrxCommonDomainService sinvTrxCommonDomainService;
+    @Autowired
+    @Lazy
+    private SinvTrxSettleDomainService sinvTrxSettleDomainService;
+    @Autowired
+    private PoHeaderSendApplyMqService poHeaderSendApplyMqService;
+    @Autowired
+    private MessageProducer messageProducer;
+    @Autowired
+    private SendMessageToPrService sendMessageToPrService;
+    @Autowired
+    @Lazy
+    private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
+    @Autowired
+    private RcwlSinvRcvTrxLineRepository rcwlSinvRcvTrxLineRepository;
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
 
@@ -106,53 +175,105 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             return sinvRcvTrxHeaderDTO;
         }
     }
-
     @Override
-    public void submittedSinvNone(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO, RcvStrategyLine rcvStrategyLine) {
-        Assert.notNull(rcvStrategyLine, "error.data_exists");
-        SinvRcvTrxHeader sinvRcvTrxHeader = (SinvRcvTrxHeader)this.sinvRcvTrxHeaderRepository.selectByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        sinvRcvTrxHeader.setRcvStatusCode("40_FINISHED");
-        this.sinvRcvTrxHeaderRepository.updateOptional(sinvRcvTrxHeader, new String[]{"rcvStatusCode"});
-        List<SinvAfterTrxNodeExectedVo> sinvAfterTrxNodeExectedVos = new ArrayList();
-        SinvAfterTrxNodeExectedVo sinvAfterTrxNodeExectedVo = new SinvAfterTrxNodeExectedVo();
-        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
-        SinvRcvRecordStrategyMapping sinvRcvRecordStrategyMapping = new SinvRcvRecordStrategyMapping();
-        sinvRcvRecordStrategyMapping.setRcvTrxHeaderId(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        sinvRcvRecordStrategyMapping = (SinvRcvRecordStrategyMapping)this.sinvRcvRecordStrategyMappingRepository.selectOne(sinvRcvRecordStrategyMapping);
-        PoHeader poHeader = (PoHeader)Optional.ofNullable(this.poHeaderRepository.selectByPrimaryKey(((SinvRcvTrxLine)sinvRcvTrxLines.get(0)).getFromPoHeaderId())).orElse(new PoHeader());
-        if ("E-COMMERCE".equals(poHeader.getPoSourcePlatform())) {
-            sinvRcvRecordStrategyMapping.setOrderTypeCode("ASN");
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    public SinvRcvTrxHeaderDTO updateSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:begin");
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:sinvRcvTrxHeaderDTO,{}", sinvRcvTrxHeaderDTO);
+        SinvRcvTrxHeader sinvRcvTrxHeader = new SinvRcvTrxHeader();
+
+        BeanUtils.copyProperties(sinvRcvTrxHeaderDTO, sinvRcvTrxHeader);
+        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
+        List<SinvRcvTrxLine> sinvRcvTrxLines = new ArrayList();
+        org.srm.common.client.entity.Tenant tenant = TenantInfoHelper.selectByTenantId(tenantId);
+
+        try {
+            Map<String, Object> map = new HashMap();
+            map.put("sinvRcvTrxWaitingDTOs", sinvRcvTrxLineDTOS);
+            LOGGER.debug("SINV_CHECK_RCV_TRX_SAVE-updateSinv 适配器入参:{}", JSON.toJSON(map));
+            AdaptorTaskHelper.executeAdaptorTask("SINV_CHECK_RCV_TRX_SAVE", tenant.getTenantNum(), JSON.toJSON(map));
+        } catch (TaskNotExistException var8) {
+            LOGGER.debug("============SINV_CHECK_RCV_TRX_SAVE-updateSinv-TaskNotExistException=============={}", new Object[]{tenant.getTenantNum(), var8.getMessage(), var8.getStackTrace()});
         }
 
-        sinvAfterTrxNodeExectedVo.setSinvRcvTrxLineList(sinvRcvTrxLines);
-        sinvAfterTrxNodeExectedVo.setStrategyLineId(rcvStrategyLine.getStrategyLineId());
-        sinvAfterTrxNodeExectedVo.setOrderTypeCode(sinvRcvRecordStrategyMapping.getOrderTypeCode());
-        sinvAfterTrxNodeExectedVo.setFromStrategyLineId(rcvStrategyLine.getStrategyLineId());
-        sinvAfterTrxNodeExectedVo.setToStrategyLineId(rcvStrategyLine.getStrategyLineId());
-        sinvAfterTrxNodeExectedVos.add(sinvAfterTrxNodeExectedVo);
-        this.sinvRcvTrxDomainService.afterTrxNodeExected(sinvAfterTrxNodeExectedVos);
-        this.sitfSinvOut(tenantId, sinvRcvTrxHeaderDTO);
-        //循环行新增品类需要推送资产时不新增结算
-        RcvTrxLine rcvTrxLine = new RcvTrxLine();
-        rcvTrxLine.setTenantId(tenantId);
-        rcvTrxLine.setRcvTrxHeaderId(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        List<RcvTrxLine> RcvTrxLines = rcvTrxLineRepository.select(rcvTrxLine);
-        RcvTrxLines.forEach(item -> {
-            String sendToEas = rcwlOrderBillMapper.selectCategory(tenantId, item.getRcvTrxLineId());
-            if (sendToEas == "0") {
-                List<Long> RcvTrxLineIdlist = new ArrayList<>();
-                RcvTrxLineIdlist.add(item.getRcvTrxLineId());
-                this.syncRcvTrxLineSettle(tenantId, null, RcvTrxLineIdlist, "NEW", false);
-            }else{
-                List<Long> RcvTrxLineIdlist = new ArrayList<>();
-                RcvTrxLineIdlist.add(item.getRcvTrxLineId());
-                this.syncRcvTrxLineSettle(tenantId, null, RcvTrxLineIdlist, "NEW", false);
-                //settle数量置-1 前端不显示
-                settleMapper.updateSettle(tenantId,sinvRcvTrxHeaderDTO.getTrxNum(),item.getTrxLineNum());
+        sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
+
+            SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
+            BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
+            LOGGER.info("收获事务行标表24730:"+sinvRcvTrxLine.toString());
+            sinvRcvTrxLine.setTenantId(tenantId);
+            SmdmCurrencyDTO smdmCurrencyDTO = this.mdmService.selectSmdmCurrencyDto(tenantId, sinvRcvTrxLine.getCurrencyCode());
+            int financialPrecision = smdmCurrencyDTO.getFinancialPrecision();
+            BigDecimal taxIncludedAmount;
+            BigDecimal netAmount;
+            if ("AMOUNT".equals(sinvRcvTrxLineDTO.getSubjectType())) {
+                if (Objects.isNull(sinvRcvTrxLine.getTaxIncludedAmount())) {
+                    throw new CommonException("sinv.quantity.or.amount.null.error", new Object[0]);
+                }
+
+                if (sinvRcvTrxLineDTO.getTaxIncludedAmount().compareTo(sinvRcvTrxLineDTO.getLeftTaxAmount()) == BaseConstants.Flag.YES) {
+                    throw new CommonException("sinv.quantity.or.amount.more.than.error", new Object[0]);
+                }
+
+                taxIncludedAmount = this.calcQuantity(sinvRcvTrxLine.getTaxIncludedAmount(), sinvRcvTrxLine.getUnitPriceBatch(), sinvRcvTrxLine.getTaxIncludedPrice(), 4, sinvRcvTrxHeaderDTO.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
+                LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:quantity[" + taxIncludedAmount + "]");
+                //质保金比例获取
+                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
+
+                if (percent == null) {
+                    percent = new BigDecimal(0);
+                }
+                //质保金金额=执行金额（含税）*质保金比例/100
+                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
+                LOGGER.info("质保金："+retentionMoney);
+                //将质保金和收货人插入行表
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
+
+                sinvRcvTrxLine.setQuantity(taxIncludedAmount);
+                sinvRcvTrxLineDTO.setQuantity(taxIncludedAmount);
+                netAmount = (new BigDecimal(100)).add(sinvRcvTrxLine.getTaxRate()).divide(new BigDecimal(100));
+                sinvRcvTrxLine.setNetAmount(sinvRcvTrxLine.getTaxIncludedAmount().divide(netAmount, financialPrecision, RoundingMode.HALF_UP));
+                sinvRcvTrxLine.setOrgQuantity(sinvRcvTrxLine.getQuantity());
+            } else if ("QUANTITY".equals(sinvRcvTrxLineDTO.getSubjectType())) {
+                if (Objects.isNull(sinvRcvTrxLine.getQuantity())) {
+                    throw new CommonException("sinv.quantity.or.amount.null.error", new Object[0]);
+                }
+
+                if (sinvRcvTrxLineDTO.getQuantity().compareTo(sinvRcvTrxLineDTO.getLeftQuantity()) == BaseConstants.Flag.YES) {
+                    throw new CommonException("sinv.quantity.or.amount.more.than.error", new Object[0]);
+                }
+
+                taxIncludedAmount = this.calcTaxIncludedAmount(sinvRcvTrxLine.getQuantity(), sinvRcvTrxLine.getTaxIncludedPrice(), sinvRcvTrxLine.getUnitPriceBatch(), financialPrecision, sinvRcvTrxLine.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
+
+                //质保金比例获取
+                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
+                if (percent == null) {
+                    percent = new BigDecimal(0);
+                }
+                //质保金金额=执行金额（含税）*质保金比例/100
+                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
+                LOGGER.info("质保金："+retentionMoney);
+                LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:taxIncludedAmount[" + taxIncludedAmount + "]");
+                //将质保金和收货人插入行表
+                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
+
+                sinvRcvTrxLine.setTaxIncludedAmount(taxIncludedAmount);
+                sinvRcvTrxLineDTO.setTaxIncludedAmount(taxIncludedAmount);
+                netAmount = sinvRcvTrxLineDTO.getQuantity().multiply(sinvRcvTrxLineDTO.getNetPrice()).divide(sinvRcvTrxLine.getUnitPriceBatch(), 8, RoundingMode.HALF_UP).setScale(financialPrecision, RoundingMode.HALF_UP);
+                sinvRcvTrxLineDTO.setNetAmount(netAmount);
+                LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:netAmount[" + netAmount + "]");
+                sinvRcvTrxLine.setNetAmount(netAmount);
+                sinvRcvTrxLine.setOrgQuantity(sinvRcvTrxLine.getQuantity());
             }
+
+            sinvRcvTrxLines.add(sinvRcvTrxLine);
         });
-        this.sinvEcRcvTrxSendMQ(tenantId, sinvRcvTrxHeader);
-        List<Long> lineIdList = (List)sinvRcvTrxLines.stream().map(SinvRcvTrxLine::getRcvTrxLineId).collect(Collectors.toList());
-        this.sendMessageToPrService.sendTrxMessageToPr(tenantId, Collections.singletonList(sinvRcvTrxHeader.getRcvTrxHeaderId()), lineIdList, BaseConstants.Flag.NO);
+        this.sinvRcvTrxHeaderRepository.updateByPrimaryKeySelective(sinvRcvTrxHeader);
+        this.sinvRcvTrxLineRepository.batchUpdateByPrimaryKeySelective(sinvRcvTrxLines);
+        this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:end");
+        return sinvRcvTrxHeaderDTO;
     }
 }

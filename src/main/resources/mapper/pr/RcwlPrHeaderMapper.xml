@@ -745,6 +745,7 @@
         CASE
         WHEN sph.pr_status_code = 'REJECTED' AND sph.changed_flag = 1 THEN 1
         WHEN sph.pr_status_code = 'APPROVED' THEN 1
+        WHEN sph.pr_status_code = 'CHANGE' THEN 1
         ELSE 0
         END
         ) = 1

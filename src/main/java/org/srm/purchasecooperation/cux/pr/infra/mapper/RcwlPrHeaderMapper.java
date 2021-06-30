@@ -7,7 +7,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrHeaderMapper;
 import org.srm.web.annotation.Tenant;
-import org.srm.web.dynamic.ExtendMapper;
+import io.choerodon.mybatis.helper.ExtendMapper;
 
 import java.util.List;
 
@@ -24,4 +24,7 @@ public interface RcwlPrHeaderMapper extends PrHeaderMapper, ExtendMapper<PrHeade
 
     @Override
     List<PrHeaderVO> selectWorkbenchPrSummaries(PrHeaderDTO prHeaderDTO);
+
+    @Override
+    List<PrHeaderVO> selectCancellablePr(PrHeaderDTO prHeaderDTO);
 }

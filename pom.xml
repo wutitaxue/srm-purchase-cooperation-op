@@ -3,9 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.srm</groupId>
+    <groupId>org.srm-op</groupId>
         <artifactId>srm-parent</artifactId>
-        <version>1.13.3.RELEASE</version>
+        <version>1.13.5-SNAPSHOT</version>
+
     </parent>
     <groupId>org.srm-op</groupId>
     <artifactId>srm-purchase-cooperation-op</artifactId>
@@ -26,11 +27,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.hand.scm</groupId>
-            <artifactId>customize</artifactId>
-            <version>2.2-SNAPSHOT</version>
-        </dependency>
+       
         <dependency>
             <groupId>org.hzero.boot</groupId>
             <artifactId>hzero-boot-interface</artifactId>
@@ -57,17 +54,7 @@
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
-        <repository>
-            <id>scm-release</id>
-            <name>scm-release Repository</name>
-            <url>http://nexus.saas.hand-china.com/repository/scm-release</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+        
     </repositories>
 
 </project>

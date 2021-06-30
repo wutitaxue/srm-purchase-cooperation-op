@@ -2,16 +2,16 @@ package org.srm.purchasecooperation.cux.order.infra.repository.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.srm.purchasecooperation.cux.order.domain.repository.RCWLPoHeaderRepository;
+import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
-import org.srm.purchasecooperation.cux.order.infra.mapper.RCWLPoHeaderMapper;
+import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoHeaderMapper;
 
 import java.util.List;
 
 @Component
-public class RCWLPoHeaderRepositoryImpl  implements RCWLPoHeaderRepository {
+public class RcwlPoHeaderRepositoryImpl implements RcwlPoHeaderRepository {
     @Autowired
-    private RCWLPoHeaderMapper rcwlPoHeaderMapper;
+    private RcwlPoHeaderMapper rcwlPoHeaderMapper;
 
 
     /**

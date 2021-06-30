@@ -41,7 +41,7 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         RcwlOrderBillDTO rcwlOrderBillDTO;
         //检查品类是否需要推送资产 1推 2不推
         String s = rcwlOrderBillMapper.selectCategory(tenantId, rcvTrxLineId);
-        if(s == "0"){
+        if("0".equals(s)){
             return;
         }
         //ASN为接收类型单据
@@ -80,8 +80,10 @@ public class RcwlOrderBillServiceImpl implements RcwlOrderBillService {
         String message = asJsonObject.get("message").getAsString();
         String codecg = "E";
         //0和102状态默认为是成功 其他为失败
-        if ("0".equals(code) || "102".equals(code)){
+        if ("0".equals(code)){
             codecg = "S";
+        }
+        if ("0".equals(code) || "102".equals(code)){
             //更新物料smdm_item物料表 attribute_varchar1字段改为false
             rcwlOrderBillMapper.updateItem(tenantId,rcwlOrderBillDTO.getfMaterialId());
         }

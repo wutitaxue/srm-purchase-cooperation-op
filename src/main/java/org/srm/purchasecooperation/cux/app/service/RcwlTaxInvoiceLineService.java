@@ -6,7 +6,7 @@ import org.srm.purchasecooperation.cux.domain.entity.InvoiceData;
 import org.srm.purchasecooperation.cux.domain.entity.ResponseData;
 import java.util.List;
 
-public interface RCWLTaxInvoiceLineService {
+public interface RcwlTaxInvoiceLineService {
     /**
      * 税务发票信息同步
      *

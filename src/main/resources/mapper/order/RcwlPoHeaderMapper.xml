@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RCWLPoHeaderMapper">
+<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoHeaderMapper">
 
     <select id="selectItemListByPoLineIdList"
             resultType="org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO">
@@ -11,7 +11,9 @@
         srpl.uom_id as primary_uom_id,
         srpl.category_id as category_id,
         srpl.po_line_id as po_line_id,
-        srpl.product_num as product_num
+        srpl.product_num as product_num,
+        srpl.specifications as specifications,
+        srpl.model as model
         FROM sodr_po_line srpl
         left join smdm_item_category sic on srpl.category_id = sic.category_id
         WHERE
@@ -56,10 +58,10 @@ WHERE
     </select>
 
     <insert id="batchInsertItem">
-             insert into smdm_item (tenant_id,source_code,item_number,item_code,item_name,primary_uom_id,query_item_code,attribute_bigint1,attribute_varchar1)
+             insert into smdm_item (tenant_id,source_code,item_number,item_code,item_name,primary_uom_id,query_item_code,attribute_bigint1,attribute_varchar1,specifications,model)
              values
         <foreach collection ="rcwlItemInfoVOList" item="item" separator =",">
-            (#{item.tenantId},#{item.sourceCode},#{item.itemNumber},#{item.itemCode},#{item.itemName},#{item.primaryUomId},#{item.queryItemCode},#{item.poLineId},'1')
+            (#{item.tenantId},#{item.sourceCode},#{item.itemNumber},#{item.itemCode},#{item.itemName},#{item.primaryUomId},#{item.queryItemCode},#{item.poLineId},'1',#{item.specifications},#{item.model})
         </foreach >
     </insert>
     <insert id="batchInsertItemTl">
