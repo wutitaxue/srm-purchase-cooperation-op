@@ -37,4 +37,17 @@
                 spl.pr_line_id = #{prLineId}
             ) a)
     </update>
+    <update id="updatePoLineVar21">
+    UPDATE sodr_po_line t
+    SET
+        t.attribute_varchar21 = (
+        SELECT
+            spl.budget_account_num
+        FROM
+            sprm_pr_line spl
+    WHERE
+        spl.pr_line_id = #{prLineId}
+        )
+        where t.pr_line_id =  #{prLineId}
+</update>
 </mapper>
