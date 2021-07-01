@@ -523,6 +523,7 @@
         spl.inv_organization_id,
         spl.inventory_id,
         hio.organization_name AS inv_organization_name,
+        sph.title,
         sph.receiver_address_id,
         spl.receive_address AS receiver_address,
         sph.requested_by,
