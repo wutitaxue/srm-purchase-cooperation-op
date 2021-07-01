@@ -8,4 +8,5 @@ public interface RcwlPrFeignMapper {
 
     List<Long> selectLineIdByHeadId(@Param("prHeaderId") Long prHeaderId);
     void updatePoLine(@Param("prLineId") Long prLineId);
+    void updatePoLineVar21(@Param("prLineId") Long prLineId);
 }
