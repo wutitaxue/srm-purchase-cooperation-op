@@ -1,8 +1,10 @@
 package org.srm.purchasecooperation.cux.order.api.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +23,7 @@ import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
+import org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
 import org.srm.purchasecooperation.order.app.service.PoChangeByContractService;
 import org.srm.purchasecooperation.order.app.service.PoHeaderService;
@@ -30,6 +33,7 @@ import org.srm.purchasecooperation.order.domain.repository.PoCreatingRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
 import org.srm.purchasecooperation.order.domain.service.PoHeaderDomainService;
+import org.srm.purchasecooperation.order.domain.vo.PoHeaderAccordingToLineOfReferenceVO;
 import org.srm.web.annotation.Tenant;
 
 import java.util.Collections;
@@ -122,5 +126,17 @@ public class RcwlPoHeaderController {
             this.rcwlPoHeaderItemService.insertItemCode(poDTO, tenantId);
         });
         return Results.success(poDTOList);
+    }
+
+
+    @ApiOperation(value = "采购申请按行引用汇总查询")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/po-header/from-pr/line")
+    public ResponseEntity<Page<PoHeaderAccordingToLineOfReferenceVO>> selectAccordingToLineOfReference(
+            @PathVariable Long organizationId,
+            PageRequest pageRequest,
+            @Encrypt PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO){
+        poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
+        return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
     }
 }
