@@ -111,11 +111,23 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
             String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
-            String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
+            JsonArray str =  details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray();
+            logger.info("str" + str);
+            String simpleMessage = "";
+            if(str.size()>0){
+                for(int i=0;i<str.size();i++){
+                    JsonObject jsonObject = str.get(i).getAsJsonObject();
+                    logger.info("jsonObject" + jsonObject.get("simplemessage"));
+                    simpleMessage = simpleMessage+jsonObject.get("simplemessage")+",";
+
+                }
+            }
+            logger.info("simpleMessage" + simpleMessage);
+            //   String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
             if (StringUtils.isEmpty(simpleMessage)) {
                 throw new CommonException(detailsMsg);
             }else {
-                throw new CommonException(simpleMessage + "，采购申请不可提交");
+                throw new CommonException(simpleMessage + "采购申请不可提交");
             }
         }
     }
@@ -657,7 +669,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             itfPrLineDTO.setYslx("02");
         }
 
-        itfPrLineDTO.setCreateuser("jg");
+        itfPrLineDTO.setCreateuser("jq");
         SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-dd");
         String dateString = formatter.format(prHeader.getCreationDate());
         itfPrLineDTO.setBilldate(dateString);
