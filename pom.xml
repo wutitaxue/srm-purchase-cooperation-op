@@ -27,7 +27,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
+
         <dependency>
             <groupId>org.hzero.boot</groupId>
             <artifactId>hzero-boot-interface</artifactId>
@@ -54,7 +55,7 @@
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
-        
+
     </repositories>
 
 </project>

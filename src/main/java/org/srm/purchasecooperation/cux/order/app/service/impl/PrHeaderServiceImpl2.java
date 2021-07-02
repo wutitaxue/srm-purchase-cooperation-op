@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
+import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;

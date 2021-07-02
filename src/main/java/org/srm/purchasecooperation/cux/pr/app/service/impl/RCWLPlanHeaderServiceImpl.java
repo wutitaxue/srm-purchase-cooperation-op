@@ -266,7 +266,7 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         logger.info("planHeaderList:" + planHeaderList);
 
         List<PlanHeader> list = new ArrayList<>();
-        String processNum = this.codeRuleBuilder.generateCode( "SSRC.RCWL.PLAN_BPM",(Map) null);
+        String processNum = this.codeRuleBuilder.generateCode(DetailsHelper.getUserDetails().getTenantId(), "SSRC.RCWL.PLAN_BPM", "GLOBAL", "GLOBAL", (Map) null);
         planHeaderList.forEach(planHeader -> {
             if (!Constants.PlanHeaderApprovalStatus.NEW.equals(planHeader.getApprovalStatus())) {
                 throw new CommonException("只有审批状态为新建的单据才可以提交");
