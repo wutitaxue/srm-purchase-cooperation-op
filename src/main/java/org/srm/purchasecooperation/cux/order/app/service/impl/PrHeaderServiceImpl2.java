@@ -130,7 +130,6 @@ public class PrHeaderServiceImpl2 {
             LOGGER.info("25140============ lineIdsAll = {}",lineIdsAll);
             lineIdsAll.forEach(item -> {
                 rcwlPrFeignMapper.updatePoLine(item);
-                rcwlPrFeignMapper.updatePoLineVar21(item);
                 LOGGER.info("25140============ lineIdsAll = {}",item);
             });
             SecurityContextHolder.clearContext();

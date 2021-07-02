@@ -126,6 +126,7 @@
         srpd.accepter_user_id,
         srpd.accepter_user_name,
         srtl.category_id,
+        sic.category_name,
         /*查询入库数量和入库单号*/
         srtl.attribute_varchar1,
         srtl.attribute_bigint1,
@@ -155,6 +156,7 @@
         LEFT JOIN sinv_rcv_strategy_header srsh ON srsl.strategy_header_id = srsh.node_strategy_id
         LEFT JOIN sinv_rcv_pc_details srpd ON srto.order_link_id = srpd.order_link_id
         left join sprm_pr_header srh on srh.pr_header_id=srtl.pr_header_id
+        left join smdm_item_category sic on sic.category_id = srtl.category_id
         WHERE
         srtl.tenant_id = #{sinvRcvTrxQueryDTO.tenantId}
         <!-- 事务行id -->
