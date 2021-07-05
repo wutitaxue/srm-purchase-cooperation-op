@@ -511,6 +511,7 @@
         spl.inv_organization_id,
         spl.inventory_id,
         hio.organization_name AS inv_organization_name,
+        sph.title,
         sph.receiver_address_id,
         spl.receive_address AS receiver_address,
         sph.requested_by,
@@ -1049,6 +1050,11 @@
             spl.pr_line_id = spla.pr_line_id
             AND iu.real_name LIKE #{executorNameLike}
             )
+        </if>
+
+        <if test="title !=null">
+            <bind name="titleLike" value="'%'+title+'%'"/>
+            AND sph.title like #{titleLike}
         </if>
 
         ORDER BY sph.display_pr_num DESC ,spl.line_num ASC
