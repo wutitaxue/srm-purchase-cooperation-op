@@ -469,4 +469,594 @@
     <select id="queryWbsName" resultType="java.lang.String">
         select wbs_name from smdm_wbs where wbs_code = #{wbsCode}
     </select>
+
+    <select id="selectAccordingToLineOfReference"
+            resultType="org.srm.purchasecooperation.order.domain.vo.PoHeaderAccordingToLineOfReferenceVO"
+            parameterType="org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        spl.pr_line_id,
+        spl.pr_header_id,
+        sph.display_pr_num AS pr_num,
+        spl.display_line_num AS line_num,
+        spl.quantity,
+        hc.company_id,
+        hc.company_num as company_code,
+        hc.company_name,
+        hou.ou_id,
+        hou.ou_name,
+        hou.ou_code,
+        hpo.organization_name AS purchase_org_name,
+        spl.supplier_id,
+        spl.supplier_code,
+        CASE WHEN spl.supplier_name IS NULL THEN spl.supplier_company_name ELSE spl.supplier_name END AS supplier_name,
+        spl.supplier_company_id,
+        spl.supplier_company_name,
+        spl.item_code,
+        spl.item_name,
+        spl.project_category,/*项目类别*/
+        si.brand ,/*品牌*/
+        si.common_name,/*通用名*/
+        sic.category_name,
+        spl.product_id,
+        spl.product_num,
+        spl.product_name,
+        spl.catalog_id,
+        spl.catalog_name,
+        spl.currency_code,
+        spl.uom_id,
+        su.uom_code,
+        su.uom_name,
+        spl.tax_included_unit_price,
+        spl.inv_organization_id,
+        spl.inventory_id,
+        hio.organization_name AS inv_organization_name,
+        sph.title,
+        sph.receiver_address_id,
+        spl.receive_address AS receiver_address,
+        sph.requested_by,
+        sph.contact_tel_num,
+        spl.needed_date,
+        sph.pr_source_platform,
+        hpo.purchase_org_id,
+        hpo.organization_code as purchase_org_code,
+        sph.amount,
+        (case when spl.purchase_agent_id is not null then spl.purchase_agent_id else sph.purchase_agent_id end) agent_id,
+        spl.category_id,
+        spl.unit_price,
+        spl.tax_included_unit_price entered_tax_included_price,
+        spl.line_amount,
+        spl.tax_included_line_amount,
+        spl.tax_id,
+        spl.tax_rate,
+        spl.needed_date need_by_date,
+        spl.object_version_number,
+        sph.object_version_number h_object_version_number,
+        spl.supplier_tenant_id,
+        spl.urgent_flag,
+        spl.urgent_date,
+        sph.unit_id,
+        sph.unit_name,
+        spl.item_id,
+        sph.invoice_address,
+        sph.pr_type_id,
+        spt.pr_type_code,
+        spt.pr_type_name,
+        ( CASE WHEN spl.item_specs IS NULL or spl.item_specs ='' THEN si.specifications ELSE spl.item_specs END ) AS item_specs,
+        ( CASE WHEN spl.item_model IS NULL or spl.item_model ='' THEN si.model ELSE spl.item_model END ) AS item_model,
+        spl.attachment_uuid,
+        spl.surface_treat_flag,
+        spl.remark,/*申请行备注*/
+        spl.frame_agreement_num as pc_num,/*协议编码*/
+        spl.last_purchase_price,/*最近一次采购价*/
+        spl.jd_price,/*划线价*/
+        spl.drawing_num,
+        spl.created_by,
+        spl.tenant_id,
+        spl.line_num,
+        spl.display_line_num,
+        spl.company_id,
+        spl.inv_organization_id,
+        spl.unit_price,
+        spl.needed_date,
+        spl.execution_status_code,
+        spl.executed_date,
+        spl.executed_by,
+        spl.execution_bill_id,
+        spl.execution_bill_num,
+        spl.execution_bill_data,
+        spl.assigned_flag,
+        spl.assigned_date,
+        spl.assigned_by,
+        spl.assigned_remark,
+        spl.cancelled_flag,
+        spl.cancelled_date,
+        spl.cancelled_by,
+        spl.cancelled_remark,
+        spl.closed_flag,
+        spl.closed_date,
+        spl.closed_by,
+        spl.closed_remark,
+        spl.suspend_flag,
+        spl.suspend_date,
+        spl.suspend_remark,
+        spl.incorrect_flag,
+        spl.incorrect_date,
+        spl.incorrect_msg,
+        spl.creation_date,
+        spl.last_updated_by,
+        spl.line_freight,
+        spl.tax_without_freight_price,
+        spl.execution_header_bill_id,
+        spl.execution_header_bill_num,
+        spl.requested_by,
+        spl.request_date,
+        CASE
+        WHEN spl.pr_requested_name IS NULL THEN
+        sph.pr_requested_name
+        ELSE
+        spl.pr_requested_name
+        END AS pr_requested_name,
+        spl.ou_id,
+        spl.purchase_org_id,
+        spl.purchase_agent_id,
+        spl.inventory_id,
+        spl.can_vat_flag,
+        spl.erp_edit_status,
+        spl.item_abc_class,
+        spl.project_num,
+        spl.project_name,
+        spl.crane_num,
+        spl.cost_id,
+        spl.cost_code,
+        spl.account_subject_id,
+        spl.account_subject_num,
+        spl.wbs,
+        spl.wbs_code,
+        spl.inner_po_num,
+        spl.item_model,
+        spl.item_specs,
+        spl.drawing_version,
+        spl.supplier_item_code,
+        spl.supplier_item_name,
+        spl.account_assign_type_id,
+        spl.item_properties,
+        spl.occupied_quantity,
+        spl.unit_price_batch,
+        spl.assets,
+        spl.asset_child_num,
+        spl.quality_standard,
+        spl.tax_included_budget_unit_price,
+        spl.budget_io_flag,
+        spl.budget_account_id,
+        spl.execution_strategy_code,
+        spl.change_order_code,
+        spl.change_order_message,
+        spl.budget_account_deptno,
+        sph.remark header_remark,
+        spl.budget_account_price,
+        spl.cost_anch_dep_desc,
+        spl.cost_anch_dep_id,
+        spl.exp_bear_dep,
+        spl.exp_bear_dep_id,
+        spl.cost_payer_user_id,
+
+
+        spl.attribute_varchar1,
+        spl.attribute_varchar2,
+        spl.attribute_varchar3,
+        spl.attribute_varchar4,
+        spl.attribute_varchar5,
+        spl.attribute_varchar6,
+        spl.attribute_varchar7,
+        spl.attribute_varchar8,
+        spl.attribute_varchar9,
+        spl.attribute_varchar10,
+        spl.attribute_varchar11,
+        spl.attribute_varchar12,
+        spl.attribute_varchar13,
+        spl.attribute_varchar14,
+        spl.attribute_varchar15,
+        spl.attribute_varchar16,
+        spl.attribute_varchar17,
+        spl.attribute_varchar18,
+        spl.attribute_varchar19,
+        spl.attribute_varchar20,
+        spl.attribute_varchar21,
+        spl.attribute_varchar22,
+        spl.attribute_varchar23,
+        spl.attribute_varchar24,
+        spl.attribute_varchar25,
+        spl.attribute_varchar26,
+        spl.attribute_varchar27,
+        spl.attribute_varchar28,
+        spl.attribute_varchar29,
+        spl.attribute_varchar30,
+        spl.attribute_varchar31,
+        spl.attribute_varchar32,
+        spl.attribute_varchar33,
+        spl.attribute_varchar34,
+        spl.attribute_varchar35,
+        spl.attribute_varchar36,
+        spl.attribute_varchar37,
+        spl.attribute_varchar38,
+        spl.attribute_varchar39,
+        spl.attribute_varchar40,
+        spl.attribute_longtext1,
+        spl.attribute_longtext2,
+        spl.attribute_longtext3,
+        spl.attribute_longtext4,
+        spl.attribute_longtext5,
+        spl.attribute_longtext6,
+        spl.attribute_longtext7,
+        spl.attribute_longtext8,
+        spl.attribute_longtext9,
+        spl.attribute_longtext10,
+        spl.attribute_bigint1,
+        spl.attribute_bigint2,
+        spl.attribute_bigint3,
+        spl.attribute_bigint4,
+        spl.attribute_bigint5,
+        spl.attribute_bigint6,
+        spl.attribute_bigint7,
+        spl.attribute_bigint8,
+        spl.attribute_bigint9,
+        spl.attribute_bigint10,
+        spl.attribute_bigint11,
+        spl.attribute_bigint12,
+        spl.attribute_bigint13,
+        spl.attribute_bigint14,
+        spl.attribute_bigint15,
+        spl.attribute_bigint16,
+        spl.attribute_bigint17,
+        spl.attribute_bigint18,
+        spl.attribute_bigint19,
+        spl.attribute_bigint20,
+        spl.attribute_bigint21,
+        spl.attribute_bigint22,
+        spl.attribute_bigint23,
+        spl.attribute_bigint24,
+        spl.attribute_bigint25,
+        spl.attribute_bigint26,
+        spl.attribute_bigint27,
+        spl.attribute_bigint28,
+        spl.attribute_bigint29,
+        spl.attribute_bigint30,
+        spl.attribute_tinyint1,
+        spl.attribute_tinyint2,
+        spl.attribute_tinyint3,
+        spl.attribute_tinyint4,
+        spl.attribute_tinyint5,
+        spl.attribute_tinyint6,
+        spl.attribute_tinyint7,
+        spl.attribute_tinyint8,
+        spl.attribute_tinyint9,
+        spl.attribute_tinyint10,
+        spl.attribute_tinyint11,
+        spl.attribute_tinyint12,
+        spl.attribute_tinyint13,
+        spl.attribute_tinyint14,
+        spl.attribute_tinyint15,
+        spl.attribute_tinyint16,
+        spl.attribute_tinyint17,
+        spl.attribute_tinyint18,
+        spl.attribute_tinyint19,
+        spl.attribute_tinyint20,
+        spl.attribute_decimal1,
+        spl.attribute_decimal2,
+        spl.attribute_decimal3,
+        spl.attribute_decimal4,
+        spl.attribute_decimal5,
+        spl.attribute_decimal6,
+        spl.attribute_decimal7,
+        spl.attribute_decimal8,
+        spl.attribute_decimal9,
+        spl.attribute_decimal10,
+        spl.attribute_decimal11,
+        spl.attribute_decimal12,
+        spl.attribute_decimal13,
+        spl.attribute_decimal14,
+        spl.attribute_decimal15,
+        spl.attribute_decimal16,
+        spl.attribute_decimal17,
+        spl.attribute_decimal18,
+        spl.attribute_decimal19,
+        spl.attribute_decimal20,
+        spl.attribute_decimal21,
+        spl.attribute_decimal22,
+        spl.attribute_decimal23,
+        spl.attribute_decimal24,
+        spl.attribute_decimal25,
+        spl.attribute_decimal26,
+        spl.attribute_decimal27,
+        spl.attribute_decimal28,
+        spl.attribute_decimal29,
+        spl.attribute_decimal30,
+        spl.attribute_datetime1,
+        spl.attribute_datetime2,
+        spl.attribute_datetime3,
+        spl.attribute_datetime4,
+        spl.attribute_datetime5,
+        spl.attribute_datetime6,
+        spl.attribute_datetime7,
+        spl.attribute_datetime8,
+        spl.attribute_datetime9,
+        spl.attribute_datetime10,
+        spl.attribute_datetime11,
+        spl.attribute_datetime12,
+        spl.attribute_datetime13,
+        spl.attribute_datetime14,
+        spl.attribute_datetime15,
+        spl.attribute_datetime16,
+        spl.attribute_datetime17,
+        spl.attribute_datetime18,
+        spl.attribute_datetime19,
+        spl.attribute_datetime20,
+        spl.attribute_date1,
+        spl.attribute_date2,
+        spl.attribute_date3,
+        spl.attribute_date4,
+        spl.attribute_date5,
+        spl.attribute_date6,
+        spl.attribute_date7,
+        spl.attribute_date8,
+        spl.attribute_date9,
+        spl.attribute_date10,
+        spl.attribute_date11,
+        spl.attribute_date12,
+        spl.attribute_date13,
+        spl.attribute_date14,
+        spl.attribute_date15,
+        spl.attribute_date16,
+        spl.attribute_date17,
+        spl.attribute_date18,
+        spl.attribute_date19,
+        spl.attribute_date20,
+        spl.drawing_version,
+        case
+        when spl.occupied_quantity is null then 0
+        else spl.occupied_quantity
+        end as occupied_quantity,
+        (spl.quantity - (
+        case
+        when spl.occupied_quantity is null then 0
+        else spl.occupied_quantity
+        end
+        )) rest_po_quantity,
+        (spl.quantity - (
+        case
+        when spl.occupied_quantity is null then 0
+        else spl.occupied_quantity
+        end
+        )) this_order_quantity,
+        ot.order_type_id,
+        ot.order_type_code,
+        ott.order_type_name,
+        spl.freight_line_flag,
+        spl.account_assign_type_id,
+        saat.account_assign_type_code,
+        spl.cost_id,
+        spl.cost_code,
+        spl.account_subject_id,
+        spl.account_subject_num,
+        spl.wbs_code,
+        spl.wbs,
+        spl.unit_price,
+        rp.reference_price_display_flag,
+        spl.receive_contact_name,
+        spl.receive_tel_num,
+        spl.exchange_rate,
+        spl.local_currency_tax_unit,
+        spl.local_currency_no_tax_unit,
+        spl.local_currency_tax_sum,
+        spl.local_currency_no_tax_sum
+        FROM
+        sprm_pr_header sph
+        JOIN sprm_pr_line spl ON spl.pr_header_id = sph.pr_header_id
+        <if test="assignFlag != null and assignFlag == 1 and userId != null">
+            LEFT JOIN sprm_pr_line_assign spla on spla.tenant_id = spl.tenant_id and spla.pr_line_id = spl.pr_line_id
+        </if>
+        LEFT JOIN sprm_pr_type spt ON spt.pr_type_id = sph.pr_type_id
+        LEFT JOIN spcm_pc_header spch ON spl.pc_header_id = spch.pc_header_id
+        JOIN hpfm_company hc ON ( CASE WHEN sph.company_id IS NULL THEN spl.company_id ELSE sph.company_id END ) = hc.company_id
+        JOIN hpfm_operation_unit hou ON ( CASE WHEN sph.ou_id IS NULL THEN spl.ou_id ELSE sph.ou_id END ) = hou.ou_id
+        JOIN iam_user iu ON iu.id = spl.created_by
+        LEFT JOIN hpfm_inv_organization hio ON spl.inv_organization_id = hio.organization_id
+        LEFT JOIN hpfm_purchase_organization hpo ON ( CASE WHEN sph.purchase_org_id IS NULL THEN spl.purchase_org_id ELSE sph.purchase_org_id END ) = hpo.purchase_org_id
+        LEFT JOIN smdm_uom su ON spl.uom_id = su.uom_id
+        LEFT JOIN smdm_item_category sic ON spl.category_id = sic.category_id
+        LEFT JOIN smdm_item si ON si.item_id = spl.item_id
+        LEFT JOIN sodr_order_type ot on spt.order_type_id=ot.order_type_id
+        LEFT JOIN sodr_order_type_tl ott on ott.order_type_id = ot.order_type_id AND ott.lang = #{lang}
+        LEFT JOIN sprm_account_assign_type saat ON saat.account_assign_type_id = spl.account_assign_type_id
+        LEFT JOIN (SELECT
+        spl.item_id,
+        spl.company_id,
+        spl.ou_id,
+        1 AS reference_price_display_flag
+        FROM
+        ssrc_price_library spl
+        LEFT JOIN smdm_uom hu ON spl.uom_id = hu.uom_id
+        LEFT JOIN smdm_item_category sic ON spl.item_category_id = sic.category_id
+        LEFT JOIN smdm_tax st ON spl.tax_id=st.tax_id
+        WHERE
+        spl.tenant_id = #{tenantId,jdbcType=DECIMAL}
+        AND spl.item_id IS NOT NULL
+        AND spl.company_id IS NOT NULL
+        AND spl.ou_id IS NOT NULL
+        AND spl.price_library_status='RELEASE'
+        AND ( spl.quotation_expiry_date_from &lt;= #{currentDate} OR spl.quotation_expiry_date_from IS NULL )
+        AND ( spl.quotation_expiry_date_to &gt;= #{currentDate} OR spl.quotation_expiry_date_to IS NULL )
+        GROUP BY spl.item_id, spl.company_id, spl.ou_id) rp
+        ON rp.item_id = spl.item_id AND rp.company_id = hc.company_id AND rp.ou_id = hou.ou_id
+        WHERE
+        spl.tenant_id = #{tenantId,jdbcType=DECIMAL}
+        AND sph.pr_status_code = 'APPROVED'
+        AND sph.close_status_code != 'CLOSED'
+        AND sph.cancel_status_code != 'CANCELLED'
+        AND sph.pr_source_platform != 'E-COMMERCE'
+        AND spl.cancelled_flag = 0
+        AND spl.closed_flag = 0
+        <if test="erpControlFlag != null and erpControlFlag == 1">
+            AND (spl.erp_edit_status = 'N' OR sph.pr_source_platform != 'ERP')
+        </if>
+        <if test="prHeaderId != null">
+            AND sph.pr_header_id = #{prHeaderId}
+        </if>
+        <!--        AND (spl.execution_status_code IS NULL OR spl.execution_status_code IN ('PO','UNASSIGNED','ASSIGNED')) -->
+        AND ( spl.quantity > spl.occupied_quantity OR spl.occupied_quantity IS NULL )
+        <if test="prNum != null">
+            <bind name="prNumLike" value="'%'+ prNum +'%'"/>
+            AND sph.display_pr_num LIKE #{ prNumLike }
+        </if>
+        <if test="assignFlag != null and assignFlag == 1 and userId != null">
+            AND  (spla.user_id = #{ userId }
+            <if test = "executedByName != null">
+                OR spla.user_id = #{ executedByName }
+            </if>
+            )
+        </if>
+        <if test="executionStrategyFlag != null and executionStrategyFlag == 1 ">
+            AND spl.execution_strategy_code = 'ORDER'
+        </if>
+        <if test="prHeaderId != null">
+            AND spl.pr_header_id = #{prHeaderId}
+        </if>
+        <if test="lineNum != null">
+            <bind name="lineNumLike" value="'%'+ lineNum +'%'"/>
+            AND spl.display_line_num LIKE #{ lineNumLike }
+        </if>
+        <if test="requestDateFrom != null">
+            AND sph.request_date &gt;= #{ requestDateFrom }
+        </if>
+        <if test="requestDateTo != null">
+            AND sph.request_date &lt;= #{ requestDateTo }
+        </if>
+        <if test="purchaseOrgId != null">
+            AND sph.purchase_org_id = #{ purchaseOrgId }
+        </if>
+        <if test="ouId != null">
+            AND sph.ou_id = #{ ouId }
+        </if>
+        <if test="companyId != null">
+            AND spl.company_id = #{ companyId }
+        </if>
+        <if test="createdBy != null">
+            AND spl.created_by like #{createdBy}
+        </if>
+        <if test="purchaseAgentId != null">
+            AND (sph.purchase_agent_id = #{ purchaseAgentId } or spl.purchase_agent_id = #{ purchaseAgentId })
+        </if>
+        <if test="prSourcePlatform != null">
+            AND sph.pr_source_platform = #{ prSourcePlatform }
+        </if>
+        <!--         <if test="supplierTenantId != null">-->
+        <!--             AND spl.supplier_tenant_id = #{ supplierTenantId }-->
+        <!--         </if>-->
+        <if test="supplierCompanyId != null">
+            AND (
+            spl.supplier_company_id = #{ supplierCompanyId }
+            OR EXISTS (
+            SELECT 1
+            FROM sprm_pr_line_supplier spls
+            WHERE spls.tenant_id = spl.tenant_id
+            AND spls.pr_header_id = spl.pr_header_id
+            AND spls.pr_line_id = spl.pr_line_id
+            AND spls.supplier_company_id = #{ supplierCompanyId })
+            )
+        </if>
+        AND spl.suspend_flag = 0
+        <if test="supplierId != null">
+            AND (
+            spl.supplier_id = #{ supplierId }
+            OR EXISTS (
+            SELECT 1
+            FROM sprm_pr_line_supplier spls
+            WHERE spls.tenant_id = spl.tenant_id
+            AND spls.pr_header_id = spl.pr_header_id
+            AND spls.pr_line_id = spl.pr_line_id
+            AND spls.supplier_id = #{ supplierId })
+            )
+        </if>
+        <if test="productNum != null">
+            AND spl.product_num = #{ productNum }
+        </if>
+        <if test="itemCode != null">
+            AND spl.item_code = #{ itemCode }
+        </if>
+        <if test="itemCodes !=null and itemCodes.size()>0">
+            AND spl.item_code in
+            <foreach collection="itemCodes" item="itemCode" open="(" separator="," close=")">
+                #{itemCode}
+            </foreach>
+        </if>
+        <if test="categoryId != null">
+            AND spl.category_id = #{categoryId}
+        </if>
+        <if test="neededDateFrom != null">
+            AND spl.needed_date &gt;= #{ neededDateFrom }
+        </if>
+        <if test="neededDateTo != null">
+            AND spl.needed_date &lt;= #{ neededDateTo }
+        </if>
+        <if test="receiverAddress != null">
+            <bind name="receiverAddressLike" value="'%'+ receiverAddress +'%'"/>
+            AND sph.receiver_address LIKE #{ receiverAddressLike }
+        </if>
+        <if test="unitId != null">
+            AND sph.unit_id = #{ unitId }
+        </if>
+        <if test="urgentFlag != null">
+            AND spl.urgent_flag = #{urgentFlag}
+        </if>
+        <if test="prTypeId != null">
+            AND sph.pr_type_id= #{prTypeId}
+        </if>
+        <if test="prTypeCode != null">
+            AND spt.pr_type_code= #{prTypeCode}
+        </if>
+        <if test="prTypeName != null">
+            <bind name="prTypeNameLike" value="'%'+ prTypeName +'%'"/>
+            AND spt.pr_type_name like #{prTypeNameLike}
+        </if>
+        <if test="reqUserName != null and reqUserName != ''">
+            <bind name="reqUserNameLike" value="'%'+ reqUserName +'%'"/>
+            AND sph.pr_requested_name like #{reqUserNameLike}
+        </if>
+        <if test="itemName != null and itemName != ''">
+            <bind name="itemNameLike" value="'%'+ itemName +'%'"/>
+            AND spl.item_name like #{itemNameLike}
+        </if>
+        <if test="prRequestedById != null">
+            AND spl.requested_by = #{prRequestedById}
+        </if>
+        <if test="prRequestedName != null and prRequestedName != ''">
+            <bind name="prRequestedNameLike" value="'%'+ prRequestedName +'%'"/>
+            AND spl.pr_requested_name like #{prRequestedNameLike}
+        </if>
+        <if test="attributeVarchar1 != null and attributeVarchar1 != ''">
+            <bind name="attributeVarchar1Like" value="'%'+ attributeVarchar1 +'%'"/>
+            AND spl.attribute_varchar1 like #{attributeVarchar1Like}
+        </if>
+        <if test="executorName != null and executorName != ''">
+            <bind name="executorNameLike" value="'%'+ executorName +'%'"/>
+            AND EXISTS (
+            SELECT
+            1
+            FROM
+            sprm_pr_line_assign spla
+            JOIN iam_user iu ON spla.user_id = iu.id
+            WHERE
+            spl.pr_line_id = spla.pr_line_id
+            AND iu.real_name LIKE #{executorNameLike}
+            )
+        </if>
+
+        <if test="title !=null">
+            <bind name="titleLike" value="'%'+title+'%'"/>
+            AND sph.title like #{titleLike}
+        </if>
+
+        ORDER BY sph.display_pr_num DESC ,spl.line_num ASC
+    </select>
 </mapper>
