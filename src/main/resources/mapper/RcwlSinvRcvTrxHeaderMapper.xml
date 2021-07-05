@@ -146,6 +146,7 @@
         srpd.accepter_user_id,
         srpd.accepter_user_name,
         srtl.category_id,
+        sic.category_name,
         sah.carriers_code,
         sah.carriers_name,
         spl.pr_header_id,
@@ -183,6 +184,7 @@
         LEFT JOIN sodr_po_header sph ON sph.po_header_id = spl.po_header_id
         left join sprm_pr_header srh on srh.pr_header_id=srtl.pr_header_id
         LEFT JOIN hpfm_purchase_agent hpa ON srtl.agent_id = hpa.purchase_agent_id
+        left join smdm_item_category sic on sic.category_id = srtl.category_id
         WHERE
         srtl.tenant_id = #{sinvRcvTrxQueryDTO.tenantId}
         <if test="@org.apache.commons.collections4.CollectionUtils@isNotEmpty(sinvRcvTrxQueryDTO.asnHeaderIds)">
