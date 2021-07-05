@@ -1063,6 +1063,10 @@
             AND iu.real_name LIKE #{executorNameLike}
             )
         </if>
+        <if test="title !=null">
+            <bind name="titleLike" value="'%'+title+'%'"/>
+            AND sph.title like #{titleLike}
+        </if>
 
         ORDER BY sph.display_pr_num DESC ,spl.line_num ASC
     </select>
