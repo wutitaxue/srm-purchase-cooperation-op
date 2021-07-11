@@ -215,7 +215,10 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     public RCWLItfPrHeaderDTO getBudgetAccountItfData(PrHeader prHeader, Long tenantId, String flag) {
         //获取接口所需数据
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, flag);
-        List<PrLine> lineDetailList = prHeader.getPrLineList();
+        //List<PrLine> lineDetailList = prHeader.getPrLineList();
+        PrLine prLine = new PrLine();
+        prLine.setPrHeaderId(prHeader.getPrHeaderId());
+        List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
