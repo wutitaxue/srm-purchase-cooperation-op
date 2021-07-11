@@ -29,6 +29,7 @@ import org.srm.purchasecooperation.cux.pr.utils.DateTimeUtil;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -55,6 +56,8 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
     private LovAdapter lovAdapter;
     @Autowired
     private RcwlPrToBpmMapper rcwlPrToBpmMapper;
+    @Autowired
+    private PrLineRepository prLineRepository;
 
     /**
      * @param prHeader
@@ -69,7 +72,8 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         String reqIp = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.REQ_URL_CODE);
         String zYunUrl = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.ZYUN_URL_CODE);
         //采购申请行数据
-        List<PrLine> prLineList = prHeader.getPrLineList();
+//        List<PrLine> prLineList = prHeader.getPrLineList();
+        List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
         List<PrToBpmLineDTO> prToBpmLineDTOS = new ArrayList<>();
         prLineList.forEach(line -> {
             PrToBpmLineDTO prToBpmLineDTO = this.setLineDataMap(line);
@@ -126,8 +130,8 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         String wbsName = this.rcwlPrToBpmMapper.selectWbs(line.getTenantId(), line.getWbsCode());
         prToBpmLineDTO.setDisplayLineNum(line.getDisplayLineNum());
         prToBpmLineDTO.setItemName(line.getItemName());
-        prToBpmLineDTO.setCategoryName(StringUtils.isNotBlank(line.getCategoryName())?line.getCategoryName():this.rcwlPrToBpmMapper.selectCategoryName(line.getTenantId(), line.getCategoryId()));
-        prToBpmLineDTO.setUomName(StringUtils.isNotBlank(line.getUomName())?line.getUomName():this.rcwlPrToBpmMapper.selectUomName(line.getTenantId(), line.getUomId()));
+        prToBpmLineDTO.setCategoryName(StringUtils.isNotBlank(line.getCategoryName()) ? line.getCategoryName() : this.rcwlPrToBpmMapper.selectCategoryName(line.getTenantId(), line.getCategoryId()));
+        prToBpmLineDTO.setUomName(StringUtils.isNotBlank(line.getUomName()) ? line.getUomName() : this.rcwlPrToBpmMapper.selectUomName(line.getTenantId(), line.getUomId()));
         prToBpmLineDTO.setNeededDate(new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getNeededDate()));
         prToBpmLineDTO.setQuantity(String.valueOf(line.getQuantity().setScale(2, BigDecimal.ROUND_HALF_UP)));
         prToBpmLineDTO.setTaxIncludedUnitPrice(String.valueOf(line.getTaxIncludedUnitPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
