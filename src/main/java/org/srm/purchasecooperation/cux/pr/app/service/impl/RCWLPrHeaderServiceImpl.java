@@ -307,7 +307,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     }
 
     private void changeStatusCheck(PrHeader prHeader, Map<Long, PrLine> beforePrLineMap) {
-        Assert.isTrue("APPROVED".equals(prHeader.getPrStatusCode()) || "REJECTED".equals(prHeader.getPrStatusCode()), "error.change.header.status.not.approve");
+        Assert.isTrue("APPROVED".equals(prHeader.getPrStatusCode()) || "REJECTED".equals(prHeader.getPrStatusCode())||PR_CHANGE_STATUS.equals(prHeader.getPrStatusCode()), "error.change.header.status.not.approve");
         Assert.isTrue(!"CATALOGUE".equals(prHeader.getPrSourcePlatform()) && !"E-COMMERCE".equals(prHeader.getPrSourcePlatform()), "error.change.header.source.platform");
         List<PrLine> prLineList = (List) prHeader.getPrLineList().stream().filter((prLine) -> {
             return !BaseConstants.Flag.YES.equals(prLine.getClosedFlag()) && !BaseConstants.Flag.YES.equals(prLine.getCancelledFlag());
