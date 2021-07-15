@@ -132,6 +132,6 @@
              	LEFT JOIN sprm_pr_line spl ON spch.pr_line_id = spl.pr_line_id
              WHERE
              	spch.tenant_id = #{tenantId}
-	AND spch.pr_line_id = #{prLineId}
+	     AND spch.pr_line_id = #{prLineId}
 	</select>
 </mapper>
