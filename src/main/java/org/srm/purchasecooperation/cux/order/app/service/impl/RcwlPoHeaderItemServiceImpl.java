@@ -117,14 +117,14 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
             if (CollectionUtils.isNotEmpty(itemCategoryList)) {
                 itemCategoryList.forEach(poLine -> {
                     RCWLItemInfoVO lineUpdateInfo = new RCWLItemInfoVO();
-                    PoLine poLine1 = new PoLine();
+                    PoLine poLine1 = this.poLineRepository.selectByPrimaryKey(poLine.getPoLineId());
                     lineUpdateInfo.setTenantId(tenantId);
                     lineUpdateInfo.setItemId(poLine.getItemId());
                     lineUpdateInfo.setItemCode(poLine.getItemCode());
                     lineUpdateInfo.setPoLineId(poLine.getPoLineId());
                     lineUpdateInfo.setItemName(poLine.getItemName());
 
-                    poLine1.setPoLineId(poLine.getPoLineId());
+
                     poLine1.setItemId(poLine.getItemId());
                     poLine1.setItemCode(poLine.getItemCode());
 
@@ -132,6 +132,7 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
 
                     poLineList1.add(poLine1);
                 });
+
                 logger.info("订单行封装数据:" + poLineList.toString());
                 //批量更新订单物料id和code
                // poHeaderRepository.batchUpdatePoLine(poLineList);
