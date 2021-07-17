@@ -113,19 +113,29 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
 
             //把item_id item_code回写到订单行
             List<RCWLItemInfoVO> poLineList = new ArrayList<>();
+            List<PoLine> poLineList1 = new ArrayList<>();
             if (CollectionUtils.isNotEmpty(itemCategoryList)) {
                 itemCategoryList.forEach(poLine -> {
                     RCWLItemInfoVO lineUpdateInfo = new RCWLItemInfoVO();
+                    PoLine poLine1 = new PoLine();
                     lineUpdateInfo.setTenantId(tenantId);
                     lineUpdateInfo.setItemId(poLine.getItemId());
                     lineUpdateInfo.setItemCode(poLine.getItemCode());
                     lineUpdateInfo.setPoLineId(poLine.getPoLineId());
                     lineUpdateInfo.setItemName(poLine.getItemName());
+
+                    poLine1.setPoLineId(poLine.getPoLineId());
+                    poLine1.setItemId(poLine.getItemId());
+                    poLine1.setItemCode(poLine.getItemCode());
+
                     poLineList.add(lineUpdateInfo);
+
+                    poLineList1.add(poLine1);
                 });
                 logger.info("订单行封装数据:" + poLineList.toString());
                 //批量更新订单物料id和code
-                poHeaderRepository.batchUpdatePoLine(poLineList);
+               // poHeaderRepository.batchUpdatePoLine(poLineList);
+                this.poLineRepository.batchUpdateByPrimaryKeySelective(poLineList1);
                 //批量插入物料名称多语言表smdm_item_tl
                 poHeaderRepository.batchInsertItemTl(poLineList);
             }
