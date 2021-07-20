@@ -134,6 +134,8 @@ public class RcwlPoHeaderServiceImpl2  {
         //再次查询
         prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
         this.prHeaderRepository.updateByPrimaryKeySelective(new PrHeader(prHeaderId, prHeader.getObjectVersionNumber(), "CLOSED", poHeader.getPoHeaderId(), poHeader.getPoNum(), poHeader.getCreatedBy(), poHeader.getCreationDate(), "PO"));
+        //再次查询
+        prLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("tenantId", tenantId).andEqualTo("prHeaderId", prHeaderId)).build());
         List<PrLine> prLineList = this.covPoToPrEchoInfo(poDTO.getPoLineList(), prLines, new PoDTO(), true);
         this.prLineRepository.batchUpdateByPrimaryKeySelective(prLineList);
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), tenantId, "OCCUPY");
