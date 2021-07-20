@@ -272,34 +272,51 @@ public class PrHeaderServiceImpl2 {
                                             //批量插入物料分配品类表
                                             itemCategoryAssignRepository.batchInsertSelective(itemCategoryAssignList);
                                         }
+//                                        //把item_id item_code回写到订单行
+//                                        List<RCWLItemInfoVO> poLineList1 = new ArrayList<>();
+//                                        List<PoLine> poLineList2 = new ArrayList<>();
+//                                        if (CollectionUtils.isNotEmpty(itemCategoryList)) {
+//                                            itemCategoryList.forEach(poLine1 -> {
+//                                                RCWLItemInfoVO lineUpdateInfo = new RCWLItemInfoVO();
+//                                                PoLine poLine2 = this.poLineRepository.selectByPrimaryKey(poLine.getPoLineId());
+//                                                lineUpdateInfo.setTenantId(tenantId);
+//                                                lineUpdateInfo.setItemId(poLine.getItemId());
+//                                                lineUpdateInfo.setItemCode(poLine.getItemCode());
+//                                                lineUpdateInfo.setPoLineId(poLine.getPoLineId());
+//                                                lineUpdateInfo.setItemName(poLine.getItemName());
+//
+//
+//                                                poLine2.setItemId(poLine.getItemId());
+//                                                poLine2.setItemCode(poLine.getItemCode());
+//
+//                                                poLineList1.add(lineUpdateInfo);
+//
+//                                                poLineList2.add(poLine2);
+//                                            });
+//                                            //批量更新订单物料id和code
+//                                            // poHeaderRepository.batchUpdatePoLine(poLineList);
+//                                            this.poLineRepository.batchUpdateByPrimaryKeySelective(poLineList2);
+//                                            //批量插入物料名称多语言表smdm_item_tl
+//                                            poHeaderRepository.batchInsertItemTl(poLineList1);
+//                                        }
+//                                    }
                                         //把item_id item_code回写到订单行
                                         List<RCWLItemInfoVO> poLineList1 = new ArrayList<>();
-                                        List<PoLine> poLineList2 = new ArrayList<>();
                                         if (CollectionUtils.isNotEmpty(itemCategoryList)) {
                                             itemCategoryList.forEach(poLine1 -> {
                                                 RCWLItemInfoVO lineUpdateInfo = new RCWLItemInfoVO();
-                                                PoLine poLine2 = this.poLineRepository.selectByPrimaryKey(poLine.getPoLineId());
                                                 lineUpdateInfo.setTenantId(tenantId);
-                                                lineUpdateInfo.setItemId(poLine.getItemId());
-                                                lineUpdateInfo.setItemCode(poLine.getItemCode());
-                                                lineUpdateInfo.setPoLineId(poLine.getPoLineId());
-                                                lineUpdateInfo.setItemName(poLine.getItemName());
-
-
-                                                poLine2.setItemId(poLine.getItemId());
-                                                poLine2.setItemCode(poLine.getItemCode());
-
+                                                lineUpdateInfo.setItemId(poLine1.getItemId());
+                                                lineUpdateInfo.setItemCode(poLine1.getItemCode());
+                                                lineUpdateInfo.setPoLineId(poLine1.getPoLineId());
+                                                lineUpdateInfo.setItemName(poLine1.getItemName());
                                                 poLineList1.add(lineUpdateInfo);
-
-                                                poLineList2.add(poLine2);
                                             });
                                             //批量更新订单物料id和code
-                                            // poHeaderRepository.batchUpdatePoLine(poLineList);
-                                            this.poLineRepository.batchUpdateByPrimaryKeySelective(poLineList2);
+                                            poHeaderRepository.batchUpdatePoLine(poLineList1);
                                             //批量插入物料名称多语言表smdm_item_tl
                                             poHeaderRepository.batchInsertItemTl(poLineList1);
                                         }
-                                    }
                                     //存在则只插入订单行物料编码和物料id物料名称
                                 }else {
                                     rcwlItemInfoVO.setPoLineId(itemLine.getPoLineId());
