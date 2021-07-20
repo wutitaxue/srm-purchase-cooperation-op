@@ -212,9 +212,9 @@ public class PrHeaderServiceImpl2 {
                             poLine.setPoHeaderId(poDTO.getPoHeaderId());
                             poLine.setTenantId(tenantId);
                             List<PoLine> PoLines = poLineRepository.select(poLine);
-                            List<RCWLItemInfoVO> poLineList = new ArrayList<>();
+                            List<PoLine> poLineList = new ArrayList<>();
                             PoLines.forEach(itemLine-> {
-                                RCWLItemInfoVO rcwlItemInfoVO = rcwlCheckPoLineMapper.checkPoItem(itemLine.getProductNum(), itemLine.getTenantId());
+                                PoLine rcwlItemInfoVO = rcwlCheckPoLineMapper.checkPoItem(itemLine.getProductNum(), itemLine.getTenantId());
                                 //没有物料创建编码并插入订单
                                 if (rcwlItemInfoVO == null) {
                                     //查询需要封装的item数据集合(排除存在物料id的数据)
@@ -303,7 +303,7 @@ public class PrHeaderServiceImpl2 {
                             });
                             if (poLineList.size() > 0) {
                                 //批量更新订单物料id和code
-                                poHeaderRepository.batchUpdatePoLine(poLineList);
+                                poLineRepository.batchUpdateByPrimaryKeySelective(poLineList);
                             }
                             //bugfix-0623-jyb end
                         }
