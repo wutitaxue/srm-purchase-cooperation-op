@@ -68,7 +68,7 @@ public class RcwlAsnHeader extends AsnHeader {
     }
     @Override
     public void validAsnShippedStatus() {
-        if (!"SHIPPED".equals(this.asnStatus)||!"ARRIVED".equals(this.asnStatus)) {
+        if (!("SHIPPED".equals(this.asnStatus)||"ARRIVED".equals(this.asnStatus))) {
             throw new CommonException("error.sinv.asn_approve_status_invalid", new Object[0]);
         }
     }
