@@ -50,6 +50,4 @@ public class RcwlPoLineRepositoryImpl extends PoLineRepositoryImpl {
     public List<PoHeaderAccordingToLineOfReferenceVO> selectAccordingToLineOfReference(PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO) {
         return this.rcwlPoLineMapper.selectAccordingToLineOfReference(poHeaderAccordingToLineOfReferenceDTO);
     }
-
-
 }

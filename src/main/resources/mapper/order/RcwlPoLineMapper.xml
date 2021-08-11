@@ -121,7 +121,7 @@
         --             CONCAT(sprh.display_pr_num,CONCAT('|',sprl.display_line_num)) as display_pr_num_and_display_pr_line_num,
         spl.catalog_name,
         spl.ladder_inquiry_flag,
-       -- (case when spch.pc_num is null then concat(spchd.pc_num,CONCAT('|',spsj.line_num)) else concat(spch.pc_num,CONCAT('|',sps.line_num)) end) AS  contract_num,
+        -- (case when spch.pc_num is null then concat(spchd.pc_num,CONCAT('|',spsj.line_num)) else concat(spch.pc_num,CONCAT('|',sps.line_num)) end) AS  contract_num,
         IFNULL((
         CASE
         WHEN spch.pc_num IS NULL THEN
@@ -134,7 +134,6 @@
         ),
         spl.pc_num
         ) AS contract_num,
-
         --             查询出订单来源的申请信息
         --             case when spch.pc_source_code='PURCHASE_NEED' then concat(sps.source_code,CONCAT('|',sps.source_line_num)) else CONCAT(sprh.display_pr_num,CONCAT('|',sprl.display_line_num))
         --             end as display_pr_num_and_display_pr_line_num,
@@ -309,11 +308,6 @@
         </if>
         ORDER BY spl.line_num, spll.line_location_num
     </select>
-
-
-    <select id="queryWbsName" resultType="java.lang.String">
-        select wbs_name from smdm_wbs where wbs_code = #{wbsCode}
-    </select>
     <select id="selectContractResult" resultType="org.srm.purchasecooperation.order.api.dto.ContractResultDTO">
         SELECT
         spc.quantity,
@@ -480,6 +474,11 @@
             AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
         </if>
         AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )
+    </select>
+
+
+    <select id="queryWbsName" resultType="java.lang.String">
+        select wbs_name from smdm_wbs where wbs_code = #{wbsCode}
     </select>
 
     <select id="selectAccordingToLineOfReference"
@@ -864,7 +863,7 @@
         spl.local_currency_no_tax_sum
         FROM
         sprm_pr_header sph
-        JOIN sprm_pr_line spl  ON spl.pr_header_id = sph.pr_header_id
+        JOIN sprm_pr_line spl ON spl.pr_header_id = sph.pr_header_id
         <if test="assignFlag != null and assignFlag == 1 and userId != null">
             LEFT JOIN sprm_pr_line_assign spla on spla.tenant_id = spl.tenant_id and spla.pr_line_id = spl.pr_line_id
         </if>
@@ -1063,6 +1062,7 @@
             AND iu.real_name LIKE #{executorNameLike}
             )
         </if>
+
         <if test="title !=null">
             <bind name="titleLike" value="'%'+title+'%'"/>
             AND sph.title like #{titleLike}
