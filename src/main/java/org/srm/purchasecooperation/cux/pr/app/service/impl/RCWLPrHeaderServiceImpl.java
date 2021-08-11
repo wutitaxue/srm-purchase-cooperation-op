@@ -11,8 +11,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.boot.customize.service.CustomizeClient;
+import org.hzero.boot.customize.util.CustomizeHelper;
 import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.message.MessageAccessor;
 import org.hzero.core.redis.RedisHelper;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
@@ -27,11 +29,14 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
+import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.group.GroupApproveHelper;
 import org.srm.common.TenantInfoHelper;
+import org.srm.purchasecooperation.asn.infra.constant.Constants;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
+import org.srm.purchasecooperation.budget.app.service.BudgetService;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlCompanyService;
@@ -42,6 +47,7 @@ import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderCreateDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
+import org.srm.purchasecooperation.pr.app.service.PrBudgetService;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.pr.app.service.impl.PrHeaderServiceImpl;
@@ -102,6 +108,12 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private ScecRemoteService scecRemoteService;
     @Autowired
     private RedisHelper redisHelper;
+    @Autowired
+    private BudgetService budgetService;
+    @Autowired
+    private PrBudgetService prBudgetService;
+    @Autowired
+    private EventSender eventSender;
 
     @Autowired
     private PrLineSupplierRepository prLineSupplierRepository;
@@ -500,4 +512,150 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             }
         }
     }
+
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    public List<PrHeader> cancelWholePrNote(Long tenantId, List<PrHeader> prHeaders) {
+        prHeaders.forEach((prHeader) -> {
+            try {
+                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prHeader.getPrLineList().size()>0){
+                    this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"create");
+                }
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            prHeader.setTenantId(tenantId);
+            List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
+            prHeader.setPrLineList(prLineList);
+            String sourcePlatform = prHeader.getPrSourcePlatform();
+            Boolean occupyFlag = prLineList.stream().map(PrLine::getOccupiedQuantity).filter((occQuantity) -> {
+                return occQuantity.compareTo(BigDecimal.ZERO) > 0;
+            }).count() > 0L;
+            String enableFlag = this.budgetService.getConfigCodeValue(tenantId, "SITE.SPUC.BUD.ENABLE_BUDGET_CONTROL");
+            if (!BaseConstants.Flag.YES.equals(prHeader.getExpiredCancelFlag()) && !String.valueOf(0).equals(enableFlag)) {
+                this.prBudgetService.prBudgetRelease(tenantId, (List)prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList()));
+            }
+
+            ArrayList reOccupyPrLineList;
+            if ("CATALOGUE".equals(sourcePlatform)) {
+                if (occupyFlag) {
+                    throw new CommonException("error.pr.catalogue_part_cancel_error", new Object[0]);
+                }
+
+                ((PrHeaderService)this.self()).cancelCataloguePR(prHeader);
+            } else if ("E-COMMERCE".equals(sourcePlatform)) {
+                if (occupyFlag) {
+                    throw new CommonException("error.pr.e_commerce_part_cancel_error", new Object[0]);
+                }
+
+                ((PrHeaderService)this.self()).cancelEcOrder(prHeader);
+            } else if ("SHOP".equals(sourcePlatform)) {
+                if (occupyFlag) {
+                    throw new CommonException("error.pr.e_commerce_part_cancel_error", new Object[0]);
+                }
+
+                ((PrHeaderService)this.self()).cancelShopPr(prHeader);
+            } else {
+                prHeader.checkAndCancel();
+                reOccupyPrLineList = new ArrayList();
+                Iterator var8 = prLineList.iterator();
+
+                while(var8.hasNext()) {
+                    PrLine prLine = (PrLine)var8.next();
+                    if (prLine.getOccupiedQuantity().compareTo(BigDecimal.ZERO) > 0) {
+                        Long maxNumber = (Long) CustomizeHelper.ignore(() -> {
+                            return this.prLineRepository.queryMaxLineNumByPrHeaderId(prHeader.getPrHeaderId());
+                        }) + 1L;
+                        BigDecimal partQuantity = prLine.getQuantity().subtract(prLine.getOccupiedQuantity());
+                        prLine.setClosedFlag(BaseConstants.Flag.YES);
+                        prLine.setClosedBy(DetailsHelper.getUserDetails().getUserId());
+                        prLine.setClosedDate(new Date());
+                        prLine.setQuantity(prLine.getOccupiedQuantity());
+                        this.prLineService.countPrLineAmount(prLine);
+                        this.prLineRepository.updateOptional(prLine, new String[]{"closedFlag", "closedDate", "closedBy", "closedRemark", "quantity", "lineAmount", "taxIncludedLineAmount"});
+                        reOccupyPrLineList.add(prLine);
+                        if (partQuantity.compareTo(BigDecimal.ZERO) > 0) {
+                            PrLine newPrLine = new PrLine();
+                            BeanUtils.copyProperties(prLine, newPrLine);
+                            newPrLine.setPrLineId((Long)null);
+                            newPrLine.setExecutionBillNum((String)null);
+                            newPrLine.setExecutionBillId((Long)null);
+                            newPrLine.setExecutionHeaderBillNum((String)null);
+                            newPrLine.setExecutionHeaderBillId((Long)null);
+                            newPrLine.setExecutionStatusCode((String)null);
+                            newPrLine.setLineNum(maxNumber);
+                            newPrLine.setDisplayLineNum(maxNumber.toString());
+                            newPrLine.setCancelledFlag(BaseConstants.Flag.YES);
+                            newPrLine.setCancelledDate(new Date());
+                            newPrLine.setCancelledBy(DetailsHelper.getUserDetails().getUserId());
+                            newPrLine.setQuantity(partQuantity);
+                            newPrLine.setOccupiedQuantity(BigDecimal.ZERO);
+                            this.prLineService.countPrLineAmount(newPrLine);
+                            this.prLineRepository.insertSelective(newPrLine);
+                            Object[] args = new Object[]{prLine.getDisplayLineNum()};
+                            String desc = MessageAccessor.getMessage("pr.info.part.cancelled", args).desc();
+                            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), newPrLine.getPrLineId(), "NEWLINE", desc, (String)null, (Object)null, (Object)null);
+                        }
+                    } else {
+                        prLine.updateCancelInfo(prHeader.getDisplayPrNum());
+                        this.prLineRepository.updateOptional(prLine, new String[]{"cancelledFlag", "cancelledDate", "cancelledBy", "cancelledRemark"});
+                    }
+                }
+
+                prHeader.countAmount(this.prLineRepository);
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{"cancelStatusCode", "amount", "localCurrencyTaxSum", "localCurrencyNoTaxSum"});
+                if (!String.valueOf(0).equals(enableFlag) && CollectionUtils.isNotEmpty(reOccupyPrLineList)) {
+                    this.prBudgetService.prBudgetOccupy(tenantId, prHeader, reOccupyPrLineList);
+                }
+            }
+
+            try {
+                reOccupyPrLineList = new ArrayList();
+                reOccupyPrLineList.add(prHeader);
+                this.eventSender.fireEvent("PURCHASE_REQUISIT", "SPRM_PR_LINE", Constants.DEFAULT_TENANT_ID, "CANCELLED", reOccupyPrLineList);
+            } catch (Exception var15) {
+                LOGGER.error("send cancel Purchase Requisit has failed:========", var15);
+            }
+
+            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "CANCEL", (String)null);
+        });
+        return prHeaders;
+    }
+
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    public void deleteWholePrNote(Long tenantId, List<PrHeader> prHeaderList) {
+        prHeaderList.forEach(PrHeader::deletable);
+        prHeaderList.forEach((prHeader) -> {
+            try {
+                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prHeader.getPrLineList().size()>0){
+                    this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"create");
+                }
+            } catch (JsonProcessingException e) {
+                throw new CommonException(e.getMessage());
+            }
+            prHeader.setTenantId(tenantId);
+            Long prHeaderId = prHeader.getPrHeaderId();
+            if (null == prHeaderId) {
+                throw new CommonException("error.pr.field_not_null", new Object[]{"prHeaderId"});
+            } else {
+                PrHeader query = new PrHeader();
+                query.setTenantId(tenantId);
+                query.setPrHeaderId(prHeaderId);
+                PrHeader oldPrHeader = (PrHeader)this.prHeaderRepository.selectOne(query);
+                if (Objects.isNull(oldPrHeader)) {
+                    throw new CommonException("error.pr.not.exists", new Object[0]);
+                } else if (!oldPrHeader.validPrSourcePlatformDelete()) {
+                    throw new CommonException("sprm.pr_source_platform_pr_not_delete", new Object[0]);
+                } else {
+                    this.prLineRepository.delete(new PrLine(prHeaderId));
+                    this.prHeaderRepository.deleteByPrimaryKey(prHeaderId);
+                    this.prActionRepository.delete(new PrAction(prHeaderId));
+                }
+            }
+        });
+    }
+
 }
