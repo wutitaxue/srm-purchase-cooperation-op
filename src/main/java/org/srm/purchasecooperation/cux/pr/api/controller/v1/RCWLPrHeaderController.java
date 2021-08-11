@@ -172,7 +172,7 @@ public class RCWLPrHeaderController {
         SecurityTokenHelper.validToken(prHeader, false);
         PrHeader returnCloseResults = this.prHeaderService.closeWholePrNote(tenantId, prHeader);
         //调用接口
-        this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId);
+        this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"");
         return Results.success(returnCloseResults);
     }
 
@@ -188,10 +188,6 @@ public class RCWLPrHeaderController {
         Assert.notEmpty(prHeaders, "error.not_null");
         SecurityTokenHelper.validToken(prHeaders, false);
         List<PrHeader> returnPrHeaders = this.prHeaderService.cancelWholePrNote(tenantId, prHeaders);
-        //调用接口
-        PrHeader prHeader = prHeaders.get(0);
-
-        this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId);
 
         return Results.success(returnPrHeaders);
     }

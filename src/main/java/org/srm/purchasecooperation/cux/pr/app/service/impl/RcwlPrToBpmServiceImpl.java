@@ -73,7 +73,7 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         String reqIp = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.REQ_URL_CODE);
         String zYunUrl = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.ZYUN_URL_CODE);
         //采购申请行数据
-//        List<PrLine> prLineList = prHeader.getPrLineList();
+        //        List<PrLine> prLineList = prHeader.getPrLineList();
         List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
         List<PrToBpmLineDTO> prToBpmLineDTOS = new ArrayList<>();
         prLineList.forEach(line -> {
