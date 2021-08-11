@@ -134,13 +134,13 @@ public class RcwlPoHeaderItemServiceImpl implements RcwlPoHeaderItemService {
                 });
 
                 logger.info("订单行封装数据:" + poLineList.toString());
-                logger.info("订单行封装数据:" + poLineList1.toString());
                 //批量更新订单物料id和code
-                // poHeaderRepository.batchUpdatePoLine(poLineList);
+               // poHeaderRepository.batchUpdatePoLine(poLineList);
                 this.poLineRepository.batchUpdateByPrimaryKeySelective(poLineList1);
                 //批量插入物料名称多语言表smdm_item_tl
                 poHeaderRepository.batchInsertItemTl(poLineList);
             }
+
 
         }
 
