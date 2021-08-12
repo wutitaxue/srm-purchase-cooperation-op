@@ -20,7 +20,7 @@
                 WHERE m.category_id = l.category_id)                                                  item_category_name,
                (SELECT su.uom_name FROM smdm_uom su WHERE su.uom_id = l.uom_id)                       uom_name,
                round(l.tax_included_price, 2)                                                         po_unit_price,
-               round((l.tax_included_price * l.quantity), 2)                                          amount,
+               round(l.tax_included_amount, 2)                                          amount,
                date_format(spll.need_by_date, '%Y-%m-%d %H:%i:%s')                                    needed_date,
                date_format(l.trx_date, '%Y-%m-%d %H:%i:%s')                                           deliver_date,
                (SELECT scc.cost_name FROM smdm_cost_center scc WHERE scc.cost_code = spl.cost_code)   cost_id,
