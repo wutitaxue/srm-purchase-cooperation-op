@@ -12,8 +12,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
 import org.hzero.boot.customize.service.CustomizeClient;
 import org.hzero.boot.customize.util.CustomizeHelper;
+import org.hzero.boot.message.MessageClient;
+import org.hzero.boot.message.entity.Attachment;
+import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.helper.LanguageHelper;
 import org.hzero.core.message.MessageAccessor;
 import org.hzero.core.redis.RedisHelper;
 import org.hzero.mybatis.domian.Condition;
@@ -22,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -33,6 +38,8 @@ import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.group.GroupApproveHelper;
+import org.srm.boot.platform.message.MessageHelper;
+import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
 import org.srm.purchasecooperation.asn.infra.constant.Constants;
 import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
@@ -45,6 +52,12 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataResposi
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
+import org.srm.purchasecooperation.order.domain.entity.PoHeader;
+import org.srm.purchasecooperation.order.domain.entity.User;
+import org.srm.purchasecooperation.order.domain.service.PoHeaderDomainService;
+import org.srm.purchasecooperation.order.infra.constant.MessageCode;
+import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
+import org.srm.purchasecooperation.order.infra.utils.ReceiverUtils;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderCreateDTO;
 import org.srm.purchasecooperation.pr.app.service.PrActionService;
 import org.srm.purchasecooperation.pr.app.service.PrBudgetService;
@@ -93,30 +106,29 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
     @Autowired
-    private CustomizeClient customizeClient;
-    @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
     private RcwlCompanyService rcwlCompanyService;
-    @Autowired
-    private GroupApproveHelper groupApproveHelper;
-    @Autowired
-    private WorkflowClient workflowClient;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private ScecRemoteService scecRemoteService;
-    @Autowired
-    private RedisHelper redisHelper;
     @Autowired
     private BudgetService budgetService;
     @Autowired
     private PrBudgetService prBudgetService;
     @Autowired
     private EventSender eventSender;
-
+    @Autowired
+    private PoHeaderMapper poHeaderMapper;
     @Autowired
     private PrLineSupplierRepository prLineSupplierRepository;
+    @Autowired
+    private PoHeaderDomainService poHeaderDomainService;
+
+    @Value("${service.demand-query-detail}")
+    private String demandQueryDetailUrl;
+    @Autowired
+    private MessageClient messageClient;
+    @Autowired
+    private MessageHelper messageHelper;
+
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
     private static final String LOG_MSG_SPUC_PR_HEADER_UPDATE_AMOUNT = "============SPUC_PR_HEADER_UPDATE_AMOUNT-TaskNotExistException=============={}";
@@ -320,7 +332,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     }
 
     private void changeStatusCheck(PrHeader prHeader, Map<Long, PrLine> beforePrLineMap) {
-        Assert.isTrue("APPROVED".equals(prHeader.getPrStatusCode()) || "REJECTED".equals(prHeader.getPrStatusCode())||PR_CHANGE_STATUS.equals(prHeader.getPrStatusCode()), "error.change.header.status.not.approve");
+        Assert.isTrue("APPROVED".equals(prHeader.getPrStatusCode()) || "REJECTED".equals(prHeader.getPrStatusCode()) || PR_CHANGE_STATUS.equals(prHeader.getPrStatusCode()), "error.change.header.status.not.approve");
         Assert.isTrue(!"CATALOGUE".equals(prHeader.getPrSourcePlatform()) && !"E-COMMERCE".equals(prHeader.getPrSourcePlatform()), "error.change.header.source.platform");
         List<PrLine> prLineList = (List) prHeader.getPrLineList().stream().filter((prLine) -> {
             return !BaseConstants.Flag.YES.equals(prLine.getClosedFlag()) && !BaseConstants.Flag.YES.equals(prLine.getCancelledFlag());
@@ -521,8 +533,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             prHeader.setTenantId(tenantId);
             List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
             try {
-                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prLineList.size()>0){
-                    this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"create");
+                if ("DXCG".equals(prHeader.getAttributeVarchar39()) && prLineList.size() > 0) {
+                    this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader, tenantId, "create");
                 }
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -534,7 +546,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             }).count() > 0L;
             String enableFlag = this.budgetService.getConfigCodeValue(tenantId, "SITE.SPUC.BUD.ENABLE_BUDGET_CONTROL");
             if (!BaseConstants.Flag.YES.equals(prHeader.getExpiredCancelFlag()) && !String.valueOf(0).equals(enableFlag)) {
-                this.prBudgetService.prBudgetRelease(tenantId, (List)prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList()));
+                this.prBudgetService.prBudgetRelease(tenantId, (List) prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList()));
             }
 
             ArrayList reOccupyPrLineList;
@@ -543,26 +555,26 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     throw new CommonException("error.pr.catalogue_part_cancel_error", new Object[0]);
                 }
 
-                ((PrHeaderService)this.self()).cancelCataloguePR(prHeader);
+                ((PrHeaderService) this.self()).cancelCataloguePR(prHeader);
             } else if ("E-COMMERCE".equals(sourcePlatform)) {
                 if (occupyFlag) {
                     throw new CommonException("error.pr.e_commerce_part_cancel_error", new Object[0]);
                 }
 
-                ((PrHeaderService)this.self()).cancelEcOrder(prHeader);
+                ((PrHeaderService) this.self()).cancelEcOrder(prHeader);
             } else if ("SHOP".equals(sourcePlatform)) {
                 if (occupyFlag) {
                     throw new CommonException("error.pr.e_commerce_part_cancel_error", new Object[0]);
                 }
 
-                ((PrHeaderService)this.self()).cancelShopPr(prHeader);
+                ((PrHeaderService) this.self()).cancelShopPr(prHeader);
             } else {
                 prHeader.checkAndCancel();
                 reOccupyPrLineList = new ArrayList();
                 Iterator var8 = prLineList.iterator();
 
-                while(var8.hasNext()) {
-                    PrLine prLine = (PrLine)var8.next();
+                while (var8.hasNext()) {
+                    PrLine prLine = (PrLine) var8.next();
                     if (prLine.getOccupiedQuantity().compareTo(BigDecimal.ZERO) > 0) {
                         Long maxNumber = (Long) CustomizeHelper.ignore(() -> {
                             return this.prLineRepository.queryMaxLineNumByPrHeaderId(prHeader.getPrHeaderId());
@@ -578,12 +590,12 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (partQuantity.compareTo(BigDecimal.ZERO) > 0) {
                             PrLine newPrLine = new PrLine();
                             BeanUtils.copyProperties(prLine, newPrLine);
-                            newPrLine.setPrLineId((Long)null);
-                            newPrLine.setExecutionBillNum((String)null);
-                            newPrLine.setExecutionBillId((Long)null);
-                            newPrLine.setExecutionHeaderBillNum((String)null);
-                            newPrLine.setExecutionHeaderBillId((Long)null);
-                            newPrLine.setExecutionStatusCode((String)null);
+                            newPrLine.setPrLineId((Long) null);
+                            newPrLine.setExecutionBillNum((String) null);
+                            newPrLine.setExecutionBillId((Long) null);
+                            newPrLine.setExecutionHeaderBillNum((String) null);
+                            newPrLine.setExecutionHeaderBillId((Long) null);
+                            newPrLine.setExecutionStatusCode((String) null);
                             newPrLine.setLineNum(maxNumber);
                             newPrLine.setDisplayLineNum(maxNumber.toString());
                             newPrLine.setCancelledFlag(BaseConstants.Flag.YES);
@@ -595,7 +607,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                             this.prLineRepository.insertSelective(newPrLine);
                             Object[] args = new Object[]{prLine.getDisplayLineNum()};
                             String desc = MessageAccessor.getMessage("pr.info.part.cancelled", args).desc();
-                            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), newPrLine.getPrLineId(), "NEWLINE", desc, (String)null, (Object)null, (Object)null);
+                            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), newPrLine.getPrLineId(), "NEWLINE", desc, (String) null, (Object) null, (Object) null);
                         }
                     } else {
                         prLine.updateCancelInfo(prHeader.getDisplayPrNum());
@@ -618,7 +630,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 LOGGER.error("send cancel Purchase Requisit has failed:========", var15);
             }
 
-            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "CANCEL", (String)null);
+            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "CANCEL", (String) null);
         });
         return prHeaders;
     }
@@ -631,8 +643,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         prHeaderList.forEach((prHeader) -> {
             List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
             try {
-                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prLineList.size()>0){
-                    this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"create");
+                if ("DXCG".equals(prHeader.getAttributeVarchar39()) && prLineList.size() > 0) {
+                    this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader, tenantId, "create");
                 }
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -645,7 +657,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 PrHeader query = new PrHeader();
                 query.setTenantId(tenantId);
                 query.setPrHeaderId(prHeaderId);
-                PrHeader oldPrHeader = (PrHeader)this.prHeaderRepository.selectOne(query);
+                PrHeader oldPrHeader = (PrHeader) this.prHeaderRepository.selectOne(query);
                 if (Objects.isNull(oldPrHeader)) {
                     throw new CommonException("error.pr.not.exists", new Object[0]);
                 } else if (!oldPrHeader.validPrSourcePlatformDelete()) {
@@ -659,4 +671,120 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         });
     }
 
+
+    /**
+     * 电商订单取消
+     *
+     * @param tenantId
+     * @param prNums
+     * @return
+     */
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    public List<PrHeader> cancelElectricityPurchasingExpired(Long tenantId, Set<String> prNums) {
+        List<PrHeader> prHeaders = this.prHeaderRepository.selectHeaderAndLine(tenantId, prNums);
+        List<PrHeader> sendMsgPrHeaders = new ArrayList();
+        sendMsgPrHeaders.addAll(prHeaders);
+        Assert.isTrue(prHeaders.size() == prNums.size(), "error.pr.not.exists");
+        prHeaders.forEach((d) -> {
+            Assert.isTrue("UNCANCELLED".equals(d.getCancelStatusCode()), "error.pr.cancel.status.should.uncancelled");
+            /**
+             * 预算接口
+             */
+            try {
+                this.rcwlPrItfService.invokeBudgetOccupyClose(d, tenantId, "create");
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            List poHeaders;
+            if ("CLOSED".equals(d.getCloseStatusCode())) {
+                poHeaders = d.getPrLineList();
+                Map<String, List<PrLine>> executionStatusCodes = (Map) poHeaders.stream().collect(Collectors.groupingBy(PrLine::getExecutionStatusCode));
+                Assert.isTrue(1 == executionStatusCodes.size(), d.getPrHeaderId() + "error.pr.line.execution.status.not.same");
+                executionStatusCodes.forEach((k, v) -> {
+                    Assert.isTrue("PO".equals(k), "error.pr.line.not.has.passed" + k);
+                });
+                Map<Long, List<PrLine>> executionBillIds = (Map) poHeaders.stream().collect(Collectors.groupingBy(PrLine::getExecutionBillId));
+                Assert.isTrue(1 == executionBillIds.size(), d.getPrHeaderId() + "error.pr.line.execution.billid.not.same");
+            }
+
+            poHeaders = this.poHeaderMapper.selectRejectPoForCancel(tenantId, d.getPrHeaderId());
+            if (CollectionUtils.isNotEmpty(poHeaders)) {
+                this.poHeaderDomainService.cancelEcPoNew(((PoHeader) poHeaders.get(0)).getPoHeaderId());
+                d = (PrHeader) this.prHeaderRepository.selectByPrimaryKey(d);
+            }
+
+            PrHeader prHeader = new PrHeader(d.getPrHeaderId(), d.getCloseStatusCode(), d.getCancelStatusCode(), d.getPrStatusCode(), d.getObjectVersionNumber());
+            prHeader.setExpiredCancelFlag(BaseConstants.Flag.YES);
+            this.cancelWholePrNote(tenantId, Collections.singletonList(prHeader));
+            if ("WORKFLOW_APPROVAL".equals(d.getPrStatusCode())) {
+                this.endPrHeaderWorkflow(tenantId, d, false);
+                prHeader.setPrStatusCode(d.getPrStatusCode());
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{"prStatusCode"});
+            }
+
+        });
+        String enableFlag = this.budgetService.getConfigCodeValue(tenantId, "SITE.SPUC.BUD.ENABLE_BUDGET_CONTROL");
+        if (!String.valueOf(0).equals(enableFlag)) {
+            try {
+                List<PrLine> prLineList = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andIn("prHeaderId", (Iterable) prHeaders.stream().map(PrHeader::getPrHeaderId).collect(Collectors.toList())).andNotEqualTo("freightLineFlag", BaseConstants.Flag.YES)).build());
+                this.prBudgetService.prBudgetRelease(tenantId, (List) prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList()));
+            } catch (Exception var7) {
+                LOGGER.error("expired cancel pr error：", var7);
+            }
+        }
+
+        this.prHeaderCancelExport(tenantId, prHeaders);
+        this.sendMessageDemandExpired(sendMsgPrHeaders);
+        return prHeaders;
+    }
+
+
+    private void sendMessageDemandExpired(List<PrHeader> sendMsgPrHeaders) {
+        try {
+            String lang = LanguageHelper.language();
+            sendMsgPrHeaders.forEach((prHeader) -> {
+                Map<String, String> templateMap = new HashMap(1);
+                Map<String, String> args = new HashMap(1);
+                String url = null;
+                String target = this.demandQueryDetailUrl + prHeader.getPrHeaderId();
+                url = "<a onClick=\"openTab({key:'" + target + "',path:'" + target + "',title:'电商商城需求明细'})\">" + prHeader.getPrNum() + "</a>";
+                templateMap.put("PR_NUM", url);
+                args.put("PR_NUM", prHeader.getPrNum());
+                List<User> users = this.prHeaderRepository.selectUsersByPsAndAuTypeCode(prHeader.getTenantId(), "hzero.srm.requirement.prm.pr-approval.ps.default", "COMPANY", prHeader.getCompanyId());
+                users = (List) users.stream().filter((user) -> {
+                    return user.getEmail() != null;
+                }).collect(Collectors.toList());
+                List<Receiver> receiverListx = new ArrayList();
+                Receiver receiver = new Receiver();
+                receiver.setUserId(prHeader.getCreatedBy());
+                receiver.setTargetUserTenantId((long) BaseConstants.Flag.NO);
+                receiverListx.add(receiver);
+                this.messageClient.sendWebMessage(prHeader.getTenantId(), MessageCode.SPUC_DEMAND_EXPIRED.getMessageCode(), lang, receiverListx, templateMap);
+                if (prHeader.getPurchaseAgentId() != null) {
+                    this.messageHelper.sendMessage(new SpfmMessageSender(prHeader.getTenantId(), MessageCode.SPUC_DEMAND_EXPIRED.getMessageCode(), ReceiverUtils.buildAppointAgent(prHeader.getPurchaseAgentId(), templateMap)));
+                }
+
+                if (CollectionUtils.isNotEmpty(users)) {
+                    receiverListx.clear();
+                    List<Receiver> receiverList = (List) users.stream().map((user) -> {
+                        Receiver re = new Receiver();
+                        re.setUserId(user.getId());
+                        re.setEmail(user.getEmail());
+                        re.setTargetUserTenantId((long) BaseConstants.Flag.NO);
+                        return re;
+                    }).collect(Collectors.toList());
+                    Set<Receiver> receiverSet = new HashSet(receiverList);
+                    receiverList.clear();
+                    receiverList.addAll(receiverSet);
+                    this.messageClient.sendEmail(prHeader.getTenantId(), "SRM", MessageCode.SPUC_DEMAND_EXPIRED.getMessageCode(), lang, receiverList, args, new Attachment[0]);
+                }
+
+            });
+        } catch (Exception var3) {
+            LOGGER.error("电商需求失效，消息发送失败", var3);
+        }
+
+    }
 }
