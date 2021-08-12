@@ -518,15 +518,15 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     )
     public List<PrHeader> cancelWholePrNote(Long tenantId, List<PrHeader> prHeaders) {
         prHeaders.forEach((prHeader) -> {
+            prHeader.setTenantId(tenantId);
+            List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
             try {
-                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prHeader.getPrLineList().size()>0){
+                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prLineList.size()>0){
                     this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"create");
                 }
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
-            prHeader.setTenantId(tenantId);
-            List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
             prHeader.setPrLineList(prLineList);
             String sourcePlatform = prHeader.getPrSourcePlatform();
             Boolean occupyFlag = prLineList.stream().map(PrLine::getOccupiedQuantity).filter((occQuantity) -> {
@@ -629,12 +629,13 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     public void deleteWholePrNote(Long tenantId, List<PrHeader> prHeaderList) {
         prHeaderList.forEach(PrHeader::deletable);
         prHeaderList.forEach((prHeader) -> {
+            List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
             try {
-                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prHeader.getPrLineList().size()>0){
+                if("DXCG".equals(prHeader.getAttributeVarchar39())&&prLineList.size()>0){
                     this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader,tenantId,"create");
                 }
             } catch (JsonProcessingException e) {
-                throw new CommonException(e.getMessage());
+                e.printStackTrace();
             }
             prHeader.setTenantId(tenantId);
             Long prHeaderId = prHeader.getPrHeaderId();
