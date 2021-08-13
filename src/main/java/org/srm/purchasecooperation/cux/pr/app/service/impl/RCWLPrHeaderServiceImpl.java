@@ -688,14 +688,6 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         Assert.isTrue(prHeaders.size() == prNums.size(), "error.pr.not.exists");
         prHeaders.forEach((d) -> {
             Assert.isTrue("UNCANCELLED".equals(d.getCancelStatusCode()), "error.pr.cancel.status.should.uncancelled");
-            /**
-             * 预算接口
-             */
-            try {
-                this.rcwlPrItfService.invokeBudgetOccupyClose(d, tenantId, "create");
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
             List poHeaders;
             if ("CLOSED".equals(d.getCloseStatusCode())) {
                 poHeaders = d.getPrLineList();
@@ -722,7 +714,14 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 prHeader.setPrStatusCode(d.getPrStatusCode());
                 this.prHeaderRepository.updateOptional(prHeader, new String[]{"prStatusCode"});
             }
-
+            /**
+             * 预算接口
+             */
+            try {
+                this.rcwlPrItfService.invokeBudgetOccupyClose(d, tenantId, "create");
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
         });
         String enableFlag = this.budgetService.getConfigCodeValue(tenantId, "SITE.SPUC.BUD.ENABLE_BUDGET_CONTROL");
         if (!String.valueOf(0).equals(enableFlag)) {
