@@ -10,6 +10,7 @@ import org.srm.web.annotation.Tenant;
 import io.choerodon.mybatis.helper.ExtendMapper;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @description:
@@ -27,4 +28,7 @@ public interface RcwlPrHeaderMapper extends PrHeaderMapper, ExtendMapper<PrHeade
 
     @Override
     List<PrHeaderVO> selectCancellablePr(PrHeaderDTO prHeaderDTO);
+
+    @Override
+    List<PrHeader> selectHeaderAndLine(@Param("tenantId") Long tenantId, @Param("prNums") Set<String> prNums);
 }
