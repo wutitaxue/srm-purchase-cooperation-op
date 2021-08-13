@@ -25,12 +25,14 @@ import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlResponseMsg;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrHeaderMapper;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
+import org.srm.purchasecooperation.pr.infra.mapper.PrHeaderMapper;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 
 import java.math.BigDecimal;
@@ -59,6 +61,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
     private PrLineMapper prLineMapper;
+    @Autowired
+    private RcwlPrHeaderMapper rcwlPrHeaderMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrItfServiceImpl.class);
     private static final String NAME_SPACE = "SRM-RCWL";
@@ -146,43 +150,43 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     )
     @Override
     public void invokeBudgetOccupyClose(PrHeader prHeader, Long tenantId, String from) throws JsonProcessingException {
+        String msgUpdate = null;
         //接口请求数据获取
-        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = this.getBudgetAccountItfDataClose(prHeader, tenantId, from);
+        try{
+            RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = this.getBudgetAccountItfDataClose(prHeader, tenantId, from);
+            RequestPayloadDTO payload = new RequestPayloadDTO();
+            Map<String, String> headerMap = new HashMap<>();
+            headerMap.put("Content-Type", "application/json");
+            payload.setHeaderParamMap(headerMap);
+            ObjectMapper mapper = new ObjectMapper();
+            payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
+            logger.info("报文1+" + rcwlItfPrHeaderDTO);
+            logger.info("报文2+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
+            payload.setMediaType("application/json");
 
-        RequestPayloadDTO payload = new RequestPayloadDTO();
+            ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
+                    SRM_RCWL_BUDGET,
+                    RCWL_BUDGET,
+                    payload);
+            String response = responsePayloadDTO.getPayload().toString();
+            logger.info("预算接口返回" + response);
 
-        Map<String, String> headerMap = new HashMap<>();
-        headerMap.put("Content-Type", "application/json");
-        payload.setHeaderParamMap(headerMap);
-        ObjectMapper mapper = new ObjectMapper();
-        payload.setPayload(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
-        logger.info("报文1+" + rcwlItfPrHeaderDTO);
-        logger.info("报文2+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlItfPrHeaderDTO));
-        payload.setMediaType("application/json");
+            JsonObject res = new JsonParser().parse(response).getAsJsonObject();
+            String msg = res.get("msg").getAsString();
+            logger.info("msg" + msg);
+            String code = res.get("code").getAsString();
+            logger.info("code" + code);
+            JsonArray details = res.get("details").getAsJsonArray();
+            logger.info("details" + details);
 
-        ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
-                SRM_RCWL_BUDGET,
-                RCWL_BUDGET,
-                payload);
-        String response = responsePayloadDTO.getPayload().toString();
-        logger.info("预算接口返回" + response);
+            String status = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("status").getAsString();
+            logger.info("status" + status);
 
-        JsonObject res = new JsonParser().parse(response).getAsJsonObject();
-        String msg = res.get("msg").getAsString();
-        logger.info("msg" + msg);
-        String code = res.get("code").getAsString();
-        logger.info("code" + code);
-        JsonArray details = res.get("details").getAsJsonArray();
-        logger.info("details" + details);
-
-        String status = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("status").getAsString();
-        logger.info("status" + status);
-
-        if (!RCWLConstants.InterfaceInitValue.CODE.equals(code)) {
-            throw new CommonException("接口调用失败");
-        }
-        if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
-            String detailsMsg = details.getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+            if (!RCWLConstants.InterfaceInitValue.CODE.equals(code)) {
+                throw new CommonException("接口调用失败");
+            }
+            if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
+                String detailsMsg = details.getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
 //            JsonArray str = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray();
 //            logger.info("str" + str);
 //            String simpleMessage = "";
@@ -195,14 +199,21 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 //                }
 //            }
 //            logger.info("simpleMessage" + simpleMessage);
-            //   String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
-            if (StringUtils.isEmpty(detailsMsg)) {
-                throw new CommonException(res.toString());
-            } else {
-                throw new CommonException(detailsMsg);
+                //   String simpleMessage = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("simplemessage").getAsString();
+                if (StringUtils.isEmpty(detailsMsg)) {
+                    throw new CommonException(res.toString());
+                } else {
+                    throw new CommonException(detailsMsg);
+                }
             }
+            msgUpdate = res.toString();
+        }catch (Exception e){
+            logger.info("====================="+e);
+            msgUpdate = e.getMessage();
+        }finally {
+            prHeader.setAttributeLongtext10(msgUpdate);
+            this.rcwlPrHeaderMapper.updateMsgResponse(prHeader);
         }
-
     }
 
 
