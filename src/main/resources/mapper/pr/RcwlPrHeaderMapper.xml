@@ -1891,4 +1891,10 @@
         sph.tenant_id = #{tenantId}
         and sph.mall_pr_num = #{mallPrNum}
     </select>
+
+    <update id="updateMsgResponse">
+        update sprm_pr_header set
+            attribute_longtext10 = #{attributeLongtext10}
+            where pr_header_id = #{prHeaderId}
+    </update>
 </mapper>
