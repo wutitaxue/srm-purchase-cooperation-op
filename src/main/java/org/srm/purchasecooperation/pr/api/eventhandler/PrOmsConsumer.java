@@ -238,16 +238,20 @@ public class PrOmsConsumer implements MessageConsumer {
 
     private void orderCancelByEc(PrMessageDTO prMessageDTO) {
         LOGGER.info("begin ec expired cancel handler : {}", prMessageDTO);
-        PrOmsDTO prOmsDTO = (PrOmsDTO)this.objectMapper.convertValue(prMessageDTO.getData(), new TypeReference<PrOmsDTO>() {
+        List<PrOmsDTO> prOmsDTOs = (List<PrOmsDTO>)this.objectMapper.convertValue(prMessageDTO.getData(), new TypeReference<List<PrOmsDTO>>() {
         });
+//        PrOmsDTO prOmsDTO = prOmsDTOs.get(0);
         LOGGER.info("电商超期/按钮取消==========流程变量是：" + DetailsHelper.getUserDetails().toString());
-        Set<String> prNums = this.prHeaderRepository.selectPrNumsByMallOrderNumsAndTenantId(prOmsDTO.getOrderCode(), prMessageDTO.getTenantId());
-        //设置上下文租户 走二开流程
-        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        userDetails.setTenantNum("SRM-RCWL");
-        DetailsHelper.setCustomUserDetails(userDetails);
-        LOGGER.info("电商超期/按钮取消==========二开：" + DetailsHelper.getUserDetails().toString());
-        this.prHeaderService.cancelElectricityPurchasingExpired(prMessageDTO.getTenantId(), prNums);
+        prOmsDTOs.forEach(prOmsDTO->{
+            Set<String> prNums = this.prHeaderRepository.selectPrNumsByMallOrderNumsAndTenantId(prOmsDTO.getOrderCode(), prMessageDTO.getTenantId());
+            //设置上下文租户 走二开流程
+            CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+            userDetails.setTenantNum("SRM-RCWL");
+            DetailsHelper.setCustomUserDetails(userDetails);
+            LOGGER.info("电商超期/按钮取消==========二开：" + DetailsHelper.getUserDetails().toString());
+            this.prHeaderService.cancelElectricityPurchasingExpired(prMessageDTO.getTenantId(), prNums);
+        });
+
     }
 
     private void manualRequestCancel(PrMessageDTO prMessageDTO) {
