@@ -531,8 +531,12 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         prHeaders.forEach((prHeader) -> {
             prHeader.setTenantId(tenantId);
             List<PrLine> prLineList = this.prLineRepository.select(new PrLine(prHeader.getPrHeaderId()));
+            LOGGER.info("================>PrSourcePlatform is"+prHeader.getPrSourcePlatform()+"AttributeVarchar39 is prHeader.getAttributeVarchar39()"
+            +"lines size is prLineList.size()");
             try {
-                if ("DXCG".equals(prHeader.getAttributeVarchar39()) && prLineList.size() > 0) {
+                if ((!"E-COMMERCE".equals(prHeader.getPrSourcePlatform())&&"DXCG".equals(prHeader.getAttributeVarchar39()) && prLineList.size() > 0)
+                ||"E-COMMERCE".equals(prHeader.getPrSourcePlatform())
+                ) {
                     this.rcwlPrItfService.invokeBudgetOccupyClose(prHeader, tenantId, "create");
                 }
             } catch (JsonProcessingException e) {
@@ -717,11 +721,11 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             /**
              * 预算接口
              */
-            try {
-                this.rcwlPrItfService.invokeBudgetOccupyClose(d, tenantId, "create");
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                this.rcwlPrItfService.invokeBudgetOccupyClose(d, tenantId, "create");
+//            } catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//            }
         });
         String enableFlag = this.budgetService.getConfigCodeValue(tenantId, "SITE.SPUC.BUD.ENABLE_BUDGET_CONTROL");
         if (!String.valueOf(0).equals(enableFlag)) {
