@@ -300,49 +300,49 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         return sinvRcvTrxHeaderDTO;
     }
 
-    @Override
-    @Transactional(
-            rollbackFor = {Exception.class}
-    )
-    public SinvRcvTrxHeaderDTO deletedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
-        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:begin");
-        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
-        this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "DELETED", sinvRcvTrxHeaderDTO);
-        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
-
-        List<SinvRcvTrxLine> sinvRcvTrxLines1 = new ArrayList();
-        //释放
-        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
-        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOList = new ArrayList<>();
-        sinvRcvTrxLines.forEach(sinvRcvTrxLine -> {
-            SinvRcvTrxLineDTO sinvRcvTrxLineDTO = new SinvRcvTrxLineDTO();
-            BeanUtils.copyProperties(sinvRcvTrxLine,sinvRcvTrxLineDTO);
-            sinvRcvTrxLineDTOList.add(sinvRcvTrxLineDTO);
-        });
-        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineDTOList);
-        this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
-
-        sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
-            SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
-            BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
-            sinvRcvTrxLine.setTenantId(tenantId);
-            sinvRcvTrxLine.setQuantity(BigDecimal.ZERO);
-            sinvRcvTrxLine.setUpdateQuantity(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateQuantity()));
-            sinvRcvTrxLine.setTaxIncludedAmount(BigDecimal.ZERO);
-            sinvRcvTrxLine.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
-            sinvRcvTrxLines1.add(sinvRcvTrxLine);
-            sinvRcvTrxLineDTO.setUpdateQuantity(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateQuantity()));
-            sinvRcvTrxLineDTO.setQuantity(BigDecimal.ZERO);
-            sinvRcvTrxLineDTO.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
-            sinvRcvTrxLineDTO.setTaxIncludedAmount(BigDecimal.ZERO);
-        });
-        this.sinvRcvTrxLineRepository.batchUpdateByPrimaryKeySelective(sinvRcvTrxLines1);
-
-        List<SinvRcvRecordStrategyMapping> sinvRcvRecordStrategyMappings = this.sinvRcvRecordStrategyMappingRepository.selectByCondition(Condition.builder(SinvRcvRecordStrategyMapping.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId())).build());
-        this.sinvRcvRecordStrategyMappingRepository.batchDeleteByPrimaryKey(sinvRcvRecordStrategyMappings);
-        this.sinvRcvTrxLineRepository.batchDeleteByPrimaryKey(sinvRcvTrxLines);
-        this.sinvRcvTrxHeaderRepository.deleteByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
-        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:end");
-        return sinvRcvTrxHeaderDTO;
-    }
+//    @Override
+//    @Transactional(
+//            rollbackFor = {Exception.class}
+//    )
+//    public SinvRcvTrxHeaderDTO deletedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
+//        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:begin");
+//        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
+//        this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "DELETED", sinvRcvTrxHeaderDTO);
+//        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
+//
+//        List<SinvRcvTrxLine> sinvRcvTrxLines1 = new ArrayList();
+//        //释放
+//        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
+//        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOList = new ArrayList<>();
+//        sinvRcvTrxLines.forEach(sinvRcvTrxLine -> {
+//            SinvRcvTrxLineDTO sinvRcvTrxLineDTO = new SinvRcvTrxLineDTO();
+//            BeanUtils.copyProperties(sinvRcvTrxLine,sinvRcvTrxLineDTO);
+//            sinvRcvTrxLineDTOList.add(sinvRcvTrxLineDTO);
+//        });
+//        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineDTOList);
+//        this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
+//
+//        sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
+//            SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
+//            BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
+//            sinvRcvTrxLine.setTenantId(tenantId);
+//            sinvRcvTrxLine.setQuantity(BigDecimal.ZERO);
+//            sinvRcvTrxLine.setUpdateQuantity(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateQuantity()));
+//            sinvRcvTrxLine.setTaxIncludedAmount(BigDecimal.ZERO);
+//            sinvRcvTrxLine.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
+//            sinvRcvTrxLines1.add(sinvRcvTrxLine);
+//            sinvRcvTrxLineDTO.setUpdateQuantity(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateQuantity()));
+//            sinvRcvTrxLineDTO.setQuantity(BigDecimal.ZERO);
+//            sinvRcvTrxLineDTO.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
+//            sinvRcvTrxLineDTO.setTaxIncludedAmount(BigDecimal.ZERO);
+//        });
+//        this.sinvRcvTrxLineRepository.batchUpdateByPrimaryKeySelective(sinvRcvTrxLines1);
+//
+//        List<SinvRcvRecordStrategyMapping> sinvRcvRecordStrategyMappings = this.sinvRcvRecordStrategyMappingRepository.selectByCondition(Condition.builder(SinvRcvRecordStrategyMapping.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId())).build());
+//        this.sinvRcvRecordStrategyMappingRepository.batchDeleteByPrimaryKey(sinvRcvRecordStrategyMappings);
+//        this.sinvRcvTrxLineRepository.batchDeleteByPrimaryKey(sinvRcvTrxLines);
+//        this.sinvRcvTrxHeaderRepository.deleteByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+//        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:end");
+//        return sinvRcvTrxHeaderDTO;
+//    }
 }
