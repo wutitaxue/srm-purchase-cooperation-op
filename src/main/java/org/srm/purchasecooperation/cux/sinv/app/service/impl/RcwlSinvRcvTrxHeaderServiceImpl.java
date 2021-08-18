@@ -305,6 +305,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             rollbackFor = {Exception.class}
     )
     public SinvRcvTrxHeaderDTO deletedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
+        LOGGER.info("24730:getSinvRcvTrxLineDTOS{}1", sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS());
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:begin");
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "DELETED", sinvRcvTrxHeaderDTO);
@@ -320,7 +321,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             sinvRcvTrxLineDTOList.add(sinvRcvTrxLineDTO);
         });
         sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineDTOList);
-        LOGGER.info("24730:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
+        LOGGER.info("24730:getSinvRcvTrxLineDTOS{}2", sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS());
         this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
 
         sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
