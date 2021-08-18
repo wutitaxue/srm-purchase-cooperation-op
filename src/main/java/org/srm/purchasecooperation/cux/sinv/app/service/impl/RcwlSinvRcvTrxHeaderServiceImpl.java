@@ -29,6 +29,7 @@ import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineReposito
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.purchasecooperation.sinv.domain.service.SinvTrxNodeExectorDomainService;
 import org.srm.purchasecooperation.sinv.domain.vo.SinvAfterTrxNodeExectedVo;
+import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxLineMapper;
 import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
 import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxLineRepository;
 import org.srm.web.annotation.Tenant;
@@ -139,6 +140,8 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
     @Autowired
     private RcwlSinvRcvTrxLineRepository rcwlSinvRcvTrxLineRepository;
+    @Autowired
+    private SinvRcvTrxLineMapper sinvRcvTrxLineMapper;
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
 
@@ -300,30 +303,18 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         return sinvRcvTrxHeaderDTO;
     }
 
+
     @Override
     @Transactional(
             rollbackFor = {Exception.class}
     )
     public SinvRcvTrxHeaderDTO deletedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
-        LOGGER.info("24730:getSinvRcvTrxLineDTOS{}1", sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS());
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:begin");
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
         this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "DELETED", sinvRcvTrxHeaderDTO);
-        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS();
-
+        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = this.sinvRcvTrxLineMapper.listRcvTrxLineDetail(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineDTOS);
         List<SinvRcvTrxLine> sinvRcvTrxLines1 = new ArrayList();
-        //释放
-        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
-        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOList = new ArrayList<>();
-        sinvRcvTrxLines.forEach(sinvRcvTrxLine -> {
-            SinvRcvTrxLineDTO sinvRcvTrxLineDTO = new SinvRcvTrxLineDTO();
-            BeanUtils.copyProperties(sinvRcvTrxLine,sinvRcvTrxLineDTO);
-            sinvRcvTrxLineDTOList.add(sinvRcvTrxLineDTO);
-        });
-        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineDTOList);
-        LOGGER.info("24730:getSinvRcvTrxLineDTOS{}2", sinvRcvTrxHeaderDTO.getSinvRcvTrxLineDTOS());
-        this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
-
         sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
             SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
             BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
@@ -338,9 +329,9 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             sinvRcvTrxLineDTO.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
             sinvRcvTrxLineDTO.setTaxIncludedAmount(BigDecimal.ZERO);
         });
-        LOGGER.info("24730:sinvRcvTrxHeaderDTO1111{}", sinvRcvTrxHeaderDTO);
         this.sinvRcvTrxLineRepository.batchUpdateByPrimaryKeySelective(sinvRcvTrxLines1);
-
+        this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
+        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
         List<SinvRcvRecordStrategyMapping> sinvRcvRecordStrategyMappings = this.sinvRcvRecordStrategyMappingRepository.selectByCondition(Condition.builder(SinvRcvRecordStrategyMapping.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId())).build());
         this.sinvRcvRecordStrategyMappingRepository.batchDeleteByPrimaryKey(sinvRcvRecordStrategyMappings);
         this.sinvRcvTrxLineRepository.batchDeleteByPrimaryKey(sinvRcvTrxLines);
