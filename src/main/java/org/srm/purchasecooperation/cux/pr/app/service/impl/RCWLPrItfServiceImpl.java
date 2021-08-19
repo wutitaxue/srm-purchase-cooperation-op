@@ -72,11 +72,15 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
      * @param tenantId
      */
     @Override
-    public void invokeBudgetOccupy(PrHeader prHeader, Long tenantId) throws JsonProcessingException {
-
-        //接口请求数据获取
-        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
-
+    public void invokeBudgetOccupy(PrHeader prHeader, Long tenantId,String approveFlag) throws JsonProcessingException {
+        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
+        if(approveFlag==null) {
+            //接口请求数据获取
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
+        }
+        else{
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "O");
+        }
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
         Map<String, String> headerMap = new HashMap<>();
@@ -241,7 +245,44 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
         return rcwlItfPrHeaderDTO;
     }
+    /**
+     * 获取接口请求全部数据
+     *
+     * @param prHeader
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public RCWLItfPrHeaderDTO getBudgetAccountItfData1(PrHeader prHeader, Long tenantId, String flag) {
+        //获取接口所需数据
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, flag);
+        List<PrLine> lineDetailList = prHeader.getPrLineList();
+//        PrLine prLine = new PrLine();
+//        prLine.setPrHeaderId(prHeader.getPrHeaderId());
+        //List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
 
+
+        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(lineDetailList)) {
+            lineDetailList.forEach(prDetailLine -> {
+                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+            });
+        }
+
+        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
+        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
+        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
+        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
+        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
+        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
+
+
+        rcwlItfPrHeaderDTO = rcwlPrItfService.initOccupyHeader();
+        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
+        return rcwlItfPrHeaderDTO;
+    }
     private RCWLItfPrHeaderDTO getBudgetAccountItfDataClose(PrHeader prHeader, Long tenantId) {
         //获取接口所需数据
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, "O");
@@ -611,7 +652,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                 //获取行信息
                 List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListById(newPrHeader.getPrHeaderId(), tenantId);
                 newPrHeader.setPrLineList(prLineList);
-                this.invokeBudgetOccupy(newPrHeader, tenantId);
+                this.invokeBudgetOccupy(newPrHeader, tenantId,null);
             }
         }
 
@@ -708,7 +749,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             });
             prHeader.setPrLineList(prLineList);
             //占用接口
-            this.invokeBudgetOccupy(prHeader,tenantId);
+            this.invokeBudgetOccupy(prHeader,tenantId,approveFlag);
         }
     }
     /**
@@ -734,7 +775,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             //获取行信息
             List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(),tenantId);
             oldPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetOccupy(oldPrHeader,tenantId);
+            this.invokeBudgetOccupy(oldPrHeader,tenantId,null);
         }
     }
 

@@ -15,7 +15,7 @@ public interface RCWLPrItfService {
      * @param prHeader
      * @param tenantId
      */
-    void invokeBudgetOccupy(PrHeader prHeader, Long tenantId) throws JsonProcessingException;
+    void invokeBudgetOccupy(PrHeader prHeader, Long tenantId,String approveFlag) throws JsonProcessingException;
 
     /**
      * 初始化请求头
@@ -31,6 +31,14 @@ public interface RCWLPrItfService {
      * @return
      */
     RCWLItfPrHeaderDTO getBudgetAccountItfData(PrHeader prHeader, Long tenantId, String flag);
+    /**
+     *获取数据
+     * @param prHeader
+     * @param tenantId
+     * @param flag(占用释放标识)
+     * @return
+     */
+    RCWLItfPrHeaderDTO getBudgetAccountItfData1(PrHeader prHeader, Long tenantId, String flag);
 
     /**
      * 获取token
