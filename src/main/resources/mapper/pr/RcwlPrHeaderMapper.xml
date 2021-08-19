@@ -243,6 +243,7 @@
         <result column="company_id" property="companyId" jdbcType="DECIMAL"/>
         <result column="pr_num" property="prNum" jdbcType="VARCHAR"/>
         <result column="external_num" property="externalNum" jdbcType="VARCHAR"/>
+        <result column="creation_date" property="creationDate"/>
         <collection property="prLineList" ofType="org.srm.purchasecooperation.pr.domain.entity.PrLine"
                     javaType="java.util.ArrayList">
             <result column="pr_header_id" property="prHeaderId" jdbcType="DECIMAL"/>
@@ -841,7 +842,8 @@
         sph.external_num,
         spl.pr_line_id,
         spl.execution_status_code,
-        spl.execution_bill_id
+        spl.execution_bill_id,
+        sph.creation_date
         from
         sprm_pr_header sph
         join sprm_pr_line spl on sph.pr_header_id = spl.pr_header_id
@@ -1889,4 +1891,10 @@
         sph.tenant_id = #{tenantId}
         and sph.mall_pr_num = #{mallPrNum}
     </select>
+
+    <update id="updateMsgResponse">
+        update sprm_pr_header set
+            attribute_longtext10 = #{attributeLongtext10}
+            where pr_header_id = #{prHeaderId}
+    </update>
 </mapper>

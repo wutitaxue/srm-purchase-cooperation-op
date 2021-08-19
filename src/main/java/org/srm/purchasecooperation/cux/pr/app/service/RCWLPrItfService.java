@@ -113,5 +113,5 @@ public interface RCWLPrItfService {
      * @param tenantId
      */
 
-    void invokeBudgetOccupyClose(PrHeader prHeader, Long tenantId) throws JsonProcessingException;
+    void invokeBudgetOccupyClose(PrHeader prHeader, Long tenantId,String from) throws JsonProcessingException;
 }
