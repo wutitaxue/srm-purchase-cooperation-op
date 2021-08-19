@@ -6,6 +6,7 @@ import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.asn.app.service.SendMessageToPrService;
 import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO;
 import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
@@ -28,6 +29,7 @@ import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineReposito
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.purchasecooperation.sinv.domain.service.SinvTrxNodeExectorDomainService;
 import org.srm.purchasecooperation.sinv.domain.vo.SinvAfterTrxNodeExectedVo;
+import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxLineMapper;
 import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
 import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxLineRepository;
 import org.srm.web.annotation.Tenant;
@@ -138,6 +140,8 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
     @Autowired
     private RcwlSinvRcvTrxLineRepository rcwlSinvRcvTrxLineRepository;
+    @Autowired
+    private SinvRcvTrxLineMapper sinvRcvTrxLineMapper;
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
 
@@ -220,18 +224,18 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                 taxIncludedAmount = this.calcQuantity(sinvRcvTrxLine.getTaxIncludedAmount(), sinvRcvTrxLine.getUnitPriceBatch(), sinvRcvTrxLine.getTaxIncludedPrice(), 4, sinvRcvTrxHeaderDTO.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
                 LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:quantity[" + taxIncludedAmount + "]");
                 //质保金比例获取
-                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
-
-                if (percent == null) {
-                    percent = new BigDecimal(0);
-                }
+//                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
+//
+//                if (percent == null) {
+//                    percent = new BigDecimal(0);
+//                }
                 //质保金金额=执行金额（含税）*质保金比例/100
-                BigDecimal retentionMoney = sinvRcvTrxLine.getTaxIncludedAmount().multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
-                LOGGER.info("质保金："+retentionMoney);
+//                BigDecimal retentionMoney = sinvRcvTrxLine.getTaxIncludedAmount().multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
+//                LOGGER.info("质保金："+retentionMoney);
                 //将质保金和收货人插入行表
-                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
+//                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
 
-                sinvRcvTrxLine.setAttributeDecimal1(retentionMoney);
+//                sinvRcvTrxLine.setAttributeDecimal1(retentionMoney);
                 sinvRcvTrxLine.setQuantity(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setQuantity(taxIncludedAmount);
                 netAmount = (new BigDecimal(100)).add(sinvRcvTrxLine.getTaxRate()).divide(new BigDecimal(100));
@@ -249,17 +253,17 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                 taxIncludedAmount = this.calcTaxIncludedAmount(sinvRcvTrxLine.getQuantity(), sinvRcvTrxLine.getTaxIncludedPrice(), sinvRcvTrxLine.getUnitPriceBatch(), financialPrecision, sinvRcvTrxLine.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
 
                 //质保金比例获取
-                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
-                if (percent == null) {
-                    percent = new BigDecimal(0);
-                }
+//                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
+//                if (percent == null) {
+//                    percent = new BigDecimal(0);
+//                }
                 //质保金金额=执行金额（含税）*质保金比例/100
-                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
-                LOGGER.info("质保金："+retentionMoney);
-                LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:taxIncludedAmount[" + taxIncludedAmount + "]");
+//                BigDecimal retentionMoney = taxIncludedAmount.multiply(percent).divide(new BigDecimal(100),4,RoundingMode.HALF_UP);
+//                LOGGER.info("质保金："+retentionMoney);
+//                LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:taxIncludedAmount[" + taxIncludedAmount + "]");
                 //将质保金和收货人插入行表
-                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
-                sinvRcvTrxLine.setAttributeDecimal1(retentionMoney);
+//                this.rcwlSinvRcvTrxLineRepository.insertRetentionMoneyAndReceiver(sinvRcvTrxLine.getRcvTrxLineId(),retentionMoney,sinvRcvTrxLine.getAttributeBigint2(),tenantId);
+//                sinvRcvTrxLine.setAttributeDecimal1(retentionMoney);
                 sinvRcvTrxLine.setTaxIncludedAmount(taxIncludedAmount);
                 sinvRcvTrxLineDTO.setTaxIncludedAmount(taxIncludedAmount);
                 netAmount = sinvRcvTrxLineDTO.getQuantity().multiply(sinvRcvTrxLineDTO.getNetPrice()).divide(sinvRcvTrxLine.getUnitPriceBatch(), 8, RoundingMode.HALF_UP).setScale(financialPrecision, RoundingMode.HALF_UP);
@@ -275,6 +279,64 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         this.sinvRcvTrxLineRepository.batchUpdateByPrimaryKeySelective(sinvRcvTrxLines);
         this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:end");
+
+        //因为保存的时候数据只能传输当前页数据，下一页行质保金可能未计算，现在改为保存完之后再重新计算质保金
+        SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
+        List<SinvRcvTrxLine> sinvRcvTrxLineList1 = new ArrayList<>();
+        sinvRcvTrxLine.setRcvTrxHeaderId(sinvRcvTrxHeader.getRcvTrxHeaderId());
+        List<SinvRcvTrxLine> sinvRcvTrxLineList = this.sinvRcvTrxLineRepository.select(sinvRcvTrxLine);
+        sinvRcvTrxLineList.forEach(sinvRcvTrxLine1 -> {
+            //质保金比例获取
+            BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine1.getFromPoHeaderId(), sinvRcvTrxLine1.getFromPoLineId(), tenantId);
+            if (percent == null) {
+                percent = new BigDecimal(0);
+            }
+            if(!ObjectUtils.isEmpty(sinvRcvTrxLine1.getTaxIncludedAmount())) {
+                //质保金金额=执行金额（含税）*质保金比例/100
+                BigDecimal retentionMoney = sinvRcvTrxLine1.getTaxIncludedAmount().multiply(percent).divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
+                LOGGER.info("质保金：" + retentionMoney);
+                sinvRcvTrxLine1.setAttributeDecimal1(retentionMoney);
+            }
+            sinvRcvTrxLineList1.add(sinvRcvTrxLine1);
+        });
+        this.sinvRcvTrxLineRepository.batchUpdateOptional(sinvRcvTrxLineList1,new String[]{"attributeDecimal1"});
+        return sinvRcvTrxHeaderDTO;
+    }
+
+
+    @Override
+    @Transactional(
+            rollbackFor = {Exception.class}
+    )
+    public SinvRcvTrxHeaderDTO deletedSinv(Long tenantId, SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO) {
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:begin");
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:sinvRcvTrxHeaderDTO{}", sinvRcvTrxHeaderDTO);
+        this.adaptorTaskCheckBeforeStatusUpdate(tenantId, "DELETED", sinvRcvTrxHeaderDTO);
+        List<SinvRcvTrxLineDTO> sinvRcvTrxLineDTOS = this.sinvRcvTrxLineMapper.listRcvTrxLineDetail(tenantId, sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+        sinvRcvTrxHeaderDTO.setSinvRcvTrxLineDTOS(sinvRcvTrxLineDTOS);
+        List<SinvRcvTrxLine> sinvRcvTrxLines1 = new ArrayList();
+        sinvRcvTrxLineDTOS.forEach((sinvRcvTrxLineDTO) -> {
+            SinvRcvTrxLine sinvRcvTrxLine = new SinvRcvTrxLine();
+            BeanUtils.copyProperties(sinvRcvTrxLineDTO, sinvRcvTrxLine);
+            sinvRcvTrxLine.setTenantId(tenantId);
+            sinvRcvTrxLine.setQuantity(BigDecimal.ZERO);
+            sinvRcvTrxLine.setUpdateQuantity(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateQuantity()));
+            sinvRcvTrxLine.setTaxIncludedAmount(BigDecimal.ZERO);
+            sinvRcvTrxLine.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
+            sinvRcvTrxLines1.add(sinvRcvTrxLine);
+            sinvRcvTrxLineDTO.setUpdateQuantity(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateQuantity()));
+            sinvRcvTrxLineDTO.setQuantity(BigDecimal.ZERO);
+            sinvRcvTrxLineDTO.setUpdateTaxAmount(BigDecimal.ZERO.subtract(sinvRcvTrxLine.getUpdateTaxAmount()));
+            sinvRcvTrxLineDTO.setTaxIncludedAmount(BigDecimal.ZERO);
+        });
+        this.sinvRcvTrxLineRepository.batchUpdateByPrimaryKeySelective(sinvRcvTrxLines1);
+        this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
+        List<SinvRcvTrxLine> sinvRcvTrxLines = this.sinvRcvTrxLineRepository.selectByCondition(Condition.builder(SinvRcvTrxLine.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId()).andEqualTo("tenantId", tenantId)).build());
+        List<SinvRcvRecordStrategyMapping> sinvRcvRecordStrategyMappings = this.sinvRcvRecordStrategyMappingRepository.selectByCondition(Condition.builder(SinvRcvRecordStrategyMapping.class).andWhere(Sqls.custom().andEqualTo("rcvTrxHeaderId", sinvRcvTrxHeaderDTO.getRcvTrxHeaderId())).build());
+        this.sinvRcvRecordStrategyMappingRepository.batchDeleteByPrimaryKey(sinvRcvRecordStrategyMappings);
+        this.sinvRcvTrxLineRepository.batchDeleteByPrimaryKey(sinvRcvTrxLines);
+        this.sinvRcvTrxHeaderRepository.deleteByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:end");
         return sinvRcvTrxHeaderDTO;
     }
 }
