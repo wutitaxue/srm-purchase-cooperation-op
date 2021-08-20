@@ -134,8 +134,6 @@ public class RcwlPoHeaderServiceImpl2  {
         //再次查询
         prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
         this.prHeaderRepository.updateByPrimaryKeySelective(new PrHeader(prHeaderId, prHeader.getObjectVersionNumber(), "CLOSED", poHeader.getPoHeaderId(), poHeader.getPoNum(), poHeader.getCreatedBy(), poHeader.getCreationDate(), "PO"));
-        //再次查询
-        prLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("tenantId", tenantId).andEqualTo("prHeaderId", prHeaderId)).build());
         List<PrLine> prLineList = this.covPoToPrEchoInfo(poDTO.getPoLineList(), prLines, new PoDTO(), true);
         this.prLineRepository.batchUpdateByPrimaryKeySelective(prLineList);
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), tenantId, "OCCUPY");
@@ -146,9 +144,10 @@ public class RcwlPoHeaderServiceImpl2  {
         Long poHeaderId = poDTO.getPoHeaderId();
         String poNum = poDTO.getPoNum();
         String poLineIds = StringUtils.join(poLines.stream().map(PoLine::getPoLineId).toArray(), ",");
-        List<PoLine> poLines1 = this.poLineRepository.selectByIds(poLineIds);
-        return (List)poLines1.stream().map((d) -> {
-            PoLine poLine = (PoLine)poLines.stream().filter((l) -> {
+        poLines = this.poLineRepository.selectByIds(poLineIds);
+        List<PoLine> finalPoLines = poLines;
+        return (List)prLines.stream().map((d) -> {
+            PoLine poLine = (PoLine) finalPoLines.stream().filter((l) -> {
                 return l.getPrLineId().equals(d.getPrLineId());
             }).findFirst().orElseThrow(() -> {
                 return new CommonException("error.pr.line.list.not.null", new Object[0]);
