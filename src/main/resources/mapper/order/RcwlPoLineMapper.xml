@@ -1067,6 +1067,9 @@
             <bind name="titleLike" value="'%'+title+'%'"/>
             AND sph.title like #{titleLike}
         </if>
+        <if test="attributeVarchar40=='rcwl'">
+            and spl.attribute_bigint1 is null
+        </if>
 
         ORDER BY sph.display_pr_num DESC ,spl.line_num ASC
     </select>
