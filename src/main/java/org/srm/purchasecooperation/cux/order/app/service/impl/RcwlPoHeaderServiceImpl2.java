@@ -146,9 +146,10 @@ public class RcwlPoHeaderServiceImpl2  {
         Long poHeaderId = poDTO.getPoHeaderId();
         String poNum = poDTO.getPoNum();
         String poLineIds = StringUtils.join(poLines.stream().map(PoLine::getPoLineId).toArray(), ",");
-        List<PoLine> poLines1 = this.poLineRepository.selectByIds(poLineIds);
-        return (List)poLines1.stream().map((d) -> {
-            PoLine poLine = (PoLine)poLines.stream().filter((l) -> {
+        poLines = this.poLineRepository.selectByIds(poLineIds);
+        List<PoLine> finalPoLines = poLines;
+        return (List)prLines.stream().map((d) -> {
+            PoLine poLine = (PoLine) finalPoLines.stream().filter((l) -> {
                 return l.getPrLineId().equals(d.getPrLineId());
             }).findFirst().orElseThrow(() -> {
                 return new CommonException("error.pr.line.list.not.null", new Object[0]);

@@ -221,7 +221,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             if (RCWLConstants.Common.IS.equals(count)) {
                 //保存完之后触发接口
                 try {
-                    this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId);
+                    this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId,null);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
