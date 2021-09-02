@@ -83,10 +83,10 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
         if(approveFlag==null) {
             //接口请求数据获取
-             rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
         }
         else{
-             rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "O");
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "O");
         }
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
@@ -781,7 +781,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             });
             prHeader.setPrLineList(prLineList);
             //占用接口
-            this.invokeBudgetOccupy(prHeader, tenantId,approveFlag);
+            this.invokeBudgetOccupy(prHeader,tenantId,approveFlag);
         }
     }
 
@@ -808,7 +808,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             //获取行信息
             List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(), tenantId);
             oldPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetOccupy(oldPrHeader, tenantId,null);
+            this.invokeBudgetOccupy(oldPrHeader,tenantId,null);
         }
     }
 
