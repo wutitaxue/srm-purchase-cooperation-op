@@ -474,6 +474,7 @@
             AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
         </if>
         AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )
+        order by sph.pc_num desc
     </select>
 
 
