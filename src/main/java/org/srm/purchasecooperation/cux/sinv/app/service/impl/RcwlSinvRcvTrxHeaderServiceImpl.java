@@ -8,16 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.asn.app.service.SendMessageToPrService;
+import org.srm.purchasecooperation.common.infra.mapper.TenantMapper;
 import org.srm.purchasecooperation.cux.sinv.domain.vo.SinvRcvTrxToKpiAutoPOLineVO;
 import org.srm.purchasecooperation.cux.sinv.infra.feign.RcwlSinvRcvTrxSslmRemoteService;
 import org.srm.purchasecooperation.cux.sinv.infra.mapper.RcwlSinvRcvTrxHeaderMapper;
 import org.srm.purchasecooperation.cux.sinv.infra.mapper.SettleMapper;
 import org.srm.purchasecooperation.cux.transaction.app.service.RcwlOrderBillService;
 import org.srm.purchasecooperation.cux.transaction.infra.mapper.RcwlOrderBillMapper;
+import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
-import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
-import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
+import org.srm.purchasecooperation.order.infra.convertor.CommonConvertor;
+import org.srm.purchasecooperation.sinv.api.dto.*;
 import org.srm.purchasecooperation.sinv.app.service.impl.SinvRcvTrxHeaderServiceImpl;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvRecordStrategyMapping;
@@ -28,7 +30,9 @@ import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxHeaderReposi
 import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineRepository;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.purchasecooperation.sinv.domain.service.SinvTrxNodeExectorDomainService;
+import org.srm.purchasecooperation.sinv.domain.vo.InitSinvRcvTrxDataVO;
 import org.srm.purchasecooperation.sinv.domain.vo.SinvAfterTrxNodeExectedVo;
+import org.srm.purchasecooperation.sinv.domain.vo.SinvStrategyConnectVo;
 import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxLineMapper;
 import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
 import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxLineRepository;
@@ -142,6 +146,8 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
     private RcwlSinvRcvTrxLineRepository rcwlSinvRcvTrxLineRepository;
     @Autowired
     private SinvRcvTrxLineMapper sinvRcvTrxLineMapper;
+    @Autowired
+    private TenantMapper tenantMapper;
     public RcwlSinvRcvTrxHeaderServiceImpl() {
     }
 
@@ -221,7 +227,7 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                     throw new CommonException("sinv.quantity.or.amount.more.than.error", new Object[0]);
                 }
 
-                taxIncludedAmount = this.calcQuantity(sinvRcvTrxLine.getTaxIncludedAmount(), sinvRcvTrxLine.getUnitPriceBatch(), sinvRcvTrxLine.getTaxIncludedPrice(), 4, sinvRcvTrxHeaderDTO.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
+                taxIncludedAmount = this.calcQuantity(sinvRcvTrxLine.getTaxIncludedAmount(), sinvRcvTrxLine.getUnitPriceBatch(), sinvRcvTrxLine.getTaxIncludedPrice(), 6, sinvRcvTrxHeaderDTO.getOrderTypeCode(), sinvRcvTrxLine.getPayRatio());
                 LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-updateSinv:quantity[" + taxIncludedAmount + "]");
                 //质保金比例获取
 //                BigDecimal percent = this.rcwlSinvRcvTrxLineRepository.selectRententionMoneyPercent(sinvRcvTrxLine.getFromPoHeaderId(), sinvRcvTrxLine.getFromPoLineId(), tenantId);
@@ -338,5 +344,92 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
         this.sinvRcvTrxHeaderRepository.deleteByPrimaryKey(sinvRcvTrxHeaderDTO.getRcvTrxHeaderId());
         LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-deletedSinv:end");
         return sinvRcvTrxHeaderDTO;
+    }
+
+    @Override
+    public SinvRcvTrxHeaderDTO waitintToDoSinvRcv(Long tenantId, Long rcvTrxTypeId, List<SinvRcvTrxWaitingDTO> sinvRcvTrxWaitingDTOList) {
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:begin");
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:rcvTrxTypeId{}", rcvTrxTypeId);
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:sinvRcvTrxWaitingDTOList{}", sinvRcvTrxWaitingDTOList);
+        Long strategyLineId = ((SinvRcvTrxWaitingDTO)sinvRcvTrxWaitingDTOList.get(0)).getStrategyLineId();
+        List<InitSinvRcvTrxDataVO> initSinvRcvTrxDataVOList = new ArrayList();
+        org.srm.common.client.entity.Tenant tenant = TenantInfoHelper.selectByTenantId(tenantId);
+
+        try {
+            Map<String, Object> map = new HashMap();
+            map.put("sinvRcvTrxWaitingDTOs", sinvRcvTrxWaitingDTOList);
+            LOGGER.debug("SINV_CHECK_RCV_TRX_SAVE 适配器入参:{}", JSON.toJSON(map));
+            AdaptorTaskHelper.executeAdaptorTask("SINV_CHECK_RCV_TRX_SAVE", tenant.getTenantNum(), JSON.toJSON(map));
+        } catch (TaskNotExistException var12) {
+            LOGGER.debug("============SINV_CHECK_RCV_TRX_SAVE-TaskNotExistException=============={}", new Object[]{tenant.getTenantNum(), var12.getMessage(), var12.getStackTrace()});
+        }
+
+        sinvRcvTrxWaitingDTOList.forEach((sinvRcvTrxWaitingDTO) -> {
+            SmdmCurrencyDTO smdmCurrencyDTO = this.mdmService.selectSmdmCurrencyDto(tenantId, sinvRcvTrxWaitingDTO.getCurrencyCode());
+            int financialPrecision = smdmCurrencyDTO.getFinancialPrecision();
+            if (!strategyLineId.equals(sinvRcvTrxWaitingDTO.getStrategyLineId())) {
+                throw new CommonException("sinv.same.strategy.error", new Object[0]);
+            } else {
+                BigDecimal taxIncludedAmount;
+                if ("AMOUNT".equals(sinvRcvTrxWaitingDTO.getSubjectType())) {
+                    if (Objects.isNull(sinvRcvTrxWaitingDTO.getTaxIncludedAmount())) {
+                        throw new CommonException("sinv.quantity.or.amount.null.error", new Object[0]);
+                    }
+
+                    if (sinvRcvTrxWaitingDTO.getTaxIncludedAmount().compareTo(sinvRcvTrxWaitingDTO.getLeftTaxAmount()) == BaseConstants.Flag.YES) {
+                        throw new CommonException("sinv.quantity.or.amount.more.than.error", new Object[0]);
+                    }
+
+                    taxIncludedAmount = this.calcQuantity(sinvRcvTrxWaitingDTO.getTaxIncludedAmount(), sinvRcvTrxWaitingDTO.getUnitPriceBatch(), sinvRcvTrxWaitingDTO.getTaxIncludedPrice(), 6, sinvRcvTrxWaitingDTO.getSourceOrderType(), sinvRcvTrxWaitingDTO.getPayRatio());
+                    LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:quantity[" + taxIncludedAmount + "]");
+                    sinvRcvTrxWaitingDTO.setQuantity(taxIncludedAmount);
+                    BigDecimal rate = (new BigDecimal(100)).add(sinvRcvTrxWaitingDTO.getTaxRate()).divide(new BigDecimal(100));
+                    sinvRcvTrxWaitingDTO.setNetAmount(sinvRcvTrxWaitingDTO.getTaxIncludedAmount().divide(rate, financialPrecision, RoundingMode.HALF_UP));
+                } else if ("QUANTITY".equals(sinvRcvTrxWaitingDTO.getSubjectType())) {
+                    if (Objects.isNull(sinvRcvTrxWaitingDTO.getQuantity())) {
+                        throw new CommonException("sinv.quantity.or.amount.null.error", new Object[0]);
+                    }
+
+                    if (sinvRcvTrxWaitingDTO.getQuantity().compareTo(sinvRcvTrxWaitingDTO.getLeftQuantity()) == BaseConstants.Flag.YES) {
+                        throw new CommonException("sinv.quantity.or.amount.more.than.error", new Object[0]);
+                    }
+
+                    taxIncludedAmount = this.calcTaxIncludedAmount(sinvRcvTrxWaitingDTO.getQuantity(), sinvRcvTrxWaitingDTO.getTaxIncludedPrice(), sinvRcvTrxWaitingDTO.getUnitPriceBatch(), financialPrecision, sinvRcvTrxWaitingDTO.getSourceOrderType(), sinvRcvTrxWaitingDTO.getPayRatio());
+                    LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:taxIncludedAmount[" + taxIncludedAmount + "]");
+                    sinvRcvTrxWaitingDTO.setTaxIncludedAmount(taxIncludedAmount);
+                    sinvRcvTrxWaitingDTO.setNetAmount(sinvRcvTrxWaitingDTO.getQuantity().multiply(sinvRcvTrxWaitingDTO.getNetPrice()).divide(sinvRcvTrxWaitingDTO.getUnitPriceBatch(), 8, RoundingMode.HALF_UP).setScale(financialPrecision, RoundingMode.HALF_UP));
+                }
+
+                PoLineDetailDTO poLineDetailDTO = this.sinvRcvTrxLineMapper.queryPoLineDetailByLineId(sinvRcvTrxWaitingDTO.getFromPoLineId());
+                if (Objects.nonNull(poLineDetailDTO)) {
+                    sinvRcvTrxWaitingDTO.setCostId(poLineDetailDTO.getCostId());
+                }
+
+                InitSinvRcvTrxDataVO initSinvRcvTrxDataVO = (InitSinvRcvTrxDataVO) CommonConvertor.beanConvert(InitSinvRcvTrxDataVO.class, sinvRcvTrxWaitingDTO);
+                initSinvRcvTrxDataVO.setRcvTrxTypeId(rcvTrxTypeId);
+                initSinvRcvTrxDataVOList.add(initSinvRcvTrxDataVO);
+            }
+        });
+        String tenantNum = this.tenantMapper.queryTenantNumById(tenantId);
+
+        try {
+            AdaptorTaskHelper.executeAdaptorTask("SINV_WAITING_TO_DO_RCV_TRX", tenantNum, Collections.singletonMap("data", initSinvRcvTrxDataVOList));
+        } catch (TaskNotExistException var11) {
+            LOGGER.debug("============WAITING_TO_DO_RCV_TRX-TaskNotExistException=============={}", tenantNum);
+        }
+
+        RcvStrategyLine rcvStrategyLine = new RcvStrategyLine();
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:getNextStrategyLineId{}", ((SinvRcvTrxWaitingDTO)sinvRcvTrxWaitingDTOList.get(0)).getNextStrategyLineId());
+        SinvStrategyConnectVo sinvStrategyConnectVo = this.rcvStrategyLineDomainService.getStrategyConnectByStrategyLine(((SinvRcvTrxWaitingDTO)sinvRcvTrxWaitingDTOList.get(0)).getNextStrategyLineId());
+        if (sinvStrategyConnectVo == null) {
+            throw new CommonException("sinv.have.no.flow.error", new Object[0]);
+        } else {
+            rcvStrategyLine.setStrategyLineId(sinvStrategyConnectVo.getNowStrategyLineId());
+            rcvStrategyLine.setStrategyHeaderId(((SinvRcvTrxWaitingDTO)sinvRcvTrxWaitingDTOList.get(0)).getStrategyHeaderId());
+            SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = this.sinvToRcvTrxOperation(tenantId, initSinvRcvTrxDataVOList, rcvStrategyLine);
+            this.sinvRcvTrxDomainService.plusQuantityOccupy(tenantId, sinvRcvTrxHeaderDTO);
+            LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:end");
+            return sinvRcvTrxHeaderDTO;
+        }
     }
 }
