@@ -258,4 +258,215 @@
         order by srtl.rcv_trx_line_id desc
 
     </select>
+
+    <!-- 根据发运行查询数据 -->
+    <select id="sinvPoLocationToRcv" resultType="org.srm.purchasecooperation.sinv.domain.vo.InitSinvRcvTrxDataVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT NULL
+        asn_Line_Id,
+        spll.tenant_id,
+        NULL asn_Line_Num,
+        NULL display_Asn_Line_Num,
+        (case when sph.display_po_num is null then sph.po_num else sph.display_po_num end) display_po_num,
+        (case when sph.display_po_num is null then sph.po_num else sph.display_po_num end) from_display_po_num,
+        spl.display_line_num from_display_po_line_num,
+        spll.display_line_location_num from_display_po_line_location_num,
+        sph.display_release_num,
+        spl.line_num,
+        spl.display_line_num,
+        spl.remark,
+        spll.display_line_location_num,
+        sph.version_num,
+        NULL invoice_Num,
+        NULL asn_Header_Id,
+        NULL asn_Num,
+        NULL asn_Type_Code,
+        spl.item_id,
+        (case when spl.item_code is null then si.item_code else spl.item_code end) item_code,
+        (case when spl.item_name is null then si.item_name else spl.item_name end) item_name,
+        hi.inventory_code,
+        hi.inventory_name,
+        sph.ship_to_location_address,
+        NULL location_Name,
+        NULL location_Id,
+        NULL location_Id_Copy,
+        spll.po_line_location_id from_Po_Line_Location_Id,
+        NULL from_Asn_Header_Id,
+        NULL from_Asn_Line_Id,
+        spll.inv_organization_id,
+        hio.organization_code inv_organization_code,
+        hio.organization_name inv_organization_name,
+        spll.po_header_id from_Po_Header_Id,
+        spll.po_line_id from_Po_Line_Id,
+        spl.currency_code,
+        spl.unit_price net_price,
+        spl.entered_tax_included_price tax_included_price,
+        spl.unit_price / spl.unit_price_batch po_unit_price,
+        (spl.unit_price / spl.unit_price_batch*spll.quantity) net_amount,
+--         (spll.quantity*spl.entered_tax_included_price/spl.unit_price_batch) tax_included_amount,
+        spl.tax_included_amount,
+        spl.tax_id,
+        spl.unit_price entered_trx_price,
+        (spl.unit_price / spl.unit_price_batch*spll.quantity) entered_trx_amount,
+        spl.base_currency_code entered_currency_code,
+        spl.rate_type,
+        NULL contact_Info,
+        NULL actual_Receiver_Name,
+        NULL actual_Receiver_Code,
+        spl.rate_date exchange_rate_date,
+        NULL expected_Arrive_Date,
+        NULL promised_Date,
+        0 this_Time_Receive_Quantity,
+        spl.rate exchange_rate,
+        spl.uom_id,
+        su.uom_code,
+        su.uom_name,
+        sph.company_id,
+        sph.company_name,
+        sph.ou_id,
+        sph.purchase_org_id pur_organization_id,
+        sph.supplier_id,
+        sph.supplier_tenant_id,
+        (
+        CASE
+
+        WHEN sph.supplier_id IS NOT NULL
+        AND sph.supplier_code IS NOT NULL THEN
+        sph.supplier_code
+        WHEN sph.supplier_id IS NOT NULL
+        AND sph.supplier_code IS NULL THEN
+        es.supplier_num ELSE hc.company_num
+        END
+        ) AS supplier_num,
+        (
+        CASE
+
+        WHEN sph.supplier_id IS NOT NULL
+        AND sph.supplier_name IS NOT NULL THEN
+        sph.supplier_name
+        WHEN sph.supplier_id IS NOT NULL
+        AND sph.supplier_name IS NULL THEN
+        es.supplier_name ELSE hc.company_name
+        END
+        ) AS supplier_name,
+        sph.supplier_site_id,
+        sph.supplier_company_id,
+        sph.supplier_company_name,
+        NULL lot_Num,
+        NULL shelf_Life,
+        spl.brand,
+        spl.specifications,
+        spl.model,
+        NULL lot_Expiration_Date,
+        NULL production_Date,
+        sph.supplier_ou_id,
+        sph.terms_id,
+        sph.agent_id,
+        sph.agent_id po_agent_id,
+        hpa.purchase_agent_code agent_code,
+        hpa.purchase_agent_name agent_name,
+        st.tax_rate,
+        NULL ship_Quantity,
+        ( spll.quantity - spll.occupied_quantity ) can_receive_quantity,
+        spll.quantity AS shipped_quantity,
+        NULL unit_Package_Quantity,
+        NULL package_Quantity,
+        NULL remainder_Quantity,
+        sph.external_system_code,
+        'SRM' source_Code,
+        NULL from_Expected_Arrive_Date,
+        NULL to_Expected_Arrive_Date,
+        spl.product_num,
+        spl.product_name,
+        spl.catalog_name,
+        spl.pr_line_id,
+        sab.deliver_time,
+        NULL receive_Status,
+        NULL reality_Receive_Date,
+        sph.receive_order_type,
+        spll.po_line_location_id,
+        sott.order_type_name AS po_type_code_meaning,
+        sot.order_type_code AS po_type_code,
+        null display_Trx_Line_Num,
+        spl.returned_flag,
+        sph.display_po_num source_header_num,
+        spl.line_num source_line_num,
+        'ORDER' source_Order_Type,
+        '订单' source_Order_Type_Meaning,
+        null strategy_Line_Id,
+        null strategy_Header_Id,
+        1 initial_node_flag,
+        null from_pc_header_id,
+        null from_pc_subject_id,
+        null from_pc_num,
+        null from_pc_subject_num,
+        null rcv_trx_line_id,
+        null rcv_trx_header_id,
+        null trx_line_num,
+        null trx_num,
+        null display_trx_num,
+        null from_Rcv_Trx_Line_Id,
+        spll.quantity,
+        spll.inv_inventory_id inventory_id,
+        spll.inv_location_id locator_id,
+        spl.category_id,
+        (select srsm.initial_node_flag from sinv_rcv_trx_order_link srto left join sinv_rcv_trx_line srtl on
+        srto.order_link_id = srtl.order_link_id
+        left join sinv_rcv_record_strategy_mapping srsm on srtl.rcv_trx_header_id = srsm.rcv_trx_header_id
+        where srto.tenant_id = #{tenantId}
+        and srto.from_po_line_location_id = spll.po_line_location_id
+        and srsm.initial_node_flag = 1
+        and srtl.complete_flag = 0
+        and srsm.order_type_code = 'ORDER'
+        <if test="_databaseId=='mysql'">
+            limit 1
+        </if>
+        <if test="_databaseId=='oracle'">
+            rownum = 1
+        </if>)
+        check_initial_node_flag,
+        (select srsm.initial_node_flag from sinv_rcv_trx_order_link srto left join sinv_rcv_trx_line srtl on
+        srto.order_link_id = srtl.order_link_id
+        left join sinv_rcv_record_strategy_mapping srsm on srtl.rcv_trx_header_id = srsm.rcv_trx_header_id
+        where srto.tenant_id = #{tenantId}
+        and srto.from_po_line_location_id = spll.po_line_location_id
+        and srsm.initial_node_flag = 1
+        and srsm.order_type_code = 'ORDER'
+        <if test="_databaseId=='mysql'">
+            limit 1
+        </if>
+        <if test="_databaseId=='oracle'">
+            rownum = 1
+        </if>)
+        srm_check_flag,
+        spl.cost_id,
+        spl.pr_header_id,
+        spl.pr_line_id
+
+        FROM
+        sodr_po_line_location spll
+        JOIN sodr_po_line spl ON spl.po_line_id = spll.po_line_id
+        JOIN sodr_po_header sph ON sph.po_header_id = spll.po_header_id
+        LEFT JOIN hpfm_inventory hi ON spll.inv_inventory_id = hi.inventory_id
+        LEFT JOIN hpfm_inv_organization hio ON spll.inv_organization_id = hio.organization_id
+        LEFT JOIN smdm_uom su ON spl.uom_id = su.uom_id
+        LEFT JOIN sslm_external_supplier es ON sph.supplier_id = es.supplier_id
+        LEFT JOIN hpfm_company hc ON hc.company_id = sph.supplier_company_id
+        LEFT JOIN hpfm_purchase_agent hpa ON sph.agent_id = hpa.purchase_agent_id
+        LEFT JOIN smdm_tax st ON st.tax_id = spl.tax_id
+        LEFT JOIN sfin_auto_bill sab ON sab.po_line_location_id = spll.po_line_location_id
+        LEFT JOIN sodr_order_type sot ON sot.order_type_id = sph.po_type_id
+        LEFT JOIN sodr_order_type_tl sott ON sott.order_type_id = sot.order_type_id AND sott.lang = #{lang}
+        LEFT JOIN smdm_item si ON spl.item_id = si.item_id and spll.tenant_id = si.tenant_id
+        WHERE
+        sph.tenant_id = #{tenantId}
+        AND sph.tenant_id = spl.tenant_id
+        <if test="lineIds != null and lineIds.size() > 0">
+            and spll.po_line_location_id in
+            <foreach collection="lineIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by sph.display_po_num asc, spl.display_line_num asc
+    </select>
 </mapper>

@@ -9,11 +9,13 @@ import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxQueryDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxWaitingDTO;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
+import org.srm.purchasecooperation.sinv.domain.vo.InitSinvRcvTrxDataVO;
 import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxHeaderMapper;
 import org.srm.web.annotation.Tenant;
 import io.choerodon.mybatis.helper.ExtendMapper;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @description:
@@ -45,4 +47,11 @@ public interface RcwlSinvRcvTrxHeaderMapper extends SinvRcvTrxHeaderMapper, Exte
      */
     SinvRcvTrxHeaderDTO selectHeaderdetail(@Param("tenantId") Long tenantId, @Param("rcvTrxHeaderId") Long rcvTrxHeaderId);
 
+    /**
+     * 收货执行精度问题修改
+     * @param tenantId
+     * @param lineIds
+     * @return
+     */
+    List<InitSinvRcvTrxDataVO> sinvPoLocationToRcv(@Param("tenantId") Long tenantId, @Param("lineIds") Set<Long> lineIds);
 }
