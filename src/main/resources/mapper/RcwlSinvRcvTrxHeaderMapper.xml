@@ -64,7 +64,7 @@
         srtl.reversed_quantity,
         srtl.occupied_tax_amount,
         srtl.reversed_tax_amount,
-        ( srtl.tax_included_amount - srtl.occupied_tax_amount + srtl.reversed_tax_amount) left_tax_amount,
+        ROUND((srtl.tax_included_amount - srtl.occupied_tax_amount + srtl.reversed_tax_amount),2) left_tax_amount,
         /*实际操作日期*/
         srtl.trx_date,
         /*库房*/
