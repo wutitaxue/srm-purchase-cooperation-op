@@ -47,7 +47,7 @@
         srtl.tax_included_amount,
         srtl.reversed_tax_amount,
         (srtl.tax_included_amount-srtl.occupied_tax_amount) can_tax_amount,
-        (srtl2.tax_included_amount - srtl2.occupied_tax_amount + srtl2.reversed_tax_amount + srtl.tax_included_amount)
+        round((srtl2.tax_included_amount - srtl2.occupied_tax_amount + srtl2.reversed_tax_amount + srtl.tax_included_amount),2)
         left_tax_amount,
         srnc.node_config_code,
         srnc.node_config_name,
