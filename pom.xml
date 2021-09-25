@@ -5,7 +5,7 @@
     <parent>
     <groupId>org.srm-op</groupId>
         <artifactId>srm-parent</artifactId>
-        <version>1.13.5-SNAPSHOT</version>
+        <version>1.13.5-OP-1.0.4.RELEASE</version>
 
     </parent>
     <groupId>org.srm-op</groupId>
@@ -15,17 +15,18 @@
         <dependency>
             <groupId>org.srm-op</groupId>
             <artifactId>srm-purchase-cooperation</artifactId>
-            <version>1.13.34-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hzero.starter</groupId>
-                    <artifactId>hzero-starter-mybatis-mapper</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.srm.starter</groupId>
-                    <artifactId>srm-starter-web</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>1.13.34-OP-1.0.1.RELEASE</version>
+            <scope>provided</scope>
+            <!--<exclusions>-->
+            <!--    <exclusion>-->
+            <!--        <groupId>org.hzero.starter</groupId>-->
+            <!--        <artifactId>hzero-starter-mybatis-mapper</artifactId>-->
+            <!--    </exclusion>-->
+            <!--    <exclusion>-->
+            <!--        <groupId>org.srm.starter</groupId>-->
+            <!--        <artifactId>srm-starter-web</artifactId>-->
+            <!--    </exclusion>-->
+            <!--</exclusions>-->
         </dependency>
        
         <dependency>
