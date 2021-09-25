@@ -120,6 +120,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         }
         if (!RCWLConstants.InterfaceInitValue.CODE.equals(status)) {
             String detailsMsg = res.get("details").getAsJsonArray().get(0).getAsJsonObject().get("msg").getAsString();
+            try{
             JsonArray str = details.getAsJsonArray().get(0).getAsJsonObject().get("data").getAsJsonArray();
             logger.info("str" + str);
             String simpleMessage = "";
@@ -138,6 +139,10 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             } else {
                 throw new CommonException(simpleMessage + "采购申请不可提交");
             }
+            }catch(Exception e){
+                throw new CommonException(detailsMsg);
+            }
+
         }
     }
 
