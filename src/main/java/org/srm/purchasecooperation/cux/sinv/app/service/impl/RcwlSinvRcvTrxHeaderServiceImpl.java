@@ -1,5 +1,7 @@
 package org.srm.purchasecooperation.cux.sinv.app.service.impl;
 
+import org.activiti.engine.impl.util.CollectionUtil;
+import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
@@ -30,9 +32,7 @@ import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxHeaderReposi
 import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineRepository;
 import org.srm.purchasecooperation.sinv.domain.service.SinvRcvTrxHeaderDomainService;
 import org.srm.purchasecooperation.sinv.domain.service.SinvTrxNodeExectorDomainService;
-import org.srm.purchasecooperation.sinv.domain.vo.InitSinvRcvTrxDataVO;
-import org.srm.purchasecooperation.sinv.domain.vo.SinvAfterTrxNodeExectedVo;
-import org.srm.purchasecooperation.sinv.domain.vo.SinvStrategyConnectVo;
+import org.srm.purchasecooperation.sinv.domain.vo.*;
 import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxLineMapper;
 import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
 import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxLineRepository;
@@ -431,5 +431,115 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
             LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-waitintToDoSinvRcv:end");
             return sinvRcvTrxHeaderDTO;
         }
+    }
+
+    @Override
+    public List<SinvRcvTrxHeaderDTO> sinvEntrence(Long tenantId, String sourceOrderType, Long strategyHeaderId, List<SinvRcvTrxOrderLinkVO> sinvRcvTrxOrderLinkVOS) {
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-sinvEntrence:begin{}", strategyHeaderId);
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-sinvEntrence:sinvRcvTrxOrderLinkVOS{}", sinvRcvTrxOrderLinkVOS);
+        if (CollectionUtil.isEmpty(sinvRcvTrxOrderLinkVOS)) {
+            throw new CommonException("sinv.data.source.vo.null.error", new Object[0]);
+        } else {
+            List<SinvRcvTrxHeaderDTO> sinvRcvTrxHeaderDTOList = new ArrayList();
+            RcvStrategyLine rcvStrategyLine = this.strategyLineRepository.selectLinesBySourceOrderType(tenantId, strategyHeaderId);
+            if ("ORDER".equals(sourceOrderType)) {
+                sinvRcvTrxHeaderDTOList = this.poToRcvTrxOperation(tenantId, sourceOrderType, sinvRcvTrxOrderLinkVOS, rcvStrategyLine);
+            } else if ("ASN".equals(sourceOrderType)) {
+                sinvRcvTrxHeaderDTOList = this.asnToRcvTrxOperation(tenantId, sourceOrderType, sinvRcvTrxOrderLinkVOS, rcvStrategyLine);
+            }
+
+            LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-sinvEntrence:end");
+            return (List)sinvRcvTrxHeaderDTOList;
+        }
+    }
+
+    @Override
+    @ProcessLovValue
+    protected List<SinvRcvTrxHeaderDTO> poToRcvTrxOperation(Long tenantId, String sourceOrderType, List<SinvRcvTrxOrderLinkVO> sinvRcvTrxOrderLinkVOS, RcvStrategyLine rcvStrategyLine) {
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-PoToRcvTrxOperation:begin");
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-PoToRcvTrxOperation:sinvRcvTrxOrderLinkVOS{}", sinvRcvTrxOrderLinkVOS);
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-PoToRcvTrxOperation:sourceCode{}", sourceOrderType);
+        List<SinvRcvTrxHeaderDTO> sinvRcvTrxHeaderDTOList = new ArrayList();
+        String sitfOrSrmCode = (String)Optional.ofNullable(((SinvRcvTrxOrderLinkVO)sinvRcvTrxOrderLinkVOS.get(0)).getSitfOrSrmCode()).orElse("SRM");
+        List<Long> poHeaderIds = (List)sinvRcvTrxOrderLinkVOS.stream().map(SinvRcvTrxOrderLinkVO::getFromPoHeaderId).distinct().collect(Collectors.toList());
+        poHeaderIds.forEach((poHeaderId) -> {
+            List<SinvRcvTrxOrderLinkVO> sinvRcvTrxOrderLinks1 = new ArrayList();
+            sinvRcvTrxOrderLinkVOS.forEach((sinvRcvTrxOrderLink) -> {
+                if (poHeaderId.equals(sinvRcvTrxOrderLink.getFromPoHeaderId())) {
+                    sinvRcvTrxOrderLinks1.add(sinvRcvTrxOrderLink);
+                }
+
+            });
+            Set<Long> poLocationLineIds = (Set)sinvRcvTrxOrderLinks1.stream().map(SinvRcvTrxOrderLinkVO::getFromPoLineLocationId).collect(Collectors.toSet());
+            List<InitSinvRcvTrxDataVO> initSinvRcvTrxDataVOS = this.sinvRcvTrxHeaderRepository.toSinvData(tenantId, sourceOrderType, poLocationLineIds);
+            LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-PoToRcvTrxOperation:initSinvRcvTrxDataVOS{}", initSinvRcvTrxDataVOS);
+            List<SinvOtherOperateOrderLinkVO> sinvOtherOperateOrderLinkVOList = new ArrayList();
+            List<InitSinvRcvTrxDataVO> initSinvRcvTrxDataVOSAct = new ArrayList();
+            initSinvRcvTrxDataVOS.stream().forEach((receiveRcvTrxDataVO) -> {
+                SinvOtherOperateOrderLinkVO sinvOtherOperateOrderLinkVOTemp;
+                if (!ObjectUtils.isEmpty(receiveRcvTrxDataVO.getCheckInitialNodeFlag()) && "SITF".equals(sitfOrSrmCode)) {
+                    sinvOtherOperateOrderLinkVOTemp = (SinvOtherOperateOrderLinkVO)CommonConvertor.beanConvert(SinvOtherOperateOrderLinkVO.class, receiveRcvTrxDataVO);
+                    sinvOtherOperateOrderLinkVOTemp.setUpdateQuantity(receiveRcvTrxDataVO.getQuantity());
+                    sinvOtherOperateOrderLinkVOList.add(sinvOtherOperateOrderLinkVOTemp);
+                } else if (!ObjectUtils.isEmpty(receiveRcvTrxDataVO.getSrmCheckFlag()) && "SRM".equals(sitfOrSrmCode)) {
+                    sinvOtherOperateOrderLinkVOTemp = (SinvOtherOperateOrderLinkVO)CommonConvertor.beanConvert(SinvOtherOperateOrderLinkVO.class, receiveRcvTrxDataVO);
+                    sinvOtherOperateOrderLinkVOTemp.setUpdateQuantity(receiveRcvTrxDataVO.getQuantity());
+                    sinvOtherOperateOrderLinkVOList.add(sinvOtherOperateOrderLinkVOTemp);
+                } else {
+                    receiveRcvTrxDataVO.setAgentId(receiveRcvTrxDataVO.getPoAgentId());
+                    receiveRcvTrxDataVO.setReceiveOrderType("ORDER");
+                    SinvRcvTrxOrderLinkVO sinvRcvTrxOrderLinks2 = new SinvRcvTrxOrderLinkVO();
+                    Iterator var8 = sinvRcvTrxOrderLinkVOS.iterator();
+
+                    while(var8.hasNext()) {
+                        SinvRcvTrxOrderLinkVO sinvRcvTrxOrderLink = (SinvRcvTrxOrderLinkVO)var8.next();
+                        if (receiveRcvTrxDataVO.getPoLineLocationId().equals(sinvRcvTrxOrderLink.getFromPoLineLocationId())) {
+                            sinvRcvTrxOrderLink.setFromPoHeaderId(receiveRcvTrxDataVO.getFromPoHeaderId());
+                            sinvRcvTrxOrderLink.setFromPoLineId(receiveRcvTrxDataVO.getFromPoLineId());
+                            sinvRcvTrxOrderLink.setFromPoLineLocationId(receiveRcvTrxDataVO.getFromPoLineLocationId());
+                            sinvRcvTrxOrderLink.setFromDisplayPoNum(receiveRcvTrxDataVO.getFromDisplayPoNum());
+                            sinvRcvTrxOrderLink.setFromDisplayPoLineNum(receiveRcvTrxDataVO.getFromDisplayPoLineNum());
+                            sinvRcvTrxOrderLink.setFromDisplayPoLineLocationNum(receiveRcvTrxDataVO.getFromDisplayPoLineLocationNum());
+                            sinvRcvTrxOrderLink.setSourceHeaderNum(receiveRcvTrxDataVO.getSourceHeaderNum());
+                            sinvRcvTrxOrderLink.setSourceLineNum(receiveRcvTrxDataVO.getSourceLineNum());
+                            sinvRcvTrxOrderLink.setStrategyLineId(rcvStrategyLine.getStrategyLineId());
+                            sinvRcvTrxOrderLink.setStrategyHeaderId(rcvStrategyLine.getStrategyHeaderId());
+                            sinvRcvTrxOrderLinks2 = sinvRcvTrxOrderLink;
+                            //判断如果是订单来源且策略类型为AMOUNT 时 ，数量计算获得
+                            if("AMOUNT".equals(rcvStrategyLine.getSubjectType())){
+                               BigDecimal quantity = sinvRcvTrxOrderLink.getTaxIncludedAmount().divide(sinvRcvTrxOrderLink.getTaxIncludedPrice()).setScale(6,RoundingMode.HALF_UP);
+                                receiveRcvTrxDataVO.setQuantity(quantity);
+                            }
+                            {
+                                receiveRcvTrxDataVO.setQuantity((BigDecimal) Optional.ofNullable(sinvRcvTrxOrderLink.getQuantity()).orElse(receiveRcvTrxDataVO.getQuantity()));
+                            }
+                            receiveRcvTrxDataVO.setNetPrice((BigDecimal)Optional.ofNullable(sinvRcvTrxOrderLink.getNetPrice()).orElse(receiveRcvTrxDataVO.getNetPrice()));
+                            receiveRcvTrxDataVO.setTaxIncludedPrice((BigDecimal)Optional.ofNullable(sinvRcvTrxOrderLink.getTaxIncludedPrice()).orElse(receiveRcvTrxDataVO.getTaxIncludedPrice()));
+                            receiveRcvTrxDataVO.setNetAmount((BigDecimal)Optional.ofNullable(sinvRcvTrxOrderLink.getNetAmount()).orElse(receiveRcvTrxDataVO.getNetAmount()));
+                            receiveRcvTrxDataVO.setTaxIncludedAmount((BigDecimal)Optional.ofNullable(sinvRcvTrxOrderLink.getTaxIncludedAmount()).orElse(receiveRcvTrxDataVO.getTaxIncludedAmount()));
+                            break;
+                        }
+                    }
+
+                    receiveRcvTrxDataVO.setSinvRcvTrxOrderLinksVO(sinvRcvTrxOrderLinks2);
+                    receiveRcvTrxDataVO.setSourceOrderType(sourceOrderType);
+                    receiveRcvTrxDataVO.setStrategyLineId(rcvStrategyLine.getStrategyLineId());
+                    receiveRcvTrxDataVO.setStrategyHeaderId(rcvStrategyLine.getStrategyHeaderId());
+                    initSinvRcvTrxDataVOSAct.add(receiveRcvTrxDataVO);
+                }
+
+            });
+            if (CollectionUtil.isNotEmpty(initSinvRcvTrxDataVOSAct)) {
+                SinvRcvTrxHeaderDTO sinvRcvTrxHeaderDTO = this.sinvRcvTrxDomainService.initTrx(tenantId, initSinvRcvTrxDataVOSAct);
+                sinvRcvTrxHeaderDTOList.add(sinvRcvTrxHeaderDTO);
+            }
+
+            if (CollectionUtil.isNotEmpty(sinvOtherOperateOrderLinkVOList)) {
+                this.sinvDocuAdjustEntrence(tenantId, sourceOrderType, "UPDATE", sinvOtherOperateOrderLinkVOList);
+            }
+
+        });
+        LOGGER.info("srm-22587-SinvRcvTrxHeaderServiceImpl-PoToRcvTrxOperation:end");
+        return sinvRcvTrxHeaderDTOList;
     }
 }
