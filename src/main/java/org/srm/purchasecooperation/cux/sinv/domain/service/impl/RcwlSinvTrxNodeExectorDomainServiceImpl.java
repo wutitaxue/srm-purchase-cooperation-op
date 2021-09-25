@@ -12,6 +12,10 @@ import org.srm.purchasecooperation.order.infra.convertor.CommonConvertor;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxHeaderDTO;
 import org.srm.purchasecooperation.sinv.api.dto.SinvRcvTrxLineDTO;
 import org.srm.purchasecooperation.sinv.domain.entity.RcvStrategyLine;
+import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
+import org.srm.purchasecooperation.sinv.domain.repository.SinvRcvTrxLineRepository;
+import org.srm.purchasecooperation.sinv.domain.service.impl.SinvTrxNodeExectorDomainServiceImpl;
+import org.srm.purchasecooperation.sinv.infra.mapper.SinvRcvTrxHeaderMapper;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxHeader;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxLine;
 import org.srm.purchasecooperation.sinv.domain.entity.SinvRcvTrxOrderLink;
@@ -43,6 +47,7 @@ public class RcwlSinvTrxNodeExectorDomainServiceImpl extends SinvTrxNodeExectorD
     private SinvRcvTrxHeaderMapper sinvRcvTrxHeaderMapper;
     @Autowired
     private SinvRcvTrxLineRepository sinvRcvTrxLineRepository;
+
     @Autowired
     private SinvRcvTrxLineMapper sinvRcvTrxLineMapper;
     @Override
