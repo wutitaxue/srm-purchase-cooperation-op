@@ -506,9 +506,16 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                             sinvRcvTrxOrderLink.setStrategyHeaderId(rcvStrategyLine.getStrategyHeaderId());
                             sinvRcvTrxOrderLinks2 = sinvRcvTrxOrderLink;
                             //判断如果是订单来源且策略类型为AMOUNT 时 ，数量计算获得
+                            LOGGER.info("24730============"+sinvRcvTrxOrderLink.toString());
+                            LOGGER.info("24730============"+receiveRcvTrxDataVO.toString());
                             if("AMOUNT".equals(rcvStrategyLine.getSubjectType())){
                                BigDecimal quantity = sinvRcvTrxOrderLink.getTaxIncludedAmount().divide(sinvRcvTrxOrderLink.getTaxIncludedPrice()).setScale(6,RoundingMode.HALF_UP);
-                                receiveRcvTrxDataVO.setQuantity(quantity);
+                               if(ObjectUtils.isEmpty(quantity)){
+                                   BigDecimal quantity1 = receiveRcvTrxDataVO.getTaxIncludedAmount().divide(receiveRcvTrxDataVO.getTaxIncludedPrice()).setScale(6,RoundingMode.HALF_UP);
+                                   receiveRcvTrxDataVO.setQuantity(quantity1);
+                               }else {
+                                   receiveRcvTrxDataVO.setQuantity(quantity);
+                               }
                             }
                             {
                                 receiveRcvTrxDataVO.setQuantity((BigDecimal) Optional.ofNullable(sinvRcvTrxOrderLink.getQuantity()).orElse(receiveRcvTrxDataVO.getQuantity()));
