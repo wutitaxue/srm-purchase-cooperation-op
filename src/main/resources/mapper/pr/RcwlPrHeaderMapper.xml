@@ -778,7 +778,12 @@
             AND sph.pr_source_platform = #{prSourcePlatform}
         </if>
         <if test="closeStatusCode != null and closeStatusCode != ''">
+            <if test="closeStatusCode == 'UNCLOSED'">
+                AND (sph.close_status_code = #{closeStatusCode} OR sph.close_status_code = 'CLOSED_PARTIAL')
+            </if>
+            <if test="closeStatusCode != 'UNCLOSED'">
             AND sph.close_status_code = #{closeStatusCode}
+            </if>
         </if>
         <choose>
             <when test="cancelStatusCode != null and cancelStatusCode != ''">
