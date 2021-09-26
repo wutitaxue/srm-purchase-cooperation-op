@@ -64,4 +64,14 @@
           c.tenant_id = #{tenantId}
           and c.uom_id = #{uomId}
     </select>
+
+    <select id="selectLineAmountSum" resultType="java.math.BigDecimal">
+        SELECT
+            ifnull(sum( line_amount ),0)
+        FROM
+            sprm_pr_line
+        WHERE
+            pr_header_id = #{prHeaderId}
+            AND tenant_id = #{tenantId}
+    </select>
 </mapper>
