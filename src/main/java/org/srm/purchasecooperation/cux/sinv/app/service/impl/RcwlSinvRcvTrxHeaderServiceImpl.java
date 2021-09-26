@@ -510,10 +510,10 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                             LOGGER.info("24730============"+receiveRcvTrxDataVO.toString());
                             if("AMOUNT".equals(rcvStrategyLine.getSubjectType())){
                                if(ObjectUtils.isEmpty(sinvRcvTrxOrderLink.getTaxIncludedAmount())||ObjectUtils.isEmpty(sinvRcvTrxOrderLink.getTaxIncludedPrice())){
-                                   BigDecimal quantity1 = receiveRcvTrxDataVO.getTaxIncludedAmount().divide(receiveRcvTrxDataVO.getTaxIncludedPrice()).setScale(6,RoundingMode.HALF_UP);
+                                   BigDecimal quantity1 = receiveRcvTrxDataVO.getTaxIncludedAmount().divide(receiveRcvTrxDataVO.getTaxIncludedPrice(),6,RoundingMode.HALF_UP);
                                    receiveRcvTrxDataVO.setQuantity(quantity1);
                                }else {
-                                   BigDecimal quantity = sinvRcvTrxOrderLink.getTaxIncludedAmount().divide(sinvRcvTrxOrderLink.getTaxIncludedPrice()).setScale(6,RoundingMode.HALF_UP);
+                                   BigDecimal quantity = sinvRcvTrxOrderLink.getTaxIncludedAmount().divide(sinvRcvTrxOrderLink.getTaxIncludedPrice(),6,RoundingMode.HALF_UP);
                                    receiveRcvTrxDataVO.setQuantity(quantity);
                                }
                             }
