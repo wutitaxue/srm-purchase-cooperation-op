@@ -317,7 +317,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     }
     private RCWLItfPrHeaderDTO getBudgetAccountItfDataClose(PrHeader prHeader, Long tenantId, String from) {
         //获取接口所需数据
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, "O");
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, "R");
 
         List<PrLineVO> lineDetailList = this.prLineMapper.listPrLines(tenantId, prHeader.getPrHeaderId());
         // List<PrLine> lineDetailList = prHeader.getPrLineList();
@@ -538,7 +538,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             if (quantity == null) {
                 rcwlItfPrLineDetailDTO.setYszyje("0");
             } else {
-                BigDecimal taxIncludeAmount = quantity.multiply(prDetailLine.getTaxIncludedUnitPrice());
+                //BigDecimal taxIncludeAmount = quantity.multiply(prDetailLine.getTaxIncludedUnitPrice());
+                //修改为取不含税金额
+                BigDecimal taxIncludeAmount = quantity.multiply(prDetailLine.getUnitPrice());
                 rcwlItfPrLineDetailDTO.setYszyje(taxIncludeAmount.toString());
             }
         }
@@ -696,7 +698,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 
     private RCWLItfPrLineDetailDTO initOccupyDetail(PrLine prDetailLine, Long tenantId) {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
-        rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
+        //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
+        //修改为取不含税金额
+        rcwlItfPrLineDetailDTO.setYszyje(String.valueOf(prDetailLine.getLineAmount()));
 
         if (prDetailLine.getBudgetAccountId() == null) {
             throw new CommonException("业务用途为空");
