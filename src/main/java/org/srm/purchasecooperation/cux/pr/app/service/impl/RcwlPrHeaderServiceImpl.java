@@ -3,6 +3,7 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 import com.alibaba.fastjson.JSON;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,9 @@ public class RcwlPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     @Override
     public PrHeader updatePrHeader(PrHeader prHeader) {
         LOGGER.debug(LOG_MSG_USER, DetailsHelper.getUserDetails(), JSON.toJSONString(Arrays.asList(prHeader)));
+        if (CollectionUtils.isNotEmpty(prHeader.getPrLineList())){
+            prHeader.getPrLineList().forEach(line -> line.setIsPushAssetsFlag(line.getAttributeVarchar11()));
+        }
         this.validatePrCancel(prHeader);
         this.checkUnit(prHeader);
         prHeader.validInvoiceDetail();
