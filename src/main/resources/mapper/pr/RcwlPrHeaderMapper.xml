@@ -779,7 +779,14 @@
         </if>
         <if test="closeStatusCode != null and closeStatusCode != ''">
             <if test="closeStatusCode == 'UNCLOSED'">
-                AND (sph.close_status_code = #{closeStatusCode} OR sph.close_status_code = 'CLOSED_PARTIAL')
+                AND (sph.close_status_code = #{closeStatusCode} OR sph.close_status_code = 'CLOSED_PARTIAL'
+                OR
+                (sph.close_status_code = 'CLOSED' AND EXISTS (SELECT NULL
+                FROM   sprm_pr_line spl2
+                WHERE  spl2.pr_header_id = sph.pr_header_id
+                AND    spl2.execution_status_code IN ('SOURCE_RFX'
+                ,'SOURCE_BID')))
+                )
             </if>
             <if test="closeStatusCode != 'UNCLOSED'">
                 AND sph.close_status_code = #{closeStatusCode}
