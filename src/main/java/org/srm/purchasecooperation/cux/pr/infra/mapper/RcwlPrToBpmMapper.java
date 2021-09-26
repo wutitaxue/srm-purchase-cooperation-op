@@ -1,5 +1,8 @@
 package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
+import java.math.BigDecimal;
+
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
 /**
@@ -48,4 +51,12 @@ public interface RcwlPrToBpmMapper {
      * @return
      */
     String selectUomName(Long tenantId, Long uomId);
+
+    /**
+     * 获取行不含税金额之和
+     * @param tenantId
+     * @param prHeaderId
+     * @return
+     */
+    BigDecimal selectLineAmountSum(@Param("tenantId") Long tenantId, @Param("prHeaderId") Long prHeaderId);
 }
