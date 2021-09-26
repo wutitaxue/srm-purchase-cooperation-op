@@ -490,6 +490,7 @@
         spl.occupied_quantity,
         spl.budget_account_deptno,
         spl.budget_account_price,
+        IFNULL(spl.attribute_varchar11,1) attribute_varchar11,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.financial_precision ELSE NULL END) AS financial_precision,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision
         FROM
