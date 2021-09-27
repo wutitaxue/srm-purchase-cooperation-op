@@ -334,7 +334,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         Assert.isTrue("APPROVED".equals(prHeader.getPrStatusCode()) || "REJECTED".equals(prHeader.getPrStatusCode()) || PR_CHANGE_STATUS.equals(prHeader.getPrStatusCode()), "error.change.header.status.not.approve");
         Assert.isTrue(!"CATALOGUE".equals(prHeader.getPrSourcePlatform()) && !"E-COMMERCE".equals(prHeader.getPrSourcePlatform()), "error.change.header.source.platform");
         List<PrLine> prLineList = (List) prHeader.getPrLineList().stream().filter((prLine) -> {
-            return !BaseConstants.Flag.YES.equals(prLine.getClosedFlag()) && !BaseConstants.Flag.YES.equals(prLine.getCancelledFlag());
+            return (!BaseConstants.Flag.YES.equals(prLine.getClosedFlag()) || ("SOURCE_RFX".equals(prLine.getExecutionStatusCode())||"SOURCE_BID".equals(prLine.getExecutionStatusCode()))) && !BaseConstants.Flag.YES.equals(prLine.getCancelledFlag());
         }).map((prLine) -> {
             PrLine oldPrLine = (PrLine) beforePrLineMap.get(prLine.getPrLineId());
             if (oldPrLine.getOccupiedQuantity().compareTo(prLine.getQuantity()) > 0) {
