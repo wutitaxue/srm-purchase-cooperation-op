@@ -380,8 +380,7 @@
         AND b.tax_included_amount <> spl.tax_included_line_amount
         AND b.from_asn_header_id IS NULL
         AND spll.strategy_header_id IN (
-        4,
-        5)
+       10009)
     </select>
     <select id="selectUpdateData"
             resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
