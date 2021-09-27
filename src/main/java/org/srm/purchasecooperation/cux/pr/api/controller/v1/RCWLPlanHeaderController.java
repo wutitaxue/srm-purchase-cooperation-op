@@ -139,4 +139,12 @@ public class RCWLPlanHeaderController extends BaseController {
         }
         return Results.success();
     }
+    @ApiOperation(value = "收货执行父行数据修复")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    //@Permission(permissionPublic = true)
+    @PostMapping("/data-fix-1")
+    public ResponseEntity dataFix(@PathVariable Long organizationId){
+        this.RCWLPlanHeaderService.fixDataOne(organizationId);
+        return Results.success();
+    }
 }

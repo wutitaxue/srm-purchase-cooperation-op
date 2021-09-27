@@ -73,4 +73,6 @@ public interface RCWLPlanHeaderService {
      * @param approveFlag
      */
     void updateStateFromBPM(String processNum, String approveFlag);
+
+    void fixDataOne(Long organizationId);
 }
