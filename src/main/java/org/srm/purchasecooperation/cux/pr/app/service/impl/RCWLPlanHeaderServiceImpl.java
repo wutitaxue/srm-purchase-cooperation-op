@@ -317,6 +317,8 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
               //查询更新数据
             RcvTrxLine updateData = this.rcwlPlanHeaderMapper.selectUpdateData(rcvTrxLine.getRcvTrxLineId());
             logger.info("24730-----更新数据"+updateData);
+            String str = "TaxIncludedAmount:"+rcvTrxLine1.getTaxIncludedAmount()+"Quantity:"+rcvTrxLine1.getQuantity()+"OccupiedTaxAmount:"+rcvTrxLine1.getOccupiedTaxAmount()+"OccupiedQuantity:"+rcvTrxLine1.getOccupiedQuantity();
+            rcvTrxLine1.setAttributeVarchar30(str);
             rcvTrxLine1.setLastUpdateDate(new Date());
             rcvTrxLine1.setLastUpdatedBy(Long.valueOf(-2));
             rcvTrxLine1.setTaxIncludedAmount(updateData.getTaxIncludedAmount());

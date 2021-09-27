@@ -362,32 +362,26 @@
 
     </select>
     <select id="selectDatas" resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
-            SELECT
-b.last_updated_by,
-b.last_update_date,
-	b.from_order_flag,
-	b.tax_included_amount AS rcv_tax_included_amount,
-	b.occupied_tax_amount,
-	b.*
-FROM
-	sinv_rcv_trx_header a,
-	sinv_rcv_trx_line b,
-	sodr_po_header sph,
-	sodr_po_line spl,
-	sodr_po_line_location spll
-WHERE
-	a.rcv_trx_header_id = b.rcv_trx_header_id
-	AND b.from_po_line_id = spl.po_line_id
-	AND sph.po_header_id = spl.po_header_id
-	AND spl.po_line_id = spll.po_line_id
-	AND b.from_po_line_location_id = spll.po_line_location_id
-	AND b.from_rcv_trx_line_id IS NULL
-	AND b.tax_included_amount = spl.tax_included_line_amount
-	and b.last_updated_by = -2
-	AND b.from_asn_header_id IS NULL
-	AND spll.strategy_header_id = 10009
-
-
+        SELECT
+        b.*
+        FROM
+        sinv_rcv_trx_header a,
+        sinv_rcv_trx_line b,
+        sodr_po_header sph,
+        sodr_po_line spl,
+        sodr_po_line_location spll
+        WHERE
+        a.rcv_trx_header_id = b.rcv_trx_header_id
+        AND b.from_po_line_id = spl.po_line_id
+        AND sph.po_header_id = spl.po_header_id
+        AND spl.po_line_id = spll.po_line_id
+        AND b.from_po_line_location_id = spll.po_line_location_id
+        AND b.from_rcv_trx_line_id IS NULL
+        AND b.tax_included_amount <> spl.tax_included_line_amount
+        AND b.from_asn_header_id IS NULL
+        AND spll.strategy_header_id IN (
+        4,
+        5)
     </select>
     <select id="selectUpdateData"
             resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
