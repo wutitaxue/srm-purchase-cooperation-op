@@ -51,12 +51,4 @@ public interface RcwlPrToBpmMapper {
      * @return
      */
     String selectUomName(Long tenantId, Long uomId);
-
-    /**
-     * 获取行不含税金额之和
-     * @param tenantId
-     * @param prHeaderId
-     * @return
-     */
-    BigDecimal selectLineAmountSum(@Param("tenantId") Long tenantId,@Param("prHeaderId") Long prHeaderId);
 }
