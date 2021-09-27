@@ -142,7 +142,7 @@ public class RCWLPlanHeaderController extends BaseController {
     @ApiOperation(value = "订单按金额行数据修复")
    // @Permission(level = ResourceLevel.ORGANIZATION)
     @Permission(permissionPublic = true)
-    @PostMapping("/data-fix-1")
+    @PostMapping("/data-fix-one")
     public ResponseEntity dataFix(@PathVariable Long organizationId){
         this.RCWLPlanHeaderService.fixDataOne(organizationId);
         return Results.success();
@@ -150,7 +150,7 @@ public class RCWLPlanHeaderController extends BaseController {
     @ApiOperation(value = "订单按数量行数据修复")
     // @Permission(level = ResourceLevel.ORGANIZATION)
     @Permission(permissionPublic = true)
-    @PostMapping("/data-fix-2")
+    @PostMapping("/data-fix-two")
     public ResponseEntity dataFix1(@PathVariable Long organizationId){
         this.RCWLPlanHeaderService.fixDataTwo(organizationId);
         return Results.success();
@@ -158,7 +158,7 @@ public class RCWLPlanHeaderController extends BaseController {
     @ApiOperation(value = "送货单接收数量行数据修复")
     // @Permission(level = ResourceLevel.ORGANIZATION)
     @Permission(permissionPublic = true)
-    @PostMapping("/data-fix-2")
+    @PostMapping("/data-fix-three")
     public ResponseEntity dataFix2(@PathVariable Long organizationId){
         this.RCWLPlanHeaderService.fixDataThree(organizationId);
         return Results.success();
