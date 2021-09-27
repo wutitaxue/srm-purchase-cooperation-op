@@ -24,10 +24,14 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderImportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPlanHeaderMapper;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
+import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
+import org.srm.purchasecooperation.transaction.domain.repository.RcvTrxLineRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,7 +55,10 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     private PrLineRepository prLineRepository;
     @Autowired
     private RCWLPlanHeaderDataToBpmService dataToBpmService;
-
+    @Autowired
+    private RCWLPlanHeaderMapper rcwlPlanHeaderMapper;
+    @Autowired
+    private RcvTrxLineRepository rcvTrxLineRepository;
     /**
      * 查询
      *
@@ -298,6 +305,26 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
     @Override
     public void updateStateFromBPM(String processNum, String approveFlag) {
         RCWLPlanHeaderRepository.updateStateFromBPM(processNum, approveFlag);
+    }
+
+    @Override
+    public void fixDataOne(Long organizationId) {
+        //获取数据
+         List<RcvTrxLine> lineList = this.rcwlPlanHeaderMapper.selectDatas();
+         logger.info("24730-----查询数据"+lineList);
+        lineList.forEach(rcvTrxLine -> {
+              RcvTrxLine rcvTrxLine1 = this.rcvTrxLineRepository.selectByPrimaryKey(rcvTrxLine);
+              //查询更新数据
+            RcvTrxLine updateData = this.rcwlPlanHeaderMapper.selectUpdateData(rcvTrxLine.getRcvTrxLineId());
+            logger.info("24730-----更新数据"+updateData);
+            rcvTrxLine1.setLastUpdateDate(new Date());
+            rcvTrxLine1.setLastUpdatedBy(Long.valueOf(-2));
+            rcvTrxLine1.setTaxIncludedAmount(updateData.getTaxIncludedAmount());
+            rcvTrxLine1.setQuantity(updateData.getQuantity());
+            rcvTrxLine1.setOccupiedTaxAmount(updateData.getOccupiedTaxAmount());
+            rcvTrxLine1.setOccupiedQuantity(updateData.getOccupiedQuantity());
+            this.rcvTrxLineRepository.updateByPrimaryKeySelective(rcvTrxLine1);
+        });
     }
 
 

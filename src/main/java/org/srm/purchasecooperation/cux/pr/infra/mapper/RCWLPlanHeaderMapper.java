@@ -9,6 +9,7 @@ import org.srm.purchasecooperation.cux.pr.api.dto.PlanHeaderExportDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PlanHeader;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderExportVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PlanHeaderVO;
+import org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine;
 
 import java.util.List;
 
@@ -60,4 +61,8 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
     List<PlanHeaderAttachementToBpmDTO> batchSelectAttachmentsInfo(@Param("list")List list, @Param("organizationId")Long organizationId);
 
     void updateStateFromBPM(@Param("processNum")String processNum, @Param("approveFlag")String approveFlag);
+
+    List<RcvTrxLine> selectDatas();
+
+    RcvTrxLine selectUpdateData(@Param("rcvTrxLineId")Long rcvTrxLineId);
 }
