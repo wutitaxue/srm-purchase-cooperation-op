@@ -134,11 +134,8 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         prToBpmLineDTO.setUomName(StringUtils.isNotBlank(line.getUomName()) ? line.getUomName() : this.rcwlPrToBpmMapper.selectUomName(line.getTenantId(), line.getUomId()));
         prToBpmLineDTO.setNeededDate(new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getNeededDate()));
         prToBpmLineDTO.setQuantity(String.valueOf(line.getQuantity().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        //prToBpmLineDTO.setTaxIncludedUnitPrice(String.valueOf(line.getTaxIncludedUnitPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        //prToBpmLineDTO.setTaxIncludedLineAmount(String.valueOf(line.getTaxIncludedLineAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        //修改为取不含税单价、不含税金额
-        prToBpmLineDTO.setTaxIncludedUnitPrice(String.valueOf(line.getUnitPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        prToBpmLineDTO.setTaxIncludedLineAmount(String.valueOf(line.getLineAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        prToBpmLineDTO.setTaxIncludedUnitPrice(String.valueOf(line.getTaxIncludedUnitPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        prToBpmLineDTO.setTaxIncludedLineAmount(String.valueOf(line.getTaxIncludedLineAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         prToBpmLineDTO.setBudgetAccountId(budgetAccountName);
         prToBpmLineDTO.setCostId(costName);
         prToBpmLineDTO.setWbsCode(wbsName);
@@ -173,11 +170,7 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         prToBpmDTO.setCompanyName(header.getCompanyName());
         prToBpmDTO.setPurchaseOrgName(header.getPurchaseOrgName());
         prToBpmDTO.setProjectStaging(lovAdapter.queryLovMeaning(PrConstant.BpmCodes.PR_STAGING, header.getTenantId(), header.getAttributeVarchar40()));
-        //prToBpmDTO.setAmount(String.valueOf(header.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        //修改为取不含税金额
-        BigDecimal amount = new BigDecimal("0");
-        amount = rcwlPrToBpmMapper.selectLineAmountSum(header.getTenantId(),header.getPrHeaderId());
-        prToBpmDTO.setAmount(String.valueOf(amount.setScale(2, BigDecimal.ROUND_HALF_UP)));
+        prToBpmDTO.setAmount(String.valueOf(header.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         prToBpmDTO.setPrTypeName(header.getPrTypeName());
         prToBpmDTO.setFormat(lovAdapter.queryLovMeaning(PrConstant.BpmCodes.PR_FORMAT, header.getTenantId(), header.getAttributeVarchar38()));
         prToBpmDTO.setBiddingMode(lovAdapter.queryLovMeaning(PrConstant.BpmCodes.JH_BIDDING, header.getTenantId(), header.getAttributeVarchar39()));
