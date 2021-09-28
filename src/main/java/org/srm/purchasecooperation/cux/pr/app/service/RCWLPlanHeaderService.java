@@ -75,4 +75,8 @@ public interface RCWLPlanHeaderService {
     void updateStateFromBPM(String processNum, String approveFlag);
 
     void fixDataOne(Long organizationId);
+
+    void fixDataTwo(Long organizationId);
+
+    void fixDataThree(Long organizationId);
 }

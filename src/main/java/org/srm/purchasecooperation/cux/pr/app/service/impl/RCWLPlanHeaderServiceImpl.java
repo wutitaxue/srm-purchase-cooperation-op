@@ -329,5 +329,49 @@ public class RCWLPlanHeaderServiceImpl implements RCWLPlanHeaderService {
         });
     }
 
+    @Override
+    public void fixDataTwo(Long organizationId) {
+//获取数据
+        List<RcvTrxLine> lineList = this.rcwlPlanHeaderMapper.selectDatasTwo();
+        logger.info("24730-----查询数据-2"+lineList);
+        lineList.forEach(rcvTrxLine -> {
+            RcvTrxLine rcvTrxLine1 = this.rcvTrxLineRepository.selectByPrimaryKey(rcvTrxLine);
+            //查询更新数据
+            RcvTrxLine updateData = this.rcwlPlanHeaderMapper.selectUpdateDataTwo(rcvTrxLine.getRcvTrxLineId());
+            logger.info("24730-----更新数据-2"+updateData);
+            String str = "订单数量接收：TaxIncludedAmount:"+rcvTrxLine1.getTaxIncludedAmount()+";Quantity:"+rcvTrxLine1.getQuantity()+";OccupiedTaxAmount:"+rcvTrxLine1.getOccupiedTaxAmount()+";OccupiedQuantity:"+rcvTrxLine1.getOccupiedQuantity();
+            rcvTrxLine1.setAttributeVarchar30(str);
+            rcvTrxLine1.setLastUpdateDate(new Date());
+            rcvTrxLine1.setLastUpdatedBy(Long.valueOf(-2));
+            rcvTrxLine1.setTaxIncludedAmount(updateData.getTaxIncludedAmount());
+            //rcvTrxLine1.setQuantity(updateData.getQuantity());
+            rcvTrxLine1.setOccupiedTaxAmount(updateData.getOccupiedTaxAmount());
+            rcvTrxLine1.setOccupiedQuantity(updateData.getOccupiedQuantity());
+            this.rcvTrxLineRepository.updateByPrimaryKeySelective(rcvTrxLine1);
+        });
+    }
+
+    @Override
+    public void fixDataThree(Long organizationId) {
+//获取数据
+        List<RcvTrxLine> lineList = this.rcwlPlanHeaderMapper.selectDatasThree();
+        logger.info("24730-----查询数据-3"+lineList);
+        lineList.forEach(rcvTrxLine -> {
+            RcvTrxLine rcvTrxLine1 = this.rcvTrxLineRepository.selectByPrimaryKey(rcvTrxLine);
+            //查询更新数据
+            RcvTrxLine updateData = this.rcwlPlanHeaderMapper.selectUpdateDataThree(rcvTrxLine.getRcvTrxLineId());
+            logger.info("24730-----更新数据-3"+updateData);
+            String str = "送货单接收：TaxIncludedAmount:"+rcvTrxLine1.getTaxIncludedAmount()+";Quantity:"+rcvTrxLine1.getQuantity()+";OccupiedTaxAmount:"+rcvTrxLine1.getOccupiedTaxAmount()+";OccupiedQuantity:"+rcvTrxLine1.getOccupiedQuantity();
+            rcvTrxLine1.setAttributeVarchar30(str);
+            rcvTrxLine1.setLastUpdateDate(new Date());
+            rcvTrxLine1.setLastUpdatedBy(Long.valueOf(-2));
+            rcvTrxLine1.setTaxIncludedAmount(updateData.getTaxIncludedAmount());
+            //rcvTrxLine1.setQuantity(updateData.getQuantity());
+            rcvTrxLine1.setOccupiedTaxAmount(updateData.getOccupiedTaxAmount());
+            rcvTrxLine1.setOccupiedQuantity(updateData.getOccupiedQuantity());
+            this.rcvTrxLineRepository.updateByPrimaryKeySelective(rcvTrxLine1);
+        });
+    }
+
 
 }
