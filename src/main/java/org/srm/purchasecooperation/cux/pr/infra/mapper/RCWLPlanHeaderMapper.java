@@ -65,4 +65,12 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
     List<RcvTrxLine> selectDatas();
 
     RcvTrxLine selectUpdateData(@Param("rcvTrxLineId")Long rcvTrxLineId);
+
+    List<RcvTrxLine> selectDatasTwo();
+
+    RcvTrxLine selectUpdateDataTwo(Long rcvTrxLineId);
+
+    List<RcvTrxLine> selectDatasThree();
+
+    RcvTrxLine selectUpdateDataThree(Long rcvTrxLineId);
 }
