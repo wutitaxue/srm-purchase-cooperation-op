@@ -399,5 +399,77 @@ WHERE
 	AND a.rcv_trx_line_id = #{rcvTrxLineId}
 
     </select>
+    <select id="selectDatasTwo" resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
+SELECT
+	b.*
+FROM
+	sinv_rcv_trx_header a,
+	sinv_rcv_trx_line b,
+	sodr_po_header sph,
+	sodr_po_line spl,
+	sodr_po_line_location spll
+where a.rcv_trx_header_id = b.rcv_trx_header_id
+and b.from_po_line_id =spl.po_line_id
+and sph.po_header_id = spl.po_header_id
+and spl.po_line_id = spll.po_line_id
+and b.from_po_line_location_id = spll.po_line_location_id
+and b.from_rcv_trx_line_id is null
+and b.tax_included_amount != spl.tax_included_line_amount
+and b.from_asn_header_id is null
+ and spll.strategy_header_id in (2,3)
+ -- and spll.strategy_header_id in (10002)
+
+    </select>
+    <select id="selectUpdateDataTwo"
+            resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
+SELECT pl.tax_included_line_amount tax_included_amount, round(( pl.tax_included_line_amount / a.tax_included_price ),
+	6
+) quantity,
+round( sum( b.tax_included_amount ), 2 ) occupied_tax_amount,
+round( sum( b.quantity ), 6 ) occupied_quantity
+FROM
+	sinv_rcv_trx_line a,
+	sodr_po_line pl,
+	sinv_rcv_trx_line b
+WHERE
+	a.from_po_line_id = pl.po_line_id
+	AND a.rcv_trx_line_id = b.from_rcv_trx_line_id
+	AND a.rcv_trx_line_id = #{rcvTrxLineId}
+    </select>
+    <select id="selectDatasThree"
+            resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
+        SELECT
+	b.*
+FROM
+	sinv_rcv_trx_header a,
+	sinv_rcv_trx_line b,
+	sodr_po_header sph,
+	sodr_po_line spl,
+	sodr_po_line_location spll
+where a.rcv_trx_header_id = b.rcv_trx_header_id
+and b.from_po_line_id =spl.po_line_id
+and sph.po_header_id = spl.po_header_id
+and spl.po_line_id = spll.po_line_id
+and b.from_po_line_location_id = spll.po_line_location_id
+and b.from_rcv_trx_line_id is null
+and b.from_asn_header_id is not null
+and (b.tax_included_amount- truncate(b.tax_included_amount,2)) != 0
+    </select>
+    <select id="selectUpdateDataThree"
+            resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
+        SELECT round( a.tax_included_price * a.quantity, 2 ) tax_included_amount, round(( pl.tax_included_line_amount / a.tax_included_price ),
+	6
+) quantity,
+round( sum( b.tax_included_amount ), 2 ) occupied_tax_amount,
+round( sum( b.quantity ), 6 ) occupied_quantity
+FROM
+	sinv_rcv_trx_line a,
+	sodr_po_line pl,
+	sinv_rcv_trx_line b
+WHERE
+	a.from_po_line_id = pl.po_line_id
+	AND a.rcv_trx_line_id = b.from_rcv_trx_line_id
+	AND a.rcv_trx_line_id = #{rcvTrxLineId}
+    </select>
 
 </mapper>
