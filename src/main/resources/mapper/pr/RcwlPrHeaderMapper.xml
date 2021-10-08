@@ -789,7 +789,7 @@
                 )
             </if>
             <if test="closeStatusCode != 'UNCLOSED'">
-                AND sph.close_status_code = #{closeStatusCode}
+            AND sph.close_status_code = #{closeStatusCode}
             </if>
         </if>
         <choose>

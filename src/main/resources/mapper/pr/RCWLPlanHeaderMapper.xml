@@ -379,7 +379,8 @@
         AND b.from_rcv_trx_line_id IS NULL
         AND b.tax_included_amount != spl.tax_included_line_amount
         AND b.from_asn_header_id IS NULL
-        AND spll.strategy_header_id IN (10009)
+      --  AND spll.strategy_header_id IN (10009)
+      AND spll.strategy_header_id IN (4,5)
     </select>
     <select id="selectUpdateData"
             resultType="org.srm.purchasecooperation.transaction.domain.entity.RcvTrxLine">
@@ -415,8 +416,8 @@ and b.from_po_line_location_id = spll.po_line_location_id
 and b.from_rcv_trx_line_id is null
 and b.tax_included_amount != spl.tax_included_line_amount
 and b.from_asn_header_id is null
--- and spll.strategy_header_id in (2,3)
-and spll.strategy_header_id in (10002)
+ and spll.strategy_header_id in (2,3)
+ -- and spll.strategy_header_id in (10002)
 
     </select>
     <select id="selectUpdateDataTwo"

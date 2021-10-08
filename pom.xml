@@ -16,19 +16,19 @@
             <groupId>org.srm-op</groupId>
             <artifactId>srm-purchase-cooperation</artifactId>
             <version>1.13.34-OP-1.0.1.RELEASE</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hzero.starter</groupId>
-                    <artifactId>hzero-starter-mybatis-mapper</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.srm.starter</groupId>
-                    <artifactId>srm-starter-web</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>provided</scope>
+            <!--<exclusions>-->
+            <!--    <exclusion>-->
+            <!--        <groupId>org.hzero.starter</groupId>-->
+            <!--        <artifactId>hzero-starter-mybatis-mapper</artifactId>-->
+            <!--    </exclusion>-->
+            <!--    <exclusion>-->
+            <!--        <groupId>org.srm.starter</groupId>-->
+            <!--        <artifactId>srm-starter-web</artifactId>-->
+            <!--    </exclusion>-->
+            <!--</exclusions>-->
         </dependency>
-
-
+       
         <dependency>
             <groupId>org.hzero.boot</groupId>
             <artifactId>hzero-boot-interface</artifactId>
@@ -55,7 +55,7 @@
                 <updatePolicy>always</updatePolicy>
             </snapshots>
         </repository>
-
+        
     </repositories>
 
 </project>

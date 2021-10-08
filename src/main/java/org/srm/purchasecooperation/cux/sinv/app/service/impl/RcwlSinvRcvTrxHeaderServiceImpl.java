@@ -509,13 +509,13 @@ public class RcwlSinvRcvTrxHeaderServiceImpl extends SinvRcvTrxHeaderServiceImpl
                             LOGGER.info("24730============"+sinvRcvTrxOrderLink.toString());
                             LOGGER.info("24730============"+receiveRcvTrxDataVO.toString());
                             if("AMOUNT".equals(rcvStrategyLine.getSubjectType())){
-                               if(ObjectUtils.isEmpty(sinvRcvTrxOrderLink.getTaxIncludedAmount())||ObjectUtils.isEmpty(sinvRcvTrxOrderLink.getTaxIncludedPrice())){
-                                   BigDecimal quantity1 = receiveRcvTrxDataVO.getTaxIncludedAmount().divide(receiveRcvTrxDataVO.getTaxIncludedPrice(),6,RoundingMode.HALF_UP);
-                                   receiveRcvTrxDataVO.setQuantity(quantity1);
-                               }else {
-                                   BigDecimal quantity = sinvRcvTrxOrderLink.getTaxIncludedAmount().divide(sinvRcvTrxOrderLink.getTaxIncludedPrice(),6,RoundingMode.HALF_UP);
-                                   receiveRcvTrxDataVO.setQuantity(quantity);
-                               }
+                                if(ObjectUtils.isEmpty(sinvRcvTrxOrderLink.getTaxIncludedAmount())||ObjectUtils.isEmpty(sinvRcvTrxOrderLink.getTaxIncludedPrice())){
+                                    BigDecimal quantity1 = receiveRcvTrxDataVO.getTaxIncludedAmount().divide(receiveRcvTrxDataVO.getTaxIncludedPrice(),6,RoundingMode.HALF_UP);
+                                    receiveRcvTrxDataVO.setQuantity(quantity1);
+                                }else {
+                                    BigDecimal quantity = sinvRcvTrxOrderLink.getTaxIncludedAmount().divide(sinvRcvTrxOrderLink.getTaxIncludedPrice(),6,RoundingMode.HALF_UP);
+                                    receiveRcvTrxDataVO.setQuantity(quantity);
+                                }
                             }
                             {
                                 receiveRcvTrxDataVO.setQuantity((BigDecimal) Optional.ofNullable(sinvRcvTrxOrderLink.getQuantity()).orElse(receiveRcvTrxDataVO.getQuantity()));
