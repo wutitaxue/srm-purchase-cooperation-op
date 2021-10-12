@@ -62,15 +62,15 @@ public interface RCWLPlanHeaderMapper extends BaseMapper<PlanHeader> {
 
     void updateStateFromBPM(@Param("processNum")String processNum, @Param("approveFlag")String approveFlag);
 
-    List<RcvTrxLine> selectDatas();
-
-    RcvTrxLine selectUpdateData(@Param("rcvTrxLineId")Long rcvTrxLineId);
-
-    List<RcvTrxLine> selectDatasTwo();
-
-    RcvTrxLine selectUpdateDataTwo(Long rcvTrxLineId);
-
-    List<RcvTrxLine> selectDatasThree();
-
-    RcvTrxLine selectUpdateDataThree(Long rcvTrxLineId);
+//    List<RcvTrxLine> selectDatas();
+//
+//    RcvTrxLine selectUpdateData(@Param("rcvTrxLineId")Long rcvTrxLineId);
+//
+//    List<RcvTrxLine> selectDatasTwo();
+//
+//    RcvTrxLine selectUpdateDataTwo(Long rcvTrxLineId);
+//
+//    List<RcvTrxLine> selectDatasThree();
+//
+//    RcvTrxLine selectUpdateDataThree(Long rcvTrxLineId);
 }

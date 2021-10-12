@@ -259,4 +259,16 @@ public class RCWLPrHeaderController {
         }
         return Results.success();
     }
+
+    @ApiOperation("采购申请整单删除")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @DeleteMapping({"/purchase-requests"})
+    public ResponseEntity<List<PrHeader>> delete(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrHeader> prHeaderList) {
+        Assert.notEmpty(prHeaderList, "error.not_null");
+//        SecurityTokenHelper.validToken(prHeaderList, false);
+        this.prHeaderService.deleteWholePrNote(tenantId, prHeaderList);
+        return Results.success();
+    }
 }
