@@ -256,8 +256,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         PrLine prLine = new PrLine();
         prLine.setPrHeaderId(prHeader.getPrHeaderId());
         List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
-        logger.info("prHeader1:{}",prHeader);
-        logger.info("lineDetailList1:{}",lineDetailList);
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
@@ -291,15 +289,13 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     public RCWLItfPrHeaderDTO getBudgetAccountItfData1(PrHeader prHeader, Long tenantId, String flag) {
         //获取接口所需数据
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, flag);
-        List<PrLine> lineDetailList = prHeader.getPrLineList();
-//        PrLine prLine = new PrLine();
-//        prLine.setPrHeaderId(prHeader.getPrHeaderId());
-        //List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
+//        List<PrLine> lineDetailList = prHeader.getPrLineList();
+        PrLine prLine = new PrLine();
+        prLine.setPrHeaderId(prHeader.getPrHeaderId());
+        List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
 
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-        logger.info("prHeader2:{}",prHeader);
-        logger.info("lineDetailList2:{}",lineDetailList);
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(prDetailLine -> {
@@ -705,9 +701,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
         //修改为取不含税金额
-        logger.info("=======prDetailLine.getLineAmount======:{}",prDetailLine.getLineAmount());
         rcwlItfPrLineDetailDTO.setYszyje(String.valueOf(prDetailLine.getLineAmount()));
-        logger.info("=======Yszyje======:{}",rcwlItfPrLineDetailDTO.getYszyje());
         if (prDetailLine.getBudgetAccountId() == null) {
             throw new CommonException("业务用途为空");
         }
