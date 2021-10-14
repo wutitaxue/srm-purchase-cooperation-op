@@ -85,7 +85,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             logger.info("=======approveFlag==null=======");
         }
         else{
-            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "O");
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "R");
             logger.info("=======approveFlag!=null=======");
         }
         RequestPayloadDTO payload = new RequestPayloadDTO();
