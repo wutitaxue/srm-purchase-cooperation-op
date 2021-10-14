@@ -82,9 +82,11 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         if(approveFlag==null) {
             //接口请求数据获取
             rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
+            logger.info("=======approveFlag==null=======");
         }
         else{
             rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "O");
+            logger.info("=======approveFlag!=null=======");
         }
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
@@ -254,7 +256,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         PrLine prLine = new PrLine();
         prLine.setPrHeaderId(prHeader.getPrHeaderId());
         List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
-
+        logger.info("prHeader1:{}",prHeader);
+        logger.info("lineDetailList1:{}",lineDetailList);
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
@@ -295,6 +298,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
+        logger.info("prHeader2:{}",prHeader);
+        logger.info("lineDetailList2:{}",lineDetailList);
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(prDetailLine -> {
@@ -700,8 +705,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
         //修改为取不含税金额
+        logger.info("=======prDetailLine.getLineAmount======:{}",prDetailLine.getLineAmount());
         rcwlItfPrLineDetailDTO.setYszyje(String.valueOf(prDetailLine.getLineAmount()));
-
+        logger.info("=======Yszyje======:{}",rcwlItfPrLineDetailDTO.getYszyje());
         if (prDetailLine.getBudgetAccountId() == null) {
             throw new CommonException("业务用途为空");
         }
