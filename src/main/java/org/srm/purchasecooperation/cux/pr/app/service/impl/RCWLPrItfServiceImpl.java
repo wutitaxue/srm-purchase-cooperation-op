@@ -83,12 +83,12 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
         if(approveFlag==null) {
             //接口请求数据获取
-            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
             logger.info("=======approveFlag==null=======");
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
         }
         else{
-            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "R");
             logger.info("=======approveFlag!=null=======");
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "R");
         }
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
