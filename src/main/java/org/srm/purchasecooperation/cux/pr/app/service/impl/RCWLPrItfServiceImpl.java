@@ -81,10 +81,12 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
         if(approveFlag==null) {
             //接口请求数据获取
+            logger.info("=======approveFlag==null=======");
             rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData(prHeader, tenantId, "O");
         }
         else{
-            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "O");
+            logger.info("=======approveFlag!=null=======");
+            rcwlItfPrHeaderDTO = rcwlPrItfService.getBudgetAccountItfData1(prHeader, tenantId, "R");
         }
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
@@ -255,7 +257,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         prLine.setPrHeaderId(prHeader.getPrHeaderId());
         List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
 
-
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
@@ -288,10 +289,10 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     public RCWLItfPrHeaderDTO getBudgetAccountItfData1(PrHeader prHeader, Long tenantId, String flag) {
         //获取接口所需数据
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(prHeader, tenantId, flag);
-        List<PrLine> lineDetailList = prHeader.getPrLineList();
-//        PrLine prLine = new PrLine();
-//        prLine.setPrHeaderId(prHeader.getPrHeaderId());
-        //List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
+//        List<PrLine> lineDetailList = prHeader.getPrLineList();
+        PrLine prLine = new PrLine();
+        prLine.setPrHeaderId(prHeader.getPrHeaderId());
+        List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
 
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
@@ -701,7 +702,6 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
         //修改为取不含税金额
         rcwlItfPrLineDetailDTO.setYszyje(String.valueOf(prDetailLine.getLineAmount()));
-
         if (prDetailLine.getBudgetAccountId() == null) {
             throw new CommonException("业务用途为空");
         }
