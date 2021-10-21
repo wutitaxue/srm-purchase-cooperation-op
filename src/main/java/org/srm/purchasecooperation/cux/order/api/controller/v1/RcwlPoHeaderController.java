@@ -139,4 +139,17 @@ public class RcwlPoHeaderController {
         poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
         return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
     }
+
+    @ApiOperation(value = "采购申请按行引用零星申请查询")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/po-header/from-pr-sporadic/line")
+    public ResponseEntity<Page<PoHeaderAccordingToLineOfReferenceVO>> selectSporadicAccording(
+            @PathVariable Long organizationId,
+            PageRequest pageRequest,
+            @Encrypt PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO){
+        poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
+        //申请类型为零星申请
+        poHeaderAccordingToLineOfReferenceDTO.setPrTypeId(4L);
+        return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
+    }
 }
