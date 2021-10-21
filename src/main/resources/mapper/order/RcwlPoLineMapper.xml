@@ -418,7 +418,14 @@
         OR ( sph.pc_status_code = 'CONFIRMED' AND sph.electric_sign_flag = 0 )
         OR sph.pc_status_code = 'ARCHIVE'
         )
-        AND sph.pc_kind_code = 'NORMAL'
+        <choose>
+            <when test="pcKindCode != null and pcKindCode != ''">
+                AND sph.pc_kind_code = #{pcKindCode}
+            </when>
+            <otherwise>
+                AND sph.pc_kind_code = 'NORMAL'
+            </otherwise>
+        </choose>
         AND ((spt.effective_time_flag=1 AND sph.end_date_active >= #{contractResult.currencyDateToDate}) OR spt.effective_time_flag=0)
         AND ((spt.order_quantity_flag=1 and (spc.quantity - spc.chanage_order_quantity)>0) OR spt.order_quantity_flag=0)
         /*过滤已经进入到收货执行里面的数据*/
