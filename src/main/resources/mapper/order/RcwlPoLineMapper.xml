@@ -419,7 +419,7 @@
         OR sph.pc_status_code = 'ARCHIVE'
         )
         <choose>
-            <when test="pcKindCode != null and pcKindCode != ''">
+            <when test="contractResult.pcKindCode != null and contractResult.pcKindCode != ''">
                 AND sph.pc_kind_code = #{pcKindCode}
             </when>
             <otherwise>
