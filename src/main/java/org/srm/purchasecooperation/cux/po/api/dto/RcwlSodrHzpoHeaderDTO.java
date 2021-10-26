@@ -127,4 +127,7 @@ public class RcwlSodrHzpoHeaderDTO {
     @ExcelColumn(title = "采购订单行", order = 290, child = true)
     private List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOS;
 
+    @ApiModelProperty(value = "头ID集合")
+    private List<Long> poHeaderIds;
+
 }

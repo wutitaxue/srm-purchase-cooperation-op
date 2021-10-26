@@ -81,4 +81,7 @@ public class RcwlSodrHzpoLineDTO {
 
     @ApiModelProperty(value = "头id集合")
     private List<Long> poHeaderIds;
+
+    @ApiModelProperty(value = "行ID集合")
+    private List<Long> poLineIds;
 }

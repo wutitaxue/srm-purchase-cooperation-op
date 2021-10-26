@@ -84,6 +84,12 @@
                 <bind name = "skuNameLike" value = "'%'+ skuName +'%'"></bind>
                 AND EXISTS ( SELECT 1 FROM scux_rcwl_sodr_hzpo_line srshl WHERE srshh.po_header_id = srshl.po_header_id AND srshl.sku_name LIKE #{skuNameLike})
             </if>
+            <if test="poHeaderIds != null and poHeaderIds.length() > 0">
+                AND srshh.po_header_id IN
+                <foreach collection="poHeaderIds" item="poHeaderId" open="(" separator="," close=")">
+                    #{poHeaderId}
+                </foreach>
+            </if>
         </where>
     </select>
 </mapper>

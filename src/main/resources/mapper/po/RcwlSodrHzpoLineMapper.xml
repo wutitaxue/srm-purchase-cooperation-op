@@ -68,10 +68,16 @@
             <bind name = "skuNameLike" value = "'%'+ skuName +'%'"></bind>
             AND srshl.sku_name LIKE #{skuNameLike}
         </if>
-        <if test="poHeaderIds!=null and poHeaderIds.length>0">
+        <if test="poHeaderIds != null and poHeaderIds.length() > 0">
             AND srshl.po_header_id IN
             <foreach collection="poHeaderIds" item="poHeaderId" open="(" separator="," close=")">
                 #{poHeaderId}
+            </foreach>
+        </if>
+        <if test="poLineIds != null and poLineIds.length() > 0">
+            AND srshl.po_line_id IN
+            <foreach collection="poLineIds" item="poLineId" open="(" separator="," close=")">
+                #{poLineId}
             </foreach>
         </if>
     </select>
