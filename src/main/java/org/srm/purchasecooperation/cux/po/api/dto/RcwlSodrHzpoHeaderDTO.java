@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hzero.boot.platform.lov.annotation.LovValue;
 import org.hzero.export.annotation.ExcelColumn;
 import org.hzero.export.annotation.ExcelSheet;
 
@@ -28,7 +29,12 @@ public class RcwlSodrHzpoHeaderDTO {
     private String poNum;
     @ApiModelProperty(value = "订单状态,值集SCUX_RCWL_HZPO_STATUS")
     @ExcelColumn(title = "订单状态", order = 10)
+    @LovValue(
+            lovCode = "SCUX_RCWL_HZPO_STATUS",
+            meaningField = "statusCodeMeaning"
+    )
     private String statusCode;
+    private String statusCodeMeaning;
     @ApiModelProperty(value = "酒店编号")
     @ExcelColumn(title = "酒店编号", order = 30)
     private String purchaseOrgNum;
