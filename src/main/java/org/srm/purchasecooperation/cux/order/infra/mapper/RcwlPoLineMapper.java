@@ -26,6 +26,8 @@ public interface RcwlPoLineMapper {
 
     List<ContractResultDTO> selectContractResult(@Param("tenantId") Long tenantId, @Param("contractResult") ContractResultDTO contractResultDTO);
 
+    List<ContractResultDTO> selectNoPriceContract(@Param("tenantId") Long tenantId, @Param("contractResult") ContractResultDTO contractResultDTO);
+
     String queryWbsName(@Param("wbsCode") String wbsCode);
 
     /**
