@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderCreateService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineMapper;
 import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
@@ -81,6 +82,8 @@ public class RcwlPoHeaderController {
     private RcwlPoHeaderItemService rcwlPoHeaderItemService;
     @Autowired
     private RcwlPoLineMapper rcwlPoLineMapper;
+    @Autowired
+    private RcwlPoHeaderCreateService rcwlPoHeaderCreateService;
 
     @ApiOperation("手工审批通过采购订单")
     @Permission(
@@ -165,5 +168,18 @@ public class RcwlPoHeaderController {
         return Results.success(PageHelper.doPageAndSort(pageRequest, () -> {
             return this.rcwlPoLineMapper.selectNoPriceContract(tenantId, contractResultDTO);
         }));
+    }
+
+    @ApiOperation("无价格合同按头引用")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping({"/po-header/from-contract-result/no-price"})
+    public ResponseEntity<PoDTO> createAnOrderBasedOnContract(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<ContractResultDTO> contractResultDTOList) {
+        contractResultDTOList.forEach((contractResult) -> {
+            contractResult.setTenantId(tenantId);
+        });
+        this.poHeaderDomainService.setPcAttribute(contractResultDTOList);
+
+//        this.poHeaderService.createAnOrderBasedOnContract(tenantId, contractResultDTOList);
+        return Results.success(this.rcwlPoHeaderCreateService.createAnOrderBasedOnContract(tenantId, contractResultDTOList));
     }
 }
