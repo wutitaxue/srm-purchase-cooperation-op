@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.po.infra.mapper.RcwlSodrHzpoLineMapper">
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoLineDTO">
+        <result column="po_line_id" property="poLineId" jdbcType="DECIMAL"/>
+        <result column="tenant_id" property="tenantId" jdbcType="DECIMAL"/>
+        <result column="po_header_id" property="poHeaderId" jdbcType="DECIMAL"/>
+        <result column="line_status" property="lineStatus" jdbcType="VARCHAR"/>
+        <result column="line_num" property="lineNum" jdbcType="VARCHAR"/>
+        <result column="sku_category_code" property="skuCategoryCode" jdbcType="VARCHAR"/>
+        <result column="sku_no" property="skuNo" jdbcType="VARCHAR"/>
+        <result column="sku_name" property="skuName" jdbcType="VARCHAR"/>
+        <result column="unit_price" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="quantity" property="quantity" jdbcType="DECIMAL"/>
+        <result column="line_amount" property="lineAmount" jdbcType="DECIMAL"/>
+        <result column="contract_line_amount" property="contractLineAmount" jdbcType="DECIMAL"/>
+        <result column="tax_rate" property="taxRate" jdbcType="DECIMAL"/>
+        <result column="po_num" property="poNum" jdbcType="VARCHAR"/>
+        <result column="purchase_org_name" property="purchaseOrgName" jdbcType="VARCHAR"/>
+        <result column="supplier_name" property="supplierName" jdbcType="VARCHAR"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+
+    </resultMap>
+
+    <select id="pagePoLineList" parameterType="org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoLineDTO" resultMap="BaseResultMap">
+        SELECT
+            srshl.*,
+            sic.category_name,
+            srshh.po_num,
+            srshh.purchase_org_name,
+            ses.supplier_name
+        FROM
+            scux_rcwl_sodr_hzpo_line srshl LEFT JOIN smdm_item_category sic ON sic.category_code=srshl.sku_category_code,
+            scux_rcwl_sodr_hzpo_header srshh LEFT JOIN sslm_external_supplier ses ON srshh.unified_social_code = ses.unified_social_code
+        WHERE
+            srshl.po_header_id = srshh.po_header_id
+        <if test="poLineId != null">
+            AND srshl.po_line_id = #{poLineId}
+        </if>
+        <if test="poHeaderId != null">
+            AND srshl.po_header_id = #{poHeaderId}
+        </if>
+        <if test="tenantId != null">
+            AND srshl.tenant_id = #{tenantId}
+        </if>
+        <if test="poNum != null">
+            <bind name = "poNumLike" value = "'%'+ poNum +'%'"></bind>
+            AND srshh.po_num LIKE #{poNumLike}
+        </if>
+        <if test="supplierName != null">
+            <bind name = "supplierNameLike" value = "'%'+ supplierName +'%'"></bind>
+            AND ses.supplier_name LIKE #{supplierNameLike}
+        </if>
+        <if test="purchaseOrgName != null">
+            <bind name = "purchaseOrgNameLike" value = "'%'+ purchaseOrgName +'%'"></bind>
+            AND srshh.purchase_org_name LIKE #{purchaseOrgNameLike}
+        </if>
+        <if test="categoryName != null">
+            <bind name = "categoryNameLike" value = "'%'+ categoryName +'%'"></bind>
+            AND sic.category_name LIKE #{categoryNameLike}
+        </if>
+        <if test="skuNo != null">
+            <bind name = "skuNoLike" value = "'%'+ skuNo +'%'"></bind>
+            AND srshl.sku_no LIKE #{skuNoLike}
+        </if>
+        <if test="skuName != null">
+            <bind name = "skuNameLike" value = "'%'+ skuName +'%'"></bind>
+            AND srshl.sku_name LIKE #{skuNameLike}
+        </if>
+        <if test="poHeaderIds!=null and poHeaderIds.length>0">
+            AND srshl.po_header_id IN
+            <foreach collection="poHeaderIds" item="poHeaderId" open="(" separator="," close=")">
+                #{poHeaderId}
+            </foreach>
+        </if>
+    </select>
+</mapper>

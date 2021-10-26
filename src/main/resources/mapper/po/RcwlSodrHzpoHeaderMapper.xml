@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.po.infra.mapper.RcwlSodrHzpoHeaderMapper">
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO">
+        <result column="po_header_id" property="poHeaderId" jdbcType="DECIMAL"/>
+        <result column="tenant_id" property="tenantId" jdbcType="DECIMAL"/>
+        <result column="po_num" property="poNum" jdbcType="VARCHAR"/>
+        <result column="status_code" property="statusCode" jdbcType="VARCHAR"/>
+        <result column="purchase_org_num" property="purchaseOrgNum" jdbcType="VARCHAR"/>
+        <result column="purchase_org_name" property="purchaseOrgName" jdbcType="VARCHAR"/>
+        <result column="po_type" property="poType" jdbcType="VARCHAR"/>
+        <result column="order_date" property="orderDate" jdbcType="DATE"/>
+        <result column="confirmed_date" property="confirmedDate" jdbcType="DATE"/>
+        <result column="estimated_shipping_date" property="estimatedShippingDate" jdbcType="DATE"/>
+        <result column="first_shipping_date" property="firstShippingDate" jdbcType="DATE"/>
+        <result column="confirm_receipt_date" property="confirmReceiptDate" jdbcType="DATE"/>
+        <result column="unified_social_code" property="unifiedSocialCode" jdbcType="VARCHAR"/>
+        <result column="payment_channel" property="paymentChannel" jdbcType="VARCHAR"/>
+        <result column="orderer" property="orderer" jdbcType="VARCHAR"/>
+        <result column="tax_include_amount" property="taxIncludeAmount" jdbcType="DECIMAL"/>
+        <result column="freight_fee" property="freightFee" jdbcType="DECIMAL"/>
+        <result column="installation_fee" property="installationFee" jdbcType="DECIMAL"/>
+        <result column="discounted_price" property="discountedPrice" jdbcType="DECIMAL"/>
+        <result column="discounted_reason" property="discountedReason" jdbcType="VARCHAR"/>
+        <result column="shipping_address_province" property="shippingAddressProvince" jdbcType="VARCHAR"/>
+        <result column="shipping_address_city" property="shippingAddressCity" jdbcType="VARCHAR"/>
+        <result column="hotel_brand" property="hotelBrand" jdbcType="VARCHAR"/>
+        <result column="hotel_operating_status" property="hotelOperatingStatus" jdbcType="VARCHAR"/>
+        <result column="buyer_type" property="buyerType" jdbcType="VARCHAR"/>
+        <result column="buyer_class" property="buyerClass" jdbcType="VARCHAR"/>
+        <result column="contract_price" property="contractPrice" jdbcType="DECIMAL"/>
+        <result column="commission" property="commission" jdbcType="DECIMAL"/>
+        <result column="payment_terms" property="paymentTerms" jdbcType="VARCHAR"/>
+        <result column="supplier_num" property="supplierNum" jdbcType="VARCHAR"/>
+        <result column="supplier_name" property="supplierName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="pagePoHeaderList" parameterType="org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO" resultMap="BaseResultMap">
+        SELECT
+            srshh.*,
+            ses.supplier_num,
+            ses.supplier_name
+        FROM
+            scux_rcwl_sodr_hzpo_header srshh
+            LEFT JOIN sslm_external_supplier ses ON srshh.unified_social_code = ses.unified_social_code
+        <where>
+            <if test="poHeaderId != null">
+                AND srshh.po_header_id = #{poHeaderId}
+            </if>
+            <if test="tenantId != null">
+                AND srshh.tenant_id = #{tenantId}
+            </if>
+            <if test="poNum != null">
+                <bind name = "poNumLike" value = "'%'+ poNum +'%'"></bind>
+                AND srshh.po_num LIKE #{poNumLike}
+            </if>
+            <if test="supplierName != null">
+                <bind name = "supplierNameLike" value = "'%'+ supplierName +'%'"></bind>
+                AND ses.supplier_name LIKE #{supplierNameLike}
+            </if>
+            <if test="purchaseOrgName != null">
+                <bind name = "purchaseOrgNameLike" value = "'%'+ purchaseOrgName +'%'"></bind>
+                AND srshh.purchase_org_name LIKE #{purchaseOrgNameLike}
+            </if>
+            <if test="categoryName != null">
+                <bind name = "categoryNameLike" value = "'%'+ categoryName +'%'"></bind>
+                AND EXISTS (
+                SELECT
+                1
+                FROM
+                scux_rcwl_sodr_hzpo_line srshl
+                LEFT JOIN smdm_item_category sic ON sic.category_code = srshl.sku_category_code
+                WHERE
+                srshh.po_header_id = srshl.po_header_id
+                AND sic.category_name LIKE #{categoryNameLike}
+                )
+            </if>
+            <if test="skuNo != null">
+                <bind name = "skuNoLike" value = "'%'+ skuNo +'%'"></bind>
+                AND EXISTS ( SELECT 1 FROM scux_rcwl_sodr_hzpo_line srshl WHERE srshh.po_header_id = srshl.po_header_id AND srshl.sku_no LIKE #{skuNoLike})
+            </if>
+            <if test="skuName != null">
+                <bind name = "skuNameLike" value = "'%'+ skuName +'%'"></bind>
+                AND EXISTS ( SELECT 1 FROM scux_rcwl_sodr_hzpo_line srshl WHERE srshh.po_header_id = srshl.po_header_id AND srshl.sku_name LIKE #{skuNameLike})
+            </if>
+        </where>
+    </select>
+</mapper>
