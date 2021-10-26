@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
@@ -22,6 +23,8 @@ import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
+import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineMapper;
+import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
@@ -76,6 +79,8 @@ public class RcwlPoHeaderController {
     private ObjectMapper objectMapper;
     @Autowired
     private RcwlPoHeaderItemService rcwlPoHeaderItemService;
+    @Autowired
+    private RcwlPoLineMapper rcwlPoLineMapper;
 
     @ApiOperation("手工审批通过采购订单")
     @Permission(
@@ -151,5 +156,14 @@ public class RcwlPoHeaderController {
         //申请类型为零星申请
         poHeaderAccordingToLineOfReferenceDTO.setPrTypeId(4L);
         return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
+    }
+
+    @ApiOperation("无价格合同按头引用汇总")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping({"/po-header/from-contract/no-price"})
+    public ResponseEntity<Page<ContractResultDTO>> selectNoPriceContract(@PathVariable("organizationId") Long tenantId, PageRequest pageRequest, @Encrypt ContractResultDTO contractResultDTO) {
+        return Results.success(PageHelper.doPageAndSort(pageRequest, () -> {
+            return this.rcwlPoLineMapper.selectNoPriceContract(tenantId, contractResultDTO);
+        }));
     }
 }
