@@ -541,10 +541,8 @@
         sph.tenant_id = #{tenantId}
         AND sph.pc_status_code IN ( 'APPROVED', 'ARCHIVE', 'CONFIRMED' )
         AND sph.pc_kind_code = 'ATTACHMENT'
---         AND ((spt.effective_time_flag=1 AND sph.end_date_active >= #{contractResult.currencyDateToDate}) OR spt.effective_time_flag=0)
---         AND ( sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code IS NULL )
-        ORDER BY
-        sph.pc_num DESC
+        /* AND ((spt.effective_time_flag=1 AND sph.end_date_active >= #{contractResult.currencyDateToDate}) OR spt.effective_time_flag=0)*/
+        /* AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )*/
         <if test="contractResult.pcNum != null and  contractResult.pcNum != ''">
             <bind name="pcNumLike" value="'%'+contractResult.pcNum +'%'"></bind>
             AND sph.pc_num like #{pcNumLike}
@@ -582,7 +580,6 @@
         <if test="contractResult.supplierCompanyId != null">
             AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
         </if>
-        AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )
         order by sph.pc_num desc
     </select>
 
