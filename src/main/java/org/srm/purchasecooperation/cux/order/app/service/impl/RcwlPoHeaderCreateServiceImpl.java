@@ -145,7 +145,7 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
     @Autowired
     private RcwlMyCostMapper rcwlMyCostMapper;
     @Autowired
-    private PoHeaderServiceImpl poHeaderService;
+    private RcwlPoHeaderServiceImpl poHeaderService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderCreateServiceImpl.class);
 
