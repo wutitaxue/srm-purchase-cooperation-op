@@ -156,7 +156,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
             while(var8.hasNext()) {
                 ContractResultDTO contractResultDTO = (ContractResultDTO)var8.next();
-                if (contractResultDTO.getReceiptsOrderQuantity().compareTo(contractResultDTO.getResidueOrderQuantity()) == 1 && BaseConstants.Flag.YES.equals(contractResultDTO.getOrderQuantityFlag())) {
+                if (Optional.ofNullable(contractResultDTO.getReceiptsOrderQuantity()).orElse(BigDecimal.ZERO)
+                        .compareTo(Optional.ofNullable(contractResultDTO.getResidueOrderQuantity()).orElse(BigDecimal.ZERO)) == 1
+                        && BaseConstants.Flag.YES.equals(contractResultDTO.getOrderQuantityFlag())) {
                     throw new CommonException("error.The.quantity.of.this.order.shall.not.be.greater.than.the.remaining.quantity", new Object[0]);
                 }
 
