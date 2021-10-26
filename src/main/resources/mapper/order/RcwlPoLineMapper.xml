@@ -539,44 +539,34 @@
         INNER JOIN spcm_pc_type spt ON sph.pc_type_id = spt.pc_type_id
         WHERE
         sph.tenant_id = #{tenantId}
-        AND sph.pc_status_code IN ( 'APPROVED', 'ARCHIVE', 'CONFIRMED' )
+        AND sph.pc_status_code IN ('APPROVED', 'ARCHIVE', 'CONFIRMED')
         AND sph.pc_kind_code = 'ATTACHMENT'
-        /* AND ((spt.effective_time_flag=1 AND sph.end_date_active >= #{contractResult.currencyDateToDate}) OR spt.effective_time_flag=0)*/
-        /* AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )*/
         <if test="contractResult.pcNum != null and  contractResult.pcNum != ''">
             <bind name="pcNumLike" value="'%'+contractResult.pcNum +'%'"></bind>
             AND sph.pc_num like #{pcNumLike}
         </if>
-        /* 采购协议名称*/
         <if test="contractResult.pcName != null and  contractResult.pcName != ''">
             <bind name="pcNameLike" value="'%'+contractResult.pcName +'%'"></bind>
             AND sph.pc_name like #{pcNameLike}
         </if>
-        /* 公司*/
         <if test="contractResult.companyId != null">
             AND sph.company_id = #{contractResult.companyId}
         </if>
-        /* 创建日期从*/
         <if test="contractResult.creationDateFrom != null">
             AND sph.creation_date &gt;= #{contractResult.creationDateFrom}
         </if>
-        /* 创建日期至*/
         <if test="contractResult.creationDateTo != null">
             AND sph.creation_date &lt; #{contractResult.creationDateTo}
         </if>
-        /* 协议类型*/
         <if test="contractResult.pcTypeId != null">
             AND sph.pc_type_id = #{contractResult.pcTypeId}
         </if>
-        /* 创建人*/
         <if test="contractResult.createdByName != null">
             AND iu.real_name = #{contractResult.createdByName}
         </if>
-        /* 主协议*/
         <if test="contractResult.pcHeaderId != null">
             AND sph.pc_header_id = #{contractResult.pcHeaderId}
         </if>
-        /* 供应商 (协议对象)*/
         <if test="contractResult.supplierCompanyId != null">
             AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
         </if>
