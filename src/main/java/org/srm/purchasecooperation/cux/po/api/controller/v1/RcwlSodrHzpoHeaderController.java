@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.po.api.controller.v1;
 
 import io.swagger.annotations.Api;
+import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
 import org.hzero.export.vo.ExportParam;
@@ -44,6 +45,9 @@ public class RcwlSodrHzpoHeaderController extends BaseController {
     @ApiOperation(value = "华住订单头列表")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping
+    @ProcessLovValue(
+            targetField = {"body"}
+    )
     public ResponseEntity<Page<RcwlSodrHzpoHeaderDTO>> list(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoHeader.FIELD_PO_HEADER_ID,
             direction = Sort.Direction.DESC) PageRequest pageRequest) {
         Page<RcwlSodrHzpoHeaderDTO> list = rcwlSodrHzpoHeaderRepository.pagePoHeaderList(tenantId, rcwlSodrHzpoHeaderDTO, pageRequest);
@@ -53,6 +57,9 @@ public class RcwlSodrHzpoHeaderController extends BaseController {
     @ApiOperation(value = "华住订单头列表导出")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/export")
+    @ProcessLovValue(
+            targetField = {"body"}
+    )
     public ResponseEntity<List<RcwlSodrHzpoHeaderDTO>> exportList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, ExportParam exportParam,
                                                                   HttpServletResponse response) {
         List<RcwlSodrHzpoHeaderDTO> list = rcwlSodrHzpoHeaderRepository.exportPoHeaderList(tenantId, rcwlSodrHzpoHeaderDTO);
