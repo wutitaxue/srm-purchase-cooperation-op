@@ -28,7 +28,7 @@ public class RcwlSodrHzpoItfRcvController {
 
     @ApiOperation(value = "接收二开订单接口数据")
     @Permission(level = ResourceLevel.SITE)
-    @PostMapping("rcwl-sodr-hzpo/receiver-data")
+    @PostMapping("/rcwl-sodr-hzpo/receiver-data")
     public RcwlSodrHzpoHeader receivePoRestData(@RequestBody RcwlSodrHzpoHeaderDTO itfData){
 
           return rcwlSodrHzpoItfService.handleItfData(itfData);
