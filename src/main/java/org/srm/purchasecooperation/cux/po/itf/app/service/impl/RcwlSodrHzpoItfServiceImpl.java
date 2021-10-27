@@ -3,6 +3,8 @@ package org.srm.purchasecooperation.cux.po.itf.app.service.impl;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.boot.platform.lov.dto.LovValueDTO;
 import org.hzero.boot.platform.lov.feign.LovFeignClient;
+import org.hzero.core.helper.LanguageHelper;
+import org.hzero.core.message.MessageAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -51,17 +53,20 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                 existsFlag = true;
             }
         }
-        Assert.isTrue(existsFlag,"状态错误");
+        Assert.isTrue(existsFlag,MessageAccessor.getMessage("error.sodrhzpo_status_error", LanguageHelper.locale()).desc());
+
         //unified_social_code：关联sslm_supplier_basic中unified_social_code，校验必须存在
         Long existsCount = rcwlSodrHzpoItfRepository.checkUnifiedSocialCode(tenantId,itfData.getUnifiedSocialCode());
-        Assert.isTrue(existsCount.equals(0L),"社会统一性用码错误" );
+        Assert.isTrue(existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
+
         //校验行数据
         List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOList = itfData.getData();
         rcwlSodrHzpoLineDTOList.forEach(poLine ->{
             Long categoryCodeCount = rcwlSodrHzpoItfRepository.checkSkuCategoryCode(tenantId,poLine.getSkuCategoryCode());
             Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuCategoryCode());
-            Assert.isTrue(categoryCodeCount.equals(0L),"品类错误" );
-            Assert.isTrue(noCount.equals(0L),"商品编码错误" );
+            Assert.isTrue(categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
+            Assert.isTrue(noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
+
         });
         return createOrUpdatePo(tenantId,itfData);
     }
