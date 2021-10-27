@@ -29,7 +29,12 @@ public class CuxRCWLPrLineRepositoryImpl extends PrLineRepositoryImpl implements
 
     @Override
     public List<PrLineVO> pageAssignList(PrLineDTO prLineDTO) {
-        return this.cuxRCWLPrLineMapper.pageAssignList(prLineDTO);
+        List<PrLineVO> prLineVOList = this.cuxRCWLPrLineMapper.pageAssignList(prLineDTO);
+        for(PrLineVO prLineVO : prLineVOList){
+            prLineVO.setAttributeVarchar1(String.valueOf(prLineVO.getTaxIncludedLineAmount().doubleValue() - prLineVO.getAttributeDecimal1().doubleValue()));
+        }
+        return prLineVOList;
+        //return this.cuxRCWLPrLineMapper.pageAssignList(prLineDTO);
     }
     @Override
     public List<PrLineVO> selectPrLines(PageRequest pageRequest, Long tenantId, Long prHeaderId) {
