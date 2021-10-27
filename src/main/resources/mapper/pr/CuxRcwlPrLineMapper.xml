@@ -757,7 +757,7 @@
         AND srh.rfx_header_id = srqh.rfx_header_id
         AND srqh.quotation_header_id = srql.quotation_header_id
         AND srql.rfx_line_item_id = srli.rfx_line_item_id
-        AND srql.suggested_flag = '1') attributeDecimal1,
+        AND srql.suggested_flag = '1') attributeDecimal1
 
         FROM
         sprm_pr_line spl
