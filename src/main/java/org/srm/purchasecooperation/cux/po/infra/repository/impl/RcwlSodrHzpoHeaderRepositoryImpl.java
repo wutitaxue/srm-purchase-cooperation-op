@@ -3,6 +3,7 @@ package org.srm.purchasecooperation.cux.po.infra.repository.impl;
 import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.mybatis.base.impl.BaseRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO;
@@ -39,6 +40,7 @@ public class RcwlSodrHzpoHeaderRepositoryImpl extends BaseRepositoryImpl<RcwlSod
     }
 
     @Override
+    @ProcessLovValue
     public List<RcwlSodrHzpoHeaderDTO> exportPoHeaderList(Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO) {
         rcwlSodrHzpoHeaderDTO.setTenantId(tenantId);
         List<RcwlSodrHzpoHeaderDTO> rcwlSodrHzpoHeaderDTOS = rcwlSodrHzpoHeaderMapper.pagePoHeaderList(rcwlSodrHzpoHeaderDTO);
