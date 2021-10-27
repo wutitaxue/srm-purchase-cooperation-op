@@ -740,7 +740,25 @@
         spl.exp_bear_dep_id,
         ehut.unit_name AS exp_bear_dep,
         ehu.unit_code AS exp_bear_dep_code,
-        spl.budget_account_price
+        spl.budget_account_price,
+
+        (
+        SELECT SUM(srql.total_amount)
+        FROM
+        ssrc_rfx_header srh,
+        ssrc_rfx_line_item srli,
+        ssrc_rfx_quotation_header srqh,
+        ssrc_rfx_quotation_line srql
+        WHERE
+        1 = 1
+        AND srli.pr_line_id = spl.pr_line_id
+        AND srli.rfx_header_id = srh.rfx_header_id
+        AND srh.rfx_status = 'FINISHED'
+        AND srh.rfx_header_id = srqh.rfx_header_id
+        AND srqh.quotation_header_id = srql.quotation_header_id
+        AND srql.rfx_line_item_id = srli.rfx_line_item_id
+        AND srql.suggested_flag = '1') attributeDecimal1,
+
         FROM
         sprm_pr_line spl
         JOIN sprm_pr_header sph ON spl.pr_header_id = sph.pr_header_id
