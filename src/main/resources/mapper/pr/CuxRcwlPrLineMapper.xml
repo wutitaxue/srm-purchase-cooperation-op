@@ -745,19 +745,13 @@
         (
         SELECT SUM(srql.total_amount)
         FROM
-        ssrc_rfx_header srh,
-        ssrc_rfx_line_item srli,
-        ssrc_rfx_quotation_header srqh,
-        ssrc_rfx_quotation_line srql
+        ssrc_rfx_line_item srli
+        LEFT JOIN ssrc_rfx_header srh ON srli.rfx_header_id = srh.rfx_header_id AND srh.rfx_status = 'FINISHED'
+        LEFT JOIN ssrc_rfx_quotation_header srqh ON srh.rfx_header_id = srqh.rfx_header_id
+        LEFT JOIN ssrc_rfx_quotation_line srql ON srqh.quotation_header_id = srql.quotation_header_id AND srql.rfx_line_item_id = srli.rfx_line_item_id AND srql.suggested_flag = '1'
         WHERE
-        1 = 1
-        AND srli.pr_line_id = spl.pr_line_id
-        AND srli.rfx_header_id = srh.rfx_header_id
-        AND srh.rfx_status = 'FINISHED'
-        AND srh.rfx_header_id = srqh.rfx_header_id
-        AND srqh.quotation_header_id = srql.quotation_header_id
-        AND srql.rfx_line_item_id = srli.rfx_line_item_id
-        AND srql.suggested_flag = '1') attributeDecimal1
+        srli.pr_line_id = spl.pr_line_id
+        ) attributeDecimal1
 
         FROM
         sprm_pr_line spl
