@@ -260,12 +260,12 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
                     changeHistoryList.add(changeHistory);
                 }
 
-                contractResultDTOList.forEach((cr) -> {
-                    ContractResultDTO contractResultDto = this.poLineRepository.selectContractSubject(tenantId, cr.getPcSubjectId());
-                    contractResultDto.setPcSubjectId(cr.getPcSubjectId());
-                    contractResultDto.setChanageOrderQuantity(contractResultDto.getChanageOrderQuantity().add(cr.getReceiptsOrderQuantity()));
-                    this.poLineRepository.updateSubjce(contractResultDto);
-                });
+//                contractResultDTOList.forEach((cr) -> {
+//                    ContractResultDTO contractResultDto = this.poLineRepository.selectContractSubject(tenantId, cr.getPcSubjectId());
+//                    contractResultDto.setPcSubjectId(cr.getPcSubjectId());
+//                    contractResultDto.setChanageOrderQuantity(contractResultDto.getChanageOrderQuantity().add(cr.getReceiptsOrderQuantity()));
+//                    this.poLineRepository.updateSubjce(contractResultDto);
+//                });
                 this.changeHistoryRepository.batchInsertSelective(changeHistoryList);
                 if (autoTransferFlag && "SUBMITTED".equals(autoPoStatus)) {
                     try {
