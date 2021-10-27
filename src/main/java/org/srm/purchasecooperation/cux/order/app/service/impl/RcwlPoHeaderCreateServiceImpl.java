@@ -29,7 +29,6 @@ import org.srm.common.util.StringToNumberUtils;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderCreateService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
-import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
@@ -37,36 +36,30 @@ import org.srm.purchasecooperation.order.app.service.OrderTypeService;
 import org.srm.purchasecooperation.order.app.service.PoConfigRuleService;
 import org.srm.purchasecooperation.order.app.service.PoProcessActionService;
 import org.srm.purchasecooperation.order.app.service.PoheaderExtensionService;
-import org.srm.purchasecooperation.order.app.service.impl.PoHeaderServiceImpl;
 import org.srm.purchasecooperation.order.domain.entity.ChangeHistory;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
 import org.srm.purchasecooperation.order.domain.entity.PoLine;
 import org.srm.purchasecooperation.order.domain.entity.PoLineLocation;
 import org.srm.purchasecooperation.order.domain.entity.User;
 import org.srm.purchasecooperation.order.domain.repository.ChangeHistoryRepository;
-import org.srm.purchasecooperation.order.domain.repository.PoCreatingRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoItemBomRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoPartnerRepository;
 import org.srm.purchasecooperation.order.domain.repository.UserRepository;
-import org.srm.purchasecooperation.order.domain.service.GeneratorPoByPrDomainService;
 import org.srm.purchasecooperation.order.domain.service.PoHeaderDomainService;
 import org.srm.purchasecooperation.order.domain.service.PoHeaderSendApplyMqService;
 import org.srm.purchasecooperation.order.domain.service.PoItfDomainService;
-import org.srm.purchasecooperation.order.domain.service.PoPriceLibDomainService;
 import org.srm.purchasecooperation.order.domain.service.PoValidateDomainService;
 import org.srm.purchasecooperation.order.domain.vo.SupplierLifeCycleStageVO;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
 import org.srm.purchasecooperation.order.infra.utils.FieldUtils;
-import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
-import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -104,9 +97,6 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
     private ChangeHistoryRepository changeHistoryRepository;
     @Autowired
     @Lazy
-    private PrHeaderService prHeaderService;
-    @Autowired
-    @Lazy
     private PoItfDomainService poItfDomainService;
     @Autowired
     private PoValidateDomainService poValidateDomainService;
@@ -114,8 +104,6 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
     private PoProcessActionService poProcessActionService;
     @Autowired
     private MdmService mdmService;
-    @Autowired
-    private PrLineMapper prLineMapper;
     @Autowired
     private PoPartnerRepository poPartnerRepository;
     @Autowired
@@ -129,21 +117,13 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
     @Autowired
     private RcwlSpcmPcSubjectRepository rcwlSpcmPcSubjectRepository;
     @Autowired
-    private PoCreatingRepository poCreatingRepository;
-    @Autowired
     private CustomizeSettingHelper customizeSettingHelper;
-    @Autowired
-    private GeneratorPoByPrDomainService generatorPoByPrDomainService;
-    @Autowired
-    private PoPriceLibDomainService poPriceLibDomainService;
     @Autowired
     private PoItemBomRepository poItemBomRepository;
     @Autowired
     private PrHeaderRepository prHeaderRepository;
     @Autowired
     private PrLineRepository prLineRepository;
-    @Autowired
-    private RcwlMyCostMapper rcwlMyCostMapper;
     @Autowired
     private RcwlPoHeaderServiceImpl poHeaderService;
 
@@ -485,7 +465,7 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
         BeanUtils.copyProperties(poHeader, poDto);
         poDto.setPoPartnerList(this.poPartnerRepository.batchInsertOrUpdate(poDto.getPoPartnerList(), poDto.getPoHeaderId(), poDto.getTenantId()));
         this.poProcessActionService.insert(poDto.getPoHeaderId(), "NEW");
-        this.processPr(poDto);
+//        this.processPr(poDto);
         poDto.setPoLineList(poLineList);
         return poDto;
     }
