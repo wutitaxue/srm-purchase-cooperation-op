@@ -28,12 +28,12 @@ public class RcwlSodrHzpoHeaderDTO {
     @ExcelColumn(title = "订单编号", order = 20)
     private String poNum;
     @ApiModelProperty(value = "订单状态,值集SCUX_RCWL_HZPO_STATUS")
-    @ExcelColumn(title = "订单状态", order = 10)
     @LovValue(
             lovCode = "SCUX_RCWL_HZPO_STATUS",
             meaningField = "statusCodeMeaning"
     )
     private String statusCode;
+    @ExcelColumn(title = "订单状态", order = 10)
     private String statusCodeMeaning;
     @ApiModelProperty(value = "酒店编号")
     @ExcelColumn(title = "酒店编号", order = 30)
