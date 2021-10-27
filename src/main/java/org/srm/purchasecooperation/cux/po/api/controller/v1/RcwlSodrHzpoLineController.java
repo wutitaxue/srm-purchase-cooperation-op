@@ -47,7 +47,7 @@ public class RcwlSodrHzpoLineController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping
     public ResponseEntity<Page<RcwlSodrHzpoLineDTO>> list(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoLine.FIELD_PO_LINE_ID,
-            direction = Sort.Direction.DESC) PageRequest pageRequest) {
+            direction = Sort.Direction.ASC) PageRequest pageRequest) {
         Page<RcwlSodrHzpoLineDTO> list = rcwlSodrHzpoLineRepository.pagePoLineList(tenantId, rcwlSodrHzpoLineDTO, pageRequest);
         return Results.success(list);
     }

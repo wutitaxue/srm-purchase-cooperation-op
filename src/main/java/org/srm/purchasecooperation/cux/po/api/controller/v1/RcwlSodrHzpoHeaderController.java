@@ -50,7 +50,7 @@ public class RcwlSodrHzpoHeaderController extends BaseController {
             targetField = {"body"}
     )
     public ResponseEntity<Page<RcwlSodrHzpoHeaderDTO>> list(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoHeader.FIELD_PO_HEADER_ID,
-            direction = Sort.Direction.DESC) PageRequest pageRequest) {
+            direction = Sort.Direction.ASC) PageRequest pageRequest) {
         Page<RcwlSodrHzpoHeaderDTO> list = rcwlSodrHzpoHeaderRepository.pagePoHeaderList(tenantId, rcwlSodrHzpoHeaderDTO, pageRequest);
         return Results.success(list);
     }
