@@ -1,24 +1,20 @@
 package org.srm.purchasecooperation.cux.po.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import javax.validation.constraints.NotBlank;
-
-import io.choerodon.mybatis.domain.AuditDomain;
-
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * 华住订单头

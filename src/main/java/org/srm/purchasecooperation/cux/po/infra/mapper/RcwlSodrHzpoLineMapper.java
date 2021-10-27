@@ -1,8 +1,8 @@
 package org.srm.purchasecooperation.cux.po.infra.mapper;
 
+import io.choerodon.mybatis.common.BaseMapper;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoLineDTO;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoLine;
-import io.choerodon.mybatis.common.BaseMapper;
 
 import java.util.List;
 
@@ -15,8 +15,9 @@ public interface RcwlSodrHzpoLineMapper extends BaseMapper<RcwlSodrHzpoLine> {
     /**
      * 分页查询华住订单行信息
      *
+     * @param tenantId
      * @param rcwlSodrHzpoLineDTO
      * @return
      */
-    List<RcwlSodrHzpoLineDTO> pagePoLineList(RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO);
+    List<RcwlSodrHzpoLineDTO> pagePoLineList(Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO);
 }

@@ -5,10 +5,10 @@ import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.mybatis.base.impl.BaseRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoLineDTO;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoLine;
 import org.srm.purchasecooperation.cux.po.domain.repository.RcwlSodrHzpoLineRepository;
-import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.po.infra.mapper.RcwlSodrHzpoLineMapper;
 import org.srm.web.annotation.Tenant;
 
@@ -27,15 +27,13 @@ public class RcwlSodrHzpoLineRepositoryImpl extends BaseRepositoryImpl<RcwlSodrH
 
     @Override
     public Page<RcwlSodrHzpoLineDTO> pagePoLineList(Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, PageRequest pageRequest) {
-        rcwlSodrHzpoLineDTO.setTenantId(tenantId);
         return PageHelper.doPageAndSort(pageRequest, () -> {
-            return rcwlSodrHzpoLineMapper.pagePoLineList(rcwlSodrHzpoLineDTO);
+            return rcwlSodrHzpoLineMapper.pagePoLineList(tenantId, rcwlSodrHzpoLineDTO);
         });
     }
 
     @Override
     public List<RcwlSodrHzpoLineDTO> exportPoLineList(Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO) {
-        rcwlSodrHzpoLineDTO.setTenantId(tenantId);
-        return rcwlSodrHzpoLineMapper.pagePoLineList(rcwlSodrHzpoLineDTO);
+        return rcwlSodrHzpoLineMapper.pagePoLineList(tenantId, rcwlSodrHzpoLineDTO);
     }
 }

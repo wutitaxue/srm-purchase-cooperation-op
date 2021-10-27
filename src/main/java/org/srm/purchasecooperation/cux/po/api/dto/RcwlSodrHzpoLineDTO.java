@@ -1,21 +1,11 @@
 package org.srm.purchasecooperation.cux.po.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hzero.export.annotation.ExcelColumn;
 import org.hzero.export.annotation.ExcelSheet;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -27,8 +17,6 @@ import java.util.List;
 @Data
 @ExcelSheet(zh = "采购订单行", pageSize = 100000000)
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class RcwlSodrHzpoLineDTO {
     @ApiModelProperty(value = "行ID")
     private Long poLineId;
@@ -81,7 +69,4 @@ public class RcwlSodrHzpoLineDTO {
 
     @ApiModelProperty(value = "头id集合")
     private List<Long> poHeaderIds;
-
-    @ApiModelProperty(value = "行ID集合")
-    private List<Long> poLineIds;
 }

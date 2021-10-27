@@ -3,7 +3,6 @@ package org.srm.purchasecooperation.cux.po.domain.repository;
 import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.mybatis.base.BaseRepository;
-import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoLineDTO;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoLine;
 

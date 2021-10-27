@@ -1,8 +1,8 @@
 package org.srm.purchasecooperation.cux.po.infra.mapper;
 
+import io.choerodon.mybatis.common.BaseMapper;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoHeader;
-import io.choerodon.mybatis.common.BaseMapper;
 
 import java.util.List;
 
@@ -15,8 +15,9 @@ public interface RcwlSodrHzpoHeaderMapper extends BaseMapper<RcwlSodrHzpoHeader>
     /**
      * 分页查询华住订单头信息
      *
+     * @param tenantId
      * @param rcwlSodrHzpoHeaderDTO
      * @return
      */
-    List<RcwlSodrHzpoHeaderDTO> pagePoHeaderList(RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO);
+    List<RcwlSodrHzpoHeaderDTO> pagePoHeaderList(Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO);
 }
