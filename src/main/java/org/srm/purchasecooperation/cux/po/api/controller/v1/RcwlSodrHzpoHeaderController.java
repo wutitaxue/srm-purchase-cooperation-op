@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
+import org.hzero.export.annotation.ExcelExport;
 import org.hzero.export.vo.ExportParam;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoHeader;
@@ -60,6 +61,7 @@ public class RcwlSodrHzpoHeaderController extends BaseController {
     @ProcessLovValue(
             targetField = {"body"}
     )
+    @ExcelExport(RcwlSodrHzpoHeaderDTO.class)
     public ResponseEntity<List<RcwlSodrHzpoHeaderDTO>> exportList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, ExportParam exportParam,
                                                                   HttpServletResponse response) {
         List<RcwlSodrHzpoHeaderDTO> list = rcwlSodrHzpoHeaderRepository.exportPoHeaderList(tenantId, rcwlSodrHzpoHeaderDTO);

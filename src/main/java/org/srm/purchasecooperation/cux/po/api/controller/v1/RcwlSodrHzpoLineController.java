@@ -3,6 +3,7 @@ package org.srm.purchasecooperation.cux.po.api.controller.v1;
 import io.swagger.annotations.Api;
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
+import org.hzero.export.annotation.ExcelExport;
 import org.hzero.export.vo.ExportParam;
 import org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoLineDTO;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoLine;
@@ -54,6 +55,7 @@ public class RcwlSodrHzpoLineController extends BaseController {
     @ApiOperation(value = "华住订单行列表导出")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/export")
+    @ExcelExport(RcwlSodrHzpoLineDTO.class)
     public ResponseEntity<List<RcwlSodrHzpoLineDTO>> exportList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, ExportParam exportParam,
                                                                 HttpServletResponse response) {
         List<RcwlSodrHzpoLineDTO> list = rcwlSodrHzpoLineRepository.exportPoLineList(tenantId, rcwlSodrHzpoLineDTO);
