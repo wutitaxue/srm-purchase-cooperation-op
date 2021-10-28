@@ -246,11 +246,15 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             //判断是否能触发接口
             Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(), tenantId);
             if (RCWLConstants.Common.IS.equals(count)) {
-                //保存完之后触发接口
-                try {
-                    this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId,null);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                //add by 21420 融创二开，电商/目录化需求不触发占用预算接口
+                String prSourcePlatform = prHeader.getPrSourcePlatform();
+                if(!(prSourcePlatform.equals(PrConstant.PrSourcePlatform.CATALOGUE) || prSourcePlatform.equals(PrConstant.PrSourcePlatform.E_COMMERCE))) {
+                    //保存完之后触发接口
+                    try {
+                        this.rcwlPrItfService.invokeBudgetOccupy(prHeader, tenantId, null);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 //            prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
