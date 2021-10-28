@@ -43,16 +43,15 @@
                (
                    concat(
                            round(((
-                                      SELECT sum(spll.quantity) - sum(CASE spl.returned_flag
-                                                                          WHEN 1
-                                                                              THEN - spll.quantity - spll.net_deliver_quantity
-                                                                          ELSE spll.quantity - spll.net_deliver_quantity END)
+                                      SELECT sum(spll.quantity) - sum(srtl2.quantity - srtl2.occupied_quantity + srtl2.reversed_quantity + l.quantity)
                                       FROM sinv_rcv_trx_line l,
                                            sodr_po_line spl,
-                                           sodr_po_line_location spll
+                                           sodr_po_line_location spll,
+                                           sinv_rcv_trx_line srtl2
                                       WHERE l.rcv_trx_header_id = h.rcv_trx_header_id
                                         AND spl.po_line_id = l.from_po_line_id
                                         AND spl.po_line_id = spll.po_line_id
+                                        and l.from_rcv_trx_line_id = srtl2.rcv_trx_line_id
                                   ) / (
                                       SELECT sum(spll.quantity)
                                       FROM sodr_po_line_location spll
