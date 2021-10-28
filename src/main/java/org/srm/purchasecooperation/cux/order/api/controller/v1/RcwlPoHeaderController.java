@@ -179,7 +179,6 @@ public class RcwlPoHeaderController {
         });
         this.poHeaderDomainService.setPcAttribute(contractResultDTOList);
 
-//        this.poHeaderService.createAnOrderBasedOnContract(tenantId, contractResultDTOList);
         return Results.success(this.rcwlPoHeaderCreateService.createAnOrderBasedOnContract(tenantId, contractResultDTOList));
     }
 }
