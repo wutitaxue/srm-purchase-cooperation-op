@@ -38,6 +38,7 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
+import org.srm.boot.common.cache.impl.AbstractKeyGenerator;
 import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
@@ -55,6 +56,7 @@ import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepos
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlCompanyService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrToBpmService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
@@ -82,8 +84,10 @@ import org.srm.purchasecooperation.pr.domain.entity.*;
 import org.srm.purchasecooperation.pr.domain.repository.*;
 import org.srm.purchasecooperation.pr.domain.vo.PrCopyFieldsVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.pr.infra.constant.PrConstants;
 import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
+import org.srm.purchasecooperation.pr.infra.utils.OrderCenterUtils;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import org.srm.web.annotation.Tenant;
 
@@ -154,6 +158,10 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private MessageClient messageClient;
     @Autowired
     private MessageHelper messageHelper;
+    @Autowired
+    private RcwlPrToBpmService rcwlPrToBpmService;
+    @Autowired
+    private RedisHelper redisHelper;
 
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
@@ -1052,5 +1060,64 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 ((PrHeaderService) ApplicationContextHelper.getContext().getBean(PrHeaderService.class)).generatorPoByPrAuto(approvedPrHeaderList, tenantId);
             }
         }
+    }
+
+    @Override
+    public PrHeader prApprove(PrHeader prHeader,Long tenantId) {
+
+        //查询审批类型
+//        String approveMethod = prApproveMethod(prHeader.getTenantId(), prHeader.getCompanyId(), prHeader.getPrSourcePlatform());
+        String approveMethod = this.prApproveMethodNew(prHeader);
+        // 审批方式为空时 默认为无需审批
+        if(approveMethod == null){
+            approveMethod = PrConstants.PrApprovalMethod.NONE;
+        }
+
+        LOGGER.info("approveMethod: 审批方式：{} " + approveMethod);
+        // 新商城 查询租户OMS标识，true：开启，false：未开启
+        boolean omsFlag = !this.isOldMall(tenantId) && OrderCenterUtils.enableOrderCenterFlag(tenantId);
+
+        //以下下为标准逻辑复制
+        //电商订单且状态为新建则 进行电商异步提交逻辑，未开启OMS标识走原有逻辑，开启OMS电商和目录化无需商城处理
+        if ( !omsFlag && PrConstants.PrSrcPlatformCode.E_COMMERCE.equals(prHeader.getPrSourcePlatform()) && (PrConstants.PrStatusCode.PENDING.equals(prHeader.getPrStatusCode()) || PrConstants.PrStatusCode.REJECTED.equals(prHeader.getPrStatusCode()))) {
+            this.ecSubmitSync(tenantId, prHeader);
+        } else {
+            prHeader.setEventSenderFlag(BaseConstants.Flag.NO);
+            // 非电商
+            LOGGER.info("approveMethod: 非电商 {} , prHeader {}" ,approveMethod, prHeader);
+            switch (approveMethod) {
+                // 功能审批
+                case PrConstants.PrApprovalMethod.FUNCTIONAL:
+                    this.submitFunctional(tenantId, prHeader);
+                    break;
+                // 外部系统审批
+                case PrConstants.PrApprovalMethod.EXTERNAL_APPROVAL:
+                    //外部系统审批改为BPM审批，将之前的BPM逻辑复制到此处
+                    // prHeaderService.submitExternal(tenantId, prHeader);
+                    String dataToBpmUrl = this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
+                    prHeader.setAttributeVarchar37(dataToBpmUrl);
+                    break;
+                // 工作流审批
+                case PrConstants.PrApprovalMethod.WORKFLOW:
+                    this.submitWorkflow(tenantId, prHeader);
+                    break;
+                // 无需审批
+                case PrConstants.PrApprovalMethod.NONE:
+                    // 其他 默认无需审批
+                default:
+                    this.submitNone(tenantId, prHeader);
+                    break;
+            }
+        }
+        return prHeader;
+    }
+    /**
+     * 判断是否为老商城
+     * @param tenantId
+     * @return
+     */
+    private Boolean isOldMall(Long tenantId) {
+        String key = AbstractKeyGenerator.getKey(PrConstants.CacheCode.SCEC_SERVICE_NAME, PrConstants.CacheCode.OLD_MALL_TENANT);
+        return redisHelper.hshHasKey(key,tenantId.toString());
     }
 }

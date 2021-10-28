@@ -1,5 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.app.service;
 
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+
 /**
  * @description:
  * @author:yuanping.zhang
@@ -7,4 +9,5 @@ package org.srm.purchasecooperation.cux.pr.app.service;
  * @version:1.0
  */
 public interface RcwlPrheaderService {
+    PrHeader prApprove(PrHeader prHeader,Long tenantId);
 }
