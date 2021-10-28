@@ -14,6 +14,7 @@ import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.purchasecooperation.pr.infra.repository.impl.PrLineRepositoryImpl;
 import org.srm.web.annotation.Tenant;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -31,6 +32,9 @@ public class CuxRCWLPrLineRepositoryImpl extends PrLineRepositoryImpl implements
     public List<PrLineVO> pageAssignList(PrLineDTO prLineDTO) {
         List<PrLineVO> prLineVOList = this.cuxRCWLPrLineMapper.pageAssignList(prLineDTO);
         for(PrLineVO prLineVO : prLineVOList){
+            if(prLineVO.getAttributeDecimal1() == null){
+                prLineVO.setAttributeDecimal1((BigDecimal.ZERO));
+            }
             prLineVO.setAttributeVarchar1(String.valueOf(prLineVO.getTaxIncludedLineAmount().doubleValue() - prLineVO.getAttributeDecimal1().doubleValue()));
         }
         return prLineVOList;
