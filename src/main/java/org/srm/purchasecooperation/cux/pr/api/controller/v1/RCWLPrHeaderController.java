@@ -23,13 +23,16 @@ import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrToBpmService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.vo.SupplierStageVO;
+import org.srm.purchasecooperation.pr.infra.constant.PrConstants;
 import org.srm.purchasecooperation.pr.infra.mapper.PrHeaderMapper;
+import org.srm.purchasecooperation.pr.infra.utils.OrderCenterUtils;
 import org.srm.web.annotation.Tenant;
 
 import java.util.*;
@@ -63,6 +66,8 @@ public class RCWLPrHeaderController {
    //private RCWLPrHeaderSubmitService rcwlPrHeaderSubmitService;
     @Autowired
     private RcwlPrToBpmService rcwlPrToBpmService;
+    @Autowired
+    private RcwlPrheaderService rcwlPrheaderService;
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrHeaderController.class);
 
 
@@ -140,8 +145,10 @@ public class RCWLPrHeaderController {
             prHeader.setCustomUserDetails(DetailsHelper.getUserDetails());
             this.prHeaderService.afterPrApprove(tenantId, Collections.singletonList(prHeader));
         }
-        String dataToBpmUrl = this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
-        prHeader.setAttributeVarchar37(dataToBpmUrl);
+        //add by 21420 融创二开，把直接调用bpm审批修改为启用业务规则定义来决定审批方式
+        rcwlPrheaderService.prApprove(prHeader,tenantId);
+//        String dataToBpmUrl = this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
+//        prHeader.setAttributeVarchar37(dataToBpmUrl);
         return Results.success(prHeader);
     }
 
