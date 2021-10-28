@@ -7,12 +7,8 @@
                spl.line_num                                                                           po_line_num,
                spl.item_name,
                spll.quantity,
-               (spll.quantity - (CASE spl.returned_flag
-                                     WHEN 1 THEN - spll.quantity - spll.net_deliver_quantity
-                                     ELSE spll.quantity - spll.net_deliver_quantity END))             accepted_quantity,
-               (CASE spl.returned_flag
-                    WHEN 1 THEN - spll.quantity - spll.net_deliver_quantity
-                    ELSE spll.quantity - spll.net_deliver_quantity END)                               can_accept_quantity,
+               (spll.quantity - (srtl2.quantity - srtl2.occupied_quantity + srtl2.reversed_quantity + l.quantity))             accepted_quantity,
+               (srtl2.quantity - srtl2.occupied_quantity + srtl2.reversed_quantity + l.quantity)                               can_accept_quantity,
                l.quantity                                                                             accept_quantity,
                l.remark                                                                               line_accept_description,
                (SELECT m.category_name
@@ -32,6 +28,7 @@
                  LEFT JOIN sodr_po_header sph ON sph.po_header_id = l.from_po_header_id
                  LEFT JOIN sodr_po_line spl ON spl.po_line_id = l.from_po_line_id
                  LEFT JOIN sodr_po_line_location spll ON spll.po_line_location_id = l.from_po_line_location_id
+                 LEFT JOIN sinv_rcv_trx_line srtl2 on l.from_rcv_trx_line_id = srtl2.rcv_trx_line_id
         WHERE l.tenant_id = #{organizationId}
           AND l.rcv_trx_header_id = #{acceptListHeaderId}
     </select>
