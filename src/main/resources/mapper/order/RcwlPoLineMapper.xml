@@ -61,6 +61,7 @@
         spll.remark,
         spll.feedback,
         spll.need_by_date,
+        spl.attribute_date1,
         spll.promise_delivery_date,
         spll.object_version_number AS location_version_number,
         spll.delivery_date_reject_flag AS delivery_date_reject_flag,
