@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
@@ -36,4 +37,7 @@ public interface CuxRCWLPrLineMapper extends PrLineMapper, ExtendMapper<PrLine> 
      */
     @Override
     List<PrLineVO> cancelList(PrLineDTO prLineDTO);
+
+    @Override
+    List<PrLineVO> listPrLines(@Param("tenantId") Long tenantId, @Param("prHeaderId") Long prHeaderId);
 }
