@@ -28,6 +28,7 @@ import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineMapper;
 import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO;
+import org.srm.purchasecooperation.order.api.dto.PoHeaderSingleReferenceDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
 import org.srm.purchasecooperation.order.app.service.PoChangeByContractService;
 import org.srm.purchasecooperation.order.app.service.PoHeaderService;
@@ -38,6 +39,7 @@ import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
 import org.srm.purchasecooperation.order.domain.service.PoHeaderDomainService;
 import org.srm.purchasecooperation.order.domain.vo.PoHeaderAccordingToLineOfReferenceVO;
+import org.srm.purchasecooperation.order.domain.vo.PoHeaderSingleReferenceVO;
 import org.srm.web.annotation.Tenant;
 
 import java.util.Collections;
@@ -146,6 +148,15 @@ public class RcwlPoHeaderController {
             @Encrypt PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO){
         poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
         return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
+    }
+
+    @ApiOperation("采购申请整单引用汇总查询")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping({"/po-header/from-pr/header"})
+    public ResponseEntity<Page<PoHeaderSingleReferenceVO>> queryReferPrHeaderSummary(@PathVariable Long organizationId,
+                                                                                     PageRequest pageRequest,
+                                                                                     @Encrypt PoHeaderSingleReferenceDTO referenceDTO) {
+        return Results.success(this.poHeaderService.queryReferPrHeaderSummary(organizationId, pageRequest, referenceDTO));
     }
 
     @ApiOperation(value = "采购申请按行引用零星申请查询")

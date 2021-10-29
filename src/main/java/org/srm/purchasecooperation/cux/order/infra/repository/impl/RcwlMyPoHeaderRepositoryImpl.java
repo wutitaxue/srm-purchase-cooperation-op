@@ -4,12 +4,15 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyPoHeaderMapper;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderDetailDTO;
+import org.srm.purchasecooperation.order.api.dto.PoHeaderSingleReferenceDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
+import org.srm.purchasecooperation.order.domain.vo.PoHeaderSingleReferenceVO;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
 import org.srm.purchasecooperation.order.infra.repository.impl.PoHeaderRepositoryImpl;
 import org.srm.web.annotation.Tenant;
@@ -69,5 +72,11 @@ public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
         }
 
         return poHeaderDetailDTO;
+    }
+
+    @Override
+    @ProcessLovValue
+    public List<PoHeaderSingleReferenceVO> queryReferPrHeaderSummary(Long tenantId, PoHeaderSingleReferenceDTO referenceDTO) {
+        return this.rcwlMyPoHeaderMapper.selectPrHeader(tenantId, referenceDTO);
     }
 }
