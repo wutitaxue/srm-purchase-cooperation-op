@@ -7,6 +7,7 @@ import org.srm.purchasecooperation.cux.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.vo.BudgetAccountVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public interface RCWLPrLineMapper extends BaseMapper<PrLine> {
 
     PrLine selectPrLineRecord(@Param("prLineId")Long prLineId);
 
-    List<PrLineVO> listPrLines(@Param("tenantId") Long tenantId, @Param("prHeaderId") Long prHeaderId);
+    List<RCWLPrLineVO> listPrLines(@Param("tenantId") Long tenantId, @Param("prHeaderId") Long prHeaderId);
 
 
     BudgetAccountVO selectBudgetAccount(@Param("budgetAccountNum")String budgetAccountNum, @Param("tenantId")Long tenantId);

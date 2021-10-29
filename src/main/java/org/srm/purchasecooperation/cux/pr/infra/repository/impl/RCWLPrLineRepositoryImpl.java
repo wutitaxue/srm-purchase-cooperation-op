@@ -9,6 +9,7 @@ import org.srm.purchasecooperation.cux.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPrLineMapper;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
@@ -98,5 +99,13 @@ public class RCWLPrLineRepositoryImpl extends BaseRepositoryImpl<PrLine> impleme
     public PrLine selectPrLineRecord(Long prLineId) {
         return rcwlPrLineMapper.selectPrLineRecord(prLineId) ;
     }
+
+    @Override
+    public List<RCWLPrLineVO> selectPrLines(PageRequest pageRequest, Long tenantId, Long prHeaderId) {
+        return PageHelper.doSort(pageRequest.getSort(), () -> {
+            return this.rcwlPrLineMapper.listPrLines(tenantId, prHeaderId);
+        });
+    }
+
 
 }

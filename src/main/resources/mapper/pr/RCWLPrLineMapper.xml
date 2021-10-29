@@ -491,7 +491,8 @@
         spl.budget_account_deptno,
         spl.budget_account_price,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.financial_precision ELSE NULL END) AS financial_precision,
-        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision
+        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision,
+        sic.attribute_varchar15 AS categoryAttributeVarchar15
         FROM
         sprm_pr_line spl
         JOIN sprm_pr_header sph ON spl.pr_header_id = sph.pr_header_id
@@ -556,7 +557,7 @@
     <select id="selectPrLineRecord" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.PrLine">
     </select>
 
-    <select id="listPrLines" resultType="org.srm.purchasecooperation.pr.domain.vo.PrLineVO">
+    <select id="listPrLines" resultType="org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO">
         <include refid="ListPrLines_Main"/>
         WHERE
         spl.tenant_id = #{tenantId, jdbcType=DECIMAL}
