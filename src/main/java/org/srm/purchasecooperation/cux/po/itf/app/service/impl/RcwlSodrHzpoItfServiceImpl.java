@@ -63,7 +63,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
         List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOList = itfData.getData();
         rcwlSodrHzpoLineDTOList.forEach(poLine ->{
             Long categoryCodeCount = rcwlSodrHzpoItfRepository.checkSkuCategoryCode(tenantId,poLine.getSkuCategoryCode());
-            Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuCategoryCode());
+            Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuNo());
             Assert.isTrue(!categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
             Assert.isTrue(!noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
 
