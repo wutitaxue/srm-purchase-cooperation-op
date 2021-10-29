@@ -491,7 +491,8 @@
         spl.budget_account_deptno,
         spl.budget_account_price,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.financial_precision ELSE NULL END) AS financial_precision,
-        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision
+        (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision,
+        (CASE WHEN spl.attribute_date1 IS NULL THEN current_date() ELSE spl.attribute_date1 END) AS attribute_date1
         FROM
         sprm_pr_line spl
         JOIN sprm_pr_header sph ON spl.pr_header_id = sph.pr_header_id
