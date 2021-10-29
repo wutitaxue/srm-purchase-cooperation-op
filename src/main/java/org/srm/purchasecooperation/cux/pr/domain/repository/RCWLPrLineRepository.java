@@ -59,5 +59,13 @@ public interface RCWLPrLineRepository {
      */
     PrLine selectPrLineRecord(Long prLineId);
 
+    /**
+     * 分页查询采购申请行拓展
+     *
+     * @param pageRequest
+     * @param tenantId
+     * @param prHeaderId
+     * @return
+     */
     List<RCWLPrLineVO> selectPrLines(PageRequest pageRequest, Long tenantId, Long prHeaderId);
 }

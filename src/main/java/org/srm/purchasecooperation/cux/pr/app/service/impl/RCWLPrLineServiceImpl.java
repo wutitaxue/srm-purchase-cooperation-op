@@ -250,7 +250,7 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
         });
     }
 
-    private void accountAssignTypeRequiredFieldHandler(List<RCWLPrLineVO> prLineVOList) {
+    private void accountAssignTypeRequiredFieldHandler(List<PrLineVO> prLineVOList) {
         if (!CollectionUtils.isEmpty(prLineVOList)) {
             List<Long> idList = prLineVOList.stream().map(PrLineVO::getAccountAssignTypeId).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(idList)) {
@@ -269,7 +269,8 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
         }
     }
 
-    public void rCWLHideSupplierHandler(Long tenantId, List<RCWLPrLineVO> prLineVOList) {
+    @Override
+    public void hideSupplierHandler(Long tenantId, List<PrLineVO> prLineVOList) {
         if (!CollectionUtils.isEmpty(prLineVOList)) {
             List<PrLineVO> catalogueList = new ArrayList();
             Iterator var4 = prLineVOList.iterator();
@@ -304,9 +305,9 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
         List<PrLineVO> prLineVOS = new ArrayList<>(prLineVOList);
         prLineVOList.forEach(PrLineVO::calPrLineStatus);
         this.jointSupplierList(tenantId, prLineVOS);
-        this.rCWLHideSupplierHandler(tenantId, prLineVOList);
+        this.hideSupplierHandler(tenantId, prLineVOS);
         this.changePercentHandler(prLineVOS);
-        this.accountAssignTypeRequiredFieldHandler(prLineVOList);
+        this.accountAssignTypeRequiredFieldHandler(prLineVOS);
         this.jointExecutor(tenantId, prLineVOS);
         return prLineVOList;
     }
