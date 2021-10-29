@@ -45,29 +45,29 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
         //Tenant_id：hpfm_group表中core_flag为1的tanant_id
         Long tenantId = rcwlSodrHzpoItfRepository.getTenantId();
         itfData.setTenantId(tenantId);
-        //判断接口传入的状态代码是否在系统中存在
-        boolean existsFlag = false;
-        List<LovValueDTO> lovValueDTOLists = lovFeignClient.queryLovValue("SCUX_RCWL_HZPO_STATUS",tenantId);
-        for(LovValueDTO lovValueDTOList:lovValueDTOLists ){
-            if(lovValueDTOList.getValue().equals(itfData.getStatusCode())){
-                existsFlag = true;
-            }
-        }
-        Assert.isTrue(existsFlag,MessageAccessor.getMessage("error.sodrhzpo_status_error", LanguageHelper.locale()).desc());
-
-        //unified_social_code：关联sslm_supplier_basic中unified_social_code，校验必须存在
-        Long existsCount = rcwlSodrHzpoItfRepository.checkUnifiedSocialCode(tenantId,itfData.getUnifiedSocialCode());
-        Assert.isTrue(!existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
-
-        //校验行数据
-        List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOList = itfData.getData();
-        rcwlSodrHzpoLineDTOList.forEach(poLine ->{
-            Long categoryCodeCount = rcwlSodrHzpoItfRepository.checkSkuCategoryCode(tenantId,poLine.getSkuCategoryCode());
-            Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuNo());
-            Assert.isTrue(!categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
-            Assert.isTrue(!noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
-
-        });
+//        //判断接口传入的状态代码是否在系统中存在
+//        boolean existsFlag = false;
+//        List<LovValueDTO> lovValueDTOLists = lovFeignClient.queryLovValue("SCUX_RCWL_HZPO_STATUS",tenantId);
+//        for(LovValueDTO lovValueDTOList:lovValueDTOLists ){
+//            if(lovValueDTOList.getValue().equals(itfData.getStatusCode())){
+//                existsFlag = true;
+//            }
+//        }
+//        Assert.isTrue(existsFlag,MessageAccessor.getMessage("error.sodrhzpo_status_error", LanguageHelper.locale()).desc());
+//
+//        //unified_social_code：关联sslm_supplier_basic中unified_social_code，校验必须存在
+//        Long existsCount = rcwlSodrHzpoItfRepository.checkUnifiedSocialCode(tenantId,itfData.getUnifiedSocialCode());
+//        Assert.isTrue(!existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
+//
+//        //校验行数据
+//        List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOList = itfData.getData();
+//        rcwlSodrHzpoLineDTOList.forEach(poLine ->{
+//            Long categoryCodeCount = rcwlSodrHzpoItfRepository.checkSkuCategoryCode(tenantId,poLine.getSkuCategoryCode());
+//            Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuNo());
+//            Assert.isTrue(!categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
+//            Assert.isTrue(!noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
+//
+//        });
         return createOrUpdatePo(tenantId,itfData);
     }
 
@@ -113,7 +113,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                 lineQueryRecord.setPoHeaderId(poHeader.getPoHeaderId());
                 lineQueryRecord.setLineNum(line.getLineNum());
                 RcwlSodrHzpoLine selectLine = rcwlSodrHzpoLineRepository.selectOne(lineQueryRecord);
-                Boolean lineNewFlag = selectLine.getPoLineId() == null;
+                Boolean lineNewFlag = selectLine == null;
                 RcwlSodrHzpoLine poLine = new RcwlSodrHzpoLine();
 
                 if(lineNewFlag){
@@ -123,9 +123,11 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                     poLine.setPoHeaderId(poHeader.getPoHeaderId());
                     addList.add(poLine);
                 }else{
+                    LOGGER.info("line:{}",line);
                     line.setPoHeaderId(selectLine.getPoHeaderId());
                     line.setPoLineId(selectLine.getPoLineId());
                     line.setObjectVersionNumber(selectLine.getObjectVersionNumber());
+                    line.setTenantId(selectLine.getTenantId());
                     BeanUtils.copyProperties(line,poLine);
                     //更新行
                     updateList.add(poLine);
@@ -135,6 +137,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                 rcwlSodrHzpoLineRepository.batchInsert(addList);
             }
             if(CollectionUtils.isNotEmpty(updateList)){
+                LOGGER.info("poLine:{}",updateList);
                 rcwlSodrHzpoLineRepository.batchUpdateByPrimaryKey(updateList);
             }
             return poHeader;
