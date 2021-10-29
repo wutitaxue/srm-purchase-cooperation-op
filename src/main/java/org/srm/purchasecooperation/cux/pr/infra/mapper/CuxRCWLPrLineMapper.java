@@ -38,6 +38,12 @@ public interface CuxRCWLPrLineMapper extends PrLineMapper, ExtendMapper<PrLine> 
     @Override
     List<PrLineVO> cancelList(PrLineDTO prLineDTO);
 
+    /**
+     * 查询行信息
+     * @param tenantId
+     * @param prHeaderId
+     * @return
+     */
     @Override
     List<PrLineVO> listPrLines(@Param("tenantId") Long tenantId, @Param("prHeaderId") Long prHeaderId);
 }
