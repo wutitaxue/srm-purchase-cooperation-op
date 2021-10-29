@@ -55,40 +55,40 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
 
     @ApiModelProperty(value = "供应商确认日期")
     @DateTimeFormat(
-            pattern = BaseConstants.Pattern.DATETIME
+            pattern = BaseConstants.Pattern.DATE
     )
     @JsonFormat(
-            pattern = BaseConstants.Pattern.DATETIME,
+            pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
     private Date confirmedDate;
 
     @ApiModelProperty(value = "预计发货日期")
     @DateTimeFormat(
-            pattern = BaseConstants.Pattern.DATETIME
+            pattern = BaseConstants.Pattern.DATE
     )
     @JsonFormat(
-            pattern = BaseConstants.Pattern.DATETIME,
+            pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
     private Date estimatedShippingDate;
 
     @ApiModelProperty(value = "首次发货日期")
     @DateTimeFormat(
-            pattern = BaseConstants.Pattern.DATETIME
+            pattern = BaseConstants.Pattern.DATE
     )
     @JsonFormat(
-            pattern = BaseConstants.Pattern.DATETIME,
+            pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
     private Date firstShippingDate;
 
     @ApiModelProperty(value = "确认收货日期")
     @DateTimeFormat(
-            pattern = BaseConstants.Pattern.DATETIME
+            pattern = BaseConstants.Pattern.DATE
     )
     @JsonFormat(
-            pattern = BaseConstants.Pattern.DATETIME,
+            pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
     private Date confirmReceiptDate;
