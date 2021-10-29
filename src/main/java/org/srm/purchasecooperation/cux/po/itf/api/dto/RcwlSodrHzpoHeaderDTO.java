@@ -1,8 +1,11 @@
 package org.srm.purchasecooperation.cux.po.itf.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -41,19 +44,53 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     private String poType;
 
     @ApiModelProperty(value = "下单日期")
-   
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATETIME
+    )
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATETIME,
+            timezone = "GMT+8"
+    )
     private Date orderDate;
 
     @ApiModelProperty(value = "供应商确认日期")
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE,
+            timezone = "GMT+8"
+    )
     private Date confirmedDate;
 
     @ApiModelProperty(value = "预计发货日期")
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE,
+            timezone = "GMT+8"
+    )
     private Date estimatedShippingDate;
 
     @ApiModelProperty(value = "首次发货日期")
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE,
+            timezone = "GMT+8"
+    )
     private Date firstShippingDate;
 
     @ApiModelProperty(value = "确认收货日期")
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE,
+            timezone = "GMT+8"
+    )
     private Date confirmReceiptDate;
 
     @ApiModelProperty(value = "供应商统一社会信用代码")

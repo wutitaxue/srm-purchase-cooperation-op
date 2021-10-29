@@ -46,7 +46,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
         Long tenantId = rcwlSodrHzpoItfRepository.getTenantId();
         itfData.setTenantId(tenantId);
         //判断接口传入的状态代码是否在系统中存在
-        Boolean existsFlag = false;
+        boolean existsFlag = false;
         List<LovValueDTO> lovValueDTOLists = lovFeignClient.queryLovValue("SCUX_RCWL_HZPO_STATUS",tenantId);
         for(LovValueDTO lovValueDTOList:lovValueDTOLists ){
             if(lovValueDTOList.getValue().equals(itfData.getStatusCode())){
@@ -57,15 +57,15 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
 
         //unified_social_code：关联sslm_supplier_basic中unified_social_code，校验必须存在
         Long existsCount = rcwlSodrHzpoItfRepository.checkUnifiedSocialCode(tenantId,itfData.getUnifiedSocialCode());
-        Assert.isTrue(existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
+        Assert.isTrue(!existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
 
         //校验行数据
         List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOList = itfData.getData();
         rcwlSodrHzpoLineDTOList.forEach(poLine ->{
             Long categoryCodeCount = rcwlSodrHzpoItfRepository.checkSkuCategoryCode(tenantId,poLine.getSkuCategoryCode());
             Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuCategoryCode());
-            Assert.isTrue(categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
-            Assert.isTrue(noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
+            Assert.isTrue(!categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
+            Assert.isTrue(!noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
 
         });
         return createOrUpdatePo(tenantId,itfData);
