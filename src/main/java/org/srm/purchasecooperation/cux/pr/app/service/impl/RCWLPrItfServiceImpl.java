@@ -262,6 +262,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(prDetailLine -> {
                 RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                if ("R".equals(flag)){
+                    rcwlItfPrLineDetailDTO.setYszyje("0");
+                }
                 rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
             });
         }
@@ -750,7 +753,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         if ("O".equals(flag)) {
             itfPrLineDTO.setYslx("01");
         } else if ("R".equals(flag)) {
-            itfPrLineDTO.setYslx("02");
+            itfPrLineDTO.setYslx("01");
         }
 
         itfPrLineDTO.setCreateuser("jq");
