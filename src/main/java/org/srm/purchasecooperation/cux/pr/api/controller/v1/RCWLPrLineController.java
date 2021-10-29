@@ -52,8 +52,8 @@ import java.util.List;
         tags = {"Pr Line (Org Level)"}
 )
 @RestController("RCWLPrLineController.v1")
-@RequestMapping({"public/v1/{organizationId}"})
-//@Tenant("SRM-RCWL")
+@RequestMapping({"/v1/{organizationId}"})
+@Tenant("SRM-RCWL")
 public class RCWLPrLineController {
     @Autowired
     private PrLineService prLineService;
