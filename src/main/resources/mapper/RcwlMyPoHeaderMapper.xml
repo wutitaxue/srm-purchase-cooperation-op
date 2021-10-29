@@ -13,4 +13,93 @@
         sph3.po_header_id = #{poHeaderId}
 
     </select>
+
+    <select id="selectPrHeader" resultType="org.srm.purchasecooperation.order.domain.vo.PoHeaderSingleReferenceVO">
+        SELECT
+        sph.pr_header_id,
+        sph.pr_num,
+        sph.title,
+        sph.request_date,
+        sph.pr_source_platform,
+        hou.ou_name,
+        hpo.organization_name,
+        hpa.purchase_agent_name,
+        hc.company_name,
+        iu.real_name requested_name,
+        sph.urgent_flag,
+        sph.urgent_date,
+        sph.pr_type_id
+        FROM
+        sprm_pr_header sph
+        LEFT JOIN hpfm_purchase_agent hpa ON sph.purchase_agent_id = hpa.purchase_agent_id
+        LEFT JOIN hpfm_purchase_organization hpo ON sph.purchase_org_id = hpo.purchase_org_id
+        LEFT JOIN hpfm_operation_unit hou ON sph.ou_id = hou.ou_id
+        LEFT JOIN iam_user iu ON sph.requested_by = iu.id
+        LEFT JOIN hpfm_company hc ON sph.company_id = hc.company_id
+        where 1 = 1
+        <!--  状态为审批通过 -->
+        and sph.pr_status_code = 'APPROVED'
+        <!--  关闭状态为未关闭 -->
+        and sph.close_status_code != 'CLOSED'
+        <!--  取消状态为未取消 -->
+        and sph.cancel_status_code = 'UNCANCELLED'
+        <!--  来源平台为电商商城 -->
+        and sph.pr_source_platform = 'E-COMMERCE'
+        and sph.tenant_id = #{tenantId, jdbcType=DECIMAL}
+        <if test="dto != null">
+            <if test="dto.prNum != null and dto.prNum != ''">
+                <bind name="prNumLike" value="'%'+dto.prNum +'%'"></bind>
+                and sph.pr_num like #{prNumLike}
+            </if>
+            <if test="dto.title != null and dto.title != ''">
+                <bind name="titleLike" value="'%'+dto.title +'%'"></bind>
+                and sph.title like #{titleLike}
+            </if>
+            <if test="dto.requestDateFrom != null">
+                and sph.request_date &gt;= #{dto.requestDateFrom}
+            </if>
+            <if test="dto.requestDateTo != null">
+                and sph.request_date &lt;= #{dto.requestDateTo}
+            </if>
+            <if test="dto.ouId != null">
+                and sph.ou_id = #{dto.ouId}
+            </if>
+            <if test="dto.purchaseOrgId != null">
+                and sph.purchase_org_id = #{dto.purchaseOrgId}
+            </if>
+            <if test="dto.companyId != null">
+                and sph.company_id = #{dto.companyId}
+            </if>
+            <if test="dto.purchaseAgentId != null">
+                and sph.purchase_agent_id = #{dto.purchaseAgentId}
+            </if>
+            <if test="dto.sourceCode != null and dto.sourceCode != ''">
+                and sph.pr_source_platform = #{dto.sourceCode}
+            </if>
+            <if test="dto.requestedBy != null">
+                and sph.requested_by = #{dto.requestedBy}
+            </if>
+            <if test="dto.urgentFlag != null">
+                AND sph.urgent_flag = #{dto.urgentFlag}
+            </if>
+            <if test="dto.prTypeId != null">
+                AND sph.pr_type_id = #{dto.prTypeId}
+            </if>
+            <if test="dto.supplierId != null or dto.supplierCompanyId != null">
+                and sph.pr_header_id in (
+                SELECT
+                spl.pr_header_id
+                FROM sprm_pr_line spl
+                where 1 = 1
+                <if test="dto.supplierId != null">
+                    and spl.supplier_id = #{dto.supplierId}
+                </if>
+                <if test="dto.supplierCompanyId != null">
+                    and spl.supplier_company_id = #{dto.supplierCompanyId}
+                </if>
+                group by spl.pr_header_id)
+            </if>
+        </if>
+        ORDER BY sph.pr_num DESC
+    </select>
 </mapper>

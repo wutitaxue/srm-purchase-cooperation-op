@@ -21,12 +21,6 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
 
     @ApiModelProperty("业务用途")
     private String budgetAccountNum;
-
-    @DateTimeFormat(pattern = BaseConstants.Pattern.DATE)
-    @JsonFormat(pattern = BaseConstants.Pattern.DATE)
-    @ApiModelProperty(value = "订单日期从")
-    private Date attributeDate1;
-
     @ApiModelProperty("业务用途Meanings")
     @Transient
     private String budgetAccountName;
