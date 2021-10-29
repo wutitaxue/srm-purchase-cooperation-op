@@ -2,12 +2,17 @@ package org.srm.purchasecooperation.cux.pr.api.controller.v1;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import javassist.Loader;
+import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.util.Results;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -21,9 +26,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlPurchaseCompanyVo;
+import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrLineService;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlCompanyService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO;
 import org.srm.purchasecooperation.pr.api.dto.PrLineCloseResultDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
@@ -32,6 +39,7 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.web.annotation.Tenant;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
@@ -59,6 +67,8 @@ public class RCWLPrLineController {
     private RCWLPrLineRepository rcwlPrLineRepository;
     @Autowired
     private RcwlCompanyService rcwlCompanyService;
+    @Autowired
+    private RCWLPrLineService rcwlPrLineService;
 
     private static final Logger logger = LoggerFactory.getLogger(Loader.class);
 
@@ -144,6 +154,19 @@ public class RCWLPrLineController {
             logger.info("-------------copy 后的rcwlPurchaseCompanyVo：" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rcwlPurchaseCompanyVo));
         }
         return Results.success(rcwlPurchaseCompanyVo);
+    }
+
+    @ApiOperation("采购申请行查询-分页")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @GetMapping({"/purchase-requests/{prHeaderId}/page"})
+    @ProcessLovValue(
+            targetField = {"body"}
+    )
+    public ResponseEntity<Page<RCWLPrLineVO>> pagePrLines(@PathVariable("organizationId") Long tenantId, @Encrypt @PathVariable Long prHeaderId, @ApiIgnore @SortDefault(value = {"lineNum"},direction = Sort.Direction.ASC) PageRequest pageRequest) {
+        Page<RCWLPrLineVO> prLineVOPage = this.rcwlPrLineService.rCWLselectPrLinesPage(pageRequest, tenantId, prHeaderId);
+        return Results.success(prLineVOPage);
     }
 
 }
