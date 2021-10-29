@@ -96,6 +96,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.srm.purchasecooperation.cux.pr.infra.constant.Constants.PlanHeaderApprovalStatus.SUBMITTED;
+
 /**
  * @description:
  * @author:yuanping.zhang
@@ -250,6 +252,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         if (CollectionUtils.isEmpty(prHeader.getPrLineList())) {
             return prHeader;
         } else {
+            prHeader.setPrStatusCode(SUBMITTED);
             prHeader = this.updatePrHeader(prHeader);
             //判断是否能触发接口
             Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(), tenantId);
@@ -267,7 +270,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             }
 //            prHeader.validateSubmitForBatch(this.prHeaderRepository, this.prLineRepository, this.customizeSettingHelper, this.customizeClient);
 //            return ((PrHeaderService) this).submit(tenantId, prHeader);
-            this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "提交至BPM");
+            //this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "提交至BPM");
             return prHeader;
         }
     }
@@ -1099,6 +1102,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     //外部系统审批改为BPM审批，将之前的BPM逻辑复制到此处
                     // prHeaderService.submitExternal(tenantId, prHeader);
                     String dataToBpmUrl = this.rcwlPrToBpmService.prDataToBpm(prHeader, "create");
+                    this.prActionService.recordPrAction(prHeader.getPrHeaderId(), "SUBMITTED", "提交至BPM");
                     prHeader.setAttributeVarchar37(dataToBpmUrl);
                     break;
                 // 工作流审批
