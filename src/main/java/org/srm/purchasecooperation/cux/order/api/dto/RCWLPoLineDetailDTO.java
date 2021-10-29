@@ -1,11 +1,13 @@
 package org.srm.purchasecooperation.cux.order.api.dto;
 
-import com.netflix.ribbon.proxy.annotation.TemplateName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.boot.platform.lov.annotation.LovValue;
+import org.hzero.core.base.BaseConstants;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
 
 import javax.persistence.Transient;
+import java.util.Date;
 
 /**
  * @author bin.zhang
@@ -19,6 +21,12 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
 
     @ApiModelProperty("业务用途")
     private String budgetAccountNum;
+
+    @DateTimeFormat(pattern = BaseConstants.Pattern.DATE)
+    @JsonFormat(pattern = BaseConstants.Pattern.DATE)
+    @ApiModelProperty(value = "订单日期从")
+    private Date attributeDate1;
+
     @ApiModelProperty("业务用途Meanings")
     @Transient
     private String budgetAccountName;
@@ -57,6 +65,16 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @Override
     public void setAttributeVarchar10(String attributeVarchar10) {
         this.attributeVarchar10 = attributeVarchar10;
+    }
+
+    @Override
+    public Date getAttributeDate1() {
+        return attributeDate1;
+    }
+
+    @Override
+    public void setAttributeDate1(Date attributeDate1) {
+        this.attributeDate1 = attributeDate1;
     }
 
     @Override
