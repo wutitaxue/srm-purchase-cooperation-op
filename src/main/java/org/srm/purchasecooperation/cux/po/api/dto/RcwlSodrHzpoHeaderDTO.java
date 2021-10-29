@@ -1,12 +1,15 @@
 package org.srm.purchasecooperation.cux.po.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hzero.boot.platform.lov.annotation.LovValue;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.export.annotation.ExcelColumn;
 import org.hzero.export.annotation.ExcelSheet;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -45,19 +48,49 @@ public class RcwlSodrHzpoHeaderDTO {
     @ExcelColumn(title = "订单类型", order = 50)
     private String poType;
     @ApiModelProperty(value = "下单日期")
-    @ExcelColumn(title = "下单日期", order = 80)
+    @ExcelColumn(title = "下单日期", order = 80, pattern = BaseConstants.Pattern.DATETIME)
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATETIME
+    )
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATETIME
+    )
     private Date orderDate;
     @ApiModelProperty(value = "供应商确认日期")
-    @ExcelColumn(title = "供应商确认日期", order = 90)
+    @ExcelColumn(title = "供应商确认日期", order = 90, pattern = BaseConstants.Pattern.DATE)
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
     private Date confirmedDate;
     @ApiModelProperty(value = "预计发货日期")
-    @ExcelColumn(title = "预计发货日期", order = 100)
+    @ExcelColumn(title = "预计发货日期", order = 100, pattern = BaseConstants.Pattern.DATE)
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
     private Date estimatedShippingDate;
     @ApiModelProperty(value = "首次发货日期")
-    @ExcelColumn(title = "首次发货日期", order = 110)
+    @ExcelColumn(title = "首次发货日期", order = 110, pattern = BaseConstants.Pattern.DATE)
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
     private Date firstShippingDate;
     @ApiModelProperty(value = "确认收货日期")
-    @ExcelColumn(title = "确认收货日期", order = 120)
+    @ExcelColumn(title = "确认收货日期", order = 120, pattern = BaseConstants.Pattern.DATE)
+    @JsonFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
+    @DateTimeFormat(
+            pattern = BaseConstants.Pattern.DATE
+    )
     private Date confirmReceiptDate;
     @ApiModelProperty(value = "供应商统一社会信用代码")
     private String unifiedSocialCode;
