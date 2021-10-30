@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.platform.lov.adapter.LovAdapter;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
+import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.common.TenantInfoHelper;
@@ -40,6 +42,7 @@ import org.srm.purchasecooperation.order.domain.repository.*;
 import org.srm.purchasecooperation.order.domain.service.*;
 import org.srm.purchasecooperation.order.domain.vo.*;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
+import org.srm.purchasecooperation.order.infra.mapper.PoLineMapper;
 import org.srm.purchasecooperation.order.infra.utils.FieldUtils;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.PrLineChangeDto;
@@ -69,6 +72,7 @@ import java.util.stream.Collectors;
  *
  * @author Zhouzy 2021/05/22 14:31
  */
+@Slf4j
 @Service
 @Tenant(TennantValue.tenantV)
 public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
@@ -129,6 +133,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private PrLineRepository prLineRepository;
     @Autowired
     private RcwlMyCostMapper rcwlMyCostMapper;
+    @Autowired
+    private PoLineMapper poLineMapper;
+    @Autowired
+    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
@@ -824,8 +832,95 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         }
     }
 
+    @Transactional(rollbackFor = {Exception.class})
+    public PoDTO updatePoWhenPr(PoOrderSaveDTO poOrderSaveDTO) {
+        List<PoLine> poLineList = new ArrayList();
+        if (poOrderSaveDTO.getPoLineDetailDTOs() != null) {
+            Iterator var3 = poOrderSaveDTO.getPoLineDetailDTOs().iterator();
 
+            while(var3.hasNext()) {
+                PoLineDetailDTO poLineDetailDTO = (PoLineDetailDTO)var3.next();
+                //行金额、跨年预算校验
+                checkBudgetDistribution(poLineDetailDTO);
+                PoLine line = new PoLine();
+                BeanUtils.copyProperties(poLineDetailDTO, line);
+                poLineList.add(line);
+            }
+        }
 
+        this.poValidateDomainService.validateSubmitStatus(poOrderSaveDTO.getPoHeaderDetailDTO().getPoHeaderId(), poLineList);
+        PoHeaderDetailDTO poHeaderDetailDTO = poOrderSaveDTO.getPoHeaderDetailDTO();
+        ConfigQueryVO configQueryVO = this.poHeaderMapper.selectConfigParam(poHeaderDetailDTO.getTenantId(), poHeaderDetailDTO.getPoHeaderId());
+        configQueryVO.setConfigCode("SITE.SPUC.PO.REF_PRICE_LIB");
+        String enablePriceLib = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
+        configQueryVO.setConfigCode("SITE.SPUC.PO.PRICE_LIB_STRATEGY");
+        String serviceCode = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
+        String priceLibService = this.queryEnablePriceLibConfig(poHeaderDetailDTO.getCompanyId(), poHeaderDetailDTO.getOuId(), poHeaderDetailDTO.getPurchaseOrgId(), poHeaderDetailDTO.getTenantId());
+        poOrderSaveDTO.setPoLineMysql(this.poLineMapper.selectByPoHeaderIdList(Arrays.asList(poHeaderDetailDTO.getPoHeaderId())));
+        String tenantNum = TenantInfoHelper.selectByTenantId(poOrderSaveDTO.getPoHeaderDetailDTO().getTenantId()).getTenantNum();
 
+        try {
+            TaskResultBox taskResultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_ORDER_PRICE_SOURCE_TYPE", tenantNum, poOrderSaveDTO);
+            LOGGER.info("updatePoWhenPr taskResultBox:{}", JSONObject.toJSONString(taskResultBox));
+            poOrderSaveDTO = (PoOrderSaveDTO)taskResultBox.get(0, PoOrderSaveDTO.class);
+            LOGGER.info("updatePoWhenPr taskResultBox:{}", JSONObject.toJSONString(poOrderSaveDTO));
+        } catch (TaskNotExistException var15) {
+            LOGGER.info("============ORDER_PRICE_SOURCE_TYPE--updatePoWhenPr-TaskNotExistException=============={}", new Object[]{tenantNum, var15.getMessage(), var15.getStackTrace()});
+        }
+
+        if (BaseConstants.Flag.YES.toString().equals(enablePriceLib)) {
+            if (StringUtils.isNotEmpty(priceLibService) && !"NULL".equals(serviceCode)) {
+                if (poOrderSaveDTO.getPoHeaderDetailDTO().getUnSaveEnable() != null && 0 == poOrderSaveDTO.getPoHeaderDetailDTO().getUnSaveEnable()) {
+                    LOGGER.debug("22875====PoHeaderServiceImpl.updatePoHeaderAndPoLineSNewPrice in{}", JSONObject.toJSONString(poOrderSaveDTO));
+                    return ((PoHeaderService)this.self()).updatePoHeaderAndPoLineSNewPrice(poOrderSaveDTO);
+                } else {
+                    List<PoLine> poLines = this.poLineRepository.selectByCondition(Condition.builder(PoLine.class).andWhere(Sqls.custom().andEqualTo("poHeaderId", poOrderSaveDTO.getPoHeaderDetailDTO().getPoHeaderId())).build());
+                    List<PoLineDetailDTO> poLineDetailDTOS = new ArrayList();
+                    poOrderSaveDTO.setPoLineDetailDTOs(poLineDetailDTOS);
+
+                    PoLineDetailDTO poLineDetailDTO;
+                    for(Iterator var11 = poLines.iterator(); var11.hasNext(); poLineDetailDTOS.add(poLineDetailDTO)) {
+                        PoLine poLine = (PoLine)var11.next();
+                        poLineDetailDTO = new PoLineDetailDTO();
+                        BeanUtils.copyProperties(poLine, poLineDetailDTO);
+                        poLineDetailDTO.setLineVersionNumber(poLine.getObjectVersionNumber());
+                        List<PoLineLocation> poLineLocations = this.poLineLocationRepository.select("poLineId", poLine.getPoLineId());
+                        if (poLineLocations.size() > 0) {
+                            poLineDetailDTO.setLocationVersionNumber(((PoLineLocation)poLineLocations.get(0)).getObjectVersionNumber());
+                            poLineDetailDTO.setPoLineLocationId(((PoLineLocation)poLineLocations.get(0)).getPoLineLocationId());
+                        }
+                    }
+
+                    LOGGER.debug("22875====PoHeaderServiceImpl.savePoWhenPrFirstNewPrice in{}", JSONObject.toJSONString(poOrderSaveDTO));
+                    return this.savePoWhenPrFirstNewPrice(poOrderSaveDTO);
+                }
+            } else {
+                LOGGER.debug("22875====PoHeaderServiceImpl.savePo in{}", JSONObject.toJSONString(poOrderSaveDTO));
+                return this.savePo(poOrderSaveDTO);
+            }
+        } else if (poOrderSaveDTO.getPoHeaderDetailDTO().getUnSaveEnable() != null && 0 != poOrderSaveDTO.getPoHeaderDetailDTO().getUnSaveEnable()) {
+            LOGGER.debug("22875====PoHeaderServiceImpl.savePoWhenPrFirst in{}", JSONObject.toJSONString(poOrderSaveDTO));
+            return this.generatorPoByPrDomainService.savePoWhenPrFirst(poOrderSaveDTO);
+        } else {
+            LOGGER.debug("22875====PoHeaderServiceImpl.updatePoHeaderAndPoLineS in{}", JSONObject.toJSONString(poOrderSaveDTO));
+            return ((PoHeaderService)this.self()).updatePoHeaderAndPoLineS(poOrderSaveDTO);
+        }
+    }
+
+    private void checkBudgetDistribution(PoLineDetailDTO poLineDetailDTO) {
+        // 根据订单头行ID、获取预算分配数据
+        List<RcwlBudgetDistribution> budgetDistributionsInDB = rcwlBudgetDistributionRepository.selectByCondition((Condition.builder(RcwlBudgetDistribution.class).
+                andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PO_HEADER_ID, poLineDetailDTO.getPoHeaderId())
+                        .andEqualTo(RcwlBudgetDistribution.FIELD_PO_LINE_ID, poLineDetailDTO.getPoLineId())
+                        .andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, poLineDetailDTO.getTenantId())
+                ).build()));
+
+        //校验各年原预算值（手工）是否等于行金额
+        BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("订单行总金额：{},各年原预算值（手工）：{}",poLineDetailDTO.getLineAmount(),totalBudgetDisAmount);
+        if (totalBudgetDisAmount.compareTo(Optional.ofNullable(poLineDetailDTO.getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
+            throw new CommonException("订单行号为【"+poLineDetailDTO.getLineNum()+"】的行金额与预算占用合计必须相等，请重新维护预算拆分！");
+        }
+    }
 
 }

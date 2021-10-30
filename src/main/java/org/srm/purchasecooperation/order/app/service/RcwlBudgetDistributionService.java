@@ -19,4 +19,13 @@ public interface RcwlBudgetDistributionService {
      * @return
      */
     List<RcwlBudgetDistribution> selectBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
+
+    /**
+     * 批量更新预算分配
+     *
+     * @param tenantId
+     * @param rcwlBudgetDistributionList
+     * @return
+     */
+    List<RcwlBudgetDistribution> batchUpdateBudgetDistributions(Long tenantId, List<RcwlBudgetDistribution> rcwlBudgetDistributionList);
 }

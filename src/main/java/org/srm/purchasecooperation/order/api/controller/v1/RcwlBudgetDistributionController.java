@@ -7,7 +7,6 @@ import org.hzero.core.base.BaseController;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.order.app.service.RcwlBudgetDistributionService;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
-import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 
 import java.util.List;
 
@@ -30,8 +28,6 @@ import java.util.List;
 @RequestMapping("/v1/{organizationId}/po/rcwl-budget-distributions")
 public class RcwlBudgetDistributionController extends BaseController {
 
-    @Autowired
-    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
     @Autowired
     private RcwlBudgetDistributionService rcwlBudgetDistributionService;
 
@@ -46,9 +42,8 @@ public class RcwlBudgetDistributionController extends BaseController {
     @ApiOperation(value = "批量更新预算分配")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/batch-update")
-    public ResponseEntity<List<RcwlBudgetDistribution>> update(@RequestBody List<RcwlBudgetDistribution> rcwlBudgetDistributionList) {
-        rcwlBudgetDistributionRepository.batchUpdateByPrimaryKeySelective(rcwlBudgetDistributionList);
-        return Results.success(rcwlBudgetDistributionList);
+    public ResponseEntity<List<RcwlBudgetDistribution>> update(@PathVariable(value = "organizationId") long tenantId, @RequestBody List<RcwlBudgetDistribution> rcwlBudgetDistributionList) {
+        return Results.success(rcwlBudgetDistributionService.batchUpdateBudgetDistributions(tenantId, rcwlBudgetDistributionList));
     }
 
 }

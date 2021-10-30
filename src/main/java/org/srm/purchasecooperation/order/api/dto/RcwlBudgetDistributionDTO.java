@@ -50,6 +50,7 @@ public class RcwlBudgetDistributionDTO {
     @JsonFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "需求开始日期")
     private LocalDate attributeDate1;
+    @JsonFormat(pattern = Constants.Pattern.DATE)
     @ApiModelProperty(value = "需求结束日期")
     private LocalDate needByDate;
 
