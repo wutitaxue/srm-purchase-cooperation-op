@@ -7,6 +7,7 @@ import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.order.app.service.RcwlBudgetDistributionService;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
@@ -14,6 +15,7 @@ import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributio
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +35,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<RcwlBudgetDistribution> selectBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+        processPoLine(rcwlBudgetDistributionDTO);
+
         // 根据订单头行ID、获取预算分配数据
         List<RcwlBudgetDistribution> budgetDistributionsInDB = rcwlBudgetDistributionRepository.selectByCondition((Condition.builder(RcwlBudgetDistribution.class).
                 andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PO_HEADER_ID, rcwlBudgetDistributionDTO.getPoHeaderId())
@@ -46,8 +50,10 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         if (CollectionUtils.isEmpty(budgetDistributionsInDB)){
             return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO,null);
         }
+
+        List<RcwlBudgetDistribution> budgetDistributionDelList = new ArrayList<>(budgetDistributionsInDB);
         //校验各年原预算值（手工）是否等于行金额
-        BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
         log.info("订单行总金额：{},各年原预算值（手工）：{}",rcwlBudgetDistributionDTO.getLineAmount(),totalBudgetDisAmount);
         if (totalBudgetDisAmount.compareTo(Optional.ofNullable(rcwlBudgetDistributionDTO.getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
             budgetDistributionsInDB = null;
@@ -55,20 +61,23 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
         //重新计算系统预算，获取原手工预算，重新创建并清空原数据
         List<RcwlBudgetDistribution> budgetDistributionCreateList = createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB);
-        rcwlBudgetDistributionRepository.batchDelete(budgetDistributionsInDB);
+        rcwlBudgetDistributionRepository.batchDelete(budgetDistributionDelList);
         return budgetDistributionCreateList;
     }
 
     private List<RcwlBudgetDistribution> createBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO, List<RcwlBudgetDistribution> budgetDistributionsInDB) {
         List<RcwlBudgetDistribution> budgetDistributionCreateList = new ArrayList<>();
+
+        //预算总时长(月) = A2年B2月- A1年B1月=12-B1+B2+（A2-A1-1）*12
+       Long budgetDisGap = 12 - rcwlBudgetDistributionDTO.getNeedByDateMonth() + rcwlBudgetDistributionDTO.getAttributeDate1Month()
+                + (rcwlBudgetDistributionDTO.getNeedByDateYear() - rcwlBudgetDistributionDTO.getAttributeDate1Year() - 1) * 12;
+
         for (Long i = rcwlBudgetDistributionDTO.getAttributeDate1Year(); i <= rcwlBudgetDistributionDTO.getNeedByDateYear(); i++) {
             RcwlBudgetDistribution budgetDistribution = new RcwlBudgetDistribution();
             budgetDistribution.setPoHeaderId(rcwlBudgetDistributionDTO.getPoHeaderId());
             budgetDistribution.setPoLineId(rcwlBudgetDistributionDTO.getPoLineId());
             budgetDistribution.setBudgetDisYear(i);
-            //预算总时长(月) = A2年B2月- A1年B1月=12-B1+B2+（A2-A1-1）*12
-            budgetDistribution.setBudgetDisGap(12 - rcwlBudgetDistributionDTO.getNeedByDateMonth() + rcwlBudgetDistributionDTO.getAttributeDate1Month()
-                    + (rcwlBudgetDistributionDTO.getNeedByDateYear() - rcwlBudgetDistributionDTO.getAttributeDate1Year() - 1) * 12);
+            budgetDistribution.setBudgetDisGap(budgetDisGap);
             budgetDistribution.setTenantId(tenantId);
 
             if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
@@ -82,14 +91,14 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
             //预算占用(系统计算值)
             if (i.equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())) {
-                // 当前行【占用年份】=A1，则为【申请行总金额】/【占用总时长（月）】*【12-B1】
-                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionDTO.getBudgetDisGap() * (12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())), 6, RoundingMode.HALF_UP));
+                //A年预算占用金额=（12-B1）/预算总时长(月)*行金额
+                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP)));
             } else if (i.equals(rcwlBudgetDistributionDTO.getNeedByDateYear())) {
-                // 若当前行【占用年份】=A2,则为【申请行总金额】/【占用总时长（月）】*B2
-                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionDTO.getBudgetDisGap() * rcwlBudgetDistributionDTO.getNeedByDateMonth()), 6, RoundingMode.HALF_UP));
+                //C年预算占用金额=B2/预算总时长(月)*行金额
+                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedByDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP)));
             } else {
-                // 前两者不满足，则为【申请行总金额】/【占用总时长（月）】*12
-                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionDTO.getBudgetDisGap() * 12), 6, RoundingMode.HALF_UP));
+                //AC之间年份金额=12/预算总时长(月)*行金额
+                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(12).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP)));
             }
             budgetDistributionCreateList.add(budgetDistribution);
         }
@@ -97,6 +106,23 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         rcwlBudgetDistributionRepository.batchInsert(budgetDistributionCreateList);
 
         return budgetDistributionCreateList;
+    }
+
+    public void processPoLine(RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+        //订单行金额
+        Assert.notNull(rcwlBudgetDistributionDTO.getLineAmount(), "error.line_amount_not_exists");
+
+        //订单开始日期
+        LocalDate startDate = rcwlBudgetDistributionDTO.getAttributeDate1();
+        Assert.notNull(startDate, "error.start_date_not_exists");
+        rcwlBudgetDistributionDTO.setAttributeDate1Year(Long.valueOf(startDate.getYear()));
+        rcwlBudgetDistributionDTO.setAttributeDate1Month(Long.valueOf(startDate.getMonthValue()));
+
+        //订单结束日期
+        LocalDate endDate = rcwlBudgetDistributionDTO.getNeedByDate();
+        Assert.notNull(endDate, "error.end_date_not_exists");
+        rcwlBudgetDistributionDTO.setNeedByDateYear(Long.valueOf(endDate.getYear()));
+        rcwlBudgetDistributionDTO.setNeedByDateMonth(Long.valueOf(endDate.getMonthValue()));
     }
 
 }
