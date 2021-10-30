@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.order.app.service.impl;
 
+import io.choerodon.core.exception.CommonException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.hzero.mybatis.domian.Condition;
@@ -10,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.order.app.service.RcwlBudgetDistributionService;
+import org.srm.purchasecooperation.order.domain.entity.PoLine;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
+import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 
 import java.math.BigDecimal;
@@ -31,6 +34,8 @@ import java.util.Optional;
 public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistributionService {
     @Autowired
     private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
+    @Autowired
+    private PoLineRepository poLineRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -108,7 +113,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         return budgetDistributionCreateList;
     }
 
-    public void processPoLine(RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+    private void processPoLine(RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         //订单行金额
         Assert.notNull(rcwlBudgetDistributionDTO.getLineAmount(), "error.line_amount_not_exists");
 
@@ -123,6 +128,28 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         Assert.notNull(endDate, "error.end_date_not_exists");
         rcwlBudgetDistributionDTO.setNeedByDateYear(Long.valueOf(endDate.getYear()));
         rcwlBudgetDistributionDTO.setNeedByDateMonth(Long.valueOf(endDate.getMonthValue()));
+    }
+
+    @Override
+    public List<RcwlBudgetDistribution> batchUpdateBudgetDistributions(Long tenantId, List<RcwlBudgetDistribution> rcwlBudgetDistributionList) {
+
+        List<PoLine> poLines = this.poLineRepository.selectByCondition(Condition.builder(PoLine.class)
+                .andWhere(Sqls.custom().andEqualTo(PoLine.FIELD_PO_HEADER_ID, rcwlBudgetDistributionList.get(0).getPoHeaderId())
+                        .andEqualTo(PoLine.FIELD_PO_LINE_ID, rcwlBudgetDistributionList.get(0).getPoLineId())
+                        .andEqualTo(PoLine.FIELD_TENANT_ID, tenantId)).build());
+        if (CollectionUtils.isEmpty(poLines)){
+            throw new CommonException("订单行数据不存在！");
+        }
+
+        //校验各年原预算值（手工）是否等于行金额
+        BigDecimal totalBudgetDisAmount = rcwlBudgetDistributionList.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("订单行总金额：{},各年原预算值（手工）：{}",poLines.get(0).getLineAmount(),totalBudgetDisAmount);
+        if (totalBudgetDisAmount.compareTo(Optional.ofNullable(poLines.get(0).getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
+            throw new CommonException("预算占用合计必须等于订单行金额，请重新维护预算拆分！");
+        }
+
+        rcwlBudgetDistributionRepository.batchUpdateByPrimaryKeySelective(rcwlBudgetDistributionList);
+        return rcwlBudgetDistributionList;
     }
 
 }
