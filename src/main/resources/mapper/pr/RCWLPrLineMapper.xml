@@ -493,6 +493,7 @@
         IFNULL(spl.attribute_varchar11,1) attribute_varchar11,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.financial_precision ELSE NULL END) AS financial_precision,
         (CASE WHEN sph.pr_source_platform = 'SRM' THEN sc2.default_precision ELSE NULL END) AS default_precision,
+        (CASE WHEN spl.attribute_date1 IS NULL THEN current_date() ELSE spl.attribute_date1 END) AS attribute_date1,
         sic.attribute_varchar15 AS categoryAttributeVarchar15
         FROM
         sprm_pr_line spl
