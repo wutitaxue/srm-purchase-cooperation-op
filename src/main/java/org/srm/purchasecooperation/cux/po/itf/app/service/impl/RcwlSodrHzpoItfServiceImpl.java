@@ -113,7 +113,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                 lineQueryRecord.setPoHeaderId(poHeader.getPoHeaderId());
                 lineQueryRecord.setLineNum(line.getLineNum());
                 RcwlSodrHzpoLine selectLine = rcwlSodrHzpoLineRepository.selectOne(lineQueryRecord);
-                Boolean lineNewFlag = selectLine.getPoLineId() == null;
+                Boolean lineNewFlag = selectLine == null;
                 RcwlSodrHzpoLine poLine = new RcwlSodrHzpoLine();
 
                 if(lineNewFlag){
@@ -123,9 +123,11 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                     poLine.setPoHeaderId(poHeader.getPoHeaderId());
                     addList.add(poLine);
                 }else{
+                    LOGGER.info("line:{}",line);
                     line.setPoHeaderId(selectLine.getPoHeaderId());
                     line.setPoLineId(selectLine.getPoLineId());
                     line.setObjectVersionNumber(selectLine.getObjectVersionNumber());
+                    line.setTenantId(selectLine.getTenantId());
                     BeanUtils.copyProperties(line,poLine);
                     //更新行
                     updateList.add(poLine);
@@ -135,6 +137,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                 rcwlSodrHzpoLineRepository.batchInsert(addList);
             }
             if(CollectionUtils.isNotEmpty(updateList)){
+                LOGGER.info("poLine:{}",updateList);
                 rcwlSodrHzpoLineRepository.batchUpdateByPrimaryKey(updateList);
             }
             return poHeader;

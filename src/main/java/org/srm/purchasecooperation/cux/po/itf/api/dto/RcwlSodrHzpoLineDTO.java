@@ -48,6 +48,6 @@ public class RcwlSodrHzpoLineDTO extends AuditDomain {
     private BigDecimal contractLineAmount;
 
     @ApiModelProperty(value = "税率")
-    private Integer taxRate;
+    private Long taxRate;
 
 }
