@@ -38,7 +38,7 @@ public class RcwlBudgetDistributionController extends BaseController {
     @ApiOperation(value = "根据订单行生成并获取预算分配列表")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/list")
-    public ResponseEntity<List<RcwlBudgetDistribution>> create(@PathVariable(value = "organizationId") long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+    public ResponseEntity<List<RcwlBudgetDistribution>> create(@PathVariable(value = "organizationId") long tenantId, @RequestBody RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO);
         return Results.success(rcwlBudgetDistributions);
     }
