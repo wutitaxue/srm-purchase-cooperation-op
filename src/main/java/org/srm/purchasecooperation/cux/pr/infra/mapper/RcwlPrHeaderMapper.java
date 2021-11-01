@@ -34,9 +34,20 @@ public interface RcwlPrHeaderMapper extends PrHeaderMapper, ExtendMapper<PrHeade
 
     void updateMsgResponse(PrHeader prHeader);
 
+    /**
+     * 采购申请汇总查询
+     *
+     * @param prHeaderDTO 采购申请头
+     * @return List<PrHeaderVO>;
+     **/
     @Override
     List<PrHeaderVO> selectPrSummariesAndWorkFlow(PrHeaderDTO prHeaderDTO);
 
+    /**
+     * 采购申请维护汇总查询
+     * @param prHeaderDTO
+     * @return List<PrHeaderVO>;
+     */
     @Override
     List<PrHeaderVO> selectForMaintain(PrHeaderDTO prHeaderDTO);
 }
