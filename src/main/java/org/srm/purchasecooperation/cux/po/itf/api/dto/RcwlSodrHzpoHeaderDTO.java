@@ -8,6 +8,8 @@ import org.hzero.core.base.BaseConstants;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -51,7 +53,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
             pattern = BaseConstants.Pattern.DATETIME,
             timezone = "GMT+8"
     )
-    private Date orderDate;
+    private LocalDateTime orderDate;
 
     @ApiModelProperty(value = "供应商确认日期")
     @DateTimeFormat(
@@ -61,7 +63,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
             pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
-    private Date confirmedDate;
+    private LocalDate confirmedDate;
 
     @ApiModelProperty(value = "预计发货日期")
     @DateTimeFormat(
@@ -71,7 +73,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
             pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
-    private Date estimatedShippingDate;
+    private LocalDate estimatedShippingDate;
 
     @ApiModelProperty(value = "首次发货日期")
     @DateTimeFormat(
@@ -81,7 +83,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
             pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
-    private Date firstShippingDate;
+    private LocalDate firstShippingDate;
 
     @ApiModelProperty(value = "确认收货日期")
     @DateTimeFormat(
@@ -91,7 +93,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
             pattern = BaseConstants.Pattern.DATE,
             timezone = "GMT+8"
     )
-    private Date confirmReceiptDate;
+    private LocalDate confirmReceiptDate;
 
     @ApiModelProperty(value = "供应商统一社会信用代码")
    
