@@ -46,6 +46,14 @@
         <!--        <if test="userDetails != null">-->
         <!--            AND sph.created_by = #{userDetails.userId,jdbcType=DECIMAL}-->
         <!--        </if>-->
+        AND EXISTS (
+        SELECT
+        spl.pr_header_id
+        FROM
+        sprm_pr_line spl
+        WHERE
+        sph.pr_header_id = spl.pr_header_id AND sph.tenant_id = spl.tenant_id
+        AND ( sph.creation_date &lt;= '2021.10.30' OR ( sph.pr_source_platform != 'E-COMMERCE' AND sph.pr_source_platform != 'CATALOGUE' ) OR spl.change_order_code != 'success' ))
         <if test="purchasePlatformQueryParam1 != null and purchasePlatformQueryParam1 != ''">
             <bind name="purchasePlatformQueryParam1Like" value="'%'+purchasePlatformQueryParam1 +'%'"/>
             AND (sph.display_pr_num LIKE #{purchasePlatformQueryParam1Like}
@@ -613,6 +621,15 @@
         LEFT JOIN hpfm_inventory hi ON hi.inventory_id = sph.inventory_id
         LEFT JOIN smdm_currency scu ON sph.original_currency = scu.currency_code AND sph.tenant_id = scu.tenant_id AND scu.enabled_flag = 1
         WHERE 1 = 1
+
+        AND EXISTS (
+        SELECT
+        spl.pr_header_id
+        FROM
+        sprm_pr_line spl
+        WHERE
+        sph.pr_header_id = spl.pr_header_id AND sph.tenant_id = spl.tenant_id
+        AND ( sph.creation_date &lt;= '2021.10.30' OR ( sph.pr_source_platform != 'E-COMMERCE' AND sph.pr_source_platform != 'CATALOGUE' ) OR spl.change_order_code != 'success' ))
         <if test="purchasePlatformQueryParam1 != null and purchasePlatformQueryParam1 != ''">
             <bind name="purchasePlatformQueryParam1Like" value="'%'+purchasePlatformQueryParam1 +'%'"/>
             AND (sph.display_pr_num LIKE #{purchasePlatformQueryParam1Like}
@@ -1773,6 +1790,14 @@
         LEFT JOIN iam_user iur ON iur.id = sph.requested_by
         LEFT JOIN hpfm_inventory hi ON hi.inventory_id = sph.inventory_id
         WHERE sph.tenant_id = #{tenantId}
+        AND EXISTS (
+        SELECT
+        spl.pr_header_id
+        FROM
+        sprm_pr_line spl
+        WHERE
+        sph.pr_header_id = spl.pr_header_id AND sph.tenant_id = spl.tenant_id
+        AND ( sph.creation_date &lt;= '2021.10.30' OR ( sph.pr_source_platform != 'E-COMMERCE' AND sph.pr_source_platform != 'CATALOGUE' ) OR spl.change_order_code != 'success' ))
         <if test=" prTypeId!= null">
             AND sph.pr_type_id = #{prTypeId}
         </if>

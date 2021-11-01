@@ -6,6 +6,14 @@
     <sql id="base_pageAssignList_where">
         WHERE
         1 = 1
+        AND EXISTS (
+        SELECT
+        spl.pr_header_id
+        FROM
+        sprm_pr_line spl
+        WHERE
+        sph.pr_header_id = spl.pr_header_id AND sph.tenant_id = spl.tenant_id
+        AND ( sph.creation_date &lt;= '2021.10.30' OR ( sph.pr_source_platform != 'E-COMMERCE' AND sph.pr_source_platform != 'CATALOGUE' ) OR spl.change_order_code != 'success' ))
         AND spl.tenant_id=#{tenantId,jdbcType=DECIMAL}
         <!--添加查询条件 -->
         <if test="attributeBigint1 != null">
