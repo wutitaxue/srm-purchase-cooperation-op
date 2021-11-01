@@ -13,7 +13,8 @@ import javax.validation.constraints.NotBlank;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -95,15 +96,15 @@ public class RcwlSodrHzpoHeader extends AuditDomain {
     private String poType;
     @ApiModelProperty(value = "下单日期", required = true)
     @NotNull
-    private Date orderDate;
+    private LocalDateTime orderDate;
     @ApiModelProperty(value = "供应商确认日期")
-    private Date confirmedDate;
+    private LocalDate confirmedDate;
     @ApiModelProperty(value = "预计发货日期")
-    private Date estimatedShippingDate;
+    private LocalDate estimatedShippingDate;
     @ApiModelProperty(value = "首次发货日期")
-    private Date firstShippingDate;
+    private LocalDate firstShippingDate;
     @ApiModelProperty(value = "确认收货日期")
-    private Date confirmReceiptDate;
+    private LocalDate confirmReceiptDate;
     @ApiModelProperty(value = "供应商统一社会信用代码", required = true)
     @NotBlank
     private String unifiedSocialCode;
@@ -265,55 +266,55 @@ public class RcwlSodrHzpoHeader extends AuditDomain {
     /**
      * @return 下单日期
      */
-    public Date getOrderDate() {
+    public LocalDateTime getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
     }
 
     /**
      * @return 供应商确认日期
      */
-    public Date getConfirmedDate() {
+    public LocalDate getConfirmedDate() {
         return confirmedDate;
     }
 
-    public void setConfirmedDate(Date confirmedDate) {
+    public void setConfirmedDate(LocalDate confirmedDate) {
         this.confirmedDate = confirmedDate;
     }
 
     /**
      * @return 预计发货日期
      */
-    public Date getEstimatedShippingDate() {
+    public LocalDate getEstimatedShippingDate() {
         return estimatedShippingDate;
     }
 
-    public void setEstimatedShippingDate(Date estimatedShippingDate) {
+    public void setEstimatedShippingDate(LocalDate estimatedShippingDate) {
         this.estimatedShippingDate = estimatedShippingDate;
     }
 
     /**
      * @return 首次发货日期
      */
-    public Date getFirstShippingDate() {
+    public LocalDate getFirstShippingDate() {
         return firstShippingDate;
     }
 
-    public void setFirstShippingDate(Date firstShippingDate) {
+    public void setFirstShippingDate(LocalDate firstShippingDate) {
         this.firstShippingDate = firstShippingDate;
     }
 
     /**
      * @return 确认收货日期
      */
-    public Date getConfirmReceiptDate() {
+    public LocalDate getConfirmReceiptDate() {
         return confirmReceiptDate;
     }
 
-    public void setConfirmReceiptDate(Date confirmReceiptDate) {
+    public void setConfirmReceiptDate(LocalDate confirmReceiptDate) {
         this.confirmReceiptDate = confirmReceiptDate;
     }
 
