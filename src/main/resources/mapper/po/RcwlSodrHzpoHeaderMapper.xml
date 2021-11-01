@@ -39,11 +39,11 @@
     <select id="pagePoHeaderList" parameterType="org.srm.purchasecooperation.cux.po.api.dto.RcwlSodrHzpoHeaderDTO" resultMap="BaseResultMap">
         SELECT
             srshh.*,
-            ses.supplier_num,
-            ses.supplier_name
+            ssb.company_num AS supplier_num,
+            ssb.company_name AS supplier_name
         FROM
             scux_rcwl_sodr_hzpo_header srshh
-            LEFT JOIN sslm_external_supplier ses ON srshh.unified_social_code = ses.unified_social_code
+            LEFT JOIN sslm_supplier_basic ssb ON srshh.unified_social_code = ssb.unified_social_code
         <where>
             <if test="poHeaderId != null">
                 AND srshh.po_header_id = #{poHeaderId}
@@ -57,7 +57,7 @@
             </if>
             <if test="supplierName != null">
                 <bind name = "supplierNameLike" value = "'%'+ supplierName +'%'"></bind>
-                AND ses.supplier_name LIKE #{supplierNameLike}
+                AND ssb.supplier_name LIKE #{supplierNameLike}
             </if>
             <if test="purchaseOrgName != null">
                 <bind name = "purchaseOrgNameLike" value = "'%'+ purchaseOrgName +'%'"></bind>
