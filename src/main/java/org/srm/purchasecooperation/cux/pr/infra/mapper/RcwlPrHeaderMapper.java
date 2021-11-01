@@ -33,4 +33,10 @@ public interface RcwlPrHeaderMapper extends PrHeaderMapper, ExtendMapper<PrHeade
     List<PrHeader> selectHeaderAndLine(@Param("tenantId") Long tenantId, @Param("prNums") Set<String> prNums);
 
     void updateMsgResponse(PrHeader prHeader);
+
+    @Override
+    List<PrHeaderVO> selectPrSummariesAndWorkFlow(PrHeaderDTO prHeaderDTO);
+
+    @Override
+    List<PrHeaderVO> selectForMaintain(PrHeaderDTO prHeaderDTO);
 }
