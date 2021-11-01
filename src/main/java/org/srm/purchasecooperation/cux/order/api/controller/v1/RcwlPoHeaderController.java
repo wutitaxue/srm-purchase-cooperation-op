@@ -184,7 +184,7 @@ public class RcwlPoHeaderController {
     @ApiOperation("无价格合同按头引用")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping({"/po-header/from-contract-result/no-price"})
-    public ResponseEntity<PoDTO> createAnOrderBasedOnContract(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<ContractResultDTO> contractResultDTOList) {
+    public ResponseEntity<PoDTO> createOrderOnNoPriceContract(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<ContractResultDTO> contractResultDTOList) {
         contractResultDTOList.forEach((contractResult) -> {
             contractResult.setTenantId(tenantId);
         });
