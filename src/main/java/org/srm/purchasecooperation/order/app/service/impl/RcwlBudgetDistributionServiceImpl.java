@@ -84,6 +84,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             budgetDistribution.setBudgetDisYear(i);
             budgetDistribution.setBudgetDisGap(budgetDisGap);
             budgetDistribution.setTenantId(tenantId);
+            budgetDistribution.setLineAmount(rcwlBudgetDistributionDTO.getLineAmount());
 
             if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
                 Long finalI = i;
@@ -149,6 +150,9 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         }
 
         rcwlBudgetDistributionRepository.batchUpdateByPrimaryKeySelective(rcwlBudgetDistributionList);
+        for (RcwlBudgetDistribution rcwlBudgetDistribution :rcwlBudgetDistributionList){
+            rcwlBudgetDistribution.setLineAmount(poLines.get(0).getLineAmount());
+        }
         return rcwlBudgetDistributionList;
     }
 
