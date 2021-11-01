@@ -86,5 +86,8 @@ public class RcwlBudgetDistribution extends AuditDomain {
 	@Transient
 	@ApiModelProperty(value = "预算占用金额（系统计算值）")
 	private BigDecimal budgetDisAmountCal;
+    @Transient
+    @ApiModelProperty(value = "行金额")
+    private BigDecimal lineAmount;
 
 }
