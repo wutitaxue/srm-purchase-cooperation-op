@@ -1370,7 +1370,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poToBpmDTO.setCurrencyCode(poDTO.getCurrencyCode());
         poToBpmDTO.setCompanyId(poDTO.getCompanyName());
         poToBpmDTO.setTempKey(poDTO.getSupplierName());
-        poToBpmDTO.setEsPurchaseOrgId(poDTO.getPurchaseOrgId().toString());
+        poToBpmDTO.setEsPurchaseOrgId(this.rcwlPoToBpmMapper.selectEsPurchaseOrgName(poDTO.getTenantId(),poDTO.getPurchaseOrgId()));
         poToBpmDTO.setPoTypeId(this.rcwlPoToBpmMapper.selectOrderTypeName(poDTO.getTenantId(),poDTO.getPoTypeId()));
         poToBpmDTO.setAttributeVarchar1(poDTO.getAttributeVarchar1());
         poToBpmDTO.setEsAgentName(poDTO.getAgentName());
