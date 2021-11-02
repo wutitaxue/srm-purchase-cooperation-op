@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.order.api.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
@@ -73,8 +74,19 @@ public class PoToBpmDTO implements Serializable {
     @JSONField(name = "URL_MX")
     private String zYunUrl;
 
+    @JsonProperty("FSubject")
+    private String fSubject;
+
     @JSONField(name = "CGDDH")
     private List<PoToBpmLineDTO> poToBpmLineDTOList;
+
+    public String getfSubject() {
+        return fSubject;
+    }
+
+    public void setfSubject(String fSubject) {
+        this.fSubject = fSubject;
+    }
 
     public String getDisplayPoNum() {
         return displayPoNum;

@@ -17,7 +17,6 @@ import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.lov.adapter.LovAdapter;
 import org.hzero.boot.platform.lov.dto.LovValueDTO;
 import org.hzero.boot.platform.plugin.hr.EmployeeHelper;
-import org.hzero.boot.platform.plugin.hr.entity.Employee;
 import org.hzero.boot.platform.profile.ProfileClient;
 import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.boot.workflow.entity.ActivityInstanceHistory;
@@ -35,9 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
-import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
@@ -49,11 +46,11 @@ import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.common.utils.LogUtils;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmDTO;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmLineDTO;
+import org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.cux.order.util.TennantValue;
-import org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmDTO;
-import org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmLineDTO;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoToBpmMapper;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrToBpmMapper;
 import org.srm.purchasecooperation.cux.pr.utils.DateTimeUtil;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
@@ -84,7 +81,6 @@ import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
-import org.srm.purchasecooperation.transaction.infra.constant.Constants;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import org.srm.purchasecooperation.utils.service.EventSendTranService;
 import org.srm.web.annotation.Tenant;
@@ -110,7 +106,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @Tenant(TennantValue.tenantV)
-public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
+public class RcwlPoSubmitServiceImpl extends PoHeaderServiceImpl {
 
     @Autowired
     private PoheaderExtensionService poheaderExtensionService;
@@ -201,9 +197,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     @Lazy
     private SinvRcvTrxHeaderService sinvRcvTrxHeaderService;
+    @Autowired
+    private RcwlPoToBpmMapper rcwlPoToBpmMapper;
 
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoSubmitServiceImpl.class);
 
     @Override
     @Transactional(
@@ -1070,7 +1067,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 //                }
                 String dataToBpmUrl = this.poDataToBpm(poDTO);
                 poDTO.setAttributeVarchar37(dataToBpmUrl);
-                poHeader.setStatusCode("SUBMITTED");
+//                poHeader.setStatusCode("SUBMITTED");
                 poHeader.setApproveMethod("EXTERNAL_SYSTEM");
                 this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode", "approveMethod"});
             }
@@ -1188,7 +1185,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             String dataToBpmUrl = this.poDataToBpm(poDTO);
             poDTO.setAttributeVarchar37(dataToBpmUrl);
             this.poProcessActionService.insert(poDTO.getPoHeaderId(), "SUBMIT");
-            poDTO.setStatusCode("SUBMITTED");
+//            poDTO.setStatusCode("SUBMITTED");
             poDTO.setSubmittedDate(new Date());
             poDTO.setSubmittedBy(DetailsHelper.getUserDetails().getUserId());
             poDTO.setApproveMethod("EXTERNAL_SYSTEM");
@@ -1291,7 +1288,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         String zYunUrl = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), "RCWL_PO_TO_BPM_URL");
 
         //采购订单行数据
-        List<PoLine> poLineList = this.poLineRepository.select(new PoLine(poDTO.getPoHeaderId()));
+//        List<PoLine> poLineList = this.poLineRepository.select(new PoLine(poDTO.getPoHeaderId()));
+        List<RCWLPoLineDetailDTO> poLineList = rcwlPoToBpmMapper.selectPoTobpmline(poDTO.getTenantId(), poDTO.getPoHeaderId());
         List<PoToBpmLineDTO> poToBpmLineDTOS = new ArrayList<>();
         poLineList.forEach(line -> {
             PoToBpmLineDTO poToBpmLineDTO = this.setPoLineDataMap(line);
@@ -1321,9 +1319,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         log.info("=========================bpmUrl ===========================>" + bpmUrl);
 
         // 调用bpm接口
-        ResponsePayloadDTO responsePayloadDTO = null;
         try {
-            responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
+            ResponsePayloadDTO responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
             log.info("=========================return ===========================>" + responsePayloadDTO.toString());
         } catch (Exception e) {
             throw new CommonException("bpm.interface.error");
@@ -1331,30 +1328,32 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return bpmUrl;
     }
 
-    private PoToBpmLineDTO setPoLineDataMap(PoLine line) {
+    private PoToBpmLineDTO setPoLineDataMap(RCWLPoLineDetailDTO line) {
         PoToBpmLineDTO poToBpmLineDTO = new PoToBpmLineDTO();
         String costName = this.rcwlPrToBpmMapper.selectCost(line.getTenantId(), line.getCostId());
         String wbsName = this.rcwlPrToBpmMapper.selectWbs(line.getTenantId(), line.getWbsCode());
+        LovAdapter lovAdapter = (LovAdapter) ApplicationContextHelper.getContext().getBean(LovAdapter.class);
+        String cancelledFlagMeaning = lovAdapter.queryLovMeaning("SPUC.CANCEL_FLAG", line.getTenantId(), line.getCancelledFlag().toString());
 
-        poToBpmLineDTO.setCancelledFlag(line.getCancelledFlag().toString());
+        poToBpmLineDTO.setCancelledFlag(cancelledFlagMeaning);
         poToBpmLineDTO.setDisplayLineNum(line.getDisplayLineNum());
         poToBpmLineDTO.setItemId(line.getItemCode());
         poToBpmLineDTO.setItemName(line.getItemName());
         poToBpmLineDTO.setSpecifications(line.getSpecifications());
         poToBpmLineDTO.setModel(line.getModel());
         poToBpmLineDTO.setQuantity(String.valueOf(line.getQuantity().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        poToBpmLineDTO.setUomId(line.getUomId().toString());
-//        poToBpmLineDTO.setUomName(his.rcwlPrToBpmMapper.selectUomName(line.getTenantId(), line.getUomId()));
+        poToBpmLineDTO.setUomId(this.rcwlPrToBpmMapper.selectUomName(line.getTenantId(), line.getUomId()));
         poToBpmLineDTO.setCategoryName(this.rcwlPrToBpmMapper.selectCategoryName(line.getTenantId(), line.getCategoryId()));
+        //订单开始日期
         poToBpmLineDTO.setAttributeDate1(new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getAttributeDate1()));
         //订单发运行结束日期
-        poToBpmLineDTO.setNeedByDate(new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getCreationDate()));
+        poToBpmLineDTO.setNeedByDate(new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getNeedByDate()));
         poToBpmLineDTO.setUnitPrice(String.valueOf(line.getUnitPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        poToBpmLineDTO.setTax(line.getTaxCode());
+        poToBpmLineDTO.setTax(line.getTaxDescription());
         poToBpmLineDTO.setEnteredTaxIncludedPrice(String.valueOf(line.getEnteredTaxIncludedPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmLineDTO.setTaxInclueLineAmount(String.valueOf(line.getTaxIncludedLineAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        poToBpmLineDTO.setInvOrganizationId(line.getInvOrganizationId().toString());
-        poToBpmLineDTO.setAttributeVarchar21(line.getAttributeVarchar21());
+        poToBpmLineDTO.setInvOrganizationId(line.getInvOrganizationName());
+        poToBpmLineDTO.setAttributeVarchar21(line.getBudgetAccountName());
         poToBpmLineDTO.setCostId(costName);
         poToBpmLineDTO.setWbs(wbsName);
         poToBpmLineDTO.setRemark(line.getRemark());
@@ -1369,14 +1368,15 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poToBpmDTO.setAmount(String.valueOf(poDTO.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmDTO.setTaxIncludeAmount(String.valueOf(poDTO.getTaxIncludeAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmDTO.setCurrencyCode(poDTO.getCurrencyCode());
-        poToBpmDTO.setCompanyId(poDTO.getCompanyId().toString());
-        poToBpmDTO.setTempKey(poDTO.getSupplierCode());
+        poToBpmDTO.setCompanyId(poDTO.getCompanyName());
+        poToBpmDTO.setTempKey(poDTO.getSupplierName());
         poToBpmDTO.setEsPurchaseOrgId(poDTO.getPurchaseOrgId().toString());
-        poToBpmDTO.setPoTypeId(poDTO.getPoTypeId().toString());
+        poToBpmDTO.setPoTypeId(this.rcwlPoToBpmMapper.selectOrderTypeName(poDTO.getTenantId(),poDTO.getPoTypeId()));
         poToBpmDTO.setAttributeVarchar1(poDTO.getAttributeVarchar1());
         poToBpmDTO.setEsAgentName(poDTO.getAgentName());
         poToBpmDTO.setPoDate(new SimpleDateFormat(DateTimeUtil.PATTERN_SECOND).format(poDTO.getCreationDate()));
         poToBpmDTO.setRemark(poDTO.getRemark());
+        poToBpmDTO.setfSubject("采购订单" + poDTO.getDisplayPoNum());
         return poToBpmDTO;
     }
 
