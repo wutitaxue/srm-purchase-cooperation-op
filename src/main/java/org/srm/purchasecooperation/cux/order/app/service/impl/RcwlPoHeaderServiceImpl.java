@@ -106,7 +106,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @Tenant(TennantValue.tenantV)
-public class RcwlPoSubmitServiceImpl extends PoHeaderServiceImpl {
+public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
     @Autowired
     private PoheaderExtensionService poheaderExtensionService;
@@ -200,7 +200,7 @@ public class RcwlPoSubmitServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     private RcwlPoToBpmMapper rcwlPoToBpmMapper;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoSubmitServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
     @Override
     @Transactional(
