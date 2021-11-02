@@ -506,15 +506,19 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
 
         //更新头表attribute_varchar38字段 start
         List<PrHeader> PrHeaders = new ArrayList<>();
+        List<Long> prHeaderIds = new ArrayList<>();
         totalPrHeaders.forEach(PrHeader -> {
             PrHeader prHeadertemp = new PrHeader();
             prHeadertemp.setObjectVersionNumber(PrHeader.getObjectVersionNumber());
             prHeadertemp.setPrHeaderId(PrHeader.getPrHeaderId());
             prHeadertemp.setAttributeVarchar38(rcwlCompanyService.selectCompanyRcwlUnitName(PrHeader.getCompanyId(), PrHeader.getTenantId()));
             PrHeaders.add(prHeadertemp);
+            prHeaderIds.add(PrHeader.getPrHeaderId());
         });
         prHeaderRepository.batchUpdateByPrimaryKeySelective(PrHeaders);
         //更新头表attribute_varchar38字段 end
+        //add by 21420 防止乐观锁，再查询一下
+        totalPrHeaders = prHeaderRepository.selectByPrHeaderIds(prHeaderIds);
 
         if (CollectionUtils.isEmpty(totalPrHeaders)) {
             return totalPrHeaders;
