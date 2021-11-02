@@ -192,6 +192,7 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
             poDTO.setTaxIncludeAmount((BigDecimal)contractResultDTOList.stream().filter((d) -> {
                 return null != d.getTaxIncludedLineAmount();
             }).map(ContractResultDTO::getTaxIncludedLineAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+
             poDTO.setSourceBillTypeCode("CONTRACT_ORDER_WJ");
             poDTO.setPoLineList(poLineList);
             Long defaultPoTypeId = this.orderTypeService.queryDefaultOrderType(tenantId).getOrderTypeId();
