@@ -52,6 +52,7 @@ import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubject
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.cux.order.util.TennantValue;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoToBpmMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrToBpmMapper;
 import org.srm.purchasecooperation.cux.pr.utils.DateTimeUtil;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.*;
