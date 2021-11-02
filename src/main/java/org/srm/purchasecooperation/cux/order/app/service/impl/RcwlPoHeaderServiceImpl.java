@@ -219,6 +219,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 autoTransferFlag = true;
                 autoPoStatus = this.checkContractData(contractResultDTOList, autoPoStatus);
             }
+
             //单价合同、总价合同区分创建来源，同一查询页面PcKindCode相同
             String sourceBillTypeCode = null;
             if ("NORMAL".equals(((ContractResultDTO)contractResultDTOList.get(0)).getPcKindCode())) {
@@ -286,7 +287,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poDTO.setTaxIncludeAmount((BigDecimal)contractResultDTOList.stream().filter((d) -> {
                 return null != d.getTaxIncludedLineAmount();
             }).map(ContractResultDTO::getTaxIncludedLineAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
-            poDTO.setSourceBillTypeCode("CONTRACT_ORDER");
+
+            poDTO.setSourceBillTypeCode(sourceBillTypeCode);
             poDTO.setPoLineList(poLineList);
             Long defaultPoTypeId = this.orderTypeService.queryDefaultOrderType(tenantId).getOrderTypeId();
             List<PoLine> poLineList1;
@@ -681,6 +683,11 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     throw new CommonException("error.pr.line.line.amount.count.not.allow", new Object[0]);
                 }
             }
+        }
+        //不同申请类型不能创建为一条订单
+        if (Long.valueOf(4).equals(prLineList.get(0).getPrTypeId())) {
+            //零星申请下订单
+            poDTO.setSourceBillTypeCode("PURCHASE_REQUEST_LX");
         }
 
         PoDTO res = this.poCreate(poDTO);
