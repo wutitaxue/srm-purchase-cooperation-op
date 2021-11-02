@@ -98,4 +98,14 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     public BigDecimal selectSumQuantity(Long prLineId, Long tenantId) {
         return rcwlItfPrDataMapper.selectSumQuantity(prLineId,tenantId);
     }
+
+    /**
+     * 根据行Id查找预算行信息
+     * @param prLineId
+     * @return
+     */
+    @Override
+    public List<Integer> selectBudgetbudgetDisYear(Long prLineId) {
+        return rcwlItfPrDataMapper.selectBudgetbudgetDisYear(prLineId);
+    }
 }

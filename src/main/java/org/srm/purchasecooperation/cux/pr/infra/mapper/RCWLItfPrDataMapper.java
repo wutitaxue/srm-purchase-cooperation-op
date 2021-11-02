@@ -91,4 +91,11 @@ public interface RCWLItfPrDataMapper {
     Integer validateInvokeItf(@Param("prHeaderId")Long prHeaderId, @Param("tenantId")Long tenantId);
 
     BigDecimal selectSumQuantity(@Param("prLineId")Long prLineId, @Param("tenantId")Long tenantId);
+
+    /**
+     * 根据行Id查找预算行信息
+     * @param prLineId
+     * @return
+     */
+    List<Integer> selectBudgetbudgetDisYear(@Param("prLineId")Long prLineId);
 }

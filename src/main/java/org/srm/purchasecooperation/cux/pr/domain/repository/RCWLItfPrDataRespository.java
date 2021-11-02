@@ -58,4 +58,11 @@ public interface RCWLItfPrDataRespository {
     Integer validateInvokeItf(Long prHeaderId, Long tenantId);
 
     BigDecimal selectSumQuantity(Long prLineId, Long tenantId);
+
+    /**
+     * 根据行Id查找预算行信息
+     * @param prLineId
+     * @return
+     */
+    List<Integer> selectBudgetbudgetDisYear(Long prLineId);
 }
