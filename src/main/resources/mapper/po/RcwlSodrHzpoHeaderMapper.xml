@@ -57,7 +57,7 @@
             </if>
             <if test="supplierName != null">
                 <bind name = "supplierNameLike" value = "'%'+ supplierName +'%'"></bind>
-                AND ssb.supplier_name LIKE #{supplierNameLike}
+                AND ssb.company_name LIKE #{supplierNameLike}
             </if>
             <if test="purchaseOrgName != null">
                 <bind name = "purchaseOrgNameLike" value = "'%'+ purchaseOrgName +'%'"></bind>
