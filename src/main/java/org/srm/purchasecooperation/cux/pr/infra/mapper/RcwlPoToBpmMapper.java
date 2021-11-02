@@ -27,4 +27,12 @@ public interface RcwlPoToBpmMapper {
      * @return
      */
     String selectOrderTypeName(Long tenantId, Long orderTypeId);
+
+    /**
+     * 获取采购组织名称
+     * @param tenantId
+     * @param purchaseOrgId
+     * @return
+     */
+    String selectEsPurchaseOrgName(Long tenantId, Long purchaseOrgId);
 }

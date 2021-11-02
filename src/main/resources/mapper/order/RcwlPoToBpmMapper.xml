@@ -30,4 +30,14 @@
             and sot.order_type_id = #{orderTypeId}
     </select>
 
+    <select id="selectEsPurchaseOrgName" resultType="java.lang.String">
+        SELECT
+            hpo.organization_name
+        FROM
+            hpfm_purchase_organization hpo
+        WHERE
+            hpo.tenant_id = #{tenantId}
+            AND hpo.purchase_org_id = #{purchaseOrgId}
+    </select>
+
 </mapper>
