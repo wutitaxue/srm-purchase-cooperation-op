@@ -202,7 +202,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoSubmitServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
     @Override
     @Transactional(

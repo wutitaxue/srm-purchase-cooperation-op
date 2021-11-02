@@ -12,7 +12,7 @@ import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
  * @date 2021-11-02 15:26:14
  */
 @Service
-public class RcwlPoHeaderBpmServiceImpl implements RcwlPoSubmitBpmService {
+public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
 
     @Autowired
     private PoHeaderMapper poHeaderMapper;
