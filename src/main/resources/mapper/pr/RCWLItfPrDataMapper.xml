@@ -129,4 +129,13 @@
              	spch.tenant_id = #{tenantId}
 	     AND spch.pr_line_id = #{prLineId}
 	</select>
+
+    <select id="selectBudgetbudgetDisYear" resultType="java.lang.Integer">
+		SELECT
+		srbd.budget_dis_year
+		FROM
+		scux_rcwl_budget_distribution srbd
+		WHERE
+		srbd.pr_line_id = #{prLineId}
+	</select>
 </mapper>

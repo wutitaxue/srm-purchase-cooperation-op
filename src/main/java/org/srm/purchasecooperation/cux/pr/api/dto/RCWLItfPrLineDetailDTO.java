@@ -38,6 +38,17 @@ public class RCWLItfPrLineDetailDTO {
     private String YLZDB1;
     @ApiModelProperty(value = "预留字段")
     private String YLZDB2;
+    @JsonProperty("YSDATE")
+    @ApiModelProperty(value = "预算占用年份")
+    private String ysdate;
+
+    public String getYsdate() {
+        return ysdate;
+    }
+
+    public void setYsdate(String ysdate) {
+        this.ysdate = ysdate;
+    }
 
 
 

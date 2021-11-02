@@ -305,8 +305,16 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(prDetailLine -> {
-                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
-                rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                //按照预算单在预算拆分表scux_rcwl_budget_distribution中pr_line_id有几条数据进行拆分成几组
+                List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetbudgetDisYear(prDetailLine.getPrLineId());
+                for(int year : budgetDisYears){
+                    RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                    if ("R".equals(flag)){
+                        rcwlItfPrLineDetailDTO.setYszyje("0");
+                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                    }
+                    rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                }
             });
         }
 
