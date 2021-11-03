@@ -13,9 +13,11 @@ import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlBudgetChangeActionService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActionRepository;
+import org.srm.web.annotation.Tenant;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.List;
 
 @RestController("rcwlBudgetChangeActionController.v1")
 @RequestMapping("/v1/{organizationId}/scux-rcwl-budget-change-actions")
+@Tenant(RCWLAcpConstant.TENANT_NUMBER)
 public class RcwlBudgetChangeActionController extends BaseController {
 
     @Autowired

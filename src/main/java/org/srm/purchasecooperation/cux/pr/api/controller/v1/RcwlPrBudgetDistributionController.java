@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.api.controller.v1;
 
 import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
+import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrBudgetDistributionService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
+import org.srm.web.annotation.Tenant;
 
 import java.util.List;
 
@@ -22,7 +24,8 @@ import java.util.List;
  */
 @RestController("rcwlBudgetDistributionController.v1")
 @RequestMapping("/v1/{organizationId}/rcwl-budget-distributions")
-public class RcwlBudgetDistributionController extends BaseController {
+@Tenant(RCWLAcpConstant.TENANT_NUMBER)
+public class RcwlPrBudgetDistributionController extends BaseController {
     @Autowired
     private RcwlPrBudgetDistributionService rcwlPrBudgetDistributionService;
 
