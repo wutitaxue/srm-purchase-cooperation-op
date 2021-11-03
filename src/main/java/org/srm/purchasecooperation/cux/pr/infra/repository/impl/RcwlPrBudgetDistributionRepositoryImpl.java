@@ -6,7 +6,7 @@ import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrBudgetDistributionRepository;
 import org.springframework.stereotype.Component;
-import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlBudgetDistributionMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrBudgetDistributionMapper;
 
 import java.util.List;
 
@@ -19,24 +19,24 @@ import java.util.List;
 public class RcwlPrBudgetDistributionRepositoryImpl extends BaseRepositoryImpl<RcwlBudgetDistribution> implements RcwlPrBudgetDistributionRepository {
 
     @Autowired
-    private RcwlBudgetDistributionMapper rcwlBudgetDistributionMapper;
+    private RcwlPrBudgetDistributionMapper rcwlPrBudgetDistributionMapper;
 
     @Override
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         rcwlBudgetDistributionDTO.setTenantId(tenantId);
-        return rcwlBudgetDistributionMapper.selectBudgetDistributionByPrLine(rcwlBudgetDistributionDTO);
+        return rcwlPrBudgetDistributionMapper.selectBudgetDistributionByPrLine(rcwlBudgetDistributionDTO);
     }
 
     @Override
     public List<RcwlBudgetDistributionDTO> selectBudgetDistribution(Long tenantId,
                                                                  RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         rcwlBudgetDistributionDTO.setTenantId(tenantId);
-        return rcwlBudgetDistributionMapper.selectBudgetDistribution(rcwlBudgetDistributionDTO);
+        return rcwlPrBudgetDistributionMapper.selectBudgetDistribution(rcwlBudgetDistributionDTO);
     }
 
     @Override
     public List<RcwlBudgetDistribution> selectBudgetDistributionNotAcrossYear(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         rcwlBudgetDistributionDTO.setTenantId(tenantId);
-        return rcwlBudgetDistributionMapper.selectBudgetDistributionNotAcrossYear(rcwlBudgetDistributionDTO);
+        return rcwlPrBudgetDistributionMapper.selectBudgetDistributionNotAcrossYear(rcwlBudgetDistributionDTO);
     }
 }
