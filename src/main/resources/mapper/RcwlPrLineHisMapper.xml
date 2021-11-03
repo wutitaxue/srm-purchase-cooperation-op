@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrLineHisMapper">
+
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis">
+        <!--@Table -->
+        <result property="prLineId" column="pr_line_id" jdbcType="INTEGER"/>
+        <result property="prHeaderId" column="pr_header_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="lineNum" column="line_num" jdbcType="INTEGER"/>
+        <result property="displayLineNum" column="display_line_num" jdbcType="VARCHAR"/>
+        <result property="companyId" column="company_id" jdbcType="INTEGER"/>
+        <result property="ouId" column="ou_id" jdbcType="INTEGER"/>
+        <result property="purchaseOrgId" column="purchase_org_id" jdbcType="INTEGER"/>
+        <result property="purchaseAgentId" column="purchase_agent_id" jdbcType="INTEGER"/>
+        <result property="requestDate" column="request_date" jdbcType="OTHER"/>
+        <result property="requestedBy" column="requested_by" jdbcType="INTEGER"/>
+        <result property="prRequestedName" column="pr_requested_name" jdbcType="VARCHAR"/>
+        <result property="invOrganizationId" column="inv_organization_id" jdbcType="INTEGER"/>
+        <result property="inventoryId" column="inventory_id" jdbcType="INTEGER"/>
+        <result property="itemId" column="item_id" jdbcType="INTEGER"/>
+        <result property="itemCode" column="item_code" jdbcType="VARCHAR"/>
+        <result property="itemName" column="item_name" jdbcType="VARCHAR"/>
+        <result property="itemAbcClass" column="item_abc_class" jdbcType="VARCHAR"/>
+        <result property="drawingNum" column="drawing_num" jdbcType="VARCHAR"/>
+        <result property="projectNum" column="project_num" jdbcType="VARCHAR"/>
+        <result property="projectName" column="project_name" jdbcType="VARCHAR"/>
+        <result property="craneNum" column="crane_num" jdbcType="VARCHAR"/>
+        <result property="productId" column="product_id" jdbcType="INTEGER"/>
+        <result property="productNum" column="product_num" jdbcType="VARCHAR"/>
+        <result property="productName" column="product_name" jdbcType="VARCHAR"/>
+        <result property="catalogId" column="catalog_id" jdbcType="INTEGER"/>
+        <result property="catalogName" column="catalog_name" jdbcType="VARCHAR"/>
+        <result property="categoryId" column="category_id" jdbcType="INTEGER"/>
+        <result property="uomId" column="uom_id" jdbcType="INTEGER"/>
+        <result property="quantity" column="quantity" jdbcType="OTHER"/>
+        <result property="taxId" column="tax_id" jdbcType="INTEGER"/>
+        <result property="taxRate" column="tax_rate" jdbcType="OTHER"/>
+        <result property="currencyCode" column="currency_code" jdbcType="VARCHAR"/>
+        <result property="unitPrice" column="unit_price" jdbcType="OTHER"/>
+        <result property="taxIncludedUnitPrice" column="tax_included_unit_price" jdbcType="OTHER"/>
+        <result property="lineAmount" column="line_amount" jdbcType="OTHER"/>
+        <result property="taxIncludedLineAmount" column="tax_included_line_amount" jdbcType="OTHER"/>
+        <result property="neededDate" column="needed_date" jdbcType="OTHER"/>
+        <result property="supplierTenantId" column="supplier_tenant_id" jdbcType="INTEGER"/>
+        <result property="supplierId" column="supplier_id" jdbcType="INTEGER"/>
+        <result property="supplierCode" column="supplier_code" jdbcType="VARCHAR"/>
+        <result property="supplierName" column="supplier_name" jdbcType="VARCHAR"/>
+        <result property="supplierCompanyId" column="supplier_company_id" jdbcType="INTEGER"/>
+        <result property="supplierCompanyName" column="supplier_company_name" jdbcType="VARCHAR"/>
+        <result property="executionStatusCode" column="execution_status_code" jdbcType="VARCHAR"/>
+        <result property="executedDate" column="executed_date" jdbcType="TIMESTAMP"/>
+        <result property="executedBy" column="executed_by" jdbcType="INTEGER"/>
+        <result property="executionBillId" column="execution_bill_id" jdbcType="INTEGER"/>
+        <result property="executionBillNum" column="execution_bill_num" jdbcType="VARCHAR"/>
+        <result property="executionBillData" column="execution_bill_data" jdbcType="OTHER"/>
+        <result property="assignedFlag" column="assigned_flag" jdbcType="BOOLEAN"/>
+        <result property="assignedDate" column="assigned_date" jdbcType="TIMESTAMP"/>
+        <result property="assignedBy" column="assigned_by" jdbcType="INTEGER"/>
+        <result property="assignedRemark" column="assigned_remark" jdbcType="VARCHAR"/>
+        <result property="cancelledFlag" column="cancelled_flag" jdbcType="BOOLEAN"/>
+        <result property="cancelledDate" column="cancelled_date" jdbcType="TIMESTAMP"/>
+        <result property="cancelledBy" column="cancelled_by" jdbcType="INTEGER"/>
+        <result property="cancelledRemark" column="cancelled_remark" jdbcType="VARCHAR"/>
+        <result property="closedFlag" column="closed_flag" jdbcType="BOOLEAN"/>
+        <result property="closedDate" column="closed_date" jdbcType="TIMESTAMP"/>
+        <result property="closedBy" column="closed_by" jdbcType="INTEGER"/>
+        <result property="closedRemark" column="closed_remark" jdbcType="VARCHAR"/>
+        <result property="suspendFlag" column="suspend_flag" jdbcType="BOOLEAN"/>
+        <result property="suspendDate" column="suspend_date" jdbcType="TIMESTAMP"/>
+        <result property="suspendRemark" column="suspend_remark" jdbcType="VARCHAR"/>
+        <result property="incorrectFlag" column="incorrect_flag" jdbcType="BOOLEAN"/>
+        <result property="incorrectDate" column="incorrect_date" jdbcType="TIMESTAMP"/>
+        <result property="incorrectMsg" column="incorrect_msg" jdbcType="OTHER"/>
+        <result property="canVatFlag" column="can_vat_flag" jdbcType="BOOLEAN"/>
+        <result property="erpEditStatus" column="erp_edit_status" jdbcType="VARCHAR"/>
+        <result property="attachmentUuid" column="attachment_uuid" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="lineFreight" column="line_freight" jdbcType="OTHER"/>
+        <result property="executionHeaderBillId" column="execution_header_bill_id" jdbcType="INTEGER"/>
+        <result property="executionHeaderBillNum" column="execution_header_bill_num" jdbcType="VARCHAR"/>
+        <result property="urgentFlag" column="urgent_flag" jdbcType="BOOLEAN"/>
+        <result property="urgentDate" column="urgent_date" jdbcType="TIMESTAMP"/>
+        <result property="costId" column="cost_id" jdbcType="INTEGER"/>
+        <result property="costCode" column="cost_code" jdbcType="VARCHAR"/>
+        <result property="accountSubjectId" column="account_subject_id" jdbcType="INTEGER"/>
+        <result property="accountSubjectNum" column="account_subject_num" jdbcType="VARCHAR"/>
+        <result property="wbs" column="WBS" jdbcType="VARCHAR"/>
+        <result property="occupiedQuantity" column="occupied_quantity" jdbcType="OTHER"/>
+        <result property="lastPurchasePrice" column="last_purchase_price" jdbcType="OTHER"/>
+        <result property="pcHeaderId" column="pc_header_id" jdbcType="INTEGER"/>
+        <result property="itemModel" column="item_model" jdbcType="VARCHAR"/>
+        <result property="itemSpecs" column="item_specs" jdbcType="VARCHAR"/>
+        <result property="itemProperties" column="item_properties" jdbcType="VARCHAR"/>
+        <result property="agentId" column="agent_id" jdbcType="INTEGER"/>
+        <result property="keeperUserId" column="keeper_user_id" jdbcType="INTEGER"/>
+        <result property="accepterUserId" column="accepter_user_id" jdbcType="INTEGER"/>
+        <result property="costPayerUserId" column="cost_payer_user_id" jdbcType="INTEGER"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="innerPoNum" column="inner_po_num" jdbcType="VARCHAR"/>
+        <result property="surfaceTreatFlag" column="surface_treat_flag" jdbcType="BOOLEAN"/>
+        <result property="batchNo" column="batch_no" jdbcType="VARCHAR"/>
+        <result property="drawingVersion" column="drawing_version" jdbcType="VARCHAR"/>
+        <result property="supplierItemCode" column="supplier_item_code" jdbcType="VARCHAR"/>
+        <result property="poLineId" column="po_line_id" jdbcType="INTEGER"/>
+        <result property="jdPrice" column="jd_price" jdbcType="OTHER"/>
+        <result property="reqTypeCode" column="req_type_code" jdbcType="VARCHAR"/>
+        <result property="purchaseOrgGroupName" column="purchase_org_group_name" jdbcType="VARCHAR"/>
+        <result property="companyOrgId" column="company_org_id" jdbcType="INTEGER"/>
+        <result property="costAnchDepId" column="cost_anch_dep_id" jdbcType="INTEGER"/>
+        <result property="expBearDepId" column="exp_bear_dep_id" jdbcType="INTEGER"/>
+        <result property="companyOrgName" column="company_org_name" jdbcType="VARCHAR"/>
+        <result property="costAnchDepDesc" column="cost_anch_dep_desc" jdbcType="VARCHAR"/>
+        <result property="expBearDep" column="exp_bear_dep" jdbcType="VARCHAR"/>
+        <result property="sourcePlatformCode" column="source_platform_code" jdbcType="VARCHAR"/>
+        <result property="accepterUserName" column="accepter_user_name" jdbcType="VARCHAR"/>
+        <result property="agentName" column="agent_name" jdbcType="VARCHAR"/>
+        <result property="keeperUserName" column="keeper_user_name" jdbcType="VARCHAR"/>
+        <result property="taxCode" column="tax_code" jdbcType="INTEGER"/>
+        <result property="overseasProcurement" column="overseas_procurement" jdbcType="BOOLEAN"/>
+        <result property="frameAgreementNum" column="frame_agreement_num" jdbcType="VARCHAR"/>
+        <result property="wbsCode" column="wbs_code" jdbcType="VARCHAR"/>
+        <result property="supplierItemName" column="supplier_item_name" jdbcType="VARCHAR"/>
+        <result property="taxWithoutFreightPrice" column="tax_without_freight_price" jdbcType="OTHER"/>
+        <result property="benchmarkPrice" column="benchmark_price" jdbcType="OTHER"/>
+        <result property="changePercent" column="change_percent" jdbcType="OTHER"/>
+        <result property="purchaseLineTypeId" column="purchase_line_type_id" jdbcType="INTEGER"/>
+        <result property="unitPriceBatch" column="unit_price_batch" jdbcType="OTHER"/>
+        <result property="projectCategory" column="project_category" jdbcType="VARCHAR"/>
+        <result property="assets" column="assets" jdbcType="VARCHAR"/>
+        <result property="assetChildNum" column="asset_child_num" jdbcType="VARCHAR"/>
+        <result property="accountAssignTypeId" column="account_assign_type_id" jdbcType="INTEGER"/>
+        <result property="freightLineFlag" column="freight_line_flag" jdbcType="BOOLEAN"/>
+        <result property="budgetIoFlag" column="budget_io_flag" jdbcType="BOOLEAN"/>
+        <result property="taxIncludedBudgetUnitPrice" column="tax_included_budget_unit_price" jdbcType="OTHER"/>
+        <result property="qualityStandard" column="quality_standard" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar1" column="attribute_varchar1" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar2" column="attribute_varchar2" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar3" column="attribute_varchar3" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar4" column="attribute_varchar4" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar5" column="attribute_varchar5" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar6" column="attribute_varchar6" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar7" column="attribute_varchar7" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar8" column="attribute_varchar8" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar9" column="attribute_varchar9" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar10" column="attribute_varchar10" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar11" column="attribute_varchar11" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar12" column="attribute_varchar12" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar13" column="attribute_varchar13" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar14" column="attribute_varchar14" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar15" column="attribute_varchar15" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar16" column="attribute_varchar16" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar17" column="attribute_varchar17" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar18" column="attribute_varchar18" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar19" column="attribute_varchar19" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar20" column="attribute_varchar20" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar21" column="attribute_varchar21" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar22" column="attribute_varchar22" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar23" column="attribute_varchar23" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar24" column="attribute_varchar24" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar25" column="attribute_varchar25" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar26" column="attribute_varchar26" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar27" column="attribute_varchar27" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar28" column="attribute_varchar28" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar29" column="attribute_varchar29" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar30" column="attribute_varchar30" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar31" column="attribute_varchar31" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar32" column="attribute_varchar32" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar33" column="attribute_varchar33" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar34" column="attribute_varchar34" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar35" column="attribute_varchar35" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar36" column="attribute_varchar36" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar37" column="attribute_varchar37" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar38" column="attribute_varchar38" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar39" column="attribute_varchar39" jdbcType="VARCHAR"/>
+        <result property="attributeVarchar40" column="attribute_varchar40" jdbcType="VARCHAR"/>
+        <result property="attributeLongtext1" column="attribute_longtext1" jdbcType="OTHER"/>
+        <result property="attributeLongtext2" column="attribute_longtext2" jdbcType="OTHER"/>
+        <result property="attributeLongtext3" column="attribute_longtext3" jdbcType="OTHER"/>
+        <result property="attributeLongtext4" column="attribute_longtext4" jdbcType="OTHER"/>
+        <result property="attributeLongtext5" column="attribute_longtext5" jdbcType="OTHER"/>
+        <result property="attributeLongtext6" column="attribute_longtext6" jdbcType="OTHER"/>
+        <result property="attributeLongtext7" column="attribute_longtext7" jdbcType="OTHER"/>
+        <result property="attributeLongtext8" column="attribute_longtext8" jdbcType="OTHER"/>
+        <result property="attributeLongtext9" column="attribute_longtext9" jdbcType="OTHER"/>
+        <result property="attributeLongtext10" column="attribute_longtext10" jdbcType="OTHER"/>
+        <result property="attributeBigint1" column="attribute_bigint1" jdbcType="INTEGER"/>
+        <result property="attributeBigint2" column="attribute_bigint2" jdbcType="INTEGER"/>
+        <result property="attributeBigint3" column="attribute_bigint3" jdbcType="INTEGER"/>
+        <result property="attributeBigint4" column="attribute_bigint4" jdbcType="INTEGER"/>
+        <result property="attributeBigint5" column="attribute_bigint5" jdbcType="INTEGER"/>
+        <result property="attributeBigint6" column="attribute_bigint6" jdbcType="INTEGER"/>
+        <result property="attributeBigint7" column="attribute_bigint7" jdbcType="INTEGER"/>
+        <result property="attributeBigint8" column="attribute_bigint8" jdbcType="INTEGER"/>
+        <result property="attributeBigint9" column="attribute_bigint9" jdbcType="INTEGER"/>
+        <result property="attributeBigint10" column="attribute_bigint10" jdbcType="INTEGER"/>
+        <result property="attributeBigint11" column="attribute_bigint11" jdbcType="INTEGER"/>
+        <result property="attributeBigint12" column="attribute_bigint12" jdbcType="INTEGER"/>
+        <result property="attributeBigint13" column="attribute_bigint13" jdbcType="INTEGER"/>
+        <result property="attributeBigint14" column="attribute_bigint14" jdbcType="INTEGER"/>
+        <result property="attributeBigint15" column="attribute_bigint15" jdbcType="INTEGER"/>
+        <result property="attributeBigint16" column="attribute_bigint16" jdbcType="INTEGER"/>
+        <result property="attributeBigint17" column="attribute_bigint17" jdbcType="INTEGER"/>
+        <result property="attributeBigint18" column="attribute_bigint18" jdbcType="INTEGER"/>
+        <result property="attributeBigint19" column="attribute_bigint19" jdbcType="INTEGER"/>
+        <result property="attributeBigint20" column="attribute_bigint20" jdbcType="INTEGER"/>
+        <result property="attributeBigint21" column="attribute_bigint21" jdbcType="INTEGER"/>
+        <result property="attributeBigint22" column="attribute_bigint22" jdbcType="INTEGER"/>
+        <result property="attributeBigint23" column="attribute_bigint23" jdbcType="INTEGER"/>
+        <result property="attributeBigint24" column="attribute_bigint24" jdbcType="INTEGER"/>
+        <result property="attributeBigint25" column="attribute_bigint25" jdbcType="INTEGER"/>
+        <result property="attributeBigint26" column="attribute_bigint26" jdbcType="INTEGER"/>
+        <result property="attributeBigint27" column="attribute_bigint27" jdbcType="INTEGER"/>
+        <result property="attributeBigint28" column="attribute_bigint28" jdbcType="INTEGER"/>
+        <result property="attributeBigint29" column="attribute_bigint29" jdbcType="INTEGER"/>
+        <result property="attributeBigint30" column="attribute_bigint30" jdbcType="INTEGER"/>
+        <result property="attributeTinyint1" column="attribute_tinyint1" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint2" column="attribute_tinyint2" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint3" column="attribute_tinyint3" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint4" column="attribute_tinyint4" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint5" column="attribute_tinyint5" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint6" column="attribute_tinyint6" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint7" column="attribute_tinyint7" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint8" column="attribute_tinyint8" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint9" column="attribute_tinyint9" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint10" column="attribute_tinyint10" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint11" column="attribute_tinyint11" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint12" column="attribute_tinyint12" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint13" column="attribute_tinyint13" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint14" column="attribute_tinyint14" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint15" column="attribute_tinyint15" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint16" column="attribute_tinyint16" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint17" column="attribute_tinyint17" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint18" column="attribute_tinyint18" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint19" column="attribute_tinyint19" jdbcType="BOOLEAN"/>
+        <result property="attributeTinyint20" column="attribute_tinyint20" jdbcType="BOOLEAN"/>
+        <result property="attributeDecimal1" column="attribute_decimal1" jdbcType="OTHER"/>
+        <result property="attributeDecimal2" column="attribute_decimal2" jdbcType="OTHER"/>
+        <result property="attributeDecimal3" column="attribute_decimal3" jdbcType="OTHER"/>
+        <result property="attributeDecimal4" column="attribute_decimal4" jdbcType="OTHER"/>
+        <result property="attributeDecimal5" column="attribute_decimal5" jdbcType="OTHER"/>
+        <result property="attributeDecimal6" column="attribute_decimal6" jdbcType="OTHER"/>
+        <result property="attributeDecimal7" column="attribute_decimal7" jdbcType="OTHER"/>
+        <result property="attributeDecimal8" column="attribute_decimal8" jdbcType="OTHER"/>
+        <result property="attributeDecimal9" column="attribute_decimal9" jdbcType="OTHER"/>
+        <result property="attributeDecimal10" column="attribute_decimal10" jdbcType="OTHER"/>
+        <result property="attributeDecimal11" column="attribute_decimal11" jdbcType="OTHER"/>
+        <result property="attributeDecimal12" column="attribute_decimal12" jdbcType="OTHER"/>
+        <result property="attributeDecimal13" column="attribute_decimal13" jdbcType="OTHER"/>
+        <result property="attributeDecimal14" column="attribute_decimal14" jdbcType="OTHER"/>
+        <result property="attributeDecimal15" column="attribute_decimal15" jdbcType="OTHER"/>
+        <result property="attributeDecimal16" column="attribute_decimal16" jdbcType="OTHER"/>
+        <result property="attributeDecimal17" column="attribute_decimal17" jdbcType="OTHER"/>
+        <result property="attributeDecimal18" column="attribute_decimal18" jdbcType="OTHER"/>
+        <result property="attributeDecimal19" column="attribute_decimal19" jdbcType="OTHER"/>
+        <result property="attributeDecimal20" column="attribute_decimal20" jdbcType="OTHER"/>
+        <result property="attributeDecimal21" column="attribute_decimal21" jdbcType="OTHER"/>
+        <result property="attributeDecimal22" column="attribute_decimal22" jdbcType="OTHER"/>
+        <result property="attributeDecimal23" column="attribute_decimal23" jdbcType="OTHER"/>
+        <result property="attributeDecimal24" column="attribute_decimal24" jdbcType="OTHER"/>
+        <result property="attributeDecimal25" column="attribute_decimal25" jdbcType="OTHER"/>
+        <result property="attributeDecimal26" column="attribute_decimal26" jdbcType="OTHER"/>
+        <result property="attributeDecimal27" column="attribute_decimal27" jdbcType="OTHER"/>
+        <result property="attributeDecimal28" column="attribute_decimal28" jdbcType="OTHER"/>
+        <result property="attributeDecimal29" column="attribute_decimal29" jdbcType="OTHER"/>
+        <result property="attributeDecimal30" column="attribute_decimal30" jdbcType="OTHER"/>
+        <result property="attributeDatetime1" column="attribute_datetime1" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime2" column="attribute_datetime2" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime3" column="attribute_datetime3" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime4" column="attribute_datetime4" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime5" column="attribute_datetime5" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime6" column="attribute_datetime6" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime7" column="attribute_datetime7" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime8" column="attribute_datetime8" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime9" column="attribute_datetime9" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime10" column="attribute_datetime10" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime11" column="attribute_datetime11" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime12" column="attribute_datetime12" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime13" column="attribute_datetime13" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime14" column="attribute_datetime14" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime15" column="attribute_datetime15" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime16" column="attribute_datetime16" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime17" column="attribute_datetime17" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime18" column="attribute_datetime18" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime19" column="attribute_datetime19" jdbcType="TIMESTAMP"/>
+        <result property="attributeDatetime20" column="attribute_datetime20" jdbcType="TIMESTAMP"/>
+        <result property="attributeDate1" column="attribute_date1" jdbcType="OTHER"/>
+        <result property="attributeDate2" column="attribute_date2" jdbcType="OTHER"/>
+        <result property="attributeDate3" column="attribute_date3" jdbcType="OTHER"/>
+        <result property="attributeDate4" column="attribute_date4" jdbcType="OTHER"/>
+        <result property="attributeDate5" column="attribute_date5" jdbcType="OTHER"/>
+        <result property="attributeDate6" column="attribute_date6" jdbcType="OTHER"/>
+        <result property="attributeDate7" column="attribute_date7" jdbcType="OTHER"/>
+        <result property="attributeDate8" column="attribute_date8" jdbcType="OTHER"/>
+        <result property="attributeDate9" column="attribute_date9" jdbcType="OTHER"/>
+        <result property="attributeDate10" column="attribute_date10" jdbcType="OTHER"/>
+        <result property="attributeDate11" column="attribute_date11" jdbcType="OTHER"/>
+        <result property="attributeDate12" column="attribute_date12" jdbcType="OTHER"/>
+        <result property="attributeDate13" column="attribute_date13" jdbcType="OTHER"/>
+        <result property="attributeDate14" column="attribute_date14" jdbcType="OTHER"/>
+        <result property="attributeDate15" column="attribute_date15" jdbcType="OTHER"/>
+        <result property="attributeDate16" column="attribute_date16" jdbcType="OTHER"/>
+        <result property="attributeDate17" column="attribute_date17" jdbcType="OTHER"/>
+        <result property="attributeDate18" column="attribute_date18" jdbcType="OTHER"/>
+        <result property="attributeDate19" column="attribute_date19" jdbcType="OTHER"/>
+        <result property="attributeDate20" column="attribute_date20" jdbcType="OTHER"/>
+        <result property="executionStrategyCode" column="execution_strategy_code" jdbcType="VARCHAR"/>
+        <result property="businessCardFlag" column="business_card_flag" jdbcType="BOOLEAN"/>
+        <result property="budgetAccountId" column="budget_account_id" jdbcType="INTEGER"/>
+        <result property="receiverInformation" column="receiver_information" jdbcType="VARCHAR"/>
+        <result property="receiveAddress" column="receive_address" jdbcType="VARCHAR"/>
+        <result property="receiveContactName" column="receive_contact_name" jdbcType="VARCHAR"/>
+        <result property="receiveTelNum" column="receive_tel_num" jdbcType="VARCHAR"/>
+        <result property="cartUserId" column="cart_user_id" jdbcType="INTEGER"/>
+        <result property="cartUserType" column="cart_user_type" jdbcType="VARCHAR"/>
+        <result property="changeOrderCode" column="change_order_code" jdbcType="VARCHAR"/>
+        <result property="changeOrderMessage" column="change_order_message" jdbcType="OTHER"/>
+        <result property="budgetAccountDeptno" column="budget_account_deptno" jdbcType="VARCHAR"/>
+        <result property="budgetAccountPrice" column="budget_account_price" jdbcType="OTHER"/>
+        <result property="documentId" column="document_id" jdbcType="VARCHAR"/>
+        <result property="exchangeRate" column="exchange_rate" jdbcType="OTHER"/>
+        <result property="localCurrencyTaxUnit" column="local_currency_tax_unit" jdbcType="OTHER"/>
+        <result property="localCurrencyNoTaxUnit" column="local_currency_no_tax_unit" jdbcType="OTHER"/>
+        <result property="localCurrencyTaxSum" column="local_currency_tax_sum" jdbcType="OTHER"/>
+        <result property="localCurrencyNoTaxSum" column="local_currency_no_tax_sum" jdbcType="OTHER"/>
+        <result property="exchangeRateDate" column="exchange_rate_date" jdbcType="OTHER"/>
+        <result property="budgetAccountNum" column="budget_account_num" jdbcType="VARCHAR"/>
+        <result property="pushAssetsFlag" column="is_push_assets_flag" jdbcType="BOOLEAN"/>
+        <result property="version" column="version" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="BaseSql">
+        srplh
+        .
+        pr_line_id
+        ,
+                    srplh.pr_header_id, 
+                    srplh.tenant_id, 
+                    srplh.line_num, 
+                    srplh.display_line_num, 
+                    srplh.company_id, 
+                    srplh.ou_id, 
+                    srplh.purchase_org_id, 
+                    srplh.purchase_agent_id, 
+                    srplh.request_date, 
+                    srplh.requested_by, 
+                    srplh.pr_requested_name, 
+                    srplh.inv_organization_id, 
+                    srplh.inventory_id, 
+                    srplh.item_id, 
+                    srplh.item_code, 
+                    srplh.item_name, 
+                    srplh.item_abc_class, 
+                    srplh.drawing_num, 
+                    srplh.project_num, 
+                    srplh.project_name, 
+                    srplh.crane_num, 
+                    srplh.product_id, 
+                    srplh.product_num, 
+                    srplh.product_name, 
+                    srplh.catalog_id, 
+                    srplh.catalog_name, 
+                    srplh.category_id, 
+                    srplh.uom_id, 
+                    srplh.quantity, 
+                    srplh.tax_id, 
+                    srplh.tax_rate, 
+                    srplh.currency_code, 
+                    srplh.unit_price, 
+                    srplh.tax_included_unit_price, 
+                    srplh.line_amount, 
+                    srplh.tax_included_line_amount, 
+                    srplh.needed_date, 
+                    srplh.supplier_tenant_id, 
+                    srplh.supplier_id, 
+                    srplh.supplier_code, 
+                    srplh.supplier_name, 
+                    srplh.supplier_company_id, 
+                    srplh.supplier_company_name, 
+                    srplh.execution_status_code, 
+                    srplh.executed_date, 
+                    srplh.executed_by, 
+                    srplh.execution_bill_id, 
+                    srplh.execution_bill_num, 
+                    srplh.execution_bill_data, 
+                    srplh.assigned_flag, 
+                    srplh.assigned_date, 
+                    srplh.assigned_by, 
+                    srplh.assigned_remark, 
+                    srplh.cancelled_flag, 
+                    srplh.cancelled_date, 
+                    srplh.cancelled_by, 
+                    srplh.cancelled_remark, 
+                    srplh.closed_flag, 
+                    srplh.closed_date, 
+                    srplh.closed_by, 
+                    srplh.closed_remark, 
+                    srplh.suspend_flag, 
+                    srplh.suspend_date, 
+                    srplh.suspend_remark, 
+                    srplh.incorrect_flag, 
+                    srplh.incorrect_date, 
+                    srplh.incorrect_msg, 
+                    srplh.can_vat_flag, 
+                    srplh.erp_edit_status, 
+                    srplh.attachment_uuid, 
+                    srplh.remark, 
+                    srplh.line_freight, 
+                    srplh.execution_header_bill_id, 
+                    srplh.execution_header_bill_num, 
+                    srplh.urgent_flag, 
+                    srplh.urgent_date, 
+                    srplh.cost_id, 
+                    srplh.cost_code, 
+                    srplh.account_subject_id, 
+                    srplh.account_subject_num, 
+                    srplh.WBS, 
+                    srplh.occupied_quantity, 
+                    srplh.last_purchase_price, 
+                    srplh.pc_header_id, 
+                    srplh.item_model, 
+                    srplh.item_specs, 
+                    srplh.item_properties, 
+                    srplh.agent_id, 
+                    srplh.keeper_user_id, 
+                    srplh.accepter_user_id, 
+                    srplh.cost_payer_user_id, 
+                    srplh.address, 
+                    srplh.inner_po_num, 
+                    srplh.surface_treat_flag, 
+                    srplh.batch_no, 
+                    srplh.drawing_version, 
+                    srplh.supplier_item_code, 
+                    srplh.po_line_id, 
+                    srplh.jd_price, 
+                    srplh.req_type_code, 
+                    srplh.purchase_org_group_name, 
+                    srplh.company_org_id, 
+                    srplh.cost_anch_dep_id, 
+                    srplh.exp_bear_dep_id, 
+                    srplh.company_org_name, 
+                    srplh.cost_anch_dep_desc, 
+                    srplh.exp_bear_dep, 
+                    srplh.source_platform_code, 
+                    srplh.accepter_user_name, 
+                    srplh.agent_name, 
+                    srplh.keeper_user_name, 
+                    srplh.tax_code, 
+                    srplh.overseas_procurement, 
+                    srplh.frame_agreement_num, 
+                    srplh.wbs_code, 
+                    srplh.supplier_item_name, 
+                    srplh.tax_without_freight_price, 
+                    srplh.benchmark_price, 
+                    srplh.change_percent, 
+                    srplh.purchase_line_type_id, 
+                    srplh.unit_price_batch, 
+                    srplh.project_category, 
+                    srplh.assets, 
+                    srplh.asset_child_num, 
+                    srplh.account_assign_type_id, 
+                    srplh.freight_line_flag, 
+                    srplh.budget_io_flag, 
+                    srplh.tax_included_budget_unit_price, 
+                    srplh.quality_standard, 
+                    srplh.attribute_varchar1, 
+                    srplh.attribute_varchar2, 
+                    srplh.attribute_varchar3, 
+                    srplh.attribute_varchar4, 
+                    srplh.attribute_varchar5, 
+                    srplh.attribute_varchar6, 
+                    srplh.attribute_varchar7, 
+                    srplh.attribute_varchar8, 
+                    srplh.attribute_varchar9, 
+                    srplh.attribute_varchar10, 
+                    srplh.attribute_varchar11, 
+                    srplh.attribute_varchar12, 
+                    srplh.attribute_varchar13, 
+                    srplh.attribute_varchar14, 
+                    srplh.attribute_varchar15, 
+                    srplh.attribute_varchar16, 
+                    srplh.attribute_varchar17, 
+                    srplh.attribute_varchar18, 
+                    srplh.attribute_varchar19, 
+                    srplh.attribute_varchar20, 
+                    srplh.attribute_varchar21, 
+                    srplh.attribute_varchar22, 
+                    srplh.attribute_varchar23, 
+                    srplh.attribute_varchar24, 
+                    srplh.attribute_varchar25, 
+                    srplh.attribute_varchar26, 
+                    srplh.attribute_varchar27, 
+                    srplh.attribute_varchar28, 
+                    srplh.attribute_varchar29, 
+                    srplh.attribute_varchar30, 
+                    srplh.attribute_varchar31, 
+                    srplh.attribute_varchar32, 
+                    srplh.attribute_varchar33, 
+                    srplh.attribute_varchar34, 
+                    srplh.attribute_varchar35, 
+                    srplh.attribute_varchar36, 
+                    srplh.attribute_varchar37, 
+                    srplh.attribute_varchar38, 
+                    srplh.attribute_varchar39, 
+                    srplh.attribute_varchar40, 
+                    srplh.attribute_longtext1, 
+                    srplh.attribute_longtext2, 
+                    srplh.attribute_longtext3, 
+                    srplh.attribute_longtext4, 
+                    srplh.attribute_longtext5, 
+                    srplh.attribute_longtext6, 
+                    srplh.attribute_longtext7, 
+                    srplh.attribute_longtext8, 
+                    srplh.attribute_longtext9, 
+                    srplh.attribute_longtext10, 
+                    srplh.attribute_bigint1, 
+                    srplh.attribute_bigint2, 
+                    srplh.attribute_bigint3, 
+                    srplh.attribute_bigint4, 
+                    srplh.attribute_bigint5, 
+                    srplh.attribute_bigint6, 
+                    srplh.attribute_bigint7, 
+                    srplh.attribute_bigint8, 
+                    srplh.attribute_bigint9, 
+                    srplh.attribute_bigint10, 
+                    srplh.attribute_bigint11, 
+                    srplh.attribute_bigint12, 
+                    srplh.attribute_bigint13, 
+                    srplh.attribute_bigint14, 
+                    srplh.attribute_bigint15, 
+                    srplh.attribute_bigint16, 
+                    srplh.attribute_bigint17, 
+                    srplh.attribute_bigint18, 
+                    srplh.attribute_bigint19, 
+                    srplh.attribute_bigint20, 
+                    srplh.attribute_bigint21, 
+                    srplh.attribute_bigint22, 
+                    srplh.attribute_bigint23, 
+                    srplh.attribute_bigint24, 
+                    srplh.attribute_bigint25, 
+                    srplh.attribute_bigint26, 
+                    srplh.attribute_bigint27, 
+                    srplh.attribute_bigint28, 
+                    srplh.attribute_bigint29, 
+                    srplh.attribute_bigint30, 
+                    srplh.attribute_tinyint1, 
+                    srplh.attribute_tinyint2, 
+                    srplh.attribute_tinyint3, 
+                    srplh.attribute_tinyint4, 
+                    srplh.attribute_tinyint5, 
+                    srplh.attribute_tinyint6, 
+                    srplh.attribute_tinyint7, 
+                    srplh.attribute_tinyint8, 
+                    srplh.attribute_tinyint9, 
+                    srplh.attribute_tinyint10, 
+                    srplh.attribute_tinyint11, 
+                    srplh.attribute_tinyint12, 
+                    srplh.attribute_tinyint13, 
+                    srplh.attribute_tinyint14, 
+                    srplh.attribute_tinyint15, 
+                    srplh.attribute_tinyint16, 
+                    srplh.attribute_tinyint17, 
+                    srplh.attribute_tinyint18, 
+                    srplh.attribute_tinyint19, 
+                    srplh.attribute_tinyint20, 
+                    srplh.attribute_decimal1, 
+                    srplh.attribute_decimal2, 
+                    srplh.attribute_decimal3, 
+                    srplh.attribute_decimal4, 
+                    srplh.attribute_decimal5, 
+                    srplh.attribute_decimal6, 
+                    srplh.attribute_decimal7, 
+                    srplh.attribute_decimal8, 
+                    srplh.attribute_decimal9, 
+                    srplh.attribute_decimal10, 
+                    srplh.attribute_decimal11, 
+                    srplh.attribute_decimal12, 
+                    srplh.attribute_decimal13, 
+                    srplh.attribute_decimal14, 
+                    srplh.attribute_decimal15, 
+                    srplh.attribute_decimal16, 
+                    srplh.attribute_decimal17, 
+                    srplh.attribute_decimal18, 
+                    srplh.attribute_decimal19, 
+                    srplh.attribute_decimal20, 
+                    srplh.attribute_decimal21, 
+                    srplh.attribute_decimal22, 
+                    srplh.attribute_decimal23, 
+                    srplh.attribute_decimal24, 
+                    srplh.attribute_decimal25, 
+                    srplh.attribute_decimal26, 
+                    srplh.attribute_decimal27, 
+                    srplh.attribute_decimal28, 
+                    srplh.attribute_decimal29, 
+                    srplh.attribute_decimal30, 
+                    srplh.attribute_datetime1, 
+                    srplh.attribute_datetime2, 
+                    srplh.attribute_datetime3, 
+                    srplh.attribute_datetime4, 
+                    srplh.attribute_datetime5, 
+                    srplh.attribute_datetime6, 
+                    srplh.attribute_datetime7, 
+                    srplh.attribute_datetime8, 
+                    srplh.attribute_datetime9, 
+                    srplh.attribute_datetime10, 
+                    srplh.attribute_datetime11, 
+                    srplh.attribute_datetime12, 
+                    srplh.attribute_datetime13, 
+                    srplh.attribute_datetime14, 
+                    srplh.attribute_datetime15, 
+                    srplh.attribute_datetime16, 
+                    srplh.attribute_datetime17, 
+                    srplh.attribute_datetime18, 
+                    srplh.attribute_datetime19, 
+                    srplh.attribute_datetime20, 
+                    srplh.attribute_date1, 
+                    srplh.attribute_date2, 
+                    srplh.attribute_date3, 
+                    srplh.attribute_date4, 
+                    srplh.attribute_date5, 
+                    srplh.attribute_date6, 
+                    srplh.attribute_date7, 
+                    srplh.attribute_date8, 
+                    srplh.attribute_date9, 
+                    srplh.attribute_date10, 
+                    srplh.attribute_date11, 
+                    srplh.attribute_date12, 
+                    srplh.attribute_date13, 
+                    srplh.attribute_date14, 
+                    srplh.attribute_date15, 
+                    srplh.attribute_date16, 
+                    srplh.attribute_date17, 
+                    srplh.attribute_date18, 
+                    srplh.attribute_date19, 
+                    srplh.attribute_date20, 
+                    srplh.execution_strategy_code, 
+                    srplh.business_card_flag, 
+                    srplh.budget_account_id, 
+                    srplh.receiver_information, 
+                    srplh.receive_address, 
+                    srplh.receive_contact_name, 
+                    srplh.receive_tel_num, 
+                    srplh.cart_user_id, 
+                    srplh.cart_user_type, 
+                    srplh.change_order_code, 
+                    srplh.change_order_message, 
+                    srplh.budget_account_deptno, 
+                    srplh.budget_account_price, 
+                    srplh.document_id, 
+                    srplh.exchange_rate, 
+                    srplh.local_currency_tax_unit, 
+                    srplh.local_currency_no_tax_unit, 
+                    srplh.local_currency_tax_sum, 
+                    srplh.local_currency_no_tax_sum, 
+                    srplh.exchange_rate_date, 
+                    srplh.budget_account_num, 
+                    srplh.is_push_assets_flag, 
+                    srplh.version
+    </sql>
+
+    <select id="selectList" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis">
+        select
+        <include refid="BaseSql"/>
+        from scux_rcwl_pr_line_his srplh
+        <where>
+            <if test="prLineId !=null">
+                and srplh.prLineId = #{prLineId,jdbcType = INTEGER}
+            </if>
+        </where>
+    </select>
+</mapper>
