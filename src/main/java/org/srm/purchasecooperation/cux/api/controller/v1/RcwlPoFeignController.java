@@ -34,6 +34,7 @@ public class RcwlPoFeignController {
     @PostMapping("/submit-to-bpm-successed")
     public ResponseEntity<Void> poSubmitBpmSuccessed( @PathVariable("organizationId") Long tenantId, @RequestParam("poNum") String poNum,
                                                       @RequestParam("procInstID") String procInstID,@RequestParam("newProcURL") String newProcURL) {
+        LOGGER.info("调用采购订单BPM提交成功接口参数：tenantId：{}，poNum：{}，procInstID：{}，newProcURL：{}",tenantId,poNum,procInstID,newProcURL);
         rcwlPoSubmitBpmService.rcwlSubmitBpmSuccessed(tenantId, poNum, procInstID, newProcURL);
         return Results.success();
     }
