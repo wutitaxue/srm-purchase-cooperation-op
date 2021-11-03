@@ -24,8 +24,8 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
         poHeaderCondition.setTenantId(tenantId);
         PoHeader poHeader = poHeaderMapper.selectOne(poHeaderCondition);
         //SODR.PO_STATUS
-        poHeaderCondition.setAttributeVarchar36(procInstID);
-        poHeaderCondition.setAttributeVarchar37(newProcURL);
+        poHeader.setAttributeVarchar36(procInstID);
+        poHeader.setAttributeVarchar37(newProcURL);
         poHeader.setStatusCode("SUBMITTED");
         poHeaderMapper.updateOptional(poHeader, new String[]{"statusCode","attributeVarchar36","attributeVarchar37"});
     }
