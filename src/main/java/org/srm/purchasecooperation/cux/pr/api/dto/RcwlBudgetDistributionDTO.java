@@ -68,4 +68,20 @@ public class RcwlBudgetDistributionDTO {
     private List<Integer> budgetDisYears;
     @ApiModelProperty(value = "申请行id集合")
     private List<Long> prLineIds;
+
+    /**
+     * 订单新增 begin
+     */
+    @JsonFormat(pattern = Constants.Pattern.DATE)
+    @ApiModelProperty(value = "需求结束日期")
+    private LocalDate needByDate;
+
+    @ApiModelProperty(value = "订单预算占用金额（系统计算值）")
+    private BigDecimal budgetDisAmountCal;
+
+    @ApiModelProperty(value = "需求结束日期所在年份")
+    private Long needByDateYear;
+    @ApiModelProperty(value = "需求结束日期所在月份")
+    private Long needByDateMonth;
+    // -----------订单新增 end----------------
 }

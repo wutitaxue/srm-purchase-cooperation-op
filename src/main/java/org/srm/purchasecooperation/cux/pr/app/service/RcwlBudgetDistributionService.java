@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author jie.wang05@hand-china.com 2021-10-27 14:49:26
  */
-public interface RcwlPrBudgetDistributionService {
+public interface RcwlBudgetDistributionService {
     /**
      * 通过采购申请行生成跨年预算分摊逻辑
      *
@@ -28,4 +28,22 @@ public interface RcwlPrBudgetDistributionService {
      * @param rcwlBudgetDistributionDTOS  跨年预算分摊集合
      */
     List<RcwlBudgetDistribution> createBudgetDistributions(Long tenantId, List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS);
+
+    /**
+     * 通过订单行生成跨年预算分摊逻辑
+     *
+     * @param tenantId
+     * @param rcwlBudgetDistributionDTO
+     * @return
+     */
+    List<RcwlBudgetDistribution> selectBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
+
+    /**
+     * 批量更新预算分配
+     *
+     * @param tenantId
+     * @param rcwlBudgetDistributionList
+     * @return
+     */
+    List<RcwlBudgetDistribution> batchUpdateBudgetDistributions(Long tenantId, List<RcwlBudgetDistribution> rcwlBudgetDistributionList);
 }

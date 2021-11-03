@@ -4,7 +4,7 @@ import org.hzero.core.util.Results;
 import org.hzero.core.base.BaseController;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
-import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrBudgetDistributionService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlBudgetDistributionService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +25,15 @@ import java.util.List;
 @RestController("rcwlBudgetDistributionController.v1")
 @RequestMapping("/v1/{organizationId}/rcwl-budget-distributions")
 @Tenant(RCWLAcpConstant.TENANT_NUMBER)
-public class RcwlPrBudgetDistributionController extends BaseController {
+public class RcwlBudgetDistributionController extends BaseController {
     @Autowired
-    private RcwlPrBudgetDistributionService rcwlPrBudgetDistributionService;
+    private RcwlBudgetDistributionService rcwlBudgetDistributionService;
 
     @ApiOperation(value = "根据采购申请行生成预算分配")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/calculate")
     public ResponseEntity<List<RcwlBudgetDistributionDTO>> calculateBudgetDistributions(@PathVariable(value = "organizationId") long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlPrBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
         return Results.success(rcwlBudgetDistributionDTOS);
     }
 
@@ -42,7 +42,7 @@ public class RcwlPrBudgetDistributionController extends BaseController {
     @PostMapping
     public ResponseEntity<List<RcwlBudgetDistribution>> createBudgetDistributions(@PathVariable(value =
             "organizationId") long tenantId, @RequestBody List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS) {
-        List<RcwlBudgetDistribution> budgetDistributions = rcwlPrBudgetDistributionService.createBudgetDistributions(tenantId, rcwlBudgetDistributionDTOS);
+        List<RcwlBudgetDistribution> budgetDistributions = rcwlBudgetDistributionService.createBudgetDistributions(tenantId, rcwlBudgetDistributionDTOS);
         return Results.success(budgetDistributions);
     }
 
