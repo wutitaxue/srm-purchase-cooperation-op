@@ -74,7 +74,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         List<RcwlBudgetDistribution> budgetDistributionCreateList = new ArrayList<>();
 
         //预算总时长(月) = A2年B2月- A1年B1月=12-B1+B2+（A2-A1-1）*12
-       Long budgetDisGap = 12 - rcwlBudgetDistributionDTO.getNeedByDateMonth() + rcwlBudgetDistributionDTO.getAttributeDate1Month()
+       Long budgetDisGap = 12 - rcwlBudgetDistributionDTO.getAttributeDate1Month() + rcwlBudgetDistributionDTO.getNeedByDateMonth()
                 + (rcwlBudgetDistributionDTO.getNeedByDateYear() - rcwlBudgetDistributionDTO.getAttributeDate1Year() - 1) * 12;
 
         for (Long i = rcwlBudgetDistributionDTO.getAttributeDate1Year(); i <= rcwlBudgetDistributionDTO.getNeedByDateYear(); i++) {
@@ -97,8 +97,14 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
             //预算占用(系统计算值)
             if (i.equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())) {
-                //A年预算占用金额=（12-B1）/预算总时长(月)*行金额
-                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP)));
+                //订单开始结束日期年月相同，不使用计算公式
+                if (Long.valueOf(0).equals(budgetDisGap)){
+                    budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount());
+                }else {
+                    //A年预算占用金额=（12-B1）/预算总时长(月)*行金额
+                    budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP)));
+                }
+
             } else if (i.equals(rcwlBudgetDistributionDTO.getNeedByDateYear())) {
                 //C年预算占用金额=B2/预算总时长(月)*行金额
                 budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedByDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP)));
