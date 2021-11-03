@@ -341,10 +341,15 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(prDetailLine -> {
-                PrLine prLine = new PrLine();
-                BeanUtils.copyProperties(prDetailLine, prLine);
-                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, from);
-                rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                //按照预算单在预算拆分表scux_rcwl_budget_distribution中pr_line_id有几条数据进行拆分成几组
+                List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetbudgetDisYear(prDetailLine.getPrLineId());
+                for(int year : budgetDisYears) {
+                    PrLine prLine = new PrLine();
+                    BeanUtils.copyProperties(prDetailLine, prLine);
+                    RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, from);
+                    rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                    rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                }
             });
         }
 

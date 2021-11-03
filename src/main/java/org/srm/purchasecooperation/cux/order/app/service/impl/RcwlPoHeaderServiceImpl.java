@@ -816,7 +816,22 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 // opd-26
                 if(null != poLine.getPrLineId()){
-                    poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_num")));
+                    List<Map<String,String>> queryListMap = rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId());
+                    if(CollectionUtils.isNotEmpty(queryListMap) ){
+                        LOGGER.info("get(0)不为空");
+                        Map<String,String> queryMap =queryListMap.get(0);
+                        if(queryMap.get("budget_account_num") != null){
+                            LOGGER.info("获取值不为空");
+                            poLine.setAttributeVarchar21(queryMap.get("budget_account_num"));
+                        }else{
+                            LOGGER.info("获取值为空");
+                            poLine.setAttributeVarchar21("");
+                        }
+                    }else{
+                        LOGGER.info("get(0)为空");
+                        poLine.setAttributeVarchar21("");
+                    }
+                   // poLine.setAttributeVarchar21(String.valueOf(rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0).get("budget_account_num")));
                 }
                    LOGGER.info("srm-22875-poLineRepository.insertSelective-dete{}", poLine);
                 this.poLineRepository.insertSelective(poLine);
