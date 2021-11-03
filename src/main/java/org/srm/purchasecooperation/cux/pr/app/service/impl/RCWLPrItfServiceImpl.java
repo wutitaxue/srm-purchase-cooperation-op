@@ -258,15 +258,35 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         List<PrLine> lineDetailList = this.prLineRepository.select(prLine);
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-
-        if (CollectionUtils.isNotEmpty(lineDetailList)) {
-            lineDetailList.forEach(prDetailLine -> {
-                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
-                if ("R".equals(flag)){
-                    rcwlItfPrLineDetailDTO.setYszyje("0");
-                }
-                rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-            });
+        if ("R".equals(flag)) {
+            if (CollectionUtils.isNotEmpty(lineDetailList)) {
+                lineDetailList.forEach(prDetailLine -> {
+                    RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                    if ("R".equals(flag)){
+                        rcwlItfPrLineDetailDTO.setYszyje("0");
+                    }
+                    rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                });
+            }
+        } else if ("O".equals(flag)) {
+            if (CollectionUtils.isNotEmpty(lineDetailList)) {
+                lineDetailList.forEach(prDetailLine -> {
+                    //根据pr_line_id查找scux_rcwl_budget_change_action数据
+                    List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetChangeActionDisYear(prDetailLine.getPrLineId());
+                    for(int year : budgetDisYears){
+                        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                        //查找budget_group为old的budget_dis_amount
+                        BigDecimal bigDecimal = rcwlItfPrDataRespository.selectBudgetDisAmountByBudgetGroup(prDetailLine.getPrLineId(), year);
+                        if(bigDecimal == null){
+                            rcwlItfPrLineDetailDTO.setYszyje("0");
+                        } else {
+                            rcwlItfPrLineDetailDTO.setYszyje(bigDecimal.toString());
+                        }
+                        rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                    }
+                });
+            }
         }
 
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
