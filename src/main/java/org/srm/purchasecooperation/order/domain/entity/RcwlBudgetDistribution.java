@@ -68,7 +68,7 @@ public class RcwlBudgetDistribution extends AuditDomain {
     private Long prLineId;
     @ApiModelProperty(value = "预算占用年份",required = true)
     @NotNull
-    private Long budgetDisYear;
+    private Integer budgetDisYear;
     @ApiModelProperty(value = "预算占用金额（四舍五入）",required = true)
     @NotNull
     private BigDecimal budgetDisAmount;

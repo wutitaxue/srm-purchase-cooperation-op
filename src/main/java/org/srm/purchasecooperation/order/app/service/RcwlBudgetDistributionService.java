@@ -28,4 +28,21 @@ public interface RcwlBudgetDistributionService {
      * @return
      */
     List<RcwlBudgetDistribution> batchUpdateBudgetDistributions(Long tenantId, List<RcwlBudgetDistribution> rcwlBudgetDistributionList);
+
+    /**
+     * 通过采购申请行生成跨年预算分摊逻辑
+     *
+     * @param tenantId
+     * @param rcwlBudgetDistributionDTO
+     * @return
+     */
+    List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine (Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
+
+    /**
+     * 跨年预算分摊保存/更新
+     *
+     * @param tenantId
+     * @param rcwlBudgetDistributionDTOS  跨年预算分摊集合
+     */
+    List<RcwlBudgetDistribution> createBudgetDistributions(Long tenantId, List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS);
 }
