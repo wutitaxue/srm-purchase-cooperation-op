@@ -822,7 +822,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                         LOGGER.info("listMap:{}",queryListMap.toString());
                         Map<String,String> queryMap =queryListMap.get(0);
                         LOGGER.info("queryMap:{}",queryMap);
-                        if(queryMap.get("budget_account_num") != null){
+                        if(queryMap != null && queryMap.get("budget_account_num") != null){
                             LOGGER.info("获取值不为空");
                             LOGGER.info("budget_account_num:{}",queryMap.get("budget_account_num"));
                             poLine.setAttributeVarchar21(queryMap.get("budget_account_num"));
