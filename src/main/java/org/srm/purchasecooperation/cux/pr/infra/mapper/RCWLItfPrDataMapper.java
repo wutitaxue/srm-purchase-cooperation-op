@@ -91,4 +91,19 @@ public interface RCWLItfPrDataMapper {
     Integer validateInvokeItf(@Param("prHeaderId")Long prHeaderId, @Param("tenantId")Long tenantId);
 
     BigDecimal selectSumQuantity(@Param("prLineId")Long prLineId, @Param("tenantId")Long tenantId);
+
+    /**
+     * 根据pr_line_id找到pr_action_id最大的数据，找到唯一的一组budget_group为old值和new数据，去重取到所有的年份
+     * @param prLineId
+     * @return
+     */
+    List<Integer> selectBudgetChangeActionDisYear(@Param("prLineId")Long prLineId);
+
+    /**
+     * 根据line_id查找budget_group为old的budget_dis_amount
+     * @param prLineId
+     * @param year
+     * @return
+     */
+    BigDecimal selectBudgetDisAmountByBudgetGroup(@Param("prLineId")Long prLineId, @Param("year")Integer year);
 }

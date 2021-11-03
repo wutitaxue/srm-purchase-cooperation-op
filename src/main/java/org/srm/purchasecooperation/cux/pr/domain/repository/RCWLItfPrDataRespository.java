@@ -58,4 +58,19 @@ public interface RCWLItfPrDataRespository {
     Integer validateInvokeItf(Long prHeaderId, Long tenantId);
 
     BigDecimal selectSumQuantity(Long prLineId, Long tenantId);
+
+    /**
+     * 根据pr_line_id找到pr_action_id最大的数据，找到唯一的一组budget_group为old值和new数据，去重取到所有的年份
+     * @param prLineId
+     * @return
+     */
+    List<Integer> selectBudgetChangeActionDisYear(Long prLineId);
+
+    /**
+     * 根据line_id查找budget_group为old的budget_dis_amount
+     * @param prLineId
+     * @param year
+     * @return
+     */
+    BigDecimal selectBudgetDisAmountByBudgetGroup(Long prLineId, Integer year);
 }

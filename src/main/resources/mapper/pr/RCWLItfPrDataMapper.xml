@@ -134,4 +134,26 @@
              	spch.tenant_id = #{tenantId}
 	AND spch.pr_line_id = #{prLineId}
 	</select>
+
+    <select id="selectBudgetChangeActionDisYear" resultType="java.lang.Integer">
+	SELECT DISTINCT
+	budget_dis_year
+    FROM
+	scux_rcwl_budget_change_action srbca
+    WHERE
+	srbca.pr_line_id = #{prLineId}
+	AND pr_action_id IN ( SELECT MAX( pr_action_id ) FROM scux_rcwl_budget_change_action WHERE scux_rcwl_budget_change_action.pr_line_id = #{prLineId} );
+	</select>
+
+    <select id="selectBudgetDisAmountByBudgetGroup" resultType="java.math.BigDecimal">
+	SELECT DISTINCT
+	budget_dis_amount
+	FROM
+	scux_rcwl_budget_change_action srbca
+	WHERE
+	srbca.pr_line_id = #{prLineId}
+	AND srbca.budget_group = 'old'
+	AND srbca.budget_dis_year = #{year}
+	AND pr_action_id IN ( SELECT MAX( pr_action_id ) FROM scux_rcwl_budget_change_action WHERE scux_rcwl_budget_change_action.pr_line_id = #{prLineId} );
+	</select>
 </mapper>
