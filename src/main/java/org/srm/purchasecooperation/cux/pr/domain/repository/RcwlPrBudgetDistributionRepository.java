@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author jie.wang05@hand-china.com 2021-10-27 14:49:26
  */
-public interface RcwlBudgetDistributionRepository extends BaseRepository<RcwlBudgetDistribution> {
+public interface RcwlPrBudgetDistributionRepository extends BaseRepository<RcwlBudgetDistribution> {
     /**
      * 通过采购申请行生成跨年预算分摊逻辑
      *
