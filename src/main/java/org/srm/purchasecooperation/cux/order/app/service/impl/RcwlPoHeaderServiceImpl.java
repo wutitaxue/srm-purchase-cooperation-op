@@ -727,9 +727,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 // opd-26
                 if(null != poLine.getPrLineId()){
                     List<Map<String,String>> queryListMap = rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId());
-                    if(queryListMap.get(0) != null){
+                    if(CollectionUtils.isNotEmpty(queryListMap) ){
                         LOGGER.info("get(0)不为空");
-                        Map<String,String> queryMap = rcwlSpcmPcSubjectRepository.queryPrLineByKey(poLine.getPrLineId()).get(0);
+                        Map<String,String> queryMap =queryListMap.get(0);
                         if(queryMap.get("budget_account_num") != null){
                             LOGGER.info("获取值不为空");
                             poLine.setAttributeVarchar21(queryMap.get("budget_account_num"));
