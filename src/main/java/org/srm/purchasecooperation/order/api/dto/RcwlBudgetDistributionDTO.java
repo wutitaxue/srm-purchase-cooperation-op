@@ -11,6 +11,7 @@ import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author @author pengxu.zhi@hand-china.com 2021-10-29 16:56:18
@@ -32,8 +33,10 @@ public class RcwlBudgetDistributionDTO {
     private Long prHeaderId;
     @ApiModelProperty(value = "申请行id,sprm_pr_line.pr_line_id")
     private Long prLineId;
+    @ApiModelProperty(value = "行号")
+    private Integer lineNum;
     @ApiModelProperty(value = "预算占用年份")
-    private Long budgetDisYear;
+    private Integer budgetDisYear;
     @ApiModelProperty(value = "预算占用金额（四舍五入）")
     private BigDecimal budgetDisAmount;
     @ApiModelProperty(value = "预算总时长（月）")
@@ -51,17 +54,31 @@ public class RcwlBudgetDistributionDTO {
     @ApiModelProperty(value = "需求开始日期")
     private LocalDate attributeDate1;
     @JsonFormat(pattern = Constants.Pattern.DATE)
-    @ApiModelProperty(value = "需求结束日期")
+    @ApiModelProperty(value = "PO需求结束日期")
     private LocalDate needByDate;
+    @ApiModelProperty(value = "PR需求结束日期")
+    private LocalDate neededDate;
+
 
     @ApiModelProperty(value = "预算占用金额（系统计算值）")
     private BigDecimal budgetDisAmountCal;
     @ApiModelProperty(value = "需求开始日期所在年份")
-    private Long attributeDate1Year;
+    private Integer attributeDate1Year;
     @ApiModelProperty(value = "需求开始日期所在月份")
-    private Long attributeDate1Month;
+    private Integer attributeDate1Month;
     @ApiModelProperty(value = "需求结束日期所在年份")
     private Long needByDateYear;
     @ApiModelProperty(value = "需求结束日期所在月份")
     private Long needByDateMonth;
+    @ApiModelProperty(value = "需求结束日期所在年份")
+    private Integer neededDateYear;
+
+    @ApiModelProperty(value = "需求结束日期所在月份")
+    private Integer neededDateMonth;
+    @ApiModelProperty(value = "自动计算预算占用金额（四舍五入）")
+    private BigDecimal autoCalculateBudgetDisAmount;
+    @ApiModelProperty(value = "预算占用年份集合")
+    private List<Integer> budgetDisYears;
+    @ApiModelProperty(value = "申请行id集合")
+    private List<Long> prLineIds;
 }
