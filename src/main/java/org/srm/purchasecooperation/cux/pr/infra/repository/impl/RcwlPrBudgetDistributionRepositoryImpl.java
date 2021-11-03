@@ -1,13 +1,10 @@
 package org.srm.purchasecooperation.cux.pr.infra.repository.impl;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.mybatis.base.impl.BaseRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetDistributionRepository;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrBudgetDistributionRepository;
 import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlBudgetDistributionMapper;
 
@@ -19,7 +16,7 @@ import java.util.List;
  * @author jie.wang05@hand-china.com 2021-10-27 14:49:26
  */
 @Component
-public class RcwlBudgetDistributionRepositoryImpl extends BaseRepositoryImpl<RcwlBudgetDistribution> implements RcwlBudgetDistributionRepository {
+public class RcwlPrBudgetDistributionRepositoryImpl extends BaseRepositoryImpl<RcwlBudgetDistribution> implements RcwlPrBudgetDistributionRepository {
 
     @Autowired
     private RcwlBudgetDistributionMapper rcwlBudgetDistributionMapper;

@@ -2,7 +2,6 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CaseFormat;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -11,17 +10,14 @@ import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
-import org.hzero.boot.customize.service.CustomizeClient;
 import org.hzero.boot.customize.util.CustomizeHelper;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.Attachment;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
-import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.core.message.MessageAccessor;
-import org.hzero.core.redis.RedisHelper;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
@@ -41,7 +37,6 @@ import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
-import org.srm.boot.platform.group.GroupApproveHelper;
 import org.srm.boot.platform.message.MessageHelper;
 import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
@@ -50,7 +45,6 @@ import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.budget.app.service.BudgetService;
 import org.srm.purchasecooperation.common.api.dto.TenantDTO;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
-import org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderServiceImpl2;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
@@ -62,11 +56,10 @@ import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActionRepository;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetDistributionRepository;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrBudgetDistributionRepository;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrLineHisRepository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlCheckPoLineMapper;
-import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
@@ -90,7 +83,6 @@ import org.srm.purchasecooperation.pr.domain.repository.*;
 import org.srm.purchasecooperation.pr.domain.vo.PrCopyFieldsVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
 import org.srm.purchasecooperation.pr.infra.constant.PrConstants;
-import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import org.srm.web.annotation.Tenant;
@@ -163,7 +155,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     @Autowired
     private MessageHelper messageHelper;
     @Autowired
-    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
+    private RcwlPrBudgetDistributionRepository rcwlPrBudgetDistributionRepository;
     @Autowired
     private RcwlPrLineHisRepository rcwlPrLineHisRepository;
     @Autowired
@@ -263,7 +255,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             judgeBudget(prHeader);
             // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 end-------
             // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 begin--------------------------
-            rcwlBudgetDistributionRepository.batchInsert(rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build()));
+            rcwlPrBudgetDistributionRepository.batchInsert(rcwlPrBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build()));
             // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
             prHeader = this.updatePrHeader(prHeader);
             //判断是否能触发接口
@@ -405,13 +397,13 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit end -------------");
         // add by wangjie 根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为new的数据写入scux_rcwl_budget_distribution begin ------
         List<Long> prLineIds = rcwlBudgetChangeActionsNotEnableds.stream().map(RcwlBudgetChangeAction::getPrLineId).collect(Collectors.toList());
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prLineIds(prLineIds).prHeaderId(prHeader.getPrHeaderId()).build());
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlPrBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prLineIds(prLineIds).prHeaderId(prHeader.getPrHeaderId()).build());
         List<RcwlBudgetDistribution> rcwlBudgetDistributionDeleteDatas = new ArrayList<>(rcwlBudgetDistributionDTOS.size());
         rcwlBudgetDistributionDTOS.forEach(rcwlBudgetDistributionDTO -> {
             rcwlBudgetDistributionDeleteDatas.add(RcwlBudgetDistribution.builder().budgetLineId(rcwlBudgetDistributionDTO.getBudgetLineId()).build());
         });
-        rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(rcwlBudgetDistributionDeleteDatas);
-        rcwlBudgetDistributionRepository.batchInsertSelective(rcwlBudgetDistributions);
+        rcwlPrBudgetDistributionRepository.batchDeleteByPrimaryKey(rcwlBudgetDistributionDeleteDatas);
+        rcwlPrBudgetDistributionRepository.batchInsertSelective(rcwlBudgetDistributions);
         // add by wangjie 根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为new的数据写入scux_rcwl_budget_distribution end --------
         return prHeader;
     }
@@ -1167,9 +1159,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
      */
     private void judgeBudget(PrHeader prHeader) {
         // 获取采购申请跨年预算信息
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistribution(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlPrBudgetDistributionRepository.selectBudgetDistribution(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
         // 获取采购申请各行的需求开始年和需求结束年
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlPrBudgetDistributionRepository.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
         prHeader.getPrLineList().forEach(prLine -> {
             // 获取计算好的采购申请行预算数据
             RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());
@@ -1205,7 +1197,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private void judgeChangeBudget(Long tenantId, Long prHeaderId, List<PrLine> changedPrLines, List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds) {
         if (CollectionUtils.isNotEmpty(changedPrLines)) {
             // 获取采购申请各行的需求开始年和需求结束年
-            List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).build());
+            List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlPrBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).build());
             changedPrLines.forEach(prLine -> {
                 // 获取计算好的采购申请行预算数据
                 RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());

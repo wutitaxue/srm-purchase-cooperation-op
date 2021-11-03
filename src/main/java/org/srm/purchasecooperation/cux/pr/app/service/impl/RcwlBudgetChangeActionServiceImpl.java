@@ -10,16 +10,14 @@ import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlBudgetChangeActionService;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActionRepository;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetDistributionRepository;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrBudgetDistributionRepository;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +35,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
     @Autowired
     private RcwlBudgetChangeActionRepository rcwlBudgetChangeActionRepository;
     @Autowired
-    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
+    private RcwlPrBudgetDistributionRepository rcwlPrBudgetDistributionRepository;
 
     @Override
     public Page<RcwlBudgetChangeAction> selectList(PageRequest pageRequest, RcwlBudgetChangeAction rcwlBudgetChangeAction) {
@@ -48,7 +46,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
     public void createBudgetChangeAction(Long tenantId, List<RcwlBudgetChangeAction> rcwlBudgetChangeActions) {
         if (!CollectionUtils.isEmpty(rcwlBudgetChangeActions)) {
             // 增加一个逻辑,判断当前保存的预算变更数据,是否和原有的预算数据是否一致,一致则直接不保存
-            List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
+            List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlPrBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetDistribution.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, tenantId)).build());
             Map<Integer, RcwlBudgetDistribution> rcwlBudgetDistributionYearMap = rcwlBudgetDistributions.stream().collect(Collectors.toMap(RcwlBudgetDistribution::getBudgetDisYear, Function.identity()));
             if (rcwlBudgetChangeActions.size() == rcwlBudgetDistributions.size()) {

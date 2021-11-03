@@ -1,32 +1,22 @@
 package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import net.sf.cglib.beans.BeanCopier;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDistributionDTO;
-import org.srm.purchasecooperation.cux.pr.app.service.RcwlBudgetDistributionService;
+import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrBudgetDistributionService;
 import org.springframework.stereotype.Service;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetDistribution;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
-import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetDistributionRepository;
-import org.srm.purchasecooperation.finance.domain.entity.InvoiceUpdateRules;
-import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
-import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrBudgetDistributionRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * 预算分配应用服务默认实现
@@ -34,15 +24,15 @@ import java.util.stream.Stream;
  * @author jie.wang05@hand-china.com 2021-10-27 14:49:26
  */
 @Service
-public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistributionService {
+public class RcwlPrBudgetDistributionServiceImpl implements RcwlPrBudgetDistributionService {
     @Autowired
-    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
+    private RcwlPrBudgetDistributionRepository rcwlPrBudgetDistributionRepository;
 
     @Override
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
         // 根据采购申请头、行id计算跨年预算的值
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlPrBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
         rcwlBudgetDistributionDTOS.forEach(itemLine -> {
             List<Integer> yearPrLineYears = new ArrayList<>(Integer.parseInt(String.valueOf(itemLine.getNeededDateYear() - itemLine.getAttributeDate1Year() + 1)));
             for (Integer i = itemLine.getAttributeDate1Year(); i <= itemLine.getNeededDateYear(); i++) {
@@ -52,7 +42,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         });
         // 根据采购申请头、行id和申请行的年份集合去查询跨年预算的值
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionRealValues =
-                rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, rcwlBudgetDistributionDTO);
+                rcwlPrBudgetDistributionRepository.selectBudgetDistribution(tenantId, rcwlBudgetDistributionDTO);
         rcwlBudgetDistributionDTOS.forEach(itemLine -> {
             for (Integer i = itemLine.getAttributeDate1Year(); i <= itemLine.getNeededDateYear(); i++) {
                 RcwlBudgetDistributionDTO rcwlBudgetDistributionResult = new RcwlBudgetDistributionDTO();
@@ -87,7 +77,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         if (!CollectionUtils.isEmpty(rcwlBudgetDistributionDTOS)) {
             // 查询已经存在的跨年预算数据
             List<RcwlBudgetDistribution> budgetDistributions =
-                    rcwlBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, rcwlBudgetDistributionDTOS.get(0).getPrHeaderId()).andEqualTo(RcwlBudgetDistribution.FIELD_PR_LINE_ID, rcwlBudgetDistributionDTOS.get(0).getPrLineId())).orderByAsc(RcwlBudgetDistribution.FIELD_BUDGET_DIS_YEAR).build());
+                    rcwlPrBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, rcwlBudgetDistributionDTOS.get(0).getPrHeaderId()).andEqualTo(RcwlBudgetDistribution.FIELD_PR_LINE_ID, rcwlBudgetDistributionDTOS.get(0).getPrLineId())).orderByAsc(RcwlBudgetDistribution.FIELD_BUDGET_DIS_YEAR).build());
             // 记录最后要插入/更新的跨年预算数据
             List<RcwlBudgetDistribution> changeBudgetDistributions = new ArrayList<>(rcwlBudgetDistributionDTOS.size());
             // 转换数据
@@ -103,15 +93,15 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                     if (!rcwlBudgetDistributionDTOS.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add).equals(budgetDistributions.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
                         throw new CommonException("error.pr.line.amount.budget.error");
                     } else {
-                        rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
+                        rcwlPrBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
                     }
                 }
                 // 跨年分摊金额表中的数量和传入的跨年分摊金额参数数量不一致,或者两者第一年年份不一致,说明需求日期发生了变化
                 if (budgetDistributions.size() != rcwlBudgetDistributionDTOS.size() || !budgetDistributions.get(0).getBudgetDisYear().equals(rcwlBudgetDistributionDTOS.get(0).getBudgetDisYear())) {
-                    rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
+                    rcwlPrBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
                 }
             }
-            rcwlBudgetDistributionRepository.batchInsert(changeBudgetDistributions);
+            rcwlPrBudgetDistributionRepository.batchInsert(changeBudgetDistributions);
             return changeBudgetDistributions;
         }
         return null;
