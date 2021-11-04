@@ -197,11 +197,12 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
     @Override
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
-        // prLine不为空,先计算行金额
+        // prLine不为空,先计算行金额,表示是采购申请变更
         PrLine prLine = rcwlBudgetDistributionDTO.getPrLine();
         if(!ObjectUtils.isEmpty(prLine)){
             prLine.countLineAmount();
             rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
+            rcwlBudgetDistributionDTO.setChangeSubmit(1);
         }
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
         // 根据采购申请头、行id计算跨年预算的值
@@ -216,6 +217,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         // 根据采购申请头、行id和申请行的年份集合去查询跨年预算的值
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionRealValues =
                 rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, rcwlBudgetDistributionDTO);
+        // -------------- 计算系统分摊金额 begin -------------------------------------------
         if (CollectionUtils.isNotEmpty(rcwlBudgetDistributionDTOS)) {
             RcwlBudgetDistributionDTO itemLine = rcwlBudgetDistributionDTOS.get(0);
             for (Integer i = itemLine.getAttributeDate1Year(); i <= itemLine.getNeededDateYear(); i++) {
@@ -244,6 +246,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 }
                 rcwlBudgetDistributionResults.add(rcwlBudgetDistributionResult);
             }
+            // -------------- 计算系统分摊金额 end -------------------------------------------
         }
         return rcwlBudgetDistributionResults;
     }
