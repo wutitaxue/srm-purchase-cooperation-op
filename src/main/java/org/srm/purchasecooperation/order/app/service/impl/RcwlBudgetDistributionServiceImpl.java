@@ -208,13 +208,16 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 rcwlBudgetDistributionResult.setBudgetDisYear(i);
                 if (i.equals(itemLine.getAttributeDate1Year())) {
                     // 当前行【占用年份】=A1，则为【申请行总金额】/【占用总时长（月）】*【12-B1】
-                    rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(rcwlBudgetDistributionResult.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionResult.getBudgetDisGap() * (12 - rcwlBudgetDistributionResult.getAttributeDate1Month())), 6, RoundingMode.HALF_UP));
+                    rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(rcwlBudgetDistributionResult.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionResult.getBudgetDisGap()), 6, RoundingMode.HALF_UP)
+                            .multiply(new BigDecimal(12 - rcwlBudgetDistributionResult.getAttributeDate1Month()).setScale(6,BigDecimal.ROUND_HALF_UP)));
                 } else if (i.equals(itemLine.getNeededDateYear())) {
                     // 若当前行【占用年份】=A2,则为【申请行总金额】/【占用总时长（月）】*B2
-                    rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(rcwlBudgetDistributionResult.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionResult.getBudgetDisGap() * rcwlBudgetDistributionResult.getNeededDateMonth()), 6, RoundingMode.HALF_UP));
+                    rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(rcwlBudgetDistributionResult.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionResult.getBudgetDisGap()), 6, RoundingMode.HALF_UP)
+                            .multiply(new BigDecimal(rcwlBudgetDistributionResult.getNeededDateMonth()).setScale(6,BigDecimal.ROUND_HALF_UP)));
                 } else {
                     // 前两者不满足，则为【申请行总金额】/【占用总时长（月）】*12
-                    rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(rcwlBudgetDistributionResult.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionResult.getBudgetDisGap() * 12), 6, RoundingMode.HALF_UP));
+                    rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(rcwlBudgetDistributionResult.getLineAmount().divide(new BigDecimal(rcwlBudgetDistributionResult.getBudgetDisGap()), 6, RoundingMode.HALF_UP)
+                            .multiply(new BigDecimal(12).setScale(6,BigDecimal.ROUND_HALF_UP)));
                 }
                 // 根据采购申请头、行id和申请行的年份去查询跨年预算的值
                 if (!org.springframework.util.CollectionUtils.isEmpty(rcwlBudgetDistributionRealValues)) {
