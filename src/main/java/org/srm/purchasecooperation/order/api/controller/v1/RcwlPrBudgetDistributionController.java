@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author pengxu.zhi@hand-china.com 2021-10-29 16:56:18
  */
-@RestController("rcwlPoBudgetDistributionController.v1")
+@RestController("rcwlPrBudgetDistributionController.v1")
 @RequestMapping("/v1/{organizationId}/pr/rcwl-budget-distributions")
 public class RcwlPrBudgetDistributionController extends BaseController {
 
