@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.order.app.service.RcwlBudgetDistributionService;
 import org.srm.purchasecooperation.order.domain.entity.PoLine;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -189,6 +191,12 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
     @Override
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+        // prLine不为空,先计算行金额
+        PrLine prLine = rcwlBudgetDistributionDTO.getPrLine();
+        if(!ObjectUtils.isEmpty(prLine)){
+            prLine.countLineAmount();
+            rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
+        }
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
         // 根据采购申请头、行id计算跨年预算的值
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
@@ -247,21 +255,13 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 // 跨年预算未保存过,占用金额去系统分摊金额;保存过,则直接取实际分摊金额
                 changeBudgetDistributions.add(RcwlBudgetDistribution.builder().prHeaderId(rcwlBudgetDistributionDTO.getPrHeaderId()).prLineId(rcwlBudgetDistributionDTO.getPrLineId()).budgetDisGap(rcwlBudgetDistributionDTO.getBudgetDisGap()).budgetDisYear(rcwlBudgetDistributionDTO.getBudgetDisYear()).budgetDisAmount(org.springframework.util.CollectionUtils.isEmpty(budgetDistributions)?rcwlBudgetDistributionDTO.getAutoCalculateBudgetDisAmount():rcwlBudgetDistributionDTO.getBudgetDisAmount()).tenantId(tenantId).build());
             });
+            // 判断行金额和实际分摊金额总值是否相等,不相等---可能是人为调整有问题,或者金额变化了
+            if (!rcwlBudgetDistributionDTOS.get(0).getLineAmount().equals(rcwlBudgetDistributionDTOS.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
+                throw new CommonException("error.pr.line.amount.budget.error");
+            }
             // 总体逻辑:已有跨年预算,删除->重新插入.  对于校验的部分,提交那里会限制住
             if (!org.springframework.util.CollectionUtils.isEmpty(budgetDistributions)) {
-                // 判断行金额和实际分摊金额总值是否相等,不相等---可能是人为调整有问题,或者金额变化了
-                if (!rcwlBudgetDistributionDTOS.get(0).getLineAmount().equals(rcwlBudgetDistributionDTOS.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
-                    // 判断跨年分摊金额表中实际分摊金额总值和传入的跨年分摊金额的实际分摊金额总值是否相等,不相等说明人为调整有误,报错
-                    if (!rcwlBudgetDistributionDTOS.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add).equals(budgetDistributions.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
-                        throw new CommonException("error.pr.line.amount.budget.error");
-                    } else {
-                        rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
-                    }
-                }
-                // 跨年分摊金额表中的数量和传入的跨年分摊金额参数数量不一致,或者两者第一年年份不一致,说明需求日期发生了变化
-                if (budgetDistributions.size() != rcwlBudgetDistributionDTOS.size() || !budgetDistributions.get(0).getBudgetDisYear().equals(rcwlBudgetDistributionDTOS.get(0).getBudgetDisYear())) {
-                    rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
-                }
+                rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributions);
             }
             rcwlBudgetDistributionRepository.batchInsert(changeBudgetDistributions);
             return changeBudgetDistributions;

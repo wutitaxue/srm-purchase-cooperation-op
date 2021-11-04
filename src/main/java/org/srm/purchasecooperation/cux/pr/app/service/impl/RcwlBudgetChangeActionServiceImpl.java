@@ -11,6 +11,7 @@ import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlBudgetChangeActionService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction;
@@ -45,6 +46,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createBudgetChangeAction(Long tenantId, List<RcwlBudgetChangeAction> rcwlBudgetChangeActions) {
         if (!CollectionUtils.isEmpty(rcwlBudgetChangeActions)) {
             // 增加一个逻辑,判断当前保存的预算变更数据,是否和原有的预算数据是否一致,一致则直接不保存
@@ -61,12 +63,9 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             // 筛选采购申请行未提交的预算变更数据
             List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetChangeAction.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO)).build());
-            // 判断行金额和实际分摊金额总值是否相等,不相等---可能是人为调整有问题,或者金额变化了
-            if (!rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getAutoCalculateBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add).equals(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
-                // 判断跨年分摊金额表中实际分摊金额总值和传入的跨年分摊金额的实际分摊金额总值是否相等,不相等说明人为调整有误,报错
-                if (!rcwlBudgetChangeActions.get(0).getLineAmount().equals(rcwlBudgetChangeActionsNotEnableds.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
-                    throw new CommonException("error.pr.line.amount.budget.error");
-                }
+            // 判断跨年分摊金额表中实际分摊金额总值和传入的跨年分摊金额的实际分摊金额总值是否相等,不相等报错
+            if (!rcwlBudgetChangeActions.get(0).getLineAmount().equals(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
+                throw new CommonException("error.pr.line.amount.budget.error");
             }
             // 筛选budget_group为old的条数
             long oldCount = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetChangeAction -> RcwlBudgetChangeAction.OLD.equals(rcwlBudgetChangeAction.getBudgetGroup())).count();
@@ -75,7 +74,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
                 List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsOld = new ArrayList<>(rcwlBudgetDistributions.size());
                 rcwlBudgetDistributions.forEach(rcwlBudgetDistribution -> {
                     RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
-                    BeanUtils.copyProperties(rcwlBudgetDistribution,rcwlBudgetChangeAction);
+                    BeanUtils.copyProperties(rcwlBudgetDistribution, rcwlBudgetChangeAction);
                     rcwlBudgetChangeActionsOld.add(rcwlBudgetChangeAction);
                 });
                 rcwlBudgetChangeActionsOld.forEach(rcwlBudgetChangeAction -> rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.OLD));
