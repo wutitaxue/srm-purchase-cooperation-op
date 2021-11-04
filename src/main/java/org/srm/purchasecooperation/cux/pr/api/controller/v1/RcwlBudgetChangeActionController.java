@@ -36,29 +36,9 @@ import java.util.List;
 @RestController("rcwlBudgetChangeActionController.v1")
 @RequestMapping("/v1/{organizationId}/scux-rcwl-budget-change-actions")
 public class RcwlBudgetChangeActionController extends BaseController {
-
-    /*@Autowired
-    private RcwlBudgetChangeActionRepository rcwlBudgetChangeActionRepository;
-
     @Autowired
     private RcwlBudgetChangeActionService rcwlBudgetChangeActionService;
 
-    @ApiOperation(value = "预算变更记录表列表")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping
-    public ResponseEntity<Page<RcwlBudgetChangeAction>> list(RcwlBudgetChangeAction rcwlBudgetChangeAction, @PathVariable Long organizationId, @ApiIgnore @SortDefault(value = RcwlBudgetChangeAction.FIELD_BUDGET_CHANGE_ID,
-            direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        Page<RcwlBudgetChangeAction> list = rcwlBudgetChangeActionService.selectList(pageRequest, rcwlBudgetChangeAction);
-        return Results.success(list);
-    }
-
-    @ApiOperation(value = "预算变更记录表明细")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{budgetChangeId}")
-    public ResponseEntity<RcwlBudgetChangeAction> detail(@PathVariable Long budgetChangeId) {
-        RcwlBudgetChangeAction rcwlBudgetChangeAction = rcwlBudgetChangeActionRepository.selectByPrimary(budgetChangeId);
-        return Results.success(rcwlBudgetChangeAction);
-    }
 
     @ApiOperation(value = "创建预算变更记录表")
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -69,14 +49,5 @@ public class RcwlBudgetChangeActionController extends BaseController {
         rcwlBudgetChangeActionService.createBudgetChangeAction(tenantId, rcwlBudgetChangeActions);
         return Results.success(rcwlBudgetChangeActions);
     }
-
-    @ApiOperation(value = "删除预算变更记录表")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @DeleteMapping
-    public ResponseEntity<?> remove(@RequestBody RcwlBudgetChangeAction rcwlBudgetChangeAction) {
-        SecurityTokenHelper.validToken(rcwlBudgetChangeAction);
-        rcwlBudgetChangeActionRepository.deleteByPrimaryKey(rcwlBudgetChangeAction);
-        return Results.success();
-    }*/
 
 }
