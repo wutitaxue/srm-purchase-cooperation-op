@@ -240,7 +240,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, flag);
 //        List<PrLine> lineDetailList = prHeader.getPrLineList();
         PoLine poLine = new PoLine();
-        poLine.setPoHeaderId(poDTO.getPrHeaderId());
+        poLine.setPoHeaderId(poDTO.getPoHeaderId());
         List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
@@ -249,7 +249,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
             lineDetailList.forEach(poDetailLine -> {
                     RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(poDetailLine, tenantId);
                         //占用金额,释放固定为0
-                        rcwlItfPrLineDetailDTO.setYszyje("0");
+                        rcwlItfPrLineDetailDTO.setYszyje("100");
                         //预算占用日期
                         rcwlItfPrLineDetailDTO.setYsdate(String.valueOf("2021"));
                     rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
