@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.order.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.beans.BeanCopier;
 import org.apache.commons.collections4.CollectionUtils;
@@ -21,9 +22,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 预算分配应用服务默认实现
@@ -52,8 +55,13 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
         log.info("原预算分配数据：{}",budgetDistributionsInDB.size());
 
-        //未匹配则直接创建，匹配到则赋值原预算占用（手工）重新创建
-        if (CollectionUtils.isEmpty(budgetDistributionsInDB)){
+        List<Integer> budgetDisYears = budgetDistributionsInDB.stream().map(RcwlBudgetDistribution::getBudgetDisYear).collect(Collectors.toList());
+
+
+
+        //未创建或年份不匹配则直接创建，匹配到则赋值原预算占用（手工）重新创建
+        if (CollectionUtils.isEmpty(budgetDistributionsInDB) || !Collections.max(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedByDateYear())
+        || !Collections.min(budgetDisYears).equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())){
             return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO,null);
         }
 
@@ -115,11 +123,11 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
             if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
                 Integer finalI = i;
-                RcwlBudgetDistribution rcwlBudgetDistribution = budgetDistributionsInDB.stream()
-                        .filter(bd -> finalI.equals(bd.getBudgetDisYear())).findFirst().get();
+                List<RcwlBudgetDistribution> rcwlBudgetDistributions = budgetDistributionsInDB.stream()
+                        .filter(bd -> finalI.equals(bd.getBudgetDisYear())).collect(Collectors.toList());
                 //预算占用(手工填写)
-                log.info("预算年份：{},原年份预算值（手工）：{}",finalI,rcwlBudgetDistribution);
-                budgetDistribution.setBudgetDisAmount(Objects.isNull(rcwlBudgetDistribution)?null:rcwlBudgetDistribution.getBudgetDisAmount());
+                log.info("预算年份：{},原年份预算值（手工）：{}",finalI,rcwlBudgetDistributions.get(0));
+                budgetDistribution.setBudgetDisAmount(CollectionUtils.isEmpty(rcwlBudgetDistributions)?null:rcwlBudgetDistributions.get(0).getBudgetDisAmount());
             }
 
             budgetDistributionCreateList.add(budgetDistribution);

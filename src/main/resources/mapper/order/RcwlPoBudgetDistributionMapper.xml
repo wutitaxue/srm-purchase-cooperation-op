@@ -130,7 +130,7 @@
         ORDER BY srbd.pr_header_id,srbd.pr_line_id,srbd.budget_dis_year
     </select>
 
-    <select id="selectBudgetDistributionNotAcrossYear" resultType="org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution">
+    <select id="selectBudgetDistributionNotAcrossYear" parameterType="org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO" resultType="org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution">
         SELECT
         spl.tenant_id,
         spl.pr_line_id,
@@ -151,6 +151,12 @@
         AND spl.pr_header_id = #{prHeaderId}
         <if test="tenantId != null">
             AND spl.tenant_id = #{tenantId}
+        </if>
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND spl.pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
         </if>
     </select>
 </mapper>
