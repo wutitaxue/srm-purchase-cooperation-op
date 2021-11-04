@@ -35,4 +35,12 @@ public interface RcwlPoToBpmMapper {
      * @return
      */
     String selectEsPurchaseOrgName(Long tenantId, Long purchaseOrgId);
+
+    /**
+     * 获取业务用途名称
+     * @param tenantId
+     * @param budgetAccountNum
+     * @return
+     */
+    String selectBudgetAccountName(Long tenantId, String budgetAccountNum);
 }

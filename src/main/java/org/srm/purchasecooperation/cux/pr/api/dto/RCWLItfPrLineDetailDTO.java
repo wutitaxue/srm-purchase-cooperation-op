@@ -30,6 +30,10 @@ public class RCWLItfPrLineDetailDTO {
     @JsonProperty("LINE")
     @ApiModelProperty(value = "行号")
     private String line;
+
+    @ApiModelProperty(value = "预算占用日期")
+    @JsonProperty("YSDATE")
+    private String ysdate;
     @ApiModelProperty(value = "预留字段")
     private String YLZDA1;
     @ApiModelProperty(value = "预留字段")
@@ -51,6 +55,13 @@ public class RCWLItfPrLineDetailDTO {
     }
 
 
+    public String getYsdate() {
+        return ysdate;
+    }
+
+    public void setYsdate(String ysdate) {
+        this.ysdate = ysdate;
+    }
 
     public String getYszyje() {
         return yszyje;
