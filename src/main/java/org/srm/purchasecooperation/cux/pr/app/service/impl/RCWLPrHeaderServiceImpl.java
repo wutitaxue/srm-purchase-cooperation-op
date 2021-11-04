@@ -296,19 +296,6 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         List<PrLine> prHeaderOriginLines = this.prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo("prHeaderId", prHeader.getPrHeaderId())).build());
         Map<Long, PrLine> beforePrLineMap = prHeaderOriginLines.stream().collect(Collectors.toMap(PrLine::getPrLineId, Function.identity()));        LOGGER.info("Purchase requisition " + beforePrLineMap + " change submit start -------------");
         List<PrLine> changePrlines = prHeader.getPrLineList();
-        // ----------add by wangjie 在行处理之前先记录历史数据 begin ---------------------
-        List<RcwlPrLineHis> prLineHistories = new ArrayList<>(prHeaderOriginLines.size());
-        prHeaderOriginLines.forEach(prLine -> {
-            RcwlPrLineHis rcwlPrLineHis = new RcwlPrLineHis();
-            BeanUtils.copyProperties(prLine,rcwlPrLineHis);
-            prLineHistories.add(rcwlPrLineHis);
-        });
-        // 查询历史版本号
-        List<RcwlPrLineHis> rcwlPrLineHisByPrHeadId = rcwlPrLineHisRepository.selectByCondition(Condition.builder(RcwlPrLineHis.class).andWhere(Sqls.custom().andEqualTo(RcwlPrLineHis.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId()).andEqualTo(RcwlPrLineHis.FIELD_TENANT_ID, tenantId)).build());
-        Long version = CollectionUtils.isEmpty(rcwlPrLineHisByPrHeadId) ? 0 : rcwlPrLineHisByPrHeadId.get(0).getVersion();
-        prLineHistories.forEach(prLineHistory -> prLineHistory.setVersion(version));
-        rcwlPrLineHisRepository.batchInsertSelective(prLineHistories);
-        // ----------add by wangjie 在行处理之前先记录历史数据 end ---------------------
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 begin-------
         // 筛选跟预算有关的字段有变更的申请行(目前有三个字段-行金额、需求开始日期、需求结束日期)
         List<PrLine> changedPrLines = prHeader.getPrLineList().stream().filter(prLine -> !prLine.getLineAmount().equals(beforePrLineMap.get(prLine.getPrLineId()).getLineAmount())
@@ -320,7 +307,32 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 .orderByAsc(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID,RcwlBudgetChangeAction.FIELD_PR_LINE_ID,RcwlBudgetChangeAction.FIELD_BUDGET_DIS_YEAR).build());
         judgeChangeBudget(tenantId, prHeader.getPrHeaderId(), changedPrLines, rcwlBudgetChangeActionsNotEnableds);
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 end---------
-
+        // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 begin--------------------------
+        // 查询变更行的未跨年预算
+        List<RcwlBudgetDistribution> rcwlBudgetDistributionsChanged = rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).build());
+        List<RcwlBudgetChangeAction> rcwlBudgetChangeActions = new ArrayList<>(rcwlBudgetDistributionsChanged.size());
+        rcwlBudgetDistributionsChanged.forEach(rcwlBudgetDistribution -> {
+            RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
+            BeanUtils.copyProperties(rcwlBudgetDistribution,rcwlBudgetChangeAction);
+            rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.NEW);
+            rcwlBudgetChangeActions.add(rcwlBudgetChangeAction);
+        });
+        // 把未跨年的预算变更加到变更数据里面
+        rcwlBudgetChangeActionsNotEnableds.addAll(rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActions));
+        // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
+        // ----------add by wangjie 在行处理之前先记录历史数据 begin ---------------------
+        List<RcwlPrLineHis> prLineHistories = new ArrayList<>(prHeaderOriginLines.size());
+        prHeaderOriginLines.forEach(prLine -> {
+            RcwlPrLineHis rcwlPrLineHis = new RcwlPrLineHis();
+            BeanUtils.copyProperties(prLine,rcwlPrLineHis);
+            prLineHistories.add(rcwlPrLineHis);
+        });
+        // 查询历史版本号
+        List<RcwlPrLineHis> rcwlPrLineHisByPrHeadId = rcwlPrLineHisRepository.selectByCondition(Condition.builder(RcwlPrLineHis.class).andWhere(Sqls.custom().andEqualTo(RcwlPrLineHis.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId()).andEqualTo(RcwlPrLineHis.FIELD_TENANT_ID, tenantId)).build());
+        Long version = CollectionUtils.isEmpty(rcwlPrLineHisByPrHeadId) ? 1 : rcwlPrLineHisByPrHeadId.get(0).getVersion();
+        prLineHistories.forEach(prLineHistory -> prLineHistory.setVersion(version));
+        rcwlPrLineHisRepository.batchInsertSelective(prLineHistories);
+        // ----------add by wangjie 在行处理之前先记录历史数据 end ---------------------
         //项目申请的删除或新增
         //取消，行金额相加=申请总额的逻辑。
         if (!PrConstant.PrType.PR_TYPE_PROJECT.equals(prHeader.getPrTypeCode())
@@ -358,7 +370,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 insertPrActions.addAll(this.prActionService.createChangeAction(beforePrLine, afterPrLine, lineConfigs, prHeader, approveSet));
             }
         }
-// -------------- add by wangjie 变更提交成功后，会插入sprm_pr_action表数据，若预算有改动，则需要增加一条类型为change_field置为budget_dis的记录 begin ------------------------------------
+        // -------------- add by wangjie 变更提交成功后，会插入sprm_pr_action表数据，若预算有改动，则需要增加一条类型为change_field置为budget_dis的记录 begin ------------------------------------
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         List<PrAction> insertPrChangeActions = new ArrayList(rcwlBudgetChangeActionsNotEnableds.size());
         // 记录稍后需要更新的预算数据
@@ -1174,26 +1186,32 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistribution(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
         // 获取采购申请各行的需求开始年和需求结束年
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
-        prHeader.getPrLineList().forEach(prLine -> {
-            // 获取计算好的采购申请行预算数据
-            RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());
-            // 先判断是否跨年
-            if(!rcwlBudgetDistribution.getAttributeDate1Year().equals(rcwlBudgetDistribution.getNeededDateYear())) {
-                // 申请行金额不为空且跨年预算行为空
-                long prLineBudgetCount = rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).count();
-                if (prLineBudgetCount == 0 && prLine.getLineAmount().compareTo(new BigDecimal(0)) > 0) {
-                    throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+        if (CollectionUtils.isNotEmpty(rcwlBudgetDistributionPrLines)) {
+            prHeader.getPrLineList().forEach(prLine -> {
+                // 获取计算好的采购申请行预算数据
+                RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());
+                // 先判断是否跨年
+                if (!rcwlBudgetDistribution.getAttributeDate1Year().equals(rcwlBudgetDistribution.getNeededDateYear())) {
+                    if (CollectionUtils.isNotEmpty(rcwlBudgetDistributionDTOS)) {
+                        // 申请行金额不为空且跨年预算行为空
+                        long prLineBudgetCount = rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).count();
+                        if (prLineBudgetCount == 0 && prLine.getLineAmount().compareTo(new BigDecimal(0)) > 0) {
+                            throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+                        }
+                        boolean amountEqual = Objects.equals(prLine.getLineAmount(), rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+                        if (!amountEqual) {
+                            throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+                        }
+                        boolean prLineYear = rcwlBudgetDistributionDTOS.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetDistributionDTOS.get(rcwlBudgetDistributionDTOS.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
+                        if (!prLineYear) {
+                            throw new CommonException("error.pr.line.num.year.budget.error", prLine.getPrLineId());
+                        }
+                    } else {
+                        throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+                    }
                 }
-                boolean amountEqual = Objects.equals(prLine.getLineAmount(), rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
-                if (!amountEqual) {
-                    throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
-                }
-                boolean prLineYear = rcwlBudgetDistributionDTOS.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetDistributionDTOS.get(rcwlBudgetDistributionDTOS.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
-                if (!prLineYear) {
-                    throw new CommonException("error.pr.line.num.year.budget.error", prLine.getPrLineId());
-                }
-            }
-        });
+            });
+        }
     }
 
     /**
