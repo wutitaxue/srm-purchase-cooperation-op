@@ -47,10 +47,10 @@ public class RcwlBudgetDistributionController extends BaseController {
         return Results.success(rcwlBudgetDistributionService.batchUpdateBudgetDistributions(tenantId, rcwlBudgetDistributionList));
     }
 
-    @ApiOperation(value = "根据采购申请行生成预算分配")
+    @ApiOperation(value = "采购申请行生成预算分配")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/calculate")
-    public ResponseEntity<List<RcwlBudgetDistributionDTO>> calculateBudget(@PathVariable(value = "organizationId") long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+    @GetMapping("/list")
+    public ResponseEntity<List<RcwlBudgetDistributionDTO>> listBudget(@PathVariable(value = "organizationId") long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
         return Results.success(rcwlBudgetDistributionDTOS);
     }

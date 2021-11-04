@@ -197,7 +197,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
     @Override
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
-       /* // prLine不为空,先计算行金额
+        // prLine不为空,先计算行金额
         PrLine prLine = rcwlBudgetDistributionDTO.getPrLine();
         if(!ObjectUtils.isEmpty(prLine)){
             prLine.countLineAmount();
@@ -245,8 +245,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 rcwlBudgetDistributionResults.add(rcwlBudgetDistributionResult);
             }
         }
-        return rcwlBudgetDistributionResults;*/
-        return null;
+        return rcwlBudgetDistributionResults;
     }
 
     @Override
