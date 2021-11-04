@@ -18,6 +18,7 @@ import org.srm.purchasecooperation.order.domain.entity.PoLine;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
 import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
+import org.srm.purchasecooperation.order.infra.mapper.RcwlBudgetDistributionMapper;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import java.math.BigDecimal;
@@ -42,6 +43,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
     @Autowired
     private PoLineRepository poLineRepository;
+    @Autowired
+    private RcwlBudgetDistributionMapper rcwlBudgetDistributionMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -84,6 +87,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     private List<RcwlBudgetDistribution> createBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO, List<RcwlBudgetDistribution> budgetDistributionsInDB) {
         List<RcwlBudgetDistribution> budgetDistributionCreateList = new ArrayList<>();
 
+        String poAndPoLineNum = rcwlBudgetDistributionMapper.selectPoAndPoLineNum(tenantId, rcwlBudgetDistributionDTO.getPoHeaderId(), rcwlBudgetDistributionDTO.getPoLineId());
+
         //预算总时长(月) = A2年B2月- A1年B1月=12-B1+B2+（A2-A1-1）*12
        Long budgetDisGap = 12 - rcwlBudgetDistributionDTO.getAttributeDate1Month() + rcwlBudgetDistributionDTO.getNeedByDateMonth()
                 + (rcwlBudgetDistributionDTO.getNeedByDateYear() - rcwlBudgetDistributionDTO.getAttributeDate1Year() - 1) * 12;
@@ -96,6 +101,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             budgetDistribution.setBudgetDisGap(budgetDisGap);
             budgetDistribution.setTenantId(tenantId);
             budgetDistribution.setLineAmount(rcwlBudgetDistributionDTO.getLineAmount());
+            budgetDistribution.setPoAndPoLineNum(poAndPoLineNum);
 
             //预算占用(系统计算值)
             if (i.equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())) {

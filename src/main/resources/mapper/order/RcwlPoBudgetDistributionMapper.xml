@@ -159,4 +159,18 @@
             </foreach>
         </if>
     </select>
+
+    <select id="selectPoAndPoLineNum" resultType="java.lang.String">
+        SELECT
+            CONCAT( sph.po_num, '|', spl.line_num ),
+            sph.po_num,
+            spl.line_num
+        FROM
+            sodr_po_header sph
+            LEFT JOIN sodr_po_line spl ON sph.po_header_id = spl.po_header_id
+        WHERE
+            sph.tenant_id = #{tenantId}
+            AND spl.po_header_id = #{poHeaderId}
+            AND spl.po_line_id = #{poLineId}
+    </select>
 </mapper>
