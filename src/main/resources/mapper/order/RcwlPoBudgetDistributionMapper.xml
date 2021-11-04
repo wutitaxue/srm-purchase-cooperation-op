@@ -104,7 +104,7 @@
         WHERE
         srbd.pr_header_id = spl.pr_header_id
         AND srbd.pr_line_id = spl.pr_line_id
-        WHERE srbd.pr_header_id = #{prHeaderId}
+        AND srbd.pr_header_id = #{prHeaderId}
         <if test="tenantId != null">
             AND srbd.tenant_id = #{tenantId}
         </if>
