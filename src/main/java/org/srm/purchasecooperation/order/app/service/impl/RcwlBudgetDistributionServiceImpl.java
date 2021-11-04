@@ -108,17 +108,19 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                     budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
                     budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
                 }
-
+                log.info("起始年");
             } else if (i.equals(rcwlBudgetDistributionDTO.getNeedByDateYear())) {
                 //C年预算占用金额=B2/预算总时长(月)*行金额
                 BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedByDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP));
                 budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
                 budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
+                log.info("结束年:{}",budgetDisAmountCal);
             } else {
                 //AC之间年份金额=12/预算总时长(月)*行金额
                 BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(12).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP));
                 budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
                 budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
+                log.info("中间年:{}",budgetDisAmountCal);
             }
 
             if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
