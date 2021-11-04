@@ -46,6 +46,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     public List<RcwlBudgetDistribution> selectBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         processPoLine(rcwlBudgetDistributionDTO);
 
+        log.info("rcwlBudgetDistributionDTO:{}",rcwlBudgetDistributionDTO);
+
         // 根据订单头行ID、获取预算分配数据
         List<RcwlBudgetDistribution> budgetDistributionsInDB = rcwlBudgetDistributionRepository.selectByCondition((Condition.builder(RcwlBudgetDistribution.class).
                 andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PO_HEADER_ID, rcwlBudgetDistributionDTO.getPoHeaderId())
@@ -57,15 +59,13 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
         List<Integer> budgetDisYears = budgetDistributionsInDB.stream().map(RcwlBudgetDistribution::getBudgetDisYear).collect(Collectors.toList());
 
-
-
         //未创建或年份不匹配则直接创建，匹配到则赋值原预算占用（手工）重新创建
         if (CollectionUtils.isEmpty(budgetDistributionsInDB) || !Collections.max(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedByDateYear())
         || !Collections.min(budgetDisYears).equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())){
+            log.info("未创建或年份不匹配");
             return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO,null);
         }
 
-        List<RcwlBudgetDistribution> budgetDistributionDelList = new ArrayList<>(budgetDistributionsInDB);
         //校验各年原预算值（手工）是否等于行金额
         BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
         log.info("订单行总金额：{},各年原预算值（手工）：{}",rcwlBudgetDistributionDTO.getLineAmount(),totalBudgetDisAmount);
@@ -73,9 +73,9 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             budgetDistributionsInDB = null;
         }
 
-        //重新计算系统预算，获取原手工预算，重新创建并清空原数据
+        //重新计算系统预算，获取原手工预算，重新创建
+        log.info("已有数据且年份匹配");
         List<RcwlBudgetDistribution> budgetDistributionCreateList = createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB);
-        rcwlBudgetDistributionRepository.batchDelete(budgetDistributionDelList);
         return budgetDistributionCreateList;
     }
 
@@ -132,6 +132,11 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
             budgetDistributionCreateList.add(budgetDistribution);
         }
+
+        //清除原数据
+        rcwlBudgetDistributionRepository.delete(RcwlBudgetDistribution.builder()
+                .poHeaderId(rcwlBudgetDistributionDTO.getPoHeaderId()).poLineId(rcwlBudgetDistributionDTO.getPoLineId())
+                .tenantId(rcwlBudgetDistributionDTO.getTenantId()).build());
 
         rcwlBudgetDistributionRepository.batchInsert(budgetDistributionCreateList);
 
