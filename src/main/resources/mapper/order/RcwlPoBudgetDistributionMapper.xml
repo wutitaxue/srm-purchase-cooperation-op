@@ -66,12 +66,16 @@
             <when test="neededDate != null and attributeDate1 != null">
                 AND ! ISNULL( #{neededDate} )
                 AND ! ISNULL( #{attributeDate1} )
-                AND DATE_FORMAT( #{neededDate}, '%Y' ) != DATE_FORMAT( #{attributeDate1},'%Y' )
+                <if test="changeSubmit == null or changeSubmit !=1">
+                    AND DATE_FORMAT( #{neededDate}, '%Y' ) != DATE_FORMAT( #{attributeDate1},'%Y' )
+                </if>
             </when>
             <otherwise>
                 AND ! ISNULL( spl.needed_date )
                 AND ! ISNULL( spl.attribute_date1 )
-                AND DATE_FORMAT( spl.needed_date, '%Y' ) != DATE_FORMAT( spl.attribute_date1,'%Y' )
+                <if test="changeSubmit == null or changeSubmit !=1">
+                    AND DATE_FORMAT( spl.needed_date, '%Y' ) != DATE_FORMAT( spl.attribute_date1,'%Y' )
+                </if>
             </otherwise>
         </choose>
         AND spl.pr_header_id = #{prHeaderId}

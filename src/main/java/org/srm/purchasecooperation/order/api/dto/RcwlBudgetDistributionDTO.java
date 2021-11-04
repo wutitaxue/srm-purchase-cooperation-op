@@ -81,4 +81,7 @@ public class RcwlBudgetDistributionDTO {
     private List<Integer> budgetDisYears;
     @ApiModelProperty(value = "申请行id集合")
     private List<Long> prLineIds;
+    @ApiModelProperty(value = "是否是变更提交")
+    private Integer changeSubmit;
+
 }

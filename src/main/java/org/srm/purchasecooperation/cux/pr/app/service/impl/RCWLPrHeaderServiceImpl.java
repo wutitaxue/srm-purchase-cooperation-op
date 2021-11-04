@@ -1209,27 +1209,29 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private void judgeChangeBudget(Long tenantId, Long prHeaderId, List<PrLine> changedPrLines, List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds) {
         if (CollectionUtils.isNotEmpty(changedPrLines)) {
             // 获取采购申请各行的需求开始年和需求结束年
-            List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).build());
-            changedPrLines.forEach(prLine -> {
-                // 获取计算好的采购申请行预算数据
-                RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());
-                // 先判断是否跨年
-                if (!rcwlBudgetDistribution.getAttributeDate1Year().equals(rcwlBudgetDistribution.getNeededDateYear())) {
-                    // 申请行金额不为空且跨年预算行为空
-                    long prLineBudgetChangeActionCount = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).count();
-                    if (prLineBudgetChangeActionCount == 0 && prLine.getLineAmount().compareTo(new BigDecimal(0)) > 0) {
-                        throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+            List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).changeSubmit(BaseConstants.Flag.YES).build());
+            if (CollectionUtils.isNotEmpty(rcwlBudgetDistributionPrLines)) {
+                changedPrLines.forEach(prLine -> {
+                    // 获取计算好的采购申请行预算数据
+                    RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());
+                    // 先判断是否跨年
+                    if (!rcwlBudgetDistribution.getAttributeDate1Year().equals(rcwlBudgetDistribution.getNeededDateYear())) {
+                        // 申请行金额不为空且跨年预算行为空
+                        long prLineBudgetChangeActionCount = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).count();
+                        if (prLineBudgetChangeActionCount == 0 && prLine.getLineAmount().compareTo(new BigDecimal(0)) > 0) {
+                            throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+                        }
+                        boolean amountEqual = Objects.equals(prLine.getLineAmount(), rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+                        if (!amountEqual) {
+                            throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
+                        }
+                        boolean prLineYear = rcwlBudgetChangeActionsNotEnableds.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetChangeActionsNotEnableds.get(rcwlBudgetChangeActionsNotEnableds.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
+                        if (!prLineYear) {
+                            throw new CommonException("error.pr.line.num.year.budget.error", prLine.getPrLineId());
+                        }
                     }
-                    boolean amountEqual = Objects.equals(prLine.getLineAmount(), rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
-                    if (!amountEqual) {
-                        throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getPrLineId());
-                    }
-                    boolean prLineYear = rcwlBudgetChangeActionsNotEnableds.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetChangeActionsNotEnableds.get(rcwlBudgetChangeActionsNotEnableds.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
-                    if (!prLineYear) {
-                        throw new CommonException("error.pr.line.num.year.budget.error", prLine.getPrLineId());
-                    }
-                }
-            });
+                });
+            }
         }
 
     }
