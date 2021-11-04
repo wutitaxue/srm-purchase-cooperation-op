@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -83,5 +84,9 @@ public class RcwlBudgetDistributionDTO {
     private List<Long> prLineIds;
     @ApiModelProperty(value = "是否是变更提交")
     private Integer changeSubmit;
+
+    @ApiModelProperty(value = "采购申请行")
+    private PrLine prLine;
+
 
 }
