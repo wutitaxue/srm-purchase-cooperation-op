@@ -1187,7 +1187,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // 获取采购申请各行的需求开始年和需求结束年
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionPrLines = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
         if (CollectionUtils.isNotEmpty(rcwlBudgetDistributionPrLines)) {
-            prHeader.getPrLineList().forEach(prLine -> {
+            rcwlBudgetDistributionPrLines.forEach(prLine -> {
                 // 获取计算好的采购申请行预算数据
                 RcwlBudgetDistributionDTO rcwlBudgetDistribution = rcwlBudgetDistributionPrLines.stream().filter(rcwlBudgetDistributionPrLine -> prLine.getPrLineId().equals(rcwlBudgetDistributionPrLine.getPrLineId())).findFirst().orElse(new RcwlBudgetDistributionDTO());
                 // 先判断是否跨年
