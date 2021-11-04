@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.order.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import gxbpm.dto.RCWLGxBpmStartDataDTO;
 import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -10,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +49,7 @@ import org.srm.purchasecooperation.common.utils.LogUtils;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmDTO;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmLineDTO;
 import org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoBudgetItfService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.cux.order.util.TennantValue;
@@ -199,6 +202,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private SinvRcvTrxHeaderService sinvRcvTrxHeaderService;
     @Autowired
     private RcwlPoToBpmMapper rcwlPoToBpmMapper;
+    @Autowired
+    private RcwlPoBudgetItfService rcwlPoBudgetItfService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
@@ -1123,6 +1128,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return poDTO;
     }
 
+    @SneakyThrows
     @Transactional(rollbackFor = {Exception.class})
     @EventSendTran(rollbackFor = {Exception.class})
     public PoDTO submittedProcess(PoDTO poDTO) {
@@ -1153,8 +1159,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     Set<String> names = new HashSet<>();
                     for (ActivityInstanceHistory activityInstanceHistory : activityInstanceList) {
                         LOGGER.info("审批人是:" + activityInstanceHistory.getAssigneeName() + "(" + activityInstanceHistory.getAssignee() + ")——" + activityInstanceHistory.getActivityName());
-                        if (activityInstanceHistory.getAssignee() != null)
+                        if (activityInstanceHistory.getAssignee() != null) {
                             names.add(activityInstanceHistory.getAssignee());
+                        }
                     }
                     LOGGER.info("要发消息的人是：" + names.toString());
                     sendMessage(names, poDTO.getTenantId(), poDTO.getPoHeaderId());
@@ -1182,6 +1189,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 //            if ("FAIL".equals(poToOaResponse.getResponseStatus())){
 //                throw new CommonException("error.order.external.oa_approve_error", new Object[] { poToOaResponse.getResponseMessage() });
 //            }
+
+            //调用占预算接口
+            rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO,poDTO.getTenantId());
+            //预算占用成功，推送数据到bpm
             String dataToBpmUrl = this.poDataToBpm(poDTO);
             poDTO.setAttributeVarchar37(dataToBpmUrl);
             this.poProcessActionService.insert(poDTO.getPoHeaderId(), "SUBMIT");
@@ -1245,8 +1256,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                         this.poStatusSyncMallRecordService.catalogueOrderStatusCallBack(new PoStatusSyncMallRecord("PO", po.getPoHeaderId(), "PUBLISHED", po.getTenantId()));
                         cataloguePoSendMQ(po.getTenantId(), Collections.singletonList(po.getPoHeaderId()), "PUBLISHED");
                     }
-                    if ("SHOP".equals(po.getPoSourcePlatform()))
+                    if ("SHOP".equals(po.getPoSourcePlatform())) {
                         shopPoSendMQ(po.getTenantId(), Collections.singletonList(po.getPoHeaderId()), "PUBLISHED");
+                    }
                     if ("0".equals(autoConfirmFlag)) {
                         autoConfirmOrder(poHeaderList, poDTO.getTenantId());
                         poDTO.setObjectVersionNumber(((PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId())).getObjectVersionNumber());
@@ -1276,7 +1288,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     }
 
     /**
-     * @param poDTOList
+     * @param poDTO
      * @return
      */
     public String poDataToBpm(PoDTO poDTO) {

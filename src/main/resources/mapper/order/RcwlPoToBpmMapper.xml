@@ -40,4 +40,14 @@
             AND hpo.purchase_org_id = #{purchaseOrgId}
     </select>
 
+    <select id="selectBudgetAccountName" resultType="java.lang.String">
+        SELECT
+            sba.budget_account_name
+        FROM
+            smdm_budget_account sba
+        WHERE
+            sba.tenant_id = #{tenantId}
+            and sba.budget_account_num = #{budgetAccountNum}
+    </select>
+
 </mapper>
