@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrLineHisRepository;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrLineHisMapper;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -22,19 +23,8 @@ public class RcwlPrLineHisRepositoryImpl extends BaseRepositoryImpl<RcwlPrLineHi
     private RcwlPrLineHisMapper rcwlPrLineHisMapper;
 
     @Override
-    public List<RcwlPrLineHis> selectList(RcwlPrLineHis rcwlPrLineHis) {
+    public List<PrLine> selectList(RcwlPrLineHis rcwlPrLineHis) {
         return rcwlPrLineHisMapper.selectList(rcwlPrLineHis);
-    }
-
-    @Override
-    public RcwlPrLineHis selectByPrimary(Long prLineId) {
-        RcwlPrLineHis rcwlPrLineHis = new RcwlPrLineHis();
-        rcwlPrLineHis.setPrLineId(prLineId);
-        List<RcwlPrLineHis> rcwlPrLineHiss = rcwlPrLineHisMapper.selectList(rcwlPrLineHis);
-        if (CollectionUtils.isEmpty(rcwlPrLineHiss)) {
-            return null;
-        }
-        return rcwlPrLineHiss.get(0);
     }
 
 }

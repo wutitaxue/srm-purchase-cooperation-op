@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.domain.repository;
 
 import org.hzero.mybatis.base.BaseRepository;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import java.util.List;
 
@@ -13,18 +14,10 @@ import java.util.List;
  */
 public interface RcwlPrLineHisRepository extends BaseRepository<RcwlPrLineHis> {
     /**
-     * 查询
+     * 查询(当前最新版本历史数据)
      *
      * @param rcwlPrLineHis 查询条件
      * @return 返回值
      */
-    List<RcwlPrLineHis> selectList(RcwlPrLineHis rcwlPrLineHis);
-
-    /**
-     * 根据主键查询（可关联表）
-     *
-     * @param prLineId 主键
-     * @return 返回值
-     */
-    RcwlPrLineHis selectByPrimary(Long prLineId);
+    List<PrLine> selectList(RcwlPrLineHis rcwlPrLineHis);
 }
