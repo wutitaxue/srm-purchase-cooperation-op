@@ -103,7 +103,12 @@
         spl.attribute_date1,
         spl.needed_date
         FROM
-        scux_rcwl_budget_distribution srbd,
+        <if test="changeSubmit == null or changeSubmit !=1">
+            scux_rcwl_budget_distribution srbd,
+        </if>
+        <if test="changeSubmit == 1">
+            scux_rcwl_budget_change_action srbd,
+        </if>
         sprm_pr_line spl
         WHERE
         srbd.pr_header_id = spl.pr_header_id
