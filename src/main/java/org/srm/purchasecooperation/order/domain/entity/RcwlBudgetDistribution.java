@@ -89,5 +89,8 @@ public class RcwlBudgetDistribution extends AuditDomain {
     @Transient
     @ApiModelProperty(value = "行金额")
     private BigDecimal lineAmount;
+    @Transient
+    @ApiModelProperty(value = "采购订单号|行号")
+    private String poAndPoLineNum;
 
 }
