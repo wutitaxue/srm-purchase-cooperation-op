@@ -37,7 +37,7 @@ import java.util.List;
 @RequestMapping("/v1/{organizationId}/scux-rcwl-budget-change-actions")
 public class RcwlBudgetChangeActionController extends BaseController {
 
-    @Autowired
+    /*@Autowired
     private RcwlBudgetChangeActionRepository rcwlBudgetChangeActionRepository;
 
     @Autowired
@@ -77,6 +77,6 @@ public class RcwlBudgetChangeActionController extends BaseController {
         SecurityTokenHelper.validToken(rcwlBudgetChangeAction);
         rcwlBudgetChangeActionRepository.deleteByPrimaryKey(rcwlBudgetChangeAction);
         return Results.success();
-    }
+    }*/
 
 }
