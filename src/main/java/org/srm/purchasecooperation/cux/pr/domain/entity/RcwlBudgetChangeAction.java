@@ -77,6 +77,18 @@ public class RcwlBudgetChangeAction extends AuditDomain {
     @ApiModelProperty(value = "自动计算预算占用金额（四舍五入）")
     private BigDecimal autoCalculateBudgetDisAmount;
 
+    @Transient
+    @ApiModelProperty(value = "申请行总金额")
+    private BigDecimal lineAmount;
+
+    public BigDecimal getLineAmount() {
+        return lineAmount;
+    }
+
+    public void setLineAmount(BigDecimal lineAmount) {
+        this.lineAmount = lineAmount;
+    }
+
     public BigDecimal getAutoCalculateBudgetDisAmount() {
         return autoCalculateBudgetDisAmount;
     }

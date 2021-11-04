@@ -61,10 +61,10 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             // 筛选采购申请行未提交的预算变更数据
             List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetChangeAction.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO)).build());
-            // 判断系统分摊金额总值和实际分摊金额总值是否相等,不相等---可能是人为调整有问题,或者金额变化了
+            // 判断行金额和实际分摊金额总值是否相等,不相等---可能是人为调整有问题,或者金额变化了
             if (!rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getAutoCalculateBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add).equals(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
                 // 判断跨年分摊金额表中实际分摊金额总值和传入的跨年分摊金额的实际分摊金额总值是否相等,不相等说明人为调整有误,报错
-                if (!rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add).equals(rcwlBudgetChangeActionsNotEnableds.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
+                if (!rcwlBudgetChangeActions.get(0).getLineAmount().equals(rcwlBudgetChangeActionsNotEnableds.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
                     throw new CommonException("error.pr.line.amount.budget.error");
                 }
             }
