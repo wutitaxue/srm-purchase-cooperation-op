@@ -13,17 +13,27 @@ import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.interfaces.sdk.invoke.InterfaceInvokeSdk;
+import org.hzero.mybatis.domian.Condition;
+import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.srm.purchasecooperation.cux.pr.api.dto.*;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
+import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction;
+import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActionRepository;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrLineHisRepository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrHeaderMapper;
+import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
+import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
+import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
@@ -39,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @description:接口
@@ -61,6 +72,12 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     private PrLineMapper prLineMapper;
     @Autowired
     private RcwlPrHeaderMapper rcwlPrHeaderMapper;
+    @Autowired
+    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
+    @Autowired
+    private RcwlBudgetChangeActionRepository rcwlBudgetChangeActionRepository;
+    @Autowired
+    private RcwlPrLineHisRepository rcwlPrLineHisRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RCWLPrItfServiceImpl.class);
     private static final String NAME_SPACE = "SRM-RCWL";
@@ -816,8 +833,46 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
             List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(), tenantId);
             oldPrHeader.setPrLineList(prLineList);
             this.invokeBudgetOccupy(oldPrHeader,tenantId,null);
+            ((RCWLPrItfServiceImpl) AopContext.currentProxy()).rejectRollbackBudget(tenantId, oldPrHeader, prLineList);
+
         }
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void rejectRollbackBudget (Long tenantId, PrHeader oldPrHeader,  List<PrLine> prLineList){
+        // ------ add by wangjie 审批拒绝时，需根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为old的数据写入scux_rcwl_budget_distribution begin ---
+        // 查询变更预算原数据
+        List<RcwlBudgetChangeAction> rcwlBudgetChangeActions = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom()
+                .andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, oldPrHeader.getPrHeaderId())
+                .andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId)
+                .andEqualTo(RcwlBudgetChangeAction.FIELD_BUDGET_GROUP, RcwlBudgetChangeAction.OLD)).build());
+        List<Long> prLineIds = prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList());
+        // 需要删除的预算数据
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDelete = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(oldPrHeader.getPrHeaderId()).prLineIds(prLineIds).build());
+        List<RcwlBudgetDistribution> rcwlBudgetDistributions=new ArrayList<>(rcwlBudgetDistributionDelete.size());
+        rcwlBudgetDistributionDelete.forEach(rcwlBudgetDistributionDTO -> {
+            rcwlBudgetDistributions.add(RcwlBudgetDistribution.builder().budgetLineId(rcwlBudgetDistributionDTO.getBudgetLineId()).build());
+        });
+        rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(rcwlBudgetDistributions);
+        rcwlBudgetDistributions.clear();
+        rcwlBudgetChangeActions.forEach(rcwlBudgetChangeAction -> {
+            rcwlBudgetDistributions.add(RcwlBudgetDistribution.builder().prHeaderId(rcwlBudgetChangeAction.getPrHeaderId())
+                    .prLineId(rcwlBudgetChangeAction.getPrLineId())
+                    .budgetDisYear(rcwlBudgetChangeAction.getBudgetDisYear())
+                    .budgetDisAmount(rcwlBudgetChangeAction.getBudgetDisAmount())
+                    .budgetDisGap(rcwlBudgetChangeAction.getBudgetDisGap())
+                    .tenantId(tenantId).build());
+        });
+        rcwlBudgetDistributionRepository.batchInsertSelective(rcwlBudgetDistributions);
+        // ------ add by wangjie 审批拒绝时，需根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为old的数据写入scux_rcwl_budget_distribution end ---
+        // ---------------------------- add by wangjie 将采购申请历史表还原 begin -----------------------
+        RcwlPrLineHis rcwlPrLineHis = new RcwlPrLineHis();
+        rcwlPrLineHis.setPrHeaderId(oldPrHeader.getPrHeaderId());
+        rcwlPrLineHis.setTenantId(tenantId);
+        List<PrLine> rcwlPrLineHisNeedUpdate = rcwlPrLineHisRepository.selectList(rcwlPrLineHis);
+        prLineRepository.batchUpdateByPrimaryKey(rcwlPrLineHisNeedUpdate);
+        // ---------------------------- add by wangjie 将采购申请历史表还原 end -----------------------
+    }
 
 }

@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
 import io.choerodon.mybatis.common.BaseMapper;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlPrLineHis;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import java.util.List;
 
@@ -13,10 +14,10 @@ import java.util.List;
  */
 public interface RcwlPrLineHisMapper extends BaseMapper<RcwlPrLineHis> {
     /**
-     * 基础查询
+     * 基础查询(最大版本)
      *
      * @param rcwlPrLineHis 查询条件
-     * @return 返回值
+     * @return 返回值(最新历史记录)
      */
-    List<RcwlPrLineHis> selectList(RcwlPrLineHis rcwlPrLineHis);
+    List<PrLine> selectList(RcwlPrLineHis rcwlPrLineHis);
 }

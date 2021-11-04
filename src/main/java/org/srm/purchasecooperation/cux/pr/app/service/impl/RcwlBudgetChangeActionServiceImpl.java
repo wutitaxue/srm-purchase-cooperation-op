@@ -8,6 +8,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -18,6 +19,7 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActi
 import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +72,12 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             long oldCount = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetChangeAction -> RcwlBudgetChangeAction.OLD.equals(rcwlBudgetChangeAction.getBudgetGroup())).count();
             // budget_group为old的数据，若存在，则不操作，若不存在，则将scux_rcwl_budget_distribution表中的pr_header_id+pr_line_id的数据写入scux_rcwl_budget_change_action表，budget_group为old
             if (oldCount <= 0) {
-                List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsOld = Collections.singletonList((RcwlBudgetChangeAction) rcwlBudgetDistributions);
+                List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsOld = new ArrayList<>(rcwlBudgetDistributions.size());
+                rcwlBudgetDistributions.forEach(rcwlBudgetDistribution -> {
+                    RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
+                    BeanUtils.copyProperties(rcwlBudgetDistribution,rcwlBudgetChangeAction);
+                    rcwlBudgetChangeActionsOld.add(rcwlBudgetChangeAction);
+                });
                 rcwlBudgetChangeActionsOld.forEach(rcwlBudgetChangeAction -> rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.OLD));
                 rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActionsOld);
             }
