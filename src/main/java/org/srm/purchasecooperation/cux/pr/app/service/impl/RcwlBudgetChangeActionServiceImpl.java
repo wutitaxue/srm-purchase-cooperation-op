@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlBudgetChangeActionService;
 import org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
@@ -64,7 +65,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetChangeAction.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO)).build());
             // 判断跨年分摊金额表中实际分摊金额总值和传入的跨年分摊金额的实际分摊金额总值是否相等,不相等报错
-            if (!rcwlBudgetChangeActions.get(0).getLineAmount().equals(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add))) {
+            if (rcwlBudgetChangeActions.get(0).getLineAmount().compareTo(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0) {
                 throw new CommonException("error.pr.line.amount.budget.error");
             }
             // 筛选budget_group为old的条数
@@ -88,7 +89,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             }
             rcwlBudgetChangeActions.forEach(rcwlBudgetChangeAction -> {
                 rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.NEW);
-                if (CollectionUtils.isEmpty(rcwlBudgetChangeActionsNew)) {
+                if (CollectionUtils.isEmpty(rcwlBudgetChangeActionsNew) && ObjectUtils.isEmpty(rcwlBudgetChangeAction.getBudgetDisAmount())) {
                     // 之前没有变更预算数据,则实际分摊金额=系统分摊金额
                     rcwlBudgetChangeAction.setBudgetDisAmount(rcwlBudgetChangeAction.getAutoCalculateBudgetDisAmount());
                 }

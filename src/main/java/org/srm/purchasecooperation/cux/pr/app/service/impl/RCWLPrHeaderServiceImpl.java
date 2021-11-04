@@ -312,7 +312,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         List<PrLine> changePrlines = prHeader.getPrLineList();
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 begin-------
         // 筛选跟预算有关的字段有变更的申请行(目前有三个字段-行金额、需求开始日期、需求结束日期)
-        List<PrLine> changedPrLines = prHeader.getPrLineList().stream().filter(prLine -> !prLine.getLineAmount().equals(beforePrLineMap.get(prLine.getPrLineId()).getLineAmount())
+        List<PrLine> changedPrLines = prHeader.getPrLineList().stream().filter(prLine -> prLine.getLineAmount().compareTo(beforePrLineMap.get(prLine.getPrLineId()).getLineAmount()) != 0
                 || !prLine.getAttributeDate1().equals(beforePrLineMap.get(prLine.getPrLineId()).getAttributeDate1())
                 || !prLine.getNeededDate().equals(beforePrLineMap.get(prLine.getPrLineId()).getNeededDate())).collect(Collectors.toList());
         // 筛选采购申请行未提交的预算变更数据
@@ -1277,7 +1277,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (prLineBudgetCount == 0 && prLine.getLineAmount().compareTo(new BigDecimal(0)) > 0) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getLineNum());
                         }
-                        boolean amountEqual = Objects.equals(prLine.getLineAmount(), rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+                        boolean amountEqual = prLine.getLineAmount().compareTo(rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0;
                         if (!amountEqual) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getLineNum());
                         }
@@ -1318,7 +1318,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (prLineBudgetChangeActionCount == 0 && prLine.getLineAmount().compareTo(new BigDecimal(0)) > 0) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getLineNum());
                         }
-                        boolean amountEqual = Objects.equals(prLine.getLineAmount(), rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+                        boolean amountEqual = prLine.getLineAmount().compareTo(rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0;
                         if (!amountEqual) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getLineNum());
                         }
