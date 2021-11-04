@@ -49,14 +49,14 @@ public interface RcwlPoBudgetItfService {
     String getToken();
 
 
-    /**
-     * 将指定行数据封装成报文
-     * @param poLineVOS
-     * @param tenantId
-     * @param flag
-     * @return
-     */
-    RCWLItfPrHeaderDTO getBudgetItfDataLine(List<PoLineVO> poLineVOS, Long tenantId, String flag);
+//    /**
+//     * 将指定行数据封装成报文
+//     * @param poLineVOS
+//     * @param tenantId
+//     * @param flag
+//     * @return
+//     */
+//    RCWLItfPrHeaderDTO getBudgetItfDataLine(List<PoLineVO> poLineVOS, Long tenantId, String flag);
 //
 //
 //    /**
