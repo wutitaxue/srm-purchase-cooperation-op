@@ -87,6 +87,32 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             budgetDistribution.setTenantId(tenantId);
             budgetDistribution.setLineAmount(rcwlBudgetDistributionDTO.getLineAmount());
 
+            //预算占用(系统计算值)
+            if (i.equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())) {
+                //订单开始结束日期年月相同，不使用计算公式
+                if (Long.valueOf(0).equals(budgetDisGap)){
+                    BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount();
+                    budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
+                    budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
+                }else {
+                    //A年预算占用金额=（12-B1）/预算总时长(月)*行金额
+                    BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP));
+                    budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
+                    budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
+                }
+
+            } else if (i.equals(rcwlBudgetDistributionDTO.getNeedByDateYear())) {
+                //C年预算占用金额=B2/预算总时长(月)*行金额
+                BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedByDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP));
+                budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
+                budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
+            } else {
+                //AC之间年份金额=12/预算总时长(月)*行金额
+                BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(12).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP));
+                budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
+                budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
+            }
+
             if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
                 Integer finalI = i;
                 RcwlBudgetDistribution rcwlBudgetDistribution = budgetDistributionsInDB.stream()
@@ -96,23 +122,6 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 budgetDistribution.setBudgetDisAmount(Objects.isNull(rcwlBudgetDistribution)?null:rcwlBudgetDistribution.getBudgetDisAmount());
             }
 
-            //预算占用(系统计算值)
-            if (i.equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())) {
-                //订单开始结束日期年月相同，不使用计算公式
-                if (Long.valueOf(0).equals(budgetDisGap)){
-                    budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount());
-                }else {
-                    //A年预算占用金额=（12-B1）/预算总时长(月)*行金额
-                    budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP)));
-                }
-
-            } else if (i.equals(rcwlBudgetDistributionDTO.getNeedByDateYear())) {
-                //C年预算占用金额=B2/预算总时长(月)*行金额
-                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedByDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP)));
-            } else {
-                //AC之间年份金额=12/预算总时长(月)*行金额
-                budgetDistribution.setBudgetDisAmountCal(rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(12).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP)));
-            }
             budgetDistributionCreateList.add(budgetDistribution);
         }
 
