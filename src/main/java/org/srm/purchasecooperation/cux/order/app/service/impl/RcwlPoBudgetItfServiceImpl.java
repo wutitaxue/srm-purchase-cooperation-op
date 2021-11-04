@@ -304,46 +304,46 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 
 
 
-    /**
-     * 将指定行数据封装成报文
-     *
-     * @param poLineVOS
-     * @param tenantId
-     * @param flag
-     * @return
-     */
-    @Override
-    public RCWLItfPrHeaderDTO getBudgetItfDataLine(List<PoLineVO> poLineVOS, Long tenantId, String flag) {
-        Long poHeaderId = poLineVOS.get(0).getPoHeaderId();
-        PoHeader poHeader = poHeaderRepository.selectByPrimaryKey(poHeaderId);
-        PoDTO poDTO = new PoDTO();
-        BeanUtils.copyProperties(poHeader, poDTO);
-
-        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.initOccupyHeader();
-
-        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
-
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, flag);
-
-        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-
-        poLineVOS.forEach(poLineVO -> {
-            PrLine prLine = new PrLine();
-            BeanUtils.copyProperties(poLineVO, prLine);
-            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, null);
-            rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-        });
-        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
-        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
-
-        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
-
-        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
-
-        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
-
-        return rcwlItfPrHeaderDTO;
-    }
+//    /**
+//     * 将指定行数据封装成报文
+//     *
+//     * @param poLineVOS
+//     * @param tenantId
+//     * @param flag
+//     * @return
+//     */
+//    @Override
+//    public RCWLItfPrHeaderDTO getBudgetItfDataLine(List<PoLineVO> poLineVOS, Long tenantId, String flag) {
+//        Long poHeaderId = poLineVOS.get(0).getPoHeaderId();
+//        PoHeader poHeader = poHeaderRepository.selectByPrimaryKey(poHeaderId);
+//        PoDTO poDTO = new PoDTO();
+//        BeanUtils.copyProperties(poHeader, poDTO);
+//
+//        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.initOccupyHeader();
+//
+//        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
+//
+//        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, flag);
+//
+//        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
+//
+//        poLineVOS.forEach(poLineVO -> {
+//            PrLine prLine = new PrLine();
+//            BeanUtils.copyProperties(poLineVO, prLine);
+//            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, null);
+//            rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+//        });
+//        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
+//        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
+//
+//        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
+//
+//        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
+//
+//        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
+//
+//        return rcwlItfPrHeaderDTO;
+//    }
 
 
     private RCWLItfPrLineDetailDTO initCloseLine(PrLine prDetailLine, Long tenantId, String from) {
@@ -484,12 +484,15 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
     public RCWLItfPrLineDTO initOccupy(PoDTO poDTO, Long tenantId, String flag) {
         RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
         itfPrLineDTO.setMexternalsysid("CG");
+        logger.info("预算占用标识flag:{}",flag);
         //01占用 02释放
-        if ("O".equals(flag)) {
-            itfPrLineDTO.setYslx("01");
-        } else if ("R".equals(flag)) {
-            itfPrLineDTO.setYslx("01");
-        }
+//        if ("O".equals(flag)) {
+//            itfPrLineDTO.setYslx("01");
+//        } else if ("R".equals(flag)) {
+//            itfPrLineDTO.setYslx("01");
+//        }
+
+        itfPrLineDTO.setYslx("01");
 
         itfPrLineDTO.setCreateuser("jq");
         SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-dd");
