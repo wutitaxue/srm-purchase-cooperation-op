@@ -456,13 +456,13 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
 
         PoLineLocation query = new PoLineLocation();
         query.setPoHeaderId(poHeader.getPoHeaderId());
-        poHeader.stsHandleAfterPoUpdate(this.poLineLocationRepository.select(query));
+//        poHeader.stsHandleAfterPoUpdate(this.poLineLocationRepository.select(query));
         poHeader.handlePrice(this.poHeaderRepository);
         if (isSRM) {
             poHeader.modifyPricePrecisionByCurrencyCode(this.mdmService);
         }
 
-        this.poHeaderRepository.updateOptional(poHeader, new String[]{"amount", "taxIncludeAmount", "statusCode", "cancelledFlag", "closedFlag", "oldStatusCode"});
+        this.poHeaderRepository.updateOptional(poHeader, new String[]{"amount", "taxIncludeAmount"});
         BeanUtils.copyProperties(poHeader, poDto);
         poDto.setPoPartnerList(this.poPartnerRepository.batchInsertOrUpdate(poDto.getPoPartnerList(), poDto.getPoHeaderId(), poDto.getTenantId()));
         this.poProcessActionService.insert(poDto.getPoHeaderId(), "NEW");
