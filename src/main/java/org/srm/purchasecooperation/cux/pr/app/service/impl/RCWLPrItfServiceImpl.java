@@ -308,7 +308,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                     RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
                     if ("R".equals(flag)){
                         rcwlItfPrLineDetailDTO.setYszyje("0");
-                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                        StringBuffer sb = new StringBuffer(String.valueOf(year));
+                        rcwlItfPrLineDetailDTO.setYsdate(sb.append("-01-01").toString());
                     }
                     rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
                 }
