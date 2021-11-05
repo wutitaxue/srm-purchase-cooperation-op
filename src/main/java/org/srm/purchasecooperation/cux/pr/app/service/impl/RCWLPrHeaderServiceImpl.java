@@ -252,7 +252,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         if (CollectionUtils.isEmpty(prHeader.getPrLineList())) {
             return prHeader;
         } else {
-            prHeader.setPrStatusCode(SUBMITTED);
+            //prHeader.setPrStatusCode(SUBMITTED);
             prHeader = this.updatePrHeader(prHeader);
             //判断是否能触发接口
             Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(), tenantId);
