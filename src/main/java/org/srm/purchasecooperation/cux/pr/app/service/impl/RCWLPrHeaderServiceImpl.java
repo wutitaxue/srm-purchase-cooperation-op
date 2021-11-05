@@ -263,9 +263,13 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 begin-------
             judgeBudget(prHeader);
             // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 end-------
-            // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 begin--------------------------
-            rcwlBudgetDistributionRepository.batchInsert(rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build()));
-            // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
+            // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据先删除,自动插入至scux_rcwl_budget_distribution表 begin--------------------------
+            // 所有未跨年的预算
+            List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
+            // 删除原有的旧数据
+            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getPrLineId).collect(Collectors.toList())).build());
+            rcwlBudgetDistributionRepository.batchInsert(rcwlBudgetDistributions);
+            // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据先删除,自动插入至scux_rcwl_budget_distribution表 end--------------------------
             //判断是否能触发接口
             Integer count = this.rcwlItfPrDataRespository.validateInvokeItf(prHeader.getPrHeaderId(), tenantId);
             if (RCWLConstants.Common.IS.equals(count)) {
@@ -311,12 +315,16 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // 查询变更行的未跨年预算
         List<RcwlBudgetDistribution> rcwlBudgetDistributionsChanged = rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).build());
         List<RcwlBudgetChangeAction> rcwlBudgetChangeActions = new ArrayList<>(rcwlBudgetDistributionsChanged.size());
+        List<Long> prLineDeleteIds = new ArrayList<>(rcwlBudgetDistributionsChanged.size());
         rcwlBudgetDistributionsChanged.forEach(rcwlBudgetDistribution -> {
+            prLineDeleteIds.add(rcwlBudgetDistribution.getPrLineId());
             RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
             BeanUtils.copyProperties(rcwlBudgetDistribution,rcwlBudgetChangeAction);
             rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.NEW);
             rcwlBudgetChangeActions.add(rcwlBudgetChangeAction);
         });
+        // 删除旧数据
+        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).build());
         // 把未跨年的预算变更加到变更数据里面
         rcwlBudgetChangeActionsNotEnableds.addAll(rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActions));
         // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
@@ -379,6 +387,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             PrAction prAction = new PrAction();
             prAction.setTenantId(tenantId);
             prAction.setPrHeaderId(prHeader.getPrHeaderId());
+            prAction.setDisplayPrNum(prHeader.getDisplayPrNum());
             prAction.setDisplayLineNum(prHeader.getDisplayPrNum());
             prAction.setProcessTypeCode(PrConstants.PrOperationType.UPDATE);
             prAction.setProcessedDate(new Date());
@@ -767,6 +776,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         return prHeaders;
     }
 
+    @Override
     @Transactional(
             rollbackFor = {Exception.class}
     )
@@ -798,6 +808,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     this.prLineRepository.delete(new PrLine(prHeaderId));
                     this.prHeaderRepository.deleteByPrimaryKey(prHeaderId);
                     this.prActionRepository.delete(new PrAction(prHeaderId));
+                    // 删预算数据、变更预算数据
+                    rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).build());
+                    rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).changeSubmit(BaseConstants.Flag.YES).build());
                 }
             }
         });
@@ -1200,8 +1213,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (amountEqual) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", rcwlBudgetDistribution.getLineNum());
                         }
-                        boolean prLineYear = rcwlBudgetDistributionDTOS.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetDistributionDTOS.get(rcwlBudgetDistributionDTOS.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
-                        if (!prLineYear) {
+                        List<RcwlBudgetDistributionDTO> budgetDistributionLineDTOS = rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> rcwlBudgetDistribution.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).collect(Collectors.toList());
+                        boolean prLineYear = budgetDistributionLineDTOS.get(0).getBudgetDisYear().compareTo(rcwlBudgetDistribution.getAttributeDate1Year())!=0|| budgetDistributionLineDTOS.get(budgetDistributionLineDTOS.size() - 1).getBudgetDisYear().compareTo(rcwlBudgetDistribution.getNeededDateYear())!=0;
+                        if (prLineYear) {
                             throw new CommonException("error.pr.line.num.year.budget.error", rcwlBudgetDistribution.getLineNum());
                         }
                     } else {
@@ -1241,7 +1255,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (amountEqual) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getLineNum());
                         }
-                        boolean prLineYear = rcwlBudgetChangeActionsNotEnableds.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetChangeActionsNotEnableds.get(rcwlBudgetChangeActionsNotEnableds.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
+                        List<RcwlBudgetChangeAction> rcwlBudgetChangeLineActions = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).collect(Collectors.toList());
+                        boolean prLineYear = rcwlBudgetChangeLineActions.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetChangeLineActions.get(rcwlBudgetChangeLineActions.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
                         if (!prLineYear) {
                             throw new CommonException("error.pr.line.num.year.budget.error", prLine.getPrLineId());
                         }

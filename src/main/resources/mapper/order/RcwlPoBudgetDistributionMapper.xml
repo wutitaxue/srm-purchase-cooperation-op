@@ -178,4 +178,24 @@
             AND spl.po_header_id = #{poHeaderId}
             AND spl.po_line_id = #{poLineId}
     </select>
+
+    <delete id="deleteBudgetDistributionNotAcrossYear">
+        DELETE
+        FROM
+        <if test="changeSubmit == null or changeSubmit !=1">
+            scux_rcwl_budget_distribution
+        </if>
+        <if test="changeSubmit == 1">
+            scux_rcwl_budget_change_action
+        </if>
+        WHERE
+            pr_header_id = #{prHeaderId}
+        AND tenant_id = #{tenantId}
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
+    </delete>
 </mapper>
