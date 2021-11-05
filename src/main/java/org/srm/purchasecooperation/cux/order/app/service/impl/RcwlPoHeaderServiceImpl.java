@@ -779,6 +779,12 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poHeader.setErpLastUpdateDate(nowHeaderDate);
         }
 
+        //目录化自动生成的订单，单据来源设为PURCHASE_REQUEST_MLH，电商的单据来源设为PURCHASE_REQUEST_DS
+        if(StringUtils.equals(poHeader.getPoSourcePlatform(),"CATALOGUE")){
+            poHeader.setSourceBillTypeCode("PURCHASE_REQUEST_MLH");
+        } else if(StringUtils.equals(poHeader.getPoSourcePlatform(),"E-COMMERCE")){
+            poHeader.setSourceBillTypeCode("PURCHASE_REQUEST_DS");
+        }
         this.setPoLineDomesticInfo(poDto.getPoLineList(), poHeader);
         poHeader.modifyDomesticAmountAndTaxIncludeAmount(poDto.getPoLineList(), this.mdmService);
         LOGGER.debug("PoheaderExtensionServiceImpl_poCreate_2_poHeader is:{}", JSONObject.toJSONString(poHeader));
