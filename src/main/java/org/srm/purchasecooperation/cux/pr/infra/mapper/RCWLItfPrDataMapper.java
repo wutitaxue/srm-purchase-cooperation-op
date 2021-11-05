@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
+import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDisDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
@@ -113,4 +114,11 @@ public interface RCWLItfPrDataMapper {
      * @return
      */
     BigDecimal selectBudgetDisAmountByBudgetGroup(@Param("prLineId")Long prLineId, @Param("year")Integer year);
+
+    /**
+     * 根据line_ids预算信息
+     * @param prLineId
+     * @return
+     */
+     List<RcwlBudgetDisDTO> selectBudgetDisInfo(@Param("prLineId")Long prLineId);
 }

@@ -60,6 +60,7 @@ public class Constants {
         public static final String APPROVED = "APPROVED";
         public static final String REJECTED = "REJECTED";
         public static final String CANCEL = "CANCEL";
+        public static final String PANDING = "PENDING";
 
 
         private PlanHeaderApprovalStatus() {

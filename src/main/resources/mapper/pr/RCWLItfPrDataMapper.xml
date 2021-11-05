@@ -4,16 +4,21 @@
 
 
     <select id="selectSapCode" resultType="java.lang.String">
-		SELECT
-			scb.attribute_varchar1
-		FROM
-			spfm_company_basic scb
-			LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
-		WHERE
-			h.company_id = #{companyId}
-			AND h.tenant_id = #{tenantId}
-			AND scb.process_status = 'COMPLETE'
-			ORDER BY scb.version_number desc limit 1
+                SELECT
+              	a.attribute_varchar1
+              FROM
+              	(
+              	SELECT
+              		max( scb.version_number),
+              		scb.attribute_varchar1
+              	FROM
+              		spfm_company_basic scb
+              		LEFT JOIN hpfm_company h ON scb.company_id = h.source_key
+              	WHERE
+              		h.company_id = #{companyId}
+              		AND h.tenant_id = #{tenantId}
+              	AND scb.process_status = 'COMPLETE'
+              	) a
     </select>
 
     <select id="selectWbsName" resultType="java.lang.String">
@@ -159,5 +164,16 @@
 	AND srbca.budget_group = 'old'
 	AND srbca.budget_dis_year = #{year}
 	AND pr_action_id IN ( SELECT MAX( pr_action_id ) FROM scux_rcwl_budget_change_action WHERE scux_rcwl_budget_change_action.pr_line_id = #{prLineId} );
+	</select>
+
+	<select id="selectBudgetDisInfo" resultType="org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDisDTO">
+		SELECT
+		    srbd.pr_line_id,
+			srbd.budget_dis_year,
+		    srbd.budget_dis_amount
+		FROM
+			scux_rcwl_budget_distribution srbd
+		WHERE
+		srbd.pr_line_id =#{prLineId}
 	</select>
 </mapper>
