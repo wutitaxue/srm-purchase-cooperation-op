@@ -81,7 +81,10 @@ public class RcwlPrFeignController {
             if( PrConstants.PrSrcPlatformCode.E_COMMERCE.equals(prHeader.getPrSourcePlatform()) ||  PrConstants.PrSrcPlatformCode.CATALOGUE.equals(prHeader.getPrSourcePlatform())) {
                 prHeaderService.submit(tenantId, prHeader);
             }else{
-                prHeaderService.submitNone(tenantId,prHeader);
+                //只修改状态为已提交
+                prHeader.setPreviousPrStatusCode(prHeader.getPrStatusCode());
+                prHeader.setPrStatusCode("SUBMITTED");
+                this.prHeaderRepository.updateOptional(prHeader, new String[]{"prStatusCode", "previousPrStatusCode"});
             }
         });
         return Results.success(prHeaderList);
