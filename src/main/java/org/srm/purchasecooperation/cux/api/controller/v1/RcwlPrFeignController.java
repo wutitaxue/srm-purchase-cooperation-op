@@ -17,6 +17,7 @@ import org.srm.purchasecooperation.cux.order.app.service.impl.PrHeaderServiceImp
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
+import org.srm.purchasecooperation.pr.infra.constant.PrConstants;
 
 import java.util.List;
 
@@ -74,7 +75,14 @@ public class RcwlPrFeignController {
     public ResponseEntity<Object> submit(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<PrHeader> prHeaderList) {
         prHeaderList.forEach(item -> {
             PrHeader prHeader = prHeaderRepository.selectOne(item);
-            prHeaderService.submit(tenantId,prHeader);
+            // add by 21420
+            // 目前，电商目录化不走BPM审批了，那么这里的代码电商目录化都不会走到，但是以防万一留个判断，还是走标准的逻辑，
+            // 标准的采购申请直接走无需审批的道路
+            if( PrConstants.PrSrcPlatformCode.E_COMMERCE.equals(prHeader.getPrSourcePlatform()) ||  PrConstants.PrSrcPlatformCode.CATALOGUE.equals(prHeader.getPrSourcePlatform())) {
+                prHeaderService.submit(tenantId, prHeader);
+            }else{
+                prHeaderService.submitNone(tenantId,prHeader);
+            }
         });
         return Results.success(prHeaderList);
     }
