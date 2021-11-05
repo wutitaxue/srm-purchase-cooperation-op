@@ -38,4 +38,10 @@ public class RcwlBudgetDistributionRepositoryImpl extends BaseRepositoryImpl<Rcw
         rcwlBudgetDistributionDTO.setTenantId(tenantId);
         return rcwlBudgetDistributionMapper.selectBudgetDistributionNotAcrossYear(rcwlBudgetDistributionDTO);
     }
+
+    @Override
+    public void deleteBudgetDistributionNotAcrossYear(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+        rcwlBudgetDistributionDTO.setTenantId(tenantId);
+        rcwlBudgetDistributionMapper.deleteBudgetDistributionNotAcrossYear(rcwlBudgetDistributionDTO);
+    }
 }
