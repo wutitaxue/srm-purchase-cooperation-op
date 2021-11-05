@@ -49,7 +49,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<RcwlBudgetDistribution> selectBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
-        processPoLine(rcwlBudgetDistributionDTO);
+        this.processPoLine(rcwlBudgetDistributionDTO);
 
         log.info("rcwlBudgetDistributionDTO:{}",rcwlBudgetDistributionDTO);
 
@@ -65,8 +65,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         List<Integer> budgetDisYears = budgetDistributionsInDB.stream().map(RcwlBudgetDistribution::getBudgetDisYear).collect(Collectors.toList());
 
         //未创建或年份不匹配则直接创建，匹配到则赋值原预算占用（手工）重新创建
-        if (CollectionUtils.isEmpty(budgetDistributionsInDB) || !Collections.max(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedByDateYear())
-        || !Collections.min(budgetDisYears).equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())){
+        if (CollectionUtils.isEmpty(budgetDistributionsInDB) || !Collections.max(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedEndDateYear())
+        || !Collections.min(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedStartDateYear())){
             log.info("未创建或年份不匹配");
             return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO,null);
         }
@@ -90,21 +90,21 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         String poAndPoLineNum = rcwlBudgetDistributionMapper.selectPoAndPoLineNum(tenantId, rcwlBudgetDistributionDTO.getPoHeaderId(), rcwlBudgetDistributionDTO.getPoLineId());
 
         //预算总时长(月) = A2年B2月- A1年B1月=12-B1+B2+（A2-A1-1）*12
-       Long budgetDisGap = 12 - rcwlBudgetDistributionDTO.getAttributeDate1Month() + rcwlBudgetDistributionDTO.getNeedByDateMonth()
-                + (rcwlBudgetDistributionDTO.getNeedByDateYear() - rcwlBudgetDistributionDTO.getAttributeDate1Year() - 1) * 12;
+        Integer budgetDisGap = 12 - rcwlBudgetDistributionDTO.getNeedStartDateMonth() + rcwlBudgetDistributionDTO.getNeedEndDateMonth()
+                + (rcwlBudgetDistributionDTO.getNeedEndDateYear() - rcwlBudgetDistributionDTO.getNeedStartDateYear() - 1) * 12;
 
-        for (Integer i = rcwlBudgetDistributionDTO.getAttributeDate1Year(); i <= rcwlBudgetDistributionDTO.getNeedByDateYear(); i++) {
+        for (Integer i = rcwlBudgetDistributionDTO.getNeedStartDateYear(); i <= rcwlBudgetDistributionDTO.getNeedEndDateYear(); i++) {
             RcwlBudgetDistribution budgetDistribution = new RcwlBudgetDistribution();
             budgetDistribution.setPoHeaderId(rcwlBudgetDistributionDTO.getPoHeaderId());
             budgetDistribution.setPoLineId(rcwlBudgetDistributionDTO.getPoLineId());
             budgetDistribution.setBudgetDisYear(i);
-            budgetDistribution.setBudgetDisGap(budgetDisGap);
+            budgetDistribution.setBudgetDisGap(Long.valueOf(budgetDisGap));
             budgetDistribution.setTenantId(tenantId);
             budgetDistribution.setLineAmount(rcwlBudgetDistributionDTO.getLineAmount());
             budgetDistribution.setPoAndPoLineNum(poAndPoLineNum);
 
             //预算占用(系统计算值)
-            if (i.equals(rcwlBudgetDistributionDTO.getAttributeDate1Year())) {
+            if (i.equals(rcwlBudgetDistributionDTO.getNeedStartDateYear())) {
                 //订单开始结束日期年月相同，不使用计算公式
                 if (Long.valueOf(0).equals(budgetDisGap)){
                     BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount();
@@ -112,14 +112,14 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                     budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
                 }else {
                     //A年预算占用金额=（12-B1）/预算总时长(月)*行金额
-                    BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getAttributeDate1Month())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP));
+                    BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal((12 - rcwlBudgetDistributionDTO.getNeedStartDateMonth())).divide(new BigDecimal(budgetDisGap), 6, RoundingMode.HALF_UP));
                     budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
                     budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
                 }
                 log.info("起始年");
-            } else if (i.equals(rcwlBudgetDistributionDTO.getNeedByDateYear())) {
+            } else if (i.equals(rcwlBudgetDistributionDTO.getNeedEndDateYear())) {
                 //C年预算占用金额=B2/预算总时长(月)*行金额
-                BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedByDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP));
+                BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount().multiply(new BigDecimal(rcwlBudgetDistributionDTO.getNeedEndDateMonth()).divide(new BigDecimal(budgetDisGap),6, RoundingMode.HALF_UP));
                 budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
                 budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
                 log.info("结束年:{}",budgetDisAmountCal);
@@ -160,14 +160,14 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         //订单开始日期
         LocalDate startDate = rcwlBudgetDistributionDTO.getAttributeDate1();
         Assert.notNull(startDate, "error.start_date_not_exists");
-        rcwlBudgetDistributionDTO.setAttributeDate1Year(startDate.getYear());
-        rcwlBudgetDistributionDTO.setAttributeDate1Month(startDate.getMonthValue());
+        rcwlBudgetDistributionDTO.setNeedStartDateYear(startDate.getYear());
+        rcwlBudgetDistributionDTO.setNeedStartDateMonth(startDate.getMonthValue());
 
         //订单结束日期
         LocalDate endDate = rcwlBudgetDistributionDTO.getNeedByDate();
         Assert.notNull(endDate, "error.end_date_not_exists");
-        rcwlBudgetDistributionDTO.setNeedByDateYear(Long.valueOf(endDate.getYear()));
-        rcwlBudgetDistributionDTO.setNeedByDateMonth(Long.valueOf(endDate.getMonthValue()));
+        rcwlBudgetDistributionDTO.setNeedEndDateYear(endDate.getYear());
+        rcwlBudgetDistributionDTO.setNeedEndDateMonth(endDate.getMonthValue());
     }
 
     @Override

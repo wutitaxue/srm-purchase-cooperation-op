@@ -68,14 +68,19 @@ public class RcwlBudgetDistributionDTO {
     @ApiModelProperty(value = "需求开始日期所在月份")
     private Integer attributeDate1Month;
     @ApiModelProperty(value = "需求结束日期所在年份")
-    private Long needByDateYear;
-    @ApiModelProperty(value = "需求结束日期所在月份")
-    private Long needByDateMonth;
-    @ApiModelProperty(value = "需求结束日期所在年份")
     private Integer neededDateYear;
-
     @ApiModelProperty(value = "需求结束日期所在月份")
     private Integer neededDateMonth;
+
+    @ApiModelProperty(value = "订单开始日期所在年份")
+    private Integer needStartDateYear;
+    @ApiModelProperty(value = "订单开始日期所在月份")
+    private Integer needStartDateMonth;
+    @ApiModelProperty(value = "订单结束日期所在年份")
+    private Integer needEndDateYear;
+    @ApiModelProperty(value = "订单结束日期所在月份")
+    private Integer needEndDateMonth;
+
     @ApiModelProperty(value = "自动计算预算占用金额（四舍五入）")
     private BigDecimal autoCalculateBudgetDisAmount;
     @ApiModelProperty(value = "预算占用年份集合")
