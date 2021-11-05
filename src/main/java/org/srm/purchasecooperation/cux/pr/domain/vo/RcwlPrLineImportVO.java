@@ -3,6 +3,9 @@ package org.srm.purchasecooperation.cux.pr.domain.vo;
 import io.swagger.annotations.ApiModelProperty;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineImportVO;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 /**
  * @description:
  * @author: bin.zhang
@@ -19,4 +22,9 @@ public class RcwlPrLineImportVO extends PrLineImportVO {
     public void setBudgetAccountNum(String budgetAccountNum) {
         this.budgetAccountNum = budgetAccountNum;
     }
+    @ApiModelProperty("需求结束日期")
+    private LocalDate neededDate;
+    @ApiModelProperty("需求开始日期")
+    private Date attributeDate1;
+
 }
