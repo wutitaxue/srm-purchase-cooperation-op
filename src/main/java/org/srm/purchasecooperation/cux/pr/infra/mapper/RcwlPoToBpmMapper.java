@@ -43,4 +43,12 @@ public interface RcwlPoToBpmMapper {
      * @return
      */
     String selectBudgetAccountName(Long tenantId, String budgetAccountNum);
+
+    /**
+     * 获取采购员名称
+     * @param tenantId
+     * @param agentId
+     * @return
+     */
+    String selectAgentName(Long tenantId, Long agentId);
 }

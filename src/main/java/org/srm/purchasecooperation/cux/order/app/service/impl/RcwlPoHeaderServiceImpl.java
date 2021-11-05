@@ -1315,7 +1315,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         });
 
         //采购订单头数据
-        PoToBpmDTO poToBpmDTO = this.setPoHeaderDataMap(poDTO);
+        PoToBpmDTO poToBpmDTO = this.setPoHeaderDataMap(poDTO, poLineList);
         poToBpmDTO.setzYunUrl(zYunUrl + poDTO.getPoHeaderId());
         poToBpmDTO.setPoToBpmLineDTOList(poToBpmLineDTOS);
         String data = JSONObject.toJSON(poToBpmDTO).toString();
@@ -1328,9 +1328,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
         rcwlGxBpmStartDataDTO.setUserId(userDetails.getUsername());
         rcwlGxBpmStartDataDTO.setBtid("RCWLSRMCGDD");
-        rcwlGxBpmStartDataDTO.setBoid((String)poDTO.getPoNum());
+        rcwlGxBpmStartDataDTO.setBoid(poDTO.getPoNum());
         //流程实例id
-        String procinstId = poDTO.getAttributeVarchar17();
+        String procinstId = poDTO.getAttributeVarchar36();
         rcwlGxBpmStartDataDTO.setProcinstId(StringUtils.isNotBlank(procinstId) ? procinstId : "0");
         rcwlGxBpmStartDataDTO.setData(data);
         String bpmUrl = "http://" + reqIp + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGDD&BOID=" + poDTO.getPoNum();
@@ -1378,11 +1378,11 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return poToBpmLineDTO;
     }
 
-    private PoToBpmDTO setPoHeaderDataMap(PoDTO poDTO) {
+    private PoToBpmDTO setPoHeaderDataMap(PoDTO poDTO, List<RCWLPoLineDetailDTO> poLineList) {
         PoToBpmDTO poToBpmDTO = new PoToBpmDTO();
         poToBpmDTO.setDisplayPoNum(poDTO.getDisplayPoNum());
-        poToBpmDTO.setErpContractNum(poDTO.getErpContractNum());
-        poToBpmDTO.setErpContractName(poDTO.getErpCreatedName());
+        poToBpmDTO.setErpContractNum(poLineList.get(0).getPcNum());
+        poToBpmDTO.setErpContractName(poLineList.get(0).getPcName());
         poToBpmDTO.setAmount(String.valueOf(poDTO.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmDTO.setTaxIncludeAmount(String.valueOf(poDTO.getTaxIncludeAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmDTO.setCurrencyCode(poDTO.getCurrencyCode());
@@ -1391,7 +1391,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poToBpmDTO.setEsPurchaseOrgId(this.rcwlPoToBpmMapper.selectEsPurchaseOrgName(poDTO.getTenantId(),poDTO.getPurchaseOrgId()));
         poToBpmDTO.setPoTypeId(this.rcwlPoToBpmMapper.selectOrderTypeName(poDTO.getTenantId(),poDTO.getPoTypeId()));
         poToBpmDTO.setAttributeVarchar1(poDTO.getAttributeVarchar1());
-        poToBpmDTO.setEsAgentName(poDTO.getAgentName());
+        poToBpmDTO.setEsAgentName(StringUtils.isNotBlank(poDTO.getAgentName())?poDTO.getAgentName():this.rcwlPoToBpmMapper.selectAgentName(poDTO.getTenantId(),poDTO.getAgentId()));
         poToBpmDTO.setPoDate(new SimpleDateFormat(DateTimeUtil.PATTERN_SECOND).format(poDTO.getCreationDate()));
         poToBpmDTO.setRemark(poDTO.getRemark());
         poToBpmDTO.setfSubject("采购订单" + poDTO.getDisplayPoNum());

@@ -74,7 +74,7 @@ public class PoToBpmDTO implements Serializable {
     @JSONField(name = "URL_MX")
     private String zYunUrl;
 
-    @JsonProperty("FSubject")
+    @JSONField(name = "FSubject")
     private String fSubject;
 
     @JSONField(name = "CGDDH")
