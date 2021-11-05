@@ -387,6 +387,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             PrAction prAction = new PrAction();
             prAction.setTenantId(tenantId);
             prAction.setPrHeaderId(prHeader.getPrHeaderId());
+            prAction.setDisplayPrNum(prHeader.getDisplayPrNum());
             prAction.setDisplayLineNum(prHeader.getDisplayPrNum());
             prAction.setProcessTypeCode(PrConstants.PrOperationType.UPDATE);
             prAction.setProcessedDate(new Date());
