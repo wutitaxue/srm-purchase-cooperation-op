@@ -17,7 +17,7 @@ public interface RcwlPoBudgetItfService {
      * @param poDTO
      * @param tenantId
      */
-    void invokeBudgetOccupy(PoDTO poDTO, Long tenantId) throws JsonProcessingException;
+    void invokeBudgetOccupy(PoDTO poDTO, Long tenantId, String occupyFlag) throws JsonProcessingException;
 
     /**
      * 初始化请求头

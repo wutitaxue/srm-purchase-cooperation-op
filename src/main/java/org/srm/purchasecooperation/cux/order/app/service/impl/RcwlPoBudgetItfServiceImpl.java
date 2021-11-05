@@ -26,7 +26,9 @@ import org.srm.purchasecooperation.cux.pr.api.dto.RCWLItfPrLineDetailDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.RCWLTokenGetRequestDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.RCWLTokenGetResponseDTO;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.cux.pr.domain.vo.PoBudgetOccupyLineVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoBudgetOccupyMapper;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoToBpmMapper;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
@@ -57,15 +59,13 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
     @Autowired
     private InterfaceInvokeSdk interfaceInvokeSdk;
     @Autowired
-    private PrHeaderRepository prHeaderRepository;
-    @Autowired
     private PoLineRepository poLineRepository;
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
-    private PoHeaderRepository poHeaderRepository;
-    @Autowired
     private RcwlPoToBpmMapper rcwlPoToBpmMapper;
+    @Autowired
+    private RcwlPoBudgetOccupyMapper rcwlPoBudgetOccupyMapper;
 
 
     private static final Logger logger = LoggerFactory.getLogger(RcwlPoBudgetItfServiceImpl.class);
@@ -83,13 +83,13 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
      * @param tenantId
      */
     @Override
-    public void invokeBudgetOccupy(PoDTO poDTO, Long tenantId) throws JsonProcessingException {
+    public void invokeBudgetOccupy(PoDTO poDTO, Long tenantId, String occupyFlag) throws JsonProcessingException {
 
         //目前占用和释放统一按照占用推，释放时金额固定为0
         RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
 
-        //TODO 获取数据
-        rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.getBudgetAccountItfData1(poDTO, tenantId, "0");
+        //获取数据
+        rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.getBudgetAccountItfData1(poDTO, tenantId, occupyFlag);
 
         RequestPayloadDTO payload = new RequestPayloadDTO();
 
@@ -235,23 +235,20 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
      * @return
      */
     @Override
-    public RCWLItfPrHeaderDTO getBudgetAccountItfData1(PoDTO poDTO, Long tenantId, String flag) {
+    public RCWLItfPrHeaderDTO getBudgetAccountItfData1(PoDTO poDTO, Long tenantId, String occupyFlag) {
         //获取接口所需数据
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, flag);
-//        List<PrLine> lineDetailList = prHeader.getPrLineList();
+        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, occupyFlag);
+
         PoLine poLine = new PoLine();
         poLine.setPoHeaderId(poDTO.getPoHeaderId());
-        List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
+//        List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
+        List<PoBudgetOccupyLineVO> lineDetailList = rcwlPoBudgetOccupyMapper.selectBudgetDistributionByLine(tenantId, poDTO.getPoHeaderId());
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(lineDetailList)) {
             lineDetailList.forEach(poDetailLine -> {
-                    RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(poDetailLine, tenantId);
-                        //占用金额,释放固定为0
-                        rcwlItfPrLineDetailDTO.setYszyje("100");
-                        //预算占用日期
-                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf("2021"));
+                    RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(poDetailLine, tenantId, occupyFlag);
                     rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
             });
         }
@@ -262,7 +259,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
         rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
         rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
-
 
         rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.initOccupyHeader();
         rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
@@ -300,8 +296,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 
         return token;
     }
-
-
 
 
 //    /**
@@ -383,7 +377,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
             rcwlItfPrLineDetailDTO.setCplxname(wbsName);
         }
 
-
         if ((StringUtils.isEmpty(prDetailLine.getWbsCode())) && !(StringUtils.isEmpty(prDetailLine.getWbs()))) {
             rcwlItfPrLineDetailDTO.setCplxname(prDetailLine.getWbs());
             String wbsCode = this.rcwlItfPrDataRespository.selectWbsCode(prDetailLine.getWbs(), prDetailLine.getPrLineId());
@@ -436,7 +429,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 */
 
 
-    private RCWLItfPrLineDetailDTO initOccupyDetail(PoLine poDetailLine, Long tenantId) {
+    private RCWLItfPrLineDetailDTO initOccupyDetail(PoBudgetOccupyLineVO poDetailLine, Long tenantId, String occupyFlag) {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
         //修改为取不含税金额
@@ -467,7 +460,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
             rcwlItfPrLineDetailDTO.setCplxname(wbsName);
         }
 
-
         if ((StringUtils.isEmpty(poDetailLine.getWbsCode())) && !(StringUtils.isEmpty(poDetailLine.getWbs()))) {
             rcwlItfPrLineDetailDTO.setCplxname(poDetailLine.getWbs());
             String wbsCode = this.rcwlItfPrDataRespository.selectWbsCode(poDetailLine.getWbs(), poDetailLine.getPrLineId());
@@ -477,6 +469,16 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         if ((StringUtils.isEmpty(poDetailLine.getWbsCode())) && (StringUtils.isEmpty(poDetailLine.getWbs()))) {
             throw new CommonException("产品类型为空");
         }
+
+        if ("01".equals(occupyFlag)){
+            //预算占用金额
+            rcwlItfPrLineDetailDTO.setYszyje(poDetailLine.getBudgetDisAmount().toString());
+        }else {
+            //释放固定为0
+            rcwlItfPrLineDetailDTO.setYszyje("0");
+        }
+        //预算占用日期 YYYY-MM-DD
+        rcwlItfPrLineDetailDTO.setYsdate(poDetailLine.getBudgetDisYear() + "-01-01");
         rcwlItfPrLineDetailDTO.setLine(poDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }
@@ -489,18 +491,15 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 //        if ("O".equals(flag)) {
 //            itfPrLineDTO.setYslx("01");
 //        } else if ("R".equals(flag)) {
-//            itfPrLineDTO.setYslx("01");
+//            itfPrLineDTO.setYslx("02");
 //        }
-
         itfPrLineDTO.setYslx("01");
-
         itfPrLineDTO.setCreateuser("jq");
         SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-dd");
         String dateString = formatter.format(poDTO.getCreationDate());
         itfPrLineDTO.setBilldate(dateString);
         itfPrLineDTO.setPaymentbillcode(poDTO.getPoNum());
         //测试使用
-        //  itfPrLineDTO.setUnitcode("01");
         String unitCode = rcwlItfPrDataRespository.selectSapCode(poDTO.getCompanyId(), tenantId);
         if (StringUtils.isEmpty(unitCode)) {
             throw new CommonException("组织机构不能为空");

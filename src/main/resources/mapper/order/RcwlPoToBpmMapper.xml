@@ -8,6 +8,8 @@
             st.description tax_description,
             hio.organization_name inv_organization_name,
             sba.budget_account_name,
+            spc.pc_num,
+	        spc.pc_name,
             spl.*
         FROM
             sodr_po_line AS spl
@@ -15,6 +17,7 @@
         LEFT JOIN  smdm_tax st ON st.tax_id = spl.tax_id
         LEFT JOIN  hpfm_inv_organization hio ON hio.organization_id = spl.inv_organization_id
         LEFT JOIN  smdm_budget_account sba ON sba.budget_account_num = spl.attribute_varchar21
+        LEFT JOIN spcm_pc_header spc ON spc.pc_header_id = spl.pc_header_id
         WHERE
             spl.po_header_id  = #{poHeaderId}
             AND spl.tenant_id = #{tenantId}
@@ -48,6 +51,16 @@
         WHERE
             sba.tenant_id = #{tenantId}
             and sba.budget_account_num = #{budgetAccountNum}
+    </select>
+
+    <select id="selectAgentName" resultType="java.lang.String">
+        SELECT
+            hpa.purchase_agent_name
+        FROM
+            hpfm_purchase_agent hpa
+        WHERE
+            hpa.tenant_id = #{tenantId}
+            and hpa.purchase_agent_id = #{agentId}
     </select>
 
 </mapper>

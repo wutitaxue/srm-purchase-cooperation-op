@@ -30,6 +30,9 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @ApiModelProperty("库存组织名称")
     @Transient
     private String invOrganizationName;
+    @ApiModelProperty("协议名称")
+    @Transient
+    private String pcName;
 
     @Override
     public String getAttributeVarchar21() {
@@ -83,6 +86,14 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @Override
     public void setInvOrganizationName(String invOrganizationName) {
         this.invOrganizationName = invOrganizationName;
+    }
+
+    public String getPcName() {
+        return pcName;
+    }
+
+    public void setPcName(String pcName) {
+        this.pcName = pcName;
     }
 
     @Override
