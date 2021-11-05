@@ -275,7 +275,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                     List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetChangeActionDisYear(prDetailLine.getPrLineId());
                     for(int year : budgetDisYears){
                         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
-                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                        StringBuffer sb = new StringBuffer(String.valueOf(year));
+                        rcwlItfPrLineDetailDTO.setYsdate(sb.append("-01-01").toString());
                         //查找budget_group为old的budget_dis_amount
                         BigDecimal bigDecimal = rcwlItfPrDataRespository.selectBudgetDisAmountByBudgetGroup(prDetailLine.getPrLineId(), year);
                         if(bigDecimal == null){
