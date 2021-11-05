@@ -106,7 +106,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             //预算占用(系统计算值)
             if (i.equals(rcwlBudgetDistributionDTO.getNeedStartDateYear())) {
                 //订单开始结束日期年月相同，不使用计算公式
-                if (Long.valueOf(0).equals(budgetDisGap)){
+                if (Integer.valueOf(0).equals(budgetDisGap)){
                     BigDecimal budgetDisAmountCal = rcwlBudgetDistributionDTO.getLineAmount();
                     budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
                     budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
