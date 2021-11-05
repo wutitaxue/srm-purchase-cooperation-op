@@ -1200,8 +1200,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (amountEqual) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", rcwlBudgetDistribution.getLineNum());
                         }
-                        boolean prLineYear = rcwlBudgetDistributionDTOS.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetDistributionDTOS.get(rcwlBudgetDistributionDTOS.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
-                        if (!prLineYear) {
+                        List<RcwlBudgetDistributionDTO> budgetDistributionLineDTOS = rcwlBudgetDistributionDTOS.stream().filter(rcwlBudgetDistributionDTO -> rcwlBudgetDistribution.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).collect(Collectors.toList());
+                        boolean prLineYear = budgetDistributionLineDTOS.get(0).getBudgetDisYear().compareTo(rcwlBudgetDistribution.getAttributeDate1Year())!=0|| budgetDistributionLineDTOS.get(budgetDistributionLineDTOS.size() - 1).getBudgetDisYear().compareTo(rcwlBudgetDistribution.getNeededDateYear())!=0;
+                        if (prLineYear) {
                             throw new CommonException("error.pr.line.num.year.budget.error", rcwlBudgetDistribution.getLineNum());
                         }
                     } else {
@@ -1241,7 +1242,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         if (amountEqual) {
                             throw new CommonException("error.pr.line.num.amount.budget.error", prLine.getLineNum());
                         }
-                        boolean prLineYear = rcwlBudgetChangeActionsNotEnableds.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetChangeActionsNotEnableds.get(rcwlBudgetChangeActionsNotEnableds.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
+                        List<RcwlBudgetChangeAction> rcwlBudgetChangeLineActions = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetDistributionDTO -> prLine.getPrLineId().equals(rcwlBudgetDistributionDTO.getPrLineId())).collect(Collectors.toList());
+                        boolean prLineYear = rcwlBudgetChangeLineActions.get(0).getBudgetDisYear().equals(rcwlBudgetDistribution.getAttributeDate1Year()) && rcwlBudgetChangeLineActions.get(rcwlBudgetChangeLineActions.size() - 1).getBudgetDisYear().equals(rcwlBudgetDistribution.getNeededDateYear());
                         if (!prLineYear) {
                             throw new CommonException("error.pr.line.num.year.budget.error", prLine.getPrLineId());
                         }
