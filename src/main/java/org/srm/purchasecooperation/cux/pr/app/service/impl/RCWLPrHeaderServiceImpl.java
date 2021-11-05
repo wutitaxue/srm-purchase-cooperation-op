@@ -268,7 +268,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         if (CollectionUtils.isEmpty(prHeader.getPrLineList())) {
             return prHeader;
         } else {
-            prHeader.setPrStatusCode(SUBMITTED);
+            //prHeader.setPrStatusCode(SUBMITTED);
             prHeader = this.updatePrHeader(prHeader);
             // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 begin-------
             judgeBudget(prHeader);
