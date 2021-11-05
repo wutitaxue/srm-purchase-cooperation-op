@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.pr.infra.repository.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDisDTO;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLItfPrDataMapper;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -117,5 +118,10 @@ public class RCWLItfPrDataRespositoryImpl implements RCWLItfPrDataRespository {
     @Override
     public BigDecimal selectBudgetDisAmountByBudgetGroup(Long prLineId, Integer year) {
         return rcwlItfPrDataMapper.selectBudgetDisAmountByBudgetGroup(prLineId, year);
+    }
+
+    @Override
+    public List<RcwlBudgetDisDTO> selectBudgetDisInfo(Long prLineId) {
+        return rcwlItfPrDataMapper.selectBudgetDisInfo(prLineId);
     }
 }

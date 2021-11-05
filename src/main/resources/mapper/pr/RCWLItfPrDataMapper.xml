@@ -165,4 +165,15 @@
 	AND srbca.budget_dis_year = #{year}
 	AND pr_action_id IN ( SELECT MAX( pr_action_id ) FROM scux_rcwl_budget_change_action WHERE scux_rcwl_budget_change_action.pr_line_id = #{prLineId} );
 	</select>
+
+	<select id="selectBudgetDisInfo" resultType="org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDisDTO">
+		SELECT
+		    srbd.pr_line_id,
+			srbd.budget_dis_year,
+		    srbd.budget_dis_amount
+		FROM
+			scux_rcwl_budget_distribution srbd
+		WHERE
+		srbd.pr_line_id =#{prLineId}
+	</select>
 </mapper>

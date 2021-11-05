@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.pr.domain.repository;
 
+import org.srm.purchasecooperation.cux.pr.api.dto.RcwlBudgetDisDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
@@ -80,4 +81,11 @@ public interface RCWLItfPrDataRespository {
      * @return
      */
     BigDecimal selectBudgetDisAmountByBudgetGroup(Long prLineId, Integer year);
+
+    /**
+     * 根据line_ids预算信息
+     * @param prLineId
+     * @return
+     */
+    List<RcwlBudgetDisDTO> selectBudgetDisInfo(Long prLineId);
 }

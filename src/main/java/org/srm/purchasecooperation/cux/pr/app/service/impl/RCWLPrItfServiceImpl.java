@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.srm.purchasecooperation.cux.pr.api.dto.*;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrHeaderMapper;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
@@ -269,23 +270,39 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                 });
             }
         } else if ("O".equals(flag)) {
-            if (CollectionUtils.isNotEmpty(lineDetailList)) {
-                lineDetailList.forEach(prDetailLine -> {
-                    //根据pr_line_id查找scux_rcwl_budget_change_action数据
-                    List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetChangeActionDisYear(prDetailLine.getPrLineId());
-                    for(int year : budgetDisYears){
-                        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
-                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
-                        //查找budget_group为old的budget_dis_amount
-                        BigDecimal bigDecimal = rcwlItfPrDataRespository.selectBudgetDisAmountByBudgetGroup(prDetailLine.getPrLineId(), year);
-                        if(bigDecimal == null){
-                            rcwlItfPrLineDetailDTO.setYszyje("0");
-                        } else {
-                            rcwlItfPrLineDetailDTO.setYszyje(bigDecimal.toString());
+            //add by 21420 提交时做另外的逻辑
+            if(Constants.PlanHeaderApprovalStatus.PANDING.equals(prHeader.getPrStatusCode())){
+                if (CollectionUtils.isNotEmpty(lineDetailList)) {
+                    lineDetailList.forEach(prDetailLine -> {
+                        //按照预算单在预算拆分表scux_rcwl_budget_distribution中pr_line_id有几条数据进行拆分成几组
+                        List<RcwlBudgetDisDTO> budgetDisDTOS = rcwlItfPrDataRespository.selectBudgetDisInfo(prDetailLine.getPrLineId());
+                        budgetDisDTOS.forEach(budgetDisDTO ->{
+                            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                            rcwlItfPrLineDetailDTO.setYszyje(budgetDisDTO.getBudgetDisAmount().toString());
+                            rcwlItfPrLineDetailDTO.setYsdate(budgetDisDTO.getBudgetDisYear() +"-01-01");
+                            rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+                        });
+                    });
+                }
+            }else{
+                if (CollectionUtils.isNotEmpty(lineDetailList)) {
+                    lineDetailList.forEach(prDetailLine -> {
+                        //根据pr_line_id查找scux_rcwl_budget_change_action数据
+                        List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetChangeActionDisYear(prDetailLine.getPrLineId());
+                        for(int year : budgetDisYears){
+                            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
+                            rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                            //查找budget_group为old的budget_dis_amount
+                            BigDecimal bigDecimal = rcwlItfPrDataRespository.selectBudgetDisAmountByBudgetGroup(prDetailLine.getPrLineId(), year);
+                            if(bigDecimal == null){
+                                rcwlItfPrLineDetailDTO.setYszyje("0");
+                            } else {
+                                rcwlItfPrLineDetailDTO.setYszyje(bigDecimal.toString());
+                            }
+                            rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
                         }
-                        rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-                    }
-                });
+                    });
+                }
             }
         }
 
