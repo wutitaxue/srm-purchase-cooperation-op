@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 @Data
 public class RcwlBudgetDisDTO {
     Long prLineId;
+    //预算占用年份
     Integer budgetDisYear;
+    //预算占用金额
     BigDecimal budgetDisAmount;
 }
