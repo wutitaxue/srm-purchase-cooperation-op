@@ -955,6 +955,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         }
     }
 
+
+
+    @Override
     @Transactional(rollbackFor = {Exception.class})
     public PoDTO updatePoWhenPr(PoOrderSaveDTO poOrderSaveDTO) {
         List<PoLine> poLineList = new ArrayList();
@@ -1038,13 +1041,14 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                         .andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, poLineDetailDTO.getTenantId())
                 ).build()));
 
-        if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
-            //校验各年原预算值（手工）是否等于行金额
-            BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
-            log.info("订单行总金额：{},各年原预算值（手工）：{}",poLineDetailDTO.getLineAmount(),totalBudgetDisAmount);
-            if (totalBudgetDisAmount.compareTo(Optional.ofNullable(poLineDetailDTO.getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
-                throw new CommonException("订单行号为【"+poLineDetailDTO.getLineNum()+"】的行金额与预算占用合计必须相等，请重新维护预算拆分！");
-            }
+        if (CollectionUtils.isEmpty(budgetDistributionsInDB)){
+            throw new CommonException("未维护预算分配数据，请维护后提交！");
+        }
+        //校验各年原预算值（手工）是否等于行金额
+        BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("订单行总金额：{},各年原预算值（手工）：{}",poLineDetailDTO.getLineAmount(),totalBudgetDisAmount);
+        if (totalBudgetDisAmount.compareTo(Optional.ofNullable(poLineDetailDTO.getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
+            throw new CommonException("订单行号为【"+poLineDetailDTO.getLineNum()+"】的行金额与预算占用合计必须相等，请重新维护预算拆分！");
         }
     }
 
