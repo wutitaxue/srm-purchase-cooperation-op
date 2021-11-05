@@ -45,7 +45,7 @@ public interface RcwlBudgetDistributionMapper extends BaseMapper<RcwlBudgetDistr
     String selectPoAndPoLineNum(Long tenantId, Long poHeaderId, Long poLineId);
 
     /**
-     * 删除采购申请中未跨年的预算分摊
+     * 删除采购申请中的预算分摊
      *
      * @param rcwlBudgetDistributionDTO
      * @return 采购申请中未跨年的预算分摊

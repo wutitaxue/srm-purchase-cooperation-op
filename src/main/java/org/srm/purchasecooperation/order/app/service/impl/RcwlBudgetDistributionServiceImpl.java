@@ -5,6 +5,7 @@ import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.beans.BeanCopier;
 import org.apache.commons.collections4.CollectionUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,7 +203,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         if(!ObjectUtils.isEmpty(prLine)){
             prLine.countLineAmount();
             rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
-            rcwlBudgetDistributionDTO.setChangeSubmit(1);
+            rcwlBudgetDistributionDTO.setChangeSubmit(BaseConstants.Flag.YES);
         }
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
         // 根据采购申请头、行id计算跨年预算的值

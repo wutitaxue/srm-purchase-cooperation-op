@@ -191,9 +191,11 @@
         WHERE
             pr_header_id = #{prHeaderId}
         AND tenant_id = #{tenantId}
-        AND pr_line_id IN
-        <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
-            #{prLineId}
-        </foreach>
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
     </delete>
 </mapper>
