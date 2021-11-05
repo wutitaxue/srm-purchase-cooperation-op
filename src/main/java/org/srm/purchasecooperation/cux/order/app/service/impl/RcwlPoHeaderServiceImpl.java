@@ -44,6 +44,7 @@ import org.srm.boot.platform.message.MessageHelper;
 import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
 import org.srm.common.util.StringToNumberUtils;
+import org.srm.mq.service.producer.MessageProducer;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.common.utils.LogUtils;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmDTO;
@@ -69,10 +70,12 @@ import org.srm.purchasecooperation.order.infra.constant.PoConstants;
 import org.srm.purchasecooperation.order.infra.feign.HwfpRemoteService;
 import org.srm.purchasecooperation.order.infra.feign.SmalRemoteService;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
+import org.srm.purchasecooperation.order.infra.mapper.PoLineLocationMapper;
 import org.srm.purchasecooperation.order.infra.mapper.PoLineMapper;
 import org.srm.purchasecooperation.order.infra.utils.FieldUtils;
 import org.srm.purchasecooperation.order.infra.utils.PoApproveRuleEnum;
 import org.srm.purchasecooperation.order.infra.utils.ReceiverUtils;
+import org.srm.purchasecooperation.plan.app.service.PlanService;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.PrLineChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.ProductItemRefDTO;
@@ -84,6 +87,7 @@ import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
+import org.srm.purchasecooperation.sinv.domain.service.RcvNodeConfigCommonDomainService;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import org.srm.purchasecooperation.utils.service.EventSendTranService;
 import org.srm.web.annotation.Tenant;
@@ -204,6 +208,14 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private RcwlPoToBpmMapper rcwlPoToBpmMapper;
     @Autowired
     private RcwlPoBudgetItfService rcwlPoBudgetItfService;
+    @Autowired
+    private PoLineLocationMapper poLineLocationMapper;
+    @Autowired
+    private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
+    @Autowired
+    private PlanService planService;
+    @Autowired
+    private MessageProducer messageProducer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
@@ -1032,6 +1044,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return poHeader;
     }
 
+
+    @Override
     @SneakyThrows
     @Transactional(rollbackFor = {Exception.class})
     @EventSendTran(rollbackFor = {Exception.class})
@@ -1133,6 +1147,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return poDTO;
     }
 
+
+    @Override
     @SneakyThrows
     @Transactional(rollbackFor = {Exception.class})
     @EventSendTran(rollbackFor = {Exception.class})
@@ -1396,6 +1412,65 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poToBpmDTO.setRemark(poDTO.getRemark());
         poToBpmDTO.setfSubject("采购订单" + poDTO.getDisplayPoNum());
         return poToBpmDTO;
+    }
+
+
+    @SneakyThrows
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    @EventSendTran(rollbackFor = {Exception.class})
+    public returnMsgDto cancel(List<PoHeader> poHeaders) {
+        int errorCancel = 0;
+        int successCancel = 0;
+        Set<Long> poHeaderSet = new HashSet<>();
+        for (PoHeader poHeader : poHeaders) {
+            if (((PoHeaderService)self()).cancelSingle(poHeader)) {
+                successCancel++;
+
+                PoDTO poDTO = new PoDTO();
+                BeanUtils.copyProperties(poHeader,poDTO);
+                //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
+                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
+                poHeaderSet.add(poHeader.getPoHeaderId());
+                List<PoLineLocation> poLineLocations = this.poLineLocationMapper.selectByPoHeaderId(poHeader.getPoHeaderId(), poHeader.getTenantId());
+                if (CollectionUtils.isNotEmpty(poLineLocations)) {
+                    this.planService.cancelOrCloseByPoLineLocationIds((List)poLineLocations.stream().map(PoLineLocation::getPoLineLocationId).collect(Collectors.toList()), "CANCEL");
+                }
+                if ("CATALOGUE".equals(poHeader.getPoSourcePlatform())) {
+                    this.poStatusSyncMallRecordService.catalogueOrderStatusCallBack(new PoStatusSyncMallRecord("PO", poHeader.getPoHeaderId(), "CANCELED", poHeader.getTenantId()));
+                }
+                LOGGER.info("21424-订单取消事务节点清除：" + poHeader);
+                this.rcvNodeConfigCommonDomainService.afterPoCancel(poHeader.getPoHeaderId());
+                this.poHeaderSendApplyMqService.sendApplyMq(poHeader.getPoHeaderId(), poHeader.getTenantId(), "RELEASE");
+                continue;
+            }
+            errorCancel++;
+        }
+        if (!CollectionUtils.isEmpty(poHeaderSet)) {
+            List<String> list = (List<String>)poHeaderSet.stream().map(x -> x + "").collect(Collectors.toList());
+            String poHeaderId = list.stream().distinct().collect(Collectors.joining(","));
+            List<PoHeader> poHeaderList = this.poHeaderRepository.selectByIds(poHeaderId);
+            List<MessageDTO> messageDTOList = new ArrayList<>();
+            SimpleDateFormat tempDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            poHeaderList.forEach(poHeader -> {
+                if ("CATALOGUE".equals(poHeader.getPoSourcePlatform()) || "SHOP".equals(poHeader.getPoSourcePlatform())) {
+                    MessageDTO messageDTO = new MessageDTO();
+                    Map<Object, Object> map = new HashMap<>();
+                    messageDTO.setUserId(DetailsHelper.getUserDetails().getUserId());
+                    messageDTO.setSendDate(tempDate.format(new Date()));
+                    messageDTO.setTenantId(poHeader.getTenantId());
+                    messageDTO.setType("SRM_ORDER_CANCEL_BY_SRM");
+                    map.put("tenantId", poHeader.getTenantId());
+                    map.put("srmOrderCode", poHeader.getDisplayPoNum());
+                    messageDTO.setData(map);
+                    messageDTOList.add(messageDTO);
+                }
+            });
+            if (messageDTOList.size() > 0) {
+                Boolean bool = Boolean.valueOf(this.messageProducer.sendMessageAfterTransactionCommit(((MessageDTO)messageDTOList.get(0)).getTenantId(), "sodr-message-topic", "", "SMODR", messageDTOList));
+            }
+        }
+        return new returnMsgDto(successCancel, errorCancel);
     }
 
 }

@@ -26,7 +26,9 @@ import org.srm.purchasecooperation.cux.pr.api.dto.RCWLItfPrLineDetailDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.RCWLTokenGetRequestDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.RCWLTokenGetResponseDTO;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
+import org.srm.purchasecooperation.cux.pr.domain.vo.PoBudgetOccupyLineVO;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoBudgetOccupyMapper;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoToBpmMapper;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
@@ -57,15 +59,13 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
     @Autowired
     private InterfaceInvokeSdk interfaceInvokeSdk;
     @Autowired
-    private PrHeaderRepository prHeaderRepository;
-    @Autowired
     private PoLineRepository poLineRepository;
     @Autowired
     private RCWLItfPrDataRespository rcwlItfPrDataRespository;
     @Autowired
-    private PoHeaderRepository poHeaderRepository;
-    @Autowired
     private RcwlPoToBpmMapper rcwlPoToBpmMapper;
+    @Autowired
+    private RcwlPoBudgetOccupyMapper rcwlPoBudgetOccupyMapper;
 
 
     private static final Logger logger = LoggerFactory.getLogger(RcwlPoBudgetItfServiceImpl.class);
@@ -241,7 +241,8 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 
         PoLine poLine = new PoLine();
         poLine.setPoHeaderId(poDTO.getPoHeaderId());
-        List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
+//        List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
+        List<PoBudgetOccupyLineVO> lineDetailList = rcwlPoBudgetOccupyMapper.selectBudgetDistributionByLine(tenantId, poDTO.getPoHeaderId());
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
@@ -428,7 +429,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 */
 
 
-    private RCWLItfPrLineDetailDTO initOccupyDetail(PoLine poDetailLine, Long tenantId, String occupyFlag) {
+    private RCWLItfPrLineDetailDTO initOccupyDetail(PoBudgetOccupyLineVO poDetailLine, Long tenantId, String occupyFlag) {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
         //修改为取不含税金额
@@ -468,16 +469,16 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         if ((StringUtils.isEmpty(poDetailLine.getWbsCode())) && (StringUtils.isEmpty(poDetailLine.getWbs()))) {
             throw new CommonException("产品类型为空");
         }
-        //占用金额
+
         if ("01".equals(occupyFlag)){
-            //TODO 需引用76号分支代码
-            rcwlItfPrLineDetailDTO.setYszyje("100");
+            //预算占用金额
+            rcwlItfPrLineDetailDTO.setYszyje(poDetailLine.getBudgetDisAmount().toString());
         }else {
             //释放固定为0
             rcwlItfPrLineDetailDTO.setYszyje("0");
         }
-        //预算占用日期
-        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf("2021"));
+        //预算占用日期 YYYY-MM-DD
+        rcwlItfPrLineDetailDTO.setYsdate(poDetailLine.getBudgetDisYear() + "-01-01");
         rcwlItfPrLineDetailDTO.setLine(poDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }
