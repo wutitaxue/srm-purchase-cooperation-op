@@ -151,7 +151,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
             }
 
             prLine.setNeededDate(prLineImportVO.localDate2Date(prLineImportVO.getNeededDate()));
-            prLine.setAttributeDate1(prLineImportVO.getAttributeDate1());
+            prLine.setAttributeDate1(prLineImportVO.localDate2Date(prLineImportVO.getStartDate()));
             if (StringUtils.isNotEmpty(prLineImportVO.getRequestedLoginName())) {
                 UserCacheDTO userCacheDTO = this.prImportMapper.queryUserInfo(tenantId, prLineImportVO.getRequestedLoginName());
                 prLine.setRequestedBy(userCacheDTO.getUserId());

@@ -24,7 +24,16 @@ public class RcwlPrLineImportVO extends PrLineImportVO {
     }
     @ApiModelProperty("需求结束日期")
     private LocalDate neededDate;
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
     @ApiModelProperty("需求开始日期")
-    private Date attributeDate1;
+    private LocalDate startDate;
 
 }
