@@ -41,7 +41,7 @@ public interface RcwlBudgetDistributionRepository extends BaseRepository<RcwlBud
     List<RcwlBudgetDistribution> selectBudgetDistributionNotAcrossYear(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
 
     /**
-     * 删除采购申请中未跨年的预算分摊
+     * 删除采购申请中的预算分摊
      *
      * @param tenantId
      * @param rcwlBudgetDistributionDTO
