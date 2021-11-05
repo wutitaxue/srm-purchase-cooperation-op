@@ -1032,6 +1032,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return poHeader;
     }
 
+    @SneakyThrows
     @Transactional(rollbackFor = {Exception.class})
     @EventSendTran(rollbackFor = {Exception.class})
     public PoDTO submittedProcessForECommerceAndCatalogueNoSaga(PoDTO poDTO) {
@@ -1070,6 +1071,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 //                if ("FAIL".equals(poToOaResponse.getResponseStatus())) {
 //                    throw new CommonException("error.order.external.oa_approve_error", new Object[]{poToOaResponse.getResponseMessage()});
 //                }
+
+                //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
+                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+                //预算占用成功，推送数据到bpm
                 String dataToBpmUrl = this.poDataToBpm(poDTO);
                 poDTO.setAttributeVarchar37(dataToBpmUrl);
 //                poHeader.setStatusCode("SUBMITTED");
@@ -1190,8 +1195,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 //                throw new CommonException("error.order.external.oa_approve_error", new Object[] { poToOaResponse.getResponseMessage() });
 //            }
 
-            //调用占预算接口
-            rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO,poDTO.getTenantId());
+            //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
+            rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
             //预算占用成功，推送数据到bpm
             String dataToBpmUrl = this.poDataToBpm(poDTO);
             poDTO.setAttributeVarchar37(dataToBpmUrl);
@@ -1207,8 +1212,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         } else {
             poDTO.setStatusCode("APPROVED");
             PoHeader poHeaderInDB = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
-            if (Objects.nonNull(poHeaderInDB) && "CATALOGUE".equals(poHeaderInDB.getPoSourcePlatform()))
+            if (Objects.nonNull(poHeaderInDB) && "CATALOGUE".equals(poHeaderInDB.getPoSourcePlatform())) {
                 itemMapping(poHeaderInDB.getTenantId(), Arrays.asList(new PoHeader[] { poHeaderInDB }));
+            }
             PoHeader poHeader1 = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
             PoHeaderDetailDTO poHeaderDetailDTO = new PoHeaderDetailDTO();
             BeanUtils.copyProperties(poHeader1, poHeaderDetailDTO);
