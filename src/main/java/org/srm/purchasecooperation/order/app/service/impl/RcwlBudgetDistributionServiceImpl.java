@@ -219,6 +219,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, rcwlBudgetDistributionDTO);
         // -------------- 计算系统分摊金额 begin -------------------------------------------
         if (CollectionUtils.isNotEmpty(rcwlBudgetDistributionDTOS)) {
+            // 一行只有一条数据
             RcwlBudgetDistributionDTO itemLine = rcwlBudgetDistributionDTOS.get(0);
             for (Integer i = itemLine.getAttributeDate1Year(); i <= itemLine.getNeededDateYear(); i++) {
                 RcwlBudgetDistributionDTO rcwlBudgetDistributionResult = new RcwlBudgetDistributionDTO();
@@ -244,6 +245,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                     BigDecimal budgetDisAmount = rcwlBudgetDistributionRealValues.stream().filter(rcwlBudgetDistributionRealValue -> rcwlBudgetDistributionDTO.getPrHeaderId().equals(rcwlBudgetDistributionRealValue.getPrHeaderId()) && rcwlBudgetDistributionDTO.getPrLineId().equals(rcwlBudgetDistributionRealValue.getPrLineId()) && finalI.equals(rcwlBudgetDistributionRealValue.getBudgetDisYear())).findFirst().orElse(new RcwlBudgetDistributionDTO()).getBudgetDisAmount();
                     rcwlBudgetDistributionResult.setBudgetDisAmount(budgetDisAmount);
                 }
+                // 强制行金额显示六位
+                rcwlBudgetDistributionResult.setLineAmount(rcwlBudgetDistributionResult.getLineAmount().setScale(6, BigDecimal.ROUND_HALF_UP));
                 rcwlBudgetDistributionResults.add(rcwlBudgetDistributionResult);
             }
             // -------------- 计算系统分摊金额 end -------------------------------------------
