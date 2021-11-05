@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
+import cn.hutool.core.text.StrBuilder;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -336,7 +337,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                     PrLine prLine = new PrLine();
                     BeanUtils.copyProperties(prDetailLine, prLine);
                     RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, from);
-                    rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
+                    StringBuffer sb = new StringBuffer(String.valueOf(year));
+                    rcwlItfPrLineDetailDTO.setYsdate(sb.append("-01-01").toString());
                     rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
                 }
             });
