@@ -302,6 +302,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         List<PrLine> changePrlines = prHeader.getPrLineList();
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 begin-------
         // 筛选跟预算有关的字段有变更的申请行(目前有三个字段-行金额、需求开始日期、需求结束日期)
+        prHeader.getPrLineList().forEach(PrLine::countLineAmount);
         List<PrLine> changedPrLines = prHeader.getPrLineList().stream().filter(prLine -> prLine.getLineAmount().compareTo(beforePrLineMap.get(prLine.getPrLineId()).getLineAmount()) != 0
                 || !prLine.getAttributeDate1().equals(beforePrLineMap.get(prLine.getPrLineId()).getAttributeDate1())
                 || !prLine.getNeededDate().equals(beforePrLineMap.get(prLine.getPrLineId()).getNeededDate())).collect(Collectors.toList());
