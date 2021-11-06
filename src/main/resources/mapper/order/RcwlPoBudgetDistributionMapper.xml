@@ -32,6 +32,9 @@
         spl.item_code,
         spl.item_name,
         spl.line_amount,
+        <if test="lineAmount != null">
+            #{lineAmount} AS line_amount,
+        </if>
         <if test="attributeDate1 != null">
             #{attributeDate1} AS attribute_date1,
             DATE_FORMAT( #{attributeDate1}, '%Y' ) attribute_date1_year,
