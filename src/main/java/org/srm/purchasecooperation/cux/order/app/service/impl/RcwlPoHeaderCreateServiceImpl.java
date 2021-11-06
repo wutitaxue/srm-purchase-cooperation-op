@@ -172,6 +172,9 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
             }
 
             BeanUtils.copyProperties(contractResultDTO, poDTO, FieldUtils.getExpandFields());
+            //来源合同号，来源合同id
+            poDTO.setAttributeVarchar1(contractResultDTO.getPcNum());
+            poDTO.setAttributeBigint1(contractResultDTO.getPcHeaderId());
             domesticCurrencyCode = this.poHeaderMapper.queryCurrencyByCompanyId(contractResultDTO.getCompanyId());
             if (domesticCurrencyCode != null) {
                 poDTO.setDomesticCurrencyCode(domesticCurrencyCode);
