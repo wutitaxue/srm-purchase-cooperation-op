@@ -449,7 +449,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             rcwlBudgetChangeAction.setPrActionId(actionId);
             rcwlBudgetChangeAction.setEnabledFlag(Boolean.TRUE);
         });
-        rcwlBudgetChangeActionRepository.batchUpdateOptional(rcwlBudgetChangeActionsNotEnableds,RcwlBudgetChangeAction.FIELD_PR_ACTION_ID,RcwlBudgetChangeAction.FIELD_ENABLED_FLAG);
+        rcwlBudgetChangeActionRepository.batchUpdateOptional(finalUpdateChanges, RcwlBudgetChangeAction.FIELD_PR_ACTION_ID, RcwlBudgetChangeAction.FIELD_ENABLED_FLAG);
         // -------------- add by wangjie 变更提交成功后，会插入sprm_pr_action表数据，若预算有改动，则需要增加一条类型为change_field置为budget_dis的记录 end ------------------------------------
         this.prActionRepository.batchInsertSelective(insertPrActions);
         long submitFlag = changePrlines.stream().filter((prLinex) -> {
