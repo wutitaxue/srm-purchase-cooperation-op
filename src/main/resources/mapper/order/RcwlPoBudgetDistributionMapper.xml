@@ -31,9 +31,11 @@
         spl.pr_header_id,
         spl.item_code,
         spl.item_name,
-        spl.line_amount,
         <if test="lineAmount != null">
             #{lineAmount} AS line_amount,
+        </if>
+        <if test="lineAmount == null">
+            spl.line_amount,
         </if>
         <if test="attributeDate1 != null">
             #{attributeDate1} AS attribute_date1,
