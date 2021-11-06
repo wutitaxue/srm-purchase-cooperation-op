@@ -22,7 +22,6 @@ import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributio
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -54,9 +53,10 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetDistribution.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, tenantId)).build());
             Map<Integer, RcwlBudgetDistribution> rcwlBudgetDistributionYearMap = rcwlBudgetDistributions.stream().collect(Collectors.toMap(RcwlBudgetDistribution::getBudgetDisYear, Function.identity()));
+            // 如果变更的预算和当前已有的预算、并且年份一致的话,则跳过保存
             if (rcwlBudgetChangeActions.size() == rcwlBudgetDistributions.size()) {
-                long notConsistentCount = rcwlBudgetChangeActions.stream().filter(rcwlBudgetChangeAction -> !rcwlBudgetChangeAction.getBudgetDisAmount().equals(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisYear()).getBudgetDisAmount())
-                        || !rcwlBudgetChangeAction.getBudgetDisGap().equals(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisGap()).getBudgetDisAmount())).count();
+                long notConsistentCount = rcwlBudgetChangeActions.stream().filter(rcwlBudgetChangeAction -> !rcwlBudgetDistributionYearMap.containsKey(rcwlBudgetChangeAction.getBudgetDisYear())
+                        || rcwlBudgetChangeAction.getLineAmount().compareTo(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0).count();
                 if (notConsistentCount <= 0) {
                     return;
                 }
