@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,14 +20,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.srm.boot.platform.configcenter.CnfHelper;
+import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrLineService;
+import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO;
 import org.srm.purchasecooperation.pr.api.dto.PrLineAssignDTO;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineServiceImpl;
 import org.srm.purchasecooperation.pr.domain.entity.PrLineSupplier;
-import org.srm.purchasecooperation.pr.domain.repository.PrLineAssignRepository;
-import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
-import org.srm.purchasecooperation.pr.domain.repository.PrLineSupplierRepository;
+import org.srm.purchasecooperation.pr.domain.entity.SupplierHideRole;
+import org.srm.purchasecooperation.pr.domain.repository.*;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineExecutorVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.purchasecooperation.pr.infra.utils.ListValueUtils;
@@ -47,6 +51,14 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
     private PrLineAssignRepository prLineAssignRepository;
     @Autowired
     private PrLineSupplierRepository prLineSupplierRepository;
+    @Autowired
+    private AccountAssignTypeLineRepository accountAssignTypeLineRepository;
+    @Autowired
+    private CustomizeSettingHelper customizeSettingHelper;
+    @Autowired
+    private SupplierHideRoleRepository supplierHideRoleRepository;
+    @Autowired
+    private RCWLPrLineRepository rcwlPrLineRepository;
 //
 
     @Override
@@ -236,5 +248,67 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
             }
 
         });
+    }
+
+    private void accountAssignTypeRequiredFieldHandler(List<PrLineVO> prLineVOList) {
+        if (!CollectionUtils.isEmpty(prLineVOList)) {
+            List<Long> idList = prLineVOList.stream().map(PrLineVO::getAccountAssignTypeId).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(idList)) {
+                Map<Long, Set<String>> map = this.accountAssignTypeLineRepository.queryAccountAssignTypeRequiredField(idList, "PR_LINE");
+                Iterator var4 = prLineVOList.iterator();
+
+                while(var4.hasNext()) {
+                    PrLineVO prLineVO = (PrLineVO)var4.next();
+                    Long accountAssignTypeId = prLineVO.getAccountAssignTypeId();
+                    if (Objects.nonNull(accountAssignTypeId)) {
+                        prLineVO.setAssignTypeRequiredFieldNames(map.get(accountAssignTypeId));
+                    }
+                }
+
+            }
+        }
+    }
+
+    @Override
+    public void hideSupplierHandler(Long tenantId, List<PrLineVO> prLineVOList) {
+        if (!CollectionUtils.isEmpty(prLineVOList)) {
+            List<PrLineVO> catalogueList = new ArrayList();
+            Iterator var4 = prLineVOList.iterator();
+
+            while(var4.hasNext()) {
+                PrLineVO prLineVO = (PrLineVO)var4.next();
+                if ("CATALOGUE".equals(prLineVO.getPrSourcePlatform())) {
+                    catalogueList.add(prLineVO);
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(catalogueList)) {
+                String enableHideSupplier = this.customizeSettingHelper.queryBySettingCode(tenantId, "010909");
+                if (!StringUtils.isEmpty(enableHideSupplier) && !String.valueOf(BaseConstants.Flag.NO).equals(enableHideSupplier)) {
+                    Long roleId = DetailsHelper.getUserDetails().getRoleId();
+                    List<SupplierHideRole> supplierHideRoles = this.supplierHideRoleRepository.select(new SupplierHideRole(tenantId, roleId));
+                    if (CollectionUtils.isNotEmpty(supplierHideRoles)) {
+                        catalogueList.forEach(PrLineVO::hideSupplier);
+                    }
+
+                }
+            }
+        }
+    }
+
+    @ProcessLovValue
+    @Override
+    public Page<RCWLPrLineVO> rCWLselectPrLinesPage(PageRequest pageRequest, Long tenantId, Long prHeaderId) {
+        Page<RCWLPrLineVO> prLineVOList = PageHelper.doPageAndSort(pageRequest, () -> {
+            return this.rcwlPrLineRepository.selectPrLines(pageRequest, tenantId, prHeaderId);
+        });
+        List<PrLineVO> prLineVOS = new ArrayList<>(prLineVOList);
+        prLineVOList.forEach(PrLineVO::calPrLineStatus);
+        this.jointSupplierList(tenantId, prLineVOS);
+        this.hideSupplierHandler(tenantId, prLineVOS);
+        this.changePercentHandler(prLineVOS);
+        this.accountAssignTypeRequiredFieldHandler(prLineVOS);
+        this.jointExecutor(tenantId, prLineVOS);
+        return prLineVOList;
     }
 }

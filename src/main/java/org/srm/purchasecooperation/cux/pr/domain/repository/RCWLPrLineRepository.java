@@ -1,9 +1,11 @@
 package org.srm.purchasecooperation.cux.pr.domain.repository;
 
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.hzero.mybatis.base.BaseRepository;
 import org.srm.purchasecooperation.cux.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.cux.pr.domain.vo.PrHeaderVO;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 
 import java.util.List;
@@ -56,4 +58,14 @@ public interface RCWLPrLineRepository {
      * @return
      */
     PrLine selectPrLineRecord(Long prLineId);
+
+    /**
+     * 分页查询采购申请行拓展
+     *
+     * @param pageRequest
+     * @param tenantId
+     * @param prHeaderId
+     * @return
+     */
+    List<RCWLPrLineVO> selectPrLines(PageRequest pageRequest, Long tenantId, Long prHeaderId);
 }
