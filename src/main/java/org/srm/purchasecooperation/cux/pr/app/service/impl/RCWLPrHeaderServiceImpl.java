@@ -427,15 +427,13 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     .tenantId(tenantId).build());
         });
         List<PrAction> prActionList = this.prActionRepository.batchInsertSelective(insertPrChangeActions);
-        rcwlBudgetChangeActionsNotEnableds.forEach(rcwlBudgetChangeAction -> {
+        // 更新pr_action_id
+        List<RcwlBudgetChangeAction> finalUpdateChanges = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId())
+                .andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO)).build());
+        finalUpdateChanges.forEach(rcwlBudgetChangeAction -> {
             Long actionId = prActionList.stream().filter(prAction -> rcwlBudgetChangeAction.getPrHeaderId().equals(prAction.getPrHeaderId()) && rcwlBudgetChangeAction.getPrLineId().equals(prAction.getPrLineId())).findFirst().orElse(new PrAction()).getActionId();
             rcwlBudgetChangeAction.setPrActionId(actionId);
             rcwlBudgetChangeAction.setEnabledFlag(Boolean.TRUE);
-        });
-        List<RcwlBudgetChangeAction> tempTest = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId())
-                .andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO)).build());
-        tempTest.forEach(temp->{
-            LOGGER.error(temp.getBudgetChangeId().toString()+"大爷的1"+temp.getObjectVersionNumber()+"大爷的2"+temp.getPrHeaderId()+"大爷的3"+temp.getPrLineId());
         });
         rcwlBudgetChangeActionRepository.batchUpdateOptional(rcwlBudgetChangeActionsNotEnableds,RcwlBudgetChangeAction.FIELD_PR_ACTION_ID,RcwlBudgetChangeAction.FIELD_ENABLED_FLAG);
         // -------------- add by wangjie 变更提交成功后，会插入sprm_pr_action表数据，若预算有改动，则需要增加一条类型为change_field置为budget_dis的记录 end ------------------------------------
