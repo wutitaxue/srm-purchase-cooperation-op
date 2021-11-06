@@ -811,6 +811,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(poDto.getPrHeaderId());
         if (prHeader != null) {
             poHeader.prSyncToPo(prHeader);
+            poHeader.setSourceBillTypeCode(poDto.getSourceBillTypeCode());
             this.poHeaderRepository.updateOptional(poHeader, PoHeader.PR_SYNC_FIELDS);
             BeanUtils.copyProperties(poHeader, poDto);
         }
