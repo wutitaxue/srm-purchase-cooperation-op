@@ -58,7 +58,8 @@ public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
 
     @Override
     public PoHeaderDetailDTO selectHeaderdetail(Long tenantId, Long poHeaderId) {
-        PoHeaderDetailDTO poHeaderDetailDTO = this.poHeaderMapper.selectHeaderdetail(tenantId, poHeaderId);
+//        PoHeaderDetailDTO poHeaderDetailDTO = this.poHeaderMapper.selectHeaderdetail(tenantId, poHeaderId);
+        PoHeaderDetailDTO poHeaderDetailDTO = this.rcwlMyPoHeaderMapper.rcwlSelectHeaderdetail(tenantId, poHeaderId);
         poHeaderDetailDTO.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(poHeaderDetailDTO.getPoHeaderId()));
         PoHeaderDetailDTO poHeaderDetailDTO1 = this.selectHeaderdetailAdress(tenantId, poHeaderId);
         if (poHeaderDetailDTO1 != null) {

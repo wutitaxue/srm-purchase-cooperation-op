@@ -1154,7 +1154,7 @@ public class PoHeader extends ExpandDomain {
     }
 
     public boolean isByErpOrSrmPr() {
-        return ("ERP".equals(this.getPoSourcePlatform()) || "SRM".equals(this.getPoSourcePlatform()) || "SHOP".equals(this.getPoSourcePlatform())) && "PURCHASE_REQUEST".equals(this.getSourceBillTypeCode());
+        return ("ERP".equals(this.getPoSourcePlatform()) || "SRM".equals(this.getPoSourcePlatform()) || "SHOP".equals(this.getPoSourcePlatform())) && ("PURCHASE_REQUEST".equals(this.getSourceBillTypeCode()) || "PURCHASE_REQUEST_LX".equals(this.getSourceBillTypeCode()));
     }
 
     public void confirmInfo() {

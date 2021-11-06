@@ -237,7 +237,9 @@
         spll.expect_ship_date,
         spl.ladder_quotation_flag,
         /*需求物料描述*/
-        spl.attribute_varchar10
+        spl.attribute_varchar10,
+        spl.pc_header_id,
+        spl.pc_num
         FROM
         sodr_po_line_location spll
         JOIN sodr_po_line spl ON spl.po_line_id = spll.po_line_id
@@ -486,6 +488,7 @@
 
     <select id="selectNoPriceContract" resultType="org.srm.purchasecooperation.order.api.dto.ContractResultDTO">
         SELECT
+        sph.pc_header_id,
         sph.pc_num,
         sph.pc_name,
         sph.pc_status_code,
