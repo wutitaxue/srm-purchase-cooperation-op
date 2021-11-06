@@ -37,4 +37,17 @@
             </if>
         </where>
     </select>
+
+    <select id="selectMaxPrActionData" parameterType="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction">
+        SELECT
+            srbca.*
+        FROM
+            scux_rcwl_budget_change_action srbca,
+            ( SELECT pr_header_id, pr_line_id, MAX( pr_action_id ) pr_action_id FROM scux_rcwl_budget_change_action WHERE pr_header_id = #{prHeaderId} AND tenant_id = #{tenantId} GROUP BY pr_header_id, pr_line_id ) temp
+        WHERE
+            srbca.pr_header_id = temp.pr_header_id
+          AND srbca.pr_line_id = temp.pr_line_id
+          AND srbca.pr_action_id = temp.pr_action_id
+          AND srbca.budget_group = 'old'
+    </select>
 </mapper>
