@@ -328,9 +328,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         rcwlBudgetDistributionsOLD.forEach(rcwlBudgetDistribution -> {
             RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
             BeanUtils.copyProperties(rcwlBudgetDistribution, rcwlBudgetChangeAction);
+            rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.OLD);
             rcwlBudgetChangeActionsOld.add(rcwlBudgetChangeAction);
         });
-        rcwlBudgetChangeActionsOld.forEach(rcwlBudgetChangeAction -> rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.OLD));
         rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActionsOld);
         // -------------------------add by wangjie 将上个版本的预算数据插入为old值 end--------------------------
         // ----------add by wangjie 在行处理之前先记录历史数据 begin ---------------------
@@ -379,8 +379,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.NEW);
             rcwlBudgetChangeActions.add(rcwlBudgetChangeAction);
         });
-        // 删除旧数据
-        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).enabledFlag(BaseConstants.Flag.NO).build());
+        // 删除旧数据(new数据要删,old数据不动)
+        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).enabledFlag(BaseConstants.Flag.NO).budgetGroup(RcwlBudgetChangeAction.NEW).build());
         // 把未跨年的预算变更加到变更数据里面
         rcwlNewBudgetChangeActionsNotEnableds.addAll(rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActions));
         // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
@@ -454,7 +454,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
 
         LOGGER.info("Purchase requisition " + prHeader.getDisplayPrNum() + " change submit end -------------");
         // add by wangjie 根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为new的数据写入scux_rcwl_budget_distribution begin ------
-        List<Long> prLineIds = rcwlBudgetChangeActionsNotEnableds.stream().map(RcwlBudgetChangeAction::getPrLineId).collect(Collectors.toList());
+        List<Long> prLineIds = finalUpdateChanges.stream().map(RcwlBudgetChangeAction::getPrLineId).collect(Collectors.toList());
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prLineIds(prLineIds).prHeaderId(prHeader.getPrHeaderId()).build());
         List<RcwlBudgetDistribution> rcwlBudgetDistributionDeleteDatas = new ArrayList<>(rcwlBudgetDistributionDTOS.size());
         rcwlBudgetDistributionDTOS.forEach(rcwlBudgetDistributionDTO -> {

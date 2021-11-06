@@ -95,6 +95,8 @@ public class RcwlBudgetDistributionDTO {
 
     @ApiModelProperty(value = "变更已提交标识，0为为提交，1为已提交")
     private Integer enabledFlag;
+    @ApiModelProperty(value = "预算组别 old为旧数据，new为新数据")
+    private String budgetGroup;
 
 
 }

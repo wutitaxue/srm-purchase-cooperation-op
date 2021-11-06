@@ -208,5 +208,8 @@
         <if test="enabledFlag != null">
             AND enabled_flag = #{enabledFlag}
         </if>
+        <if test="changeSubmit == 1 and budgetGroup != null">
+            AND budget_group = #{budgetGroup}
+        </if>
     </delete>
 </mapper>
