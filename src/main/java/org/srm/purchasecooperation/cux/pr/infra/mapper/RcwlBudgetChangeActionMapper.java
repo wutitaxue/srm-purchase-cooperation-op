@@ -19,4 +19,12 @@ public interface RcwlBudgetChangeActionMapper extends BaseMapper<RcwlBudgetChang
      * @return 返回值
      */
     List<RcwlBudgetChangeAction> selectList(RcwlBudgetChangeAction rcwlBudgetChangeAction);
+
+    /**
+     * 选择申请的最大action_id
+     *
+     * @param rcwlBudgetChangeAction
+     * @return
+     */
+    List<RcwlBudgetChangeAction> selectMaxPrActionData(RcwlBudgetChangeAction rcwlBudgetChangeAction);
 }

@@ -205,5 +205,8 @@
                 #{prLineId}
             </foreach>
         </if>
+        <if test="enabledFlag != null">
+            AND enabled_flag = #{enabledFlag}
+        </if>
     </delete>
 </mapper>

@@ -93,5 +93,8 @@ public class RcwlBudgetDistributionDTO {
     @ApiModelProperty(value = "采购申请行")
     private PrLine prLine;
 
+    @ApiModelProperty(value = "变更已提交标识，0为为提交，1为已提交")
+    private Integer enabledFlag;
+
 
 }

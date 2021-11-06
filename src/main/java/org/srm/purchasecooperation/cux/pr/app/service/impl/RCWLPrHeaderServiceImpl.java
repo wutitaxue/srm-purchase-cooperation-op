@@ -322,9 +322,10 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                 || !prLine.getNeededDate().equals(beforePrLineMap.get(prLine.getPrLineId()).getNeededDate())).collect(Collectors.toList());
         // 筛选采购申请行未提交的预算变更数据
         List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId())
-                .andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO).andEqualTo(RcwlBudgetChangeAction.FIELD_BUDGET_GROUP, RcwlBudgetChangeAction.NEW))
+                .andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO))
                 .orderByAsc(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID,RcwlBudgetChangeAction.FIELD_PR_LINE_ID,RcwlBudgetChangeAction.FIELD_BUDGET_DIS_YEAR).build());
-        judgeChangeBudget(tenantId, prHeader.getPrHeaderId(), changedPrLines, rcwlBudgetChangeActionsNotEnableds);
+        List<RcwlBudgetChangeAction> rcwlNewBudgetChangeActionsNotEnableds = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetChangeAction -> RcwlBudgetChangeAction.NEW.equals(rcwlBudgetChangeAction.getBudgetGroup())).collect(Collectors.toList());
+        judgeChangeBudget(tenantId, prHeader.getPrHeaderId(), changedPrLines, rcwlNewBudgetChangeActionsNotEnableds);
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 end---------
         // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 begin--------------------------
         // 查询变更行的未跨年预算
@@ -339,10 +340,23 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             rcwlBudgetChangeActions.add(rcwlBudgetChangeAction);
         });
         // 删除旧数据
-        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).build());
+        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).enabledFlag(BaseConstants.Flag.NO).build());
         // 把未跨年的预算变更加到变更数据里面
-        rcwlBudgetChangeActionsNotEnableds.addAll(rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActions));
+        rcwlNewBudgetChangeActionsNotEnableds.addAll(rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActions));
         // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
+        // -------------------------add by wangjie 将上个版本的预算数据插入为old值 begin--------------------------
+        // 筛选budget_group为old的条数
+        List<RcwlBudgetDistribution> rcwlBudgetDistributionsOLD = rcwlBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId())
+                .andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, tenantId)).build());
+        List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsOld = new ArrayList<>(rcwlBudgetDistributionsOLD.size());
+        rcwlBudgetDistributionsOLD.forEach(rcwlBudgetDistribution -> {
+            RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
+            BeanUtils.copyProperties(rcwlBudgetDistribution, rcwlBudgetChangeAction);
+            rcwlBudgetChangeActionsOld.add(rcwlBudgetChangeAction);
+        });
+        rcwlBudgetChangeActionsOld.forEach(rcwlBudgetChangeAction -> rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.OLD));
+        rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActionsOld);
+        // -------------------------add by wangjie 将上个版本的预算数据插入为old值 end--------------------------
         // ----------add by wangjie 在行处理之前先记录历史数据 begin ---------------------
         List<RcwlPrLineHis> prLineHistories = new ArrayList<>(prHeaderOriginLines.size());
         prHeaderOriginLines.forEach(prLine -> {
@@ -395,10 +409,10 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         }
         // -------------- add by wangjie 变更提交成功后，会插入sprm_pr_action表数据，若预算有改动，则需要增加一条类型为change_field置为budget_dis的记录 begin ------------------------------------
         CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        List<PrAction> insertPrChangeActions = new ArrayList(rcwlBudgetChangeActionsNotEnableds.size());
+        List<PrAction> insertPrChangeActions = new ArrayList(rcwlNewBudgetChangeActionsNotEnableds.size());
         // 记录稍后需要更新的预算数据
-        List<RcwlBudgetDistribution> rcwlBudgetDistributions = new ArrayList<>(rcwlBudgetChangeActionsNotEnableds.size());
-        rcwlBudgetChangeActionsNotEnableds.forEach(rcwlBudgetChangeAction -> {
+        List<RcwlBudgetDistribution> rcwlBudgetDistributions = new ArrayList<>(rcwlNewBudgetChangeActionsNotEnableds.size());
+        rcwlNewBudgetChangeActionsNotEnableds.forEach(rcwlBudgetChangeAction -> {
             PrAction prAction = new PrAction();
             prAction.setTenantId(tenantId);
             prAction.setPrHeaderId(prHeader.getPrHeaderId());

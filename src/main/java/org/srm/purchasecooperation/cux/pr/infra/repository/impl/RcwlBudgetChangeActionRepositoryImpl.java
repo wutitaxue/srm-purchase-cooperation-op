@@ -37,4 +37,9 @@ public class RcwlBudgetChangeActionRepositoryImpl extends BaseRepositoryImpl<Rcw
         return rcwlBudgetChangeActions.get(0);
     }
 
+    @Override
+    public List<RcwlBudgetChangeAction> selectMaxPrActionData(RcwlBudgetChangeAction rcwlBudgetChangeAction) {
+        return rcwlBudgetChangeActionMapper.selectMaxPrActionData(rcwlBudgetChangeAction);
+    }
+
 }
