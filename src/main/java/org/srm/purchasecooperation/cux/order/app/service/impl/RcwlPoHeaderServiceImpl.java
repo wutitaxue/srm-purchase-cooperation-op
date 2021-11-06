@@ -1194,6 +1194,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Transactional(rollbackFor = {Exception.class})
     @EventSendTran(rollbackFor = {Exception.class})
     public PoDTO submittedProcessForECommerceAndCatalogueNoSaga(PoDTO poDTO) {
+        String dataToBpmUrl = null;
         PoHeader poHeader = new PoHeader();
         BeanUtils.copyProperties(poDTO, poHeader);
         poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeader);
@@ -1233,21 +1234,21 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
                 //预算占用成功，推送数据到bpm
-                String dataToBpmUrl = this.poDataToBpm(poDTO);
-                poDTO.setAttributeVarchar37(dataToBpmUrl);
+                dataToBpmUrl = this.poDataToBpm(poDTO);
+
 //                poHeader.setStatusCode("SUBMITTED");
                 poHeader.setApproveMethod("EXTERNAL_SYSTEM");
                 this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode", "approveMethod"});
             }
 
-            poHeader.setStatusCode("CATALOGUE".equals(poHeader.getPoSourcePlatform()) ? "SUBMITTED" : "APPROVED");
-            if (poHeader.getStatusCode().equals("APPROVED")) {
-                List<PoHeader> poHeaderList = new ArrayList();
-                poHeaderList.add(poHeader);
-                this.itemMapping(poHeader.getTenantId(), poHeaderList);
-            }
-
-            this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode"});
+//            poHeader.setStatusCode("CATALOGUE".equals(poHeader.getPoSourcePlatform()) ? "SUBMITTED" : "APPROVED");
+//            if (poHeader.getStatusCode().equals("APPROVED")) {
+//                List<PoHeader> poHeaderList = new ArrayList();
+//                poHeaderList.add(poHeader);
+//                this.itemMapping(poHeader.getTenantId(), poHeaderList);
+//            }
+//
+//            this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode"});
         }
 
         List<PoLineLocation> lineLocationList = this.poLineLocationRepository.select("poHeaderId", poHeader.getPoHeaderId());
@@ -1288,6 +1289,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
         BeanUtils.copyProperties(poHeader, poDTO);
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), poDTO.getTenantId(), "UPDATE");
+        poDTO.setAttributeVarchar37(dataToBpmUrl);
         return poDTO;
     }
 
