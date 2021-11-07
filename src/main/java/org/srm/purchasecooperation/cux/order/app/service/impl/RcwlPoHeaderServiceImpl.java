@@ -1044,6 +1044,11 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         return poHeader;
     }
 
+    @Override
+    public PoDTO submitPlatformDispatch(PoDTO poDTO) {
+//        return !"E-COMMERCE".equals(poDTO.getPoSourcePlatform()) && !"CATALOGUE".equals(poDTO.getPoSourcePlatform()) ? this.submittedProcess(poDTO) : this.submittedProcessForECommerceAndCatalogue(poDTO);
+        return this.submittedProcess(poDTO);
+    }
 
     @Override
     @SneakyThrows
