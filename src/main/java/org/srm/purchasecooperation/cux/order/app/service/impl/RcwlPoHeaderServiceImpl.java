@@ -1218,8 +1218,13 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 //                throw new CommonException("error.order.external.oa_approve_error", new Object[] { poToOaResponse.getResponseMessage() });
 //            }
 
-            //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
-            rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+            //零星申请、其他采购申请、总价合同订单无需占预算
+            if (!"PURCHASE_REQUEST".equals(poDTO.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poDTO.getSourceBillTypeCode())
+                    && !"CONTRACT_ORDER".equals(poDTO.getSourceBillTypeCode())){
+                //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
+                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+            }
+
             //预算占用成功，推送数据到bpm
             String dataToBpmUrl = this.poDataToBpm(poDTO);
             poDTO.setAttributeVarchar37(dataToBpmUrl);
