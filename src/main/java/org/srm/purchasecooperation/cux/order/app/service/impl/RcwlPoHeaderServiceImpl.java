@@ -841,10 +841,15 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         if (poOrderSaveDTO.getPoLineDetailDTOs() != null) {
             Iterator var3 = poOrderSaveDTO.getPoLineDetailDTOs().iterator();
 
+            poOrderSaveDTO.getPoHeaderDetailDTO().getSourceBillTypeCode();
             while(var3.hasNext()) {
                 PoLineDetailDTO poLineDetailDTO = (PoLineDetailDTO)var3.next();
-                //行金额、跨年预算校验
-                checkBudgetDistribution(poLineDetailDTO);
+                //零星申请、其他采购申请、总价合同订单无需占预算
+                if (!"PURCHASE_REQUEST".equals(poLineDetailDTO.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poLineDetailDTO.getSourceBillTypeCode())
+                && !"CONTRACT_ORDER".equals(poLineDetailDTO.getSourceBillTypeCode())){
+                    //行金额、跨年预算校验
+                    checkBudgetDistribution(poLineDetailDTO);
+                }
                 PoLine line = new PoLine();
                 BeanUtils.copyProperties(poLineDetailDTO, line);
                 poLineList.add(line);
@@ -919,7 +924,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 ).build()));
 
         if (CollectionUtils.isEmpty(budgetDistributionsInDB)){
-            throw new CommonException("未维护预算分配数据，请维护后提交！");
+            throw new CommonException("未维护预算分配数据，请维护后保存提交！");
         }
         //校验各年原预算值（手工）是否等于行金额
         BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
