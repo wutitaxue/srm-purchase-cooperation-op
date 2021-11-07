@@ -841,7 +841,6 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         if (poOrderSaveDTO.getPoLineDetailDTOs() != null) {
             Iterator var3 = poOrderSaveDTO.getPoLineDetailDTOs().iterator();
 
-            poOrderSaveDTO.getPoHeaderDetailDTO().getSourceBillTypeCode();
             while(var3.hasNext()) {
                 PoLineDetailDTO poLineDetailDTO = (PoLineDetailDTO)var3.next();
                 //零星申请、其他采购申请、总价合同订单无需占预算
