@@ -172,6 +172,9 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
             }
 
             BeanUtils.copyProperties(contractResultDTO, poDTO, FieldUtils.getExpandFields());
+            //来源合同号，来源合同id
+            poDTO.setAttributeVarchar1(contractResultDTO.getPcNum());
+            poDTO.setAttributeBigint1(contractResultDTO.getPcHeaderId());
             domesticCurrencyCode = this.poHeaderMapper.queryCurrencyByCompanyId(contractResultDTO.getCompanyId());
             if (domesticCurrencyCode != null) {
                 poDTO.setDomesticCurrencyCode(domesticCurrencyCode);
@@ -192,6 +195,7 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
             poDTO.setTaxIncludeAmount((BigDecimal)contractResultDTOList.stream().filter((d) -> {
                 return null != d.getTaxIncludedLineAmount();
             }).map(ContractResultDTO::getTaxIncludedLineAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+
             poDTO.setSourceBillTypeCode("CONTRACT_ORDER_WJ");
             poDTO.setPoLineList(poLineList);
             Long defaultPoTypeId = this.orderTypeService.queryDefaultOrderType(tenantId).getOrderTypeId();
@@ -455,13 +459,13 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
 
         PoLineLocation query = new PoLineLocation();
         query.setPoHeaderId(poHeader.getPoHeaderId());
-        poHeader.stsHandleAfterPoUpdate(this.poLineLocationRepository.select(query));
+//        poHeader.stsHandleAfterPoUpdate(this.poLineLocationRepository.select(query));
         poHeader.handlePrice(this.poHeaderRepository);
         if (isSRM) {
             poHeader.modifyPricePrecisionByCurrencyCode(this.mdmService);
         }
 
-        this.poHeaderRepository.updateOptional(poHeader, new String[]{"amount", "taxIncludeAmount", "statusCode", "cancelledFlag", "closedFlag", "oldStatusCode"});
+        this.poHeaderRepository.updateOptional(poHeader, new String[]{"amount", "taxIncludeAmount"});
         BeanUtils.copyProperties(poHeader, poDto);
         poDto.setPoPartnerList(this.poPartnerRepository.batchInsertOrUpdate(poDto.getPoPartnerList(), poDto.getPoHeaderId(), poDto.getTenantId()));
         this.poProcessActionService.insert(poDto.getPoHeaderId(), "NEW");
