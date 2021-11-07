@@ -522,7 +522,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poLine.setUnitPriceBatch((BigDecimal)Optional.ofNullable(contractResultDTO.getUnitPriceBatch()).orElse(BigDecimal.ONE));
             poLine.setItemCode(contractResultDTO.getItemCode());
             poLine.setChartVersion(contractResultDTO.getChartVersion());
-            poLine.setLineAmount(contractResultDTO.getTaxIncludedLineAmount().divide(BigDecimal.valueOf(1L).add(contractResultDTO.getTaxRate().divide(BigDecimal.valueOf(100L))), 2, 4));
+//            poLine.setLineAmount(contractResultDTO.getTaxIncludedLineAmount().divide(BigDecimal.valueOf(1L).add(contractResultDTO.getTaxRate().divide(BigDecimal.valueOf(100L))), 2, 4));
             poLine.setExchangeRate(contractResultDTO.getExchangeRate());
             poLineList.add(poLine);
         }
