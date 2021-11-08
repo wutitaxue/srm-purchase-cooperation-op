@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -204,16 +205,13 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         // prLine不为空,先计算行金额,表示是采购申请变更
         PrLine prLine = rcwlBudgetDistributionDTO.getPrLine();
-        // 记录是否存在变更
-        Boolean isChanged = Boolean.FALSE;
         if (!ObjectUtils.isEmpty(prLine)) {
             prLine.countLineAmount();
             // 判断是否存在变更过行金额和需求开始/结束日期
             List<PrLine> prLines = prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo(PrLine.FIELD_PR_HEADER_ID, rcwlBudgetDistributionDTO.getPrHeaderId())
                     .andEqualTo(PrLine.FIELD_PR_LINE_ID, rcwlBudgetDistributionDTO.getPrLineId())
                     .andEqualTo(PrLine.FIELD_TENANT_ID, tenantId)).build());
-            if (prLine.getLineAmount().compareTo(prLines.get(0).getLineAmount()) != 0 || prLine.getAttributeDate1().compareTo(prLines.get(0).getAttributeDate1()) != 0 || prLine.getNeededDate().compareTo(prLines.get(0).getNeededDate()) != 0) {
-                isChanged = Boolean.TRUE;
+            if (prLine.getLineAmount().setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP).compareTo(prLines.get(0).getLineAmount().setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP)) != 0 || !prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(prLines.get(0).getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM"))) || !prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(prLines.get(0).getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")))) {
                 rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
                 rcwlBudgetDistributionDTO.setNeededDate(prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 rcwlBudgetDistributionDTO.setAttributeDate1(prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
