@@ -200,13 +200,12 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     )
     @Override
     public PrHeader updatePrHeader(PrHeader prHeader) {
-        LOGGER.debug("========================申请行2:{}",prHeader.getPrLineList());
+        LOGGER.debug("========================申请行1:{}",prHeader.getPrLineList());
         // 记录刚传入的申请行信息,防止后面对其有变更的操作
         List<PrLine> changePrLineList = new ArrayList<>(prHeader.getPrLineList().size());
         prHeader.getPrLineList().forEach(prLine -> {
             PrLine tempPrLine = new PrLine();
-            net.sf.cglib.beans.BeanCopier beanCopier = net.sf.cglib.beans.BeanCopier.create(PrLine.class, PrLine.class, false);
-            beanCopier.copy(prLine, tempPrLine, null);
+            BeanUtils.copyProperties(prLine, tempPrLine);
             changePrLineList.add(tempPrLine);
         });
         LOGGER.debug(LOG_MSG_USER, DetailsHelper.getUserDetails(), JSON.toJSONString(Arrays.asList(prHeader)));
