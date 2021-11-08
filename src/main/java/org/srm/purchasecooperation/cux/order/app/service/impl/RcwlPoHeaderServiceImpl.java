@@ -1398,7 +1398,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poToBpmLineDTO.setTax(line.getTaxDescription());
         poToBpmLineDTO.setEnteredTaxIncludedPrice(String.valueOf(line.getEnteredTaxIncludedPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmLineDTO.setTaxInclueLineAmount(String.valueOf(line.getTaxIncludedLineAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
-        poToBpmLineDTO.setInvOrganizationId(line.getInvOrganizationName());
+        poToBpmLineDTO.setInvOrganizationId(line.getInventoryName());
         poToBpmLineDTO.setAttributeVarchar21(line.getBudgetAccountName());
         poToBpmLineDTO.setCostId(costName);
         poToBpmLineDTO.setWbs(wbsName);

@@ -25,9 +25,12 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @ApiModelProperty("税率描述")
     @Transient
     private String taxDescription;
-    @ApiModelProperty("库存组织名称")
+//    @ApiModelProperty("库存组织名称")
+//    @Transient
+//    private String invOrganizationName;
+    @ApiModelProperty("库房名称")
     @Transient
-    private String invOrganizationName;
+    private String inventoryName;
     @ApiModelProperty("协议名称")
     @Transient
     private String pcName;
@@ -77,13 +80,13 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     }
 
     @Override
-    public String getInvOrganizationName() {
-        return invOrganizationName;
+    public String getInventoryName() {
+        return inventoryName;
     }
 
     @Override
-    public void setInvOrganizationName(String invOrganizationName) {
-        this.invOrganizationName = invOrganizationName;
+    public void setInventoryName(String inventoryName) {
+        this.inventoryName = inventoryName;
     }
 
     public String getPcName() {
