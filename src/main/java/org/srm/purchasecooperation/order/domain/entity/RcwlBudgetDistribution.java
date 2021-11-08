@@ -45,6 +45,10 @@ public class RcwlBudgetDistribution extends AuditDomain {
     public static final String FIELD_BUDGET_DIS_GAP = "budgetDisGap";
     public static final String FIELD_TENANT_ID = "tenantId";
 
+    /**
+     * 保留小数位
+     */
+    public static final  int SIX = 6;
     //
     // 业务方法(按public protected private顺序排列)
     // ------------------------------------------------------------------------------

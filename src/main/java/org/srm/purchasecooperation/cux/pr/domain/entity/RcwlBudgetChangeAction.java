@@ -41,6 +41,10 @@ public class RcwlBudgetChangeAction extends AuditDomain {
     public static final String FIELD_BUDGET_DIS="budget_dis";
     public static final  String OLD = "old";
     public static final  String NEW = "new";
+    /**
+     * 保留小数位
+     */
+    public static final  int SIX = 6;
     @ApiModelProperty("表ID，主键")
     @Id
     @GeneratedValue

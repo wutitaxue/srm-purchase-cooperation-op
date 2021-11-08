@@ -21,10 +21,12 @@ import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 import org.srm.purchasecooperation.order.infra.mapper.RcwlBudgetDistributionMapper;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +48,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     private PoLineRepository poLineRepository;
     @Autowired
     private RcwlBudgetDistributionMapper rcwlBudgetDistributionMapper;
+    @Autowired
+    private PrLineRepository prLineRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -200,9 +204,20 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
         // prLine不为空,先计算行金额,表示是采购申请变更
         PrLine prLine = rcwlBudgetDistributionDTO.getPrLine();
-        if(!ObjectUtils.isEmpty(prLine)){
+        // 记录是否存在变更
+        Boolean isChanged = Boolean.FALSE;
+        if (!ObjectUtils.isEmpty(prLine)) {
             prLine.countLineAmount();
+            // 判断是否存在变更过行金额和需求开始/结束日期
+            List<PrLine> prLines = prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo(PrLine.FIELD_PR_HEADER_ID, rcwlBudgetDistributionDTO.getPrHeaderId())
+                    .andEqualTo(PrLine.FIELD_PR_LINE_ID, rcwlBudgetDistributionDTO.getPrLineId())
+                    .andEqualTo(PrLine.FIELD_TENANT_ID, tenantId)).build());
+            if (prLine.getLineAmount().compareTo(prLines.get(0).getLineAmount()) != 0 || prLine.getAttributeDate1().compareTo(prLines.get(0).getAttributeDate1()) != 0 || prLine.getNeededDate().compareTo(prLines.get(0).getNeededDate()) != 0) {
+                isChanged = Boolean.TRUE;
+            }
             rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
+            rcwlBudgetDistributionDTO.setNeededDate(prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            rcwlBudgetDistributionDTO.setAttributeDate1(prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
             rcwlBudgetDistributionDTO.setChangeSubmit(BaseConstants.Flag.YES);
         }
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
@@ -215,6 +230,9 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             }
             rcwlBudgetDistributionDTO.setBudgetDisYears(yearPrLineYears);
         });
+        if (!isChanged) {
+            rcwlBudgetDistributionDTO.setChangeSubmit(null);
+        }
         // 根据采购申请头、行id和申请行的年份集合去查询跨年预算的值
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionRealValues =
                 rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, rcwlBudgetDistributionDTO);
@@ -270,7 +288,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 changeBudgetDistributions.add(RcwlBudgetDistribution.builder().prHeaderId(rcwlBudgetDistributionDTO.getPrHeaderId()).prLineId(rcwlBudgetDistributionDTO.getPrLineId()).budgetDisGap(rcwlBudgetDistributionDTO.getBudgetDisGap()).budgetDisYear(rcwlBudgetDistributionDTO.getBudgetDisYear()).budgetDisAmount(org.springframework.util.CollectionUtils.isEmpty(budgetDistributions) && ObjectUtils.isEmpty(rcwlBudgetDistributionDTO.getBudgetDisAmount()) ? rcwlBudgetDistributionDTO.getAutoCalculateBudgetDisAmount() : rcwlBudgetDistributionDTO.getBudgetDisAmount()).tenantId(tenantId).build());
             });
             // 判断行金额和实际分摊金额总值是否相等,不相等---可能是人为调整有问题,或者金额变化了
-            if (rcwlBudgetDistributionDTOS.get(0).getLineAmount().compareTo(rcwlBudgetDistributionDTOS.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0) {
+            if (rcwlBudgetDistributionDTOS.get(0).getLineAmount().setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP).compareTo(rcwlBudgetDistributionDTOS.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0) {
                 throw new CommonException("error.pr.line.amount.budget.error");
             }
             // 总体逻辑:已有跨年预算,删除->重新插入.  对于校验的部分,提交那里会限制住
