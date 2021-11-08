@@ -208,7 +208,13 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         prHeader.validUniqueIndex(this.prHeaderRepository);
         prHeader.setLocalCurrency(this.prHeaderRepository.selectPrLocalCurrencyCode(prHeader.getTenantId(), prHeader.getCompanyId()));
         // 记录刚传入的申请行信息,防止后面对其有变更的操作
-        List<PrLine> changePrLineList = prHeader.getPrLineList();
+        List<PrLine> changePrLineList = new ArrayList<>(prHeader.getPrLineList().size());
+        prHeader.getPrLineList().forEach(prLine -> {
+            PrLine tempPrLine = new PrLine();
+            net.sf.cglib.beans.BeanCopier beanCopier = net.sf.cglib.beans.BeanCopier.create(PrLine.class, PrLine.class, false);
+            beanCopier.copy(prLine, tempPrLine, null);
+            changePrLineList.add(tempPrLine);
+        });
         // 查询更新数之前的行数据
         List<PrLine> originPrLines = prLineRepository.selectByCondition(Condition.builder(PrLine.class).andWhere(Sqls.custom().andEqualTo(PrLine.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId())
                 .andEqualTo(PrLine.FIELD_TENANT_ID, prHeader.getTenantId())).build());
@@ -258,6 +264,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             this.prActionService.headerDataChangeDetection(oldPrHeaderVO, newPrHeaderVO);
         }
         // -------------------------add by wangjie 采购申请头保存增加预算分摊自动生成预算行逻辑 begin--------------------------
+        LOGGER.debug("========================申请行:{}",prHeader.getPrLineList());
         prHeader.getPrLineList().forEach(prLine -> {
             // 新增行：保存前端传的所有ID为空的需求行数据，并重新生成预算分摊数据插表
             // 更新行：判断数量，不含税单价，需求开始、结束日期的年，月是否有变化，有变化则重新生成预算分摊数据插表，无变化则不做操作
