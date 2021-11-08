@@ -8,6 +8,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import javassist.Loader;
+import org.hzero.core.cache.ProcessCacheValue;
 import org.hzero.core.util.Results;
 import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -30,6 +31,7 @@ import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.PurchaseCompanyVo;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
+import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.web.annotation.Tenant;
 
@@ -59,6 +61,8 @@ public class RCWLPrLineController {
     private RCWLPrLineRepository rcwlPrLineRepository;
     @Autowired
     private RcwlCompanyService rcwlCompanyService;
+    @Autowired
+    private PrLineRepository prLineRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(Loader.class);
 
@@ -146,4 +150,15 @@ public class RCWLPrLineController {
         return Results.success(rcwlPurchaseCompanyVo);
     }
 
+    @ApiOperation("采购申请工作台-申请行更新")
+    @Permission(
+            level = ResourceLevel.ORGANIZATION
+    )
+    @PutMapping({"/purchase-request/line/update"})
+    @ProcessCacheValue
+    public ResponseEntity<PrLine> updateLineInfo(@PathVariable("organizationId") Long tenantId, @RequestBody PrLine prLine) {
+        SecurityTokenHelper.validToken(prLine);
+        prLineRepository.updateByPrimaryKey(prLine);
+        return Results.success(prLine);
+    }
 }
