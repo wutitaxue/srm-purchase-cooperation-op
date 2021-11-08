@@ -55,8 +55,11 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             Map<Integer, RcwlBudgetDistribution> rcwlBudgetDistributionYearMap = rcwlBudgetDistributions.stream().collect(Collectors.toMap(RcwlBudgetDistribution::getBudgetDisYear, Function.identity()));
             // 如果变更的预算和当前已有的预算、并且年份一致的话,则跳过保存
             if (rcwlBudgetChangeActions.size() == rcwlBudgetDistributions.size()) {
+                // 1、年份不相等算变更；2、占用预算不等于行金额算变更；3、找不到对应年的跨年预算算变更；4、对应年的跨年预算金额对应不上算变更
                 long notConsistentCount = rcwlBudgetChangeActions.stream().filter(rcwlBudgetChangeAction -> !rcwlBudgetDistributionYearMap.containsKey(rcwlBudgetChangeAction.getBudgetDisYear())
-                        || rcwlBudgetChangeAction.getLineAmount().compareTo(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0).count();
+                        || rcwlBudgetChangeAction.getLineAmount().compareTo(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0
+                        || ObjectUtils.isEmpty(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisYear()))
+                        || rcwlBudgetChangeAction.getBudgetDisAmount().compareTo(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisYear()).getBudgetDisAmount())!=0).count();
                 if (notConsistentCount <= 0) {
                     return;
                 }
