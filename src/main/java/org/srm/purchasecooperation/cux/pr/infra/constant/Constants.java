@@ -61,6 +61,8 @@ public class Constants {
         public static final String REJECTED = "REJECTED";
         public static final String CANCEL = "CANCEL";
         public static final String PANDING = "PENDING";
+        //变更中
+        public static final String CHANGE = "CHANGE";
 
 
         private PlanHeaderApprovalStatus() {
