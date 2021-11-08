@@ -258,6 +258,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                     Integer finalI = i;
                     BigDecimal budgetDisAmount = rcwlBudgetDistributionRealValues.stream().filter(rcwlBudgetDistributionRealValue -> rcwlBudgetDistributionDTO.getPrHeaderId().equals(rcwlBudgetDistributionRealValue.getPrHeaderId()) && rcwlBudgetDistributionDTO.getPrLineId().equals(rcwlBudgetDistributionRealValue.getPrLineId()) && finalI.equals(rcwlBudgetDistributionRealValue.getBudgetDisYear())).findFirst().orElse(new RcwlBudgetDistributionDTO()).getBudgetDisAmount();
                     rcwlBudgetDistributionResult.setBudgetDisAmount(budgetDisAmount);
+                } else {
+                    rcwlBudgetDistributionResult.setBudgetDisAmount(rcwlBudgetDistributionResult.getAutoCalculateBudgetDisAmount());
                 }
                 // 强制行金额显示六位
                 rcwlBudgetDistributionResult.setLineAmount(rcwlBudgetDistributionResult.getLineAmount().setScale(6, BigDecimal.ROUND_HALF_UP));
