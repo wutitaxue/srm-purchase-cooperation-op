@@ -230,9 +230,6 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             }
             rcwlBudgetDistributionDTO.setBudgetDisYears(yearPrLineYears);
         });
-        if (!isChanged) {
-            rcwlBudgetDistributionDTO.setChangeSubmit(null);
-        }
         // 根据采购申请头、行id和申请行的年份集合去查询跨年预算的值
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionRealValues =
                 rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, rcwlBudgetDistributionDTO);
