@@ -906,6 +906,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void rejectRollbackBudget (Long tenantId, PrHeader oldPrHeader,  List<PrLine> prLineList){
+        logger.debug("============================>还原预算分摊开始<==========================================");
         // ------ add by wangjie 审批拒绝时，需根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为old的数据写入scux_rcwl_budget_distribution begin ---
         // 查询变更预算原数据
         RcwlBudgetChangeAction rcwlBudgetChangeActionQuery = new RcwlBudgetChangeAction();
@@ -938,6 +939,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         List<PrLine> rcwlPrLineHisNeedUpdate = rcwlPrLineHisRepository.selectList(rcwlPrLineHis);
         prLineRepository.batchUpdateByPrimaryKey(rcwlPrLineHisNeedUpdate);
         // ---------------------------- add by wangjie 将采购申请历史表还原 end -----------------------
+        logger.debug("============================>还原预算分摊结束<==========================================");
     }
 
 }
