@@ -214,11 +214,11 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                     .andEqualTo(PrLine.FIELD_TENANT_ID, tenantId)).build());
             if (prLine.getLineAmount().compareTo(prLines.get(0).getLineAmount()) != 0 || prLine.getAttributeDate1().compareTo(prLines.get(0).getAttributeDate1()) != 0 || prLine.getNeededDate().compareTo(prLines.get(0).getNeededDate()) != 0) {
                 isChanged = Boolean.TRUE;
+                rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
+                rcwlBudgetDistributionDTO.setNeededDate(prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionDTO.setAttributeDate1(prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionDTO.setChangeSubmit(BaseConstants.Flag.YES);
             }
-            rcwlBudgetDistributionDTO.setLineAmount(prLine.getLineAmount());
-            rcwlBudgetDistributionDTO.setNeededDate(prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-            rcwlBudgetDistributionDTO.setAttributeDate1(prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-            rcwlBudgetDistributionDTO.setChangeSubmit(BaseConstants.Flag.YES);
         }
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
         // 根据采购申请头、行id计算跨年预算的值
