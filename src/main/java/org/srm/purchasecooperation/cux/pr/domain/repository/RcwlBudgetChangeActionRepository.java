@@ -27,4 +27,12 @@ public interface RcwlBudgetChangeActionRepository extends BaseRepository<RcwlBud
      * @return 返回值
      */
     RcwlBudgetChangeAction selectByPrimary(Long budgetChangeId);
+
+    /**
+     * 选择申请的最大action_id
+     *
+     * @param rcwlBudgetChangeAction
+     * @return
+     */
+    List<RcwlBudgetChangeAction> selectMaxPrActionData(RcwlBudgetChangeAction rcwlBudgetChangeAction);
 }

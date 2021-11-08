@@ -31,7 +31,12 @@
         spl.pr_header_id,
         spl.item_code,
         spl.item_name,
-        spl.line_amount,
+        <if test="lineAmount != null">
+            #{lineAmount} AS line_amount,
+        </if>
+        <if test="lineAmount == null">
+            spl.line_amount,
+        </if>
         <if test="attributeDate1 != null">
             #{attributeDate1} AS attribute_date1,
             DATE_FORMAT( #{attributeDate1}, '%Y' ) attribute_date1_year,
@@ -64,15 +69,15 @@
         WHERE 1 = 1
         <choose>
             <when test="neededDate != null and attributeDate1 != null">
-                AND ! ISNULL( #{neededDate} )
-                AND ! ISNULL( #{attributeDate1} )
+                AND !ISNULL( #{neededDate} )
+                AND !ISNULL( #{attributeDate1} )
                 <if test="changeSubmit == null or changeSubmit !=1">
                     AND DATE_FORMAT( #{neededDate}, '%Y' ) != DATE_FORMAT( #{attributeDate1},'%Y' )
                 </if>
             </when>
             <otherwise>
-                AND ! ISNULL( spl.needed_date )
-                AND ! ISNULL( spl.attribute_date1 )
+                AND !ISNULL( spl.needed_date )
+                AND !ISNULL( spl.attribute_date1 )
                 <if test="changeSubmit == null or changeSubmit !=1">
                     AND DATE_FORMAT( spl.needed_date, '%Y' ) != DATE_FORMAT( spl.attribute_date1,'%Y' )
                 </if>
@@ -191,11 +196,20 @@
         WHERE
             pr_header_id = #{prHeaderId}
         AND tenant_id = #{tenantId}
+        <if test="prLineId != null">
+            AND pr_line_id = #{prLineId}
+        </if>
         <if test="prLineIds != null and prLineIds.size() > 0">
             AND pr_line_id IN
             <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
                 #{prLineId}
             </foreach>
+        </if>
+        <if test="enabledFlag != null">
+            AND enabled_flag = #{enabledFlag}
+        </if>
+        <if test="changeSubmit == 1 and budgetGroup != null">
+            AND budget_group = #{budgetGroup}
         </if>
     </delete>
 </mapper>

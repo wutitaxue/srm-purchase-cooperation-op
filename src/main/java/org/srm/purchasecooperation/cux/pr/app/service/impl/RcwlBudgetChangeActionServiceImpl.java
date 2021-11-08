@@ -22,7 +22,6 @@ import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributio
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -54,9 +53,13 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectByCondition(Condition.builder(RcwlBudgetDistribution.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetDistribution.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetDistribution.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetDistribution.FIELD_TENANT_ID, tenantId)).build());
             Map<Integer, RcwlBudgetDistribution> rcwlBudgetDistributionYearMap = rcwlBudgetDistributions.stream().collect(Collectors.toMap(RcwlBudgetDistribution::getBudgetDisYear, Function.identity()));
+            // 如果变更的预算和当前已有的预算、并且年份一致的话,则跳过保存
             if (rcwlBudgetChangeActions.size() == rcwlBudgetDistributions.size()) {
-                long notConsistentCount = rcwlBudgetChangeActions.stream().filter(rcwlBudgetChangeAction -> !rcwlBudgetChangeAction.getBudgetDisAmount().equals(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisYear()).getBudgetDisAmount())
-                        || !rcwlBudgetChangeAction.getBudgetDisGap().equals(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisGap()).getBudgetDisAmount())).count();
+                // 1、年份不相等算变更；2、占用预算不等于行金额算变更；3、找不到对应年的跨年预算算变更；4、对应年的跨年预算金额对应不上算变更
+                long notConsistentCount = rcwlBudgetChangeActions.stream().filter(rcwlBudgetChangeAction -> !rcwlBudgetDistributionYearMap.containsKey(rcwlBudgetChangeAction.getBudgetDisYear())
+                        || rcwlBudgetChangeAction.getLineAmount().compareTo(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0
+                        || ObjectUtils.isEmpty(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisYear()))
+                        || rcwlBudgetChangeAction.getBudgetDisAmount().compareTo(rcwlBudgetDistributionYearMap.get(rcwlBudgetChangeAction.getBudgetDisYear()).getBudgetDisAmount())!=0).count();
                 if (notConsistentCount <= 0) {
                     return;
                 }
@@ -68,19 +71,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             if (rcwlBudgetChangeActions.get(0).getLineAmount().compareTo(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0) {
                 throw new CommonException("error.pr.line.amount.budget.error");
             }
-            // 筛选budget_group为old的条数
-            long oldCount = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetChangeAction -> RcwlBudgetChangeAction.OLD.equals(rcwlBudgetChangeAction.getBudgetGroup())).count();
-            // budget_group为old的数据，若存在，则不操作，若不存在，则将scux_rcwl_budget_distribution表中的pr_header_id+pr_line_id的数据写入scux_rcwl_budget_change_action表，budget_group为old
-            if (oldCount <= 0) {
-                List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsOld = new ArrayList<>(rcwlBudgetDistributions.size());
-                rcwlBudgetDistributions.forEach(rcwlBudgetDistribution -> {
-                    RcwlBudgetChangeAction rcwlBudgetChangeAction = new RcwlBudgetChangeAction();
-                    BeanUtils.copyProperties(rcwlBudgetDistribution, rcwlBudgetChangeAction);
-                    rcwlBudgetChangeActionsOld.add(rcwlBudgetChangeAction);
-                });
-                rcwlBudgetChangeActionsOld.forEach(rcwlBudgetChangeAction -> rcwlBudgetChangeAction.setBudgetGroup(RcwlBudgetChangeAction.OLD));
-                rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActionsOld);
-            }
+
             // 筛选budget_group为new的条数
             List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNew = rcwlBudgetChangeActionsNotEnableds.stream().filter(rcwlBudgetChangeAction -> RcwlBudgetChangeAction.NEW.equals(rcwlBudgetChangeAction.getBudgetGroup())).collect(Collectors.toList());
             // budget_group为new的数据，先全部删除，并将当前预算分摊界面的数据存至scux_rcwl_budget_change_action

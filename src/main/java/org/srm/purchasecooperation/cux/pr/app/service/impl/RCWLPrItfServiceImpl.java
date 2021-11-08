@@ -841,12 +841,13 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void rejectRollbackBudget (Long tenantId, PrHeader oldPrHeader,  List<PrLine> prLineList){
+        logger.debug("============================>还原预算分摊开始<==========================================");
         // ------ add by wangjie 审批拒绝时，需根据pr_header_id+pr_line_id删除scux_rcwl_budget_distribution的数据，并将scux_rcwl_budget_change_action中budget_group为old的数据写入scux_rcwl_budget_distribution begin ---
         // 查询变更预算原数据
-        List<RcwlBudgetChangeAction> rcwlBudgetChangeActions = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom()
-                .andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, oldPrHeader.getPrHeaderId())
-                .andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId)
-                .andEqualTo(RcwlBudgetChangeAction.FIELD_BUDGET_GROUP, RcwlBudgetChangeAction.OLD)).build());
+        RcwlBudgetChangeAction rcwlBudgetChangeActionQuery = new RcwlBudgetChangeAction();
+        rcwlBudgetChangeActionQuery.setPrHeaderId(oldPrHeader.getPrHeaderId());
+        rcwlBudgetChangeActionQuery.setTenantId(tenantId);
+        List<RcwlBudgetChangeAction> rcwlBudgetChangeActions = rcwlBudgetChangeActionRepository.selectMaxPrActionData(rcwlBudgetChangeActionQuery);
         List<Long> prLineIds = prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList());
         // 需要删除的预算数据
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDelete = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(oldPrHeader.getPrHeaderId()).prLineIds(prLineIds).build());
@@ -873,6 +874,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         List<PrLine> rcwlPrLineHisNeedUpdate = rcwlPrLineHisRepository.selectList(rcwlPrLineHis);
         prLineRepository.batchUpdateByPrimaryKey(rcwlPrLineHisNeedUpdate);
         // ---------------------------- add by wangjie 将采购申请历史表还原 end -----------------------
+        logger.debug("============================>还原预算分摊结束<==========================================");
     }
 
 }
