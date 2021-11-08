@@ -21,7 +21,7 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActi
 import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -68,7 +68,7 @@ public class RcwlBudgetChangeActionServiceImpl implements RcwlBudgetChangeAction
             List<RcwlBudgetChangeAction> rcwlBudgetChangeActionsNotEnableds = rcwlBudgetChangeActionRepository.selectByCondition(Condition.builder(RcwlBudgetChangeAction.class).andWhere(Sqls.custom().andEqualTo(RcwlBudgetChangeAction.FIELD_PR_HEADER_ID, rcwlBudgetChangeActions.get(0).getPrHeaderId())
                     .andEqualTo(RcwlBudgetChangeAction.FIELD_PR_LINE_ID, rcwlBudgetChangeActions.get(0).getPrLineId()).andEqualTo(RcwlBudgetChangeAction.FIELD_TENANT_ID, tenantId).andEqualTo(RcwlBudgetChangeAction.FIELD_ENABLED_FLAG, BaseConstants.Flag.NO)).build());
             // 判断跨年分摊金额表中实际分摊金额总值和传入的跨年分摊金额的实际分摊金额总值是否相等,不相等报错
-            if (rcwlBudgetChangeActions.get(0).getLineAmount().compareTo(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0) {
+            if (rcwlBudgetChangeActions.get(0).getLineAmount().setScale(RcwlBudgetChangeAction.SIX, RoundingMode.HALF_UP).compareTo(rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add)) != 0) {
                 throw new CommonException("error.pr.line.amount.budget.error");
             }
 
