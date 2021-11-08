@@ -584,10 +584,16 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
         prLineVOS.forEach(prLineVO -> {
-            PrLine prLine = new PrLine();
-            BeanUtils.copyProperties(prLineVO, prLine);
-            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, null);
-            rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+            //按照预算单在预算拆分表scux_rcwl_budget_distribution中pr_line_id有几条数据进行拆分成几组
+            List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetbudgetDisYear(prLineVO.getPrLineId());
+            for(int year : budgetDisYears) {
+                PrLine prLine = new PrLine();
+                BeanUtils.copyProperties(prLineVO, prLine);
+                RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, null);
+                StringBuffer sb = new StringBuffer(String.valueOf(year));
+                rcwlItfPrLineDetailDTO.setYsdate(sb.append("-01-01").toString());
+                rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
+            }
         });
         rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
         rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
