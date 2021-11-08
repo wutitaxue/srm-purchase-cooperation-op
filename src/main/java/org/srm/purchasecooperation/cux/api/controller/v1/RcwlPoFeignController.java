@@ -42,8 +42,7 @@ public class RcwlPoFeignController {
     @ApiOperation(value = "采购订单BPM审批通过")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/submit-to-bpm-approved")
-    public ResponseEntity<Void> poBpmApproved( @PathVariable("organizationId") Long tenantId, @RequestParam("poNum") String poNum,
-                                               @RequestParam("procInstID") String procInstID,@RequestParam("newProcURL") String newProcURL) {
+    public ResponseEntity<Void> poBpmApproved(@PathVariable("organizationId") Long tenantId, @RequestParam("poNum") String poNum) {
         rcwlPoSubmitBpmService.rcwlSubmitBpmApproved(tenantId, poNum);
         return Results.success();
     }
