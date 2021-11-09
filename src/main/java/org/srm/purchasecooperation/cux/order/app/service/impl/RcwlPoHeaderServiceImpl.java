@@ -36,10 +36,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.exception.TaskNotExistException;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.event.service.sender.EventSender;
+import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.message.MessageHelper;
 import org.srm.boot.platform.message.entity.SpfmMessageSender;
@@ -81,8 +83,10 @@ import org.srm.purchasecooperation.pr.api.dto.PrHeaderChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.PrLineChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.ProductItemRefDTO;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
+import org.srm.purchasecooperation.pr.domain.entity.AccountAssignType;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.repository.AccountAssignTypeLineRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
@@ -212,6 +216,14 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
     @Autowired
     private RcwlBudgetDistributionService rcwlBudgetDistributionService;
+    @Autowired
+    private PoPriceChangeRepository poPriceChangeRepository;
+    @Autowired
+    private OrderTypeRepository orderTypeRepository;
+    @Autowired
+    private GeneratorPoByPcDomainService generatorPoByPcDomainService;
+    @Autowired
+    private AccountAssignTypeLineRepository accountAssignTypeLineRepository;
 
     @Autowired
     private RcwlPoBudgetItfService rcwlPoBudgetItfService;
@@ -1680,6 +1692,218 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             }
         }
         return poDTO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public PoDTO updatePoHeaderAndPoLineS(PoOrderSaveDTO poOrderSaveDTO) {
+        log.info("老价格库");
+        PoHeader poHeader = new PoHeader();
+        PoDTO poDTO = new PoDTO();
+        if (poOrderSaveDTO.getErrorMsg() != null) {
+            poDTO.setErrorMsg(poOrderSaveDTO.getErrorMsg());
+        }
+
+        List<PoLine> poUpdateLineList = new ArrayList();
+        List<PoLine> poInsertLineList = new ArrayList();
+        List<PoLineLocation> updateOrDeleteLineLocationList = new ArrayList();
+        List<PoLineLocation> deleteLocationList = new ArrayList();
+        List<PoLineLocation> updateLocationList = new ArrayList();
+        poOrderSaveDTO.getPoHeaderDetailDTO().setModifyablePriceFlag(this.poPriceChangeRepository.getModifiablePriceFlag(poOrderSaveDTO.getPoHeaderDetailDTO().getTenantId(), poOrderSaveDTO.getPoHeaderDetailDTO().getPoSourcePlatform()));
+        poOrderSaveDTO.setMdmService(this.mdmService);
+        poOrderSaveDTO.getPoLineDetailDTOs().stream().forEach((poLineDetailDTO) -> {
+            if (poLineDetailDTO.getBenchmarkPriceType() == null) {
+                poLineDetailDTO.setBenchmarkPriceType(this.getBenchPriceCnf(poOrderSaveDTO.getPoHeaderDetailDTO()));
+            }
+
+        });
+        poOrderSaveDTO.initPoLineAndPoHeader(this.customizeSettingHelper, this.poHeaderRepository, poHeader, poUpdateLineList, poInsertLineList, updateOrDeleteLineLocationList, this.prLineRepository);
+        this.initPoItemBomByUpdateLine(poUpdateLineList);
+        this.poValidateDomainService.validatePoLine(poInsertLineList);
+        this.poValidateDomainService.validatePoLine(poUpdateLineList);
+        PoHeader poHeaderInDB = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeader);
+        this.poValidateDomainService.validateSupplyAbility(poHeader, poUpdateLineList);
+        if (!this.judgeSupplierFrozen(poHeader)) {
+            throw new CommonException("error.order.supplier_have_benn_frozen", new Object[0]);
+        } else {
+            OrderType orderType = (OrderType)this.orderTypeRepository.selectByPrimaryKey(poOrderSaveDTO.getPoHeaderDetailDTO().getPoTypeId());
+            if (orderType != null && orderType.getReturnOrderFlag() == 1) {
+                poUpdateLineList.forEach((poLinex) -> {
+                    poLinex.setReturnedFlag(1);
+                });
+                poInsertLineList.forEach((poLinex) -> {
+                    poLinex.setReturnedFlag(1);
+                });
+            }
+
+            boolean availableUpdate = "E-COMMERCE".equals(poHeaderInDB.getPoSourcePlatform()) && "PURCHASE_REQUEST".equals(poHeaderInDB.getSourceBillTypeCode());
+            if (availableUpdate) {
+                poHeaderInDB.setPoTypeId(poHeader.getPoTypeId());
+                poHeaderInDB.setRemark(poHeader.getRemark());
+                BeanUtils.copyProperties(poHeaderInDB, poDTO);
+                this.setPoLineDomesticInfo(poUpdateLineList, poHeaderInDB);
+                this.poLineLocationRepository.batchUpdateOptional(updateOrDeleteLineLocationList, new String[]{"remark"});
+                this.poHeaderRepository.updateOptional(poHeaderInDB, new String[]{"poTypeId", "remark", "domesticAmount", "domesticCurrencyCode", "domesticTaxIncludeAmount"});
+                this.poHeaderRepository.updateOptional(poHeaderInDB, new String[]{"poTypeId", "remark"});
+                poUpdateLineList.forEach((poLinex) -> {
+                    poLinex.modifyPricePrecisionByCurrencyCode(this.mdmService, poHeaderInDB.getDomesticCurrencyCode());
+                });
+                this.poLineRepository.batchUpdateOptional(poUpdateLineList, new String[]{"itemId", "itemCode", "itemName", "departmentId", "clearOrganizationId", "copeOrganizationId", "accountAssignTypeId", "accountSubjectId", "accountSubjectNum", "costId", "costCode", "wbsCode", "wbs", "priceContractFlag", "returnedFlag", "tax_included_line_amount", "line_amount", "domesticLineAmount", "domesticTaxIncludedLineAmount", "domesticTaxIncludedPrice", "domesticUnitPrice", "exchangeRate", "projectCategory"});
+                return poDTO;
+            } else {
+                Integer tieredPricingSetting = (Integer)this.customizeSettingHelper.queryBySettingCodeAndParse(poHeader.getTenantId(), "010203", Integer::parseInt);
+                Integer modifyPricingSetting = (Integer)this.customizeSettingHelper.queryBySettingCodeAndParse(poHeader.getTenantId(), "010216", Integer::parseInt);
+                if (BaseConstants.Flag.NO.equals(tieredPricingSetting) && !"SRM".equals(poHeader.getPoSourcePlatform()) && !"SHOP".equals(poHeader.getPoSourcePlatform()) && BaseConstants.Flag.NO.equals(modifyPricingSetting)) {
+                    poUpdateLineList.forEach((poLinex) -> {
+                        poLinex.setUnitPrice((BigDecimal)null);
+                    });
+                }
+
+                if (CollectionUtils.isNotEmpty(updateOrDeleteLineLocationList)) {
+                    updateOrDeleteLineLocationList.forEach((pl) -> {
+                        if (BaseConstants.Flag.YES.equals(pl.getDeleteFlag())) {
+                            deleteLocationList.add(pl);
+                        } else {
+                            updateLocationList.add(pl);
+                        }
+
+                    });
+                }
+
+                Iterator var18 = poInsertLineList.iterator();
+
+                while(var18.hasNext()) {
+                    PoLine poLine = (PoLine)var18.next();
+                    poLine.setModifyPriceFlag(0);
+                    if (poLine.getPriceLibraryId() != null) {
+                        BigDecimal unitPrice = this.poHeaderRepository.selectPoLinePriceLibraryId(poLine.getPriceLibraryId());
+                        if (Objects.nonNull(unitPrice)) {
+                            poLine.setModifyPriceFlag(poLine.getUnitPrice().compareTo(unitPrice));
+                        }
+
+                        if (poOrderSaveDTO.getPoHeaderDetailDTO().getModifyablePriceFlag() < 1 && poLine.getModifyPriceFlag() > 0) {
+                            throw new CommonException("error.order.change_unreasonable", new Object[0]);
+                        }
+                    }
+
+                    if (!ObjectUtils.isEmpty(poLine.getPrLineId()) && poLine.getPriceLibraryId() == null && "CATALOGUE".equals(poHeader.getPoSourcePlatform())) {
+                        PrLine prLine = (PrLine)this.prLineRepository.selectByPrimaryKey(poLine.getPrLineId());
+                        if (!ObjectUtils.isEmpty(prLine.getUnitPrice())) {
+                            poLine.setModifyPriceFlag(poLine.getUnitPrice().compareTo(prLine.getUnitPrice()));
+                        }
+                    }
+                }
+
+                if (poHeaderInDB.isByErpOrSrmPr()) {
+                    String quantityValidate = this.customizeSettingHelper.queryBySettingCode(poHeader.getTenantId(), "010224");
+                    if (quantityValidate != null && quantityValidate.contains("CONTRACT")) {
+                        this.generatorPoByPcDomainService.holdPc(poUpdateLineList, poHeaderInDB.getTenantId());
+                    }
+
+                    this.generatorPoByPrDomainService.changePrQuantity(poUpdateLineList, poHeaderInDB);
+                }
+
+                List<Long> itemIds = new ArrayList();
+                poInsertLineList.forEach((poLineDTO) -> {
+                    itemIds.add(poLineDTO.getItemId());
+                });
+                List<ItemListDTO> itemListDTOS = this.poHeaderMapper.selectItemCategoryList(poHeader.getTenantId(), itemIds);
+                if (CollectionUtils.isNotEmpty(itemListDTOS)) {
+                    poInsertLineList.stream().filter((item) -> {
+                        return Objects.nonNull(item.getItemId());
+                    }).forEach((poLineDTO) -> {
+                        itemListDTOS.forEach((itemListDTO) -> {
+                            if (poLineDTO.getItemId().equals(itemListDTO.getItemId())) {
+                                poLineDTO.setCategoryId(itemListDTO.getCategoryId());
+                            }
+
+                        });
+                    });
+                }
+
+                this.insertPoLineAndLocationLine(poInsertLineList, poHeader);
+                this.poValidateDomainService.validateSupplyAbility(poHeader, poInsertLineList);
+                BeanUtils.copyProperties(poHeader, poDTO);
+                if ("REJECTED".equals(poHeaderInDB.getStatusCode())) {
+                    List<PoLine> poLineList = new ArrayList();
+                    poLineList.addAll(poUpdateLineList);
+                    poLineList.addAll(poInsertLineList);
+                    poDTO.setPoLineList(poLineList);
+                    this.checkUpgradeAndInsertRecord(poDTO, poDTO.getTenantId(), "UPDATE");
+                }
+
+                Iterator var25 = poUpdateLineList.iterator();
+
+                while(var25.hasNext()) {
+                    PoLine poLine = (PoLine)var25.next();
+                    PoLine poLineDb = (PoLine)this.poLineRepository.selectByPrimaryKey(poLine.getPoLineId());
+                    if (poLine.getPriceLibraryId() != null) {
+                        BigDecimal unitPrice = this.poHeaderRepository.selectPoLinePriceLibraryId(poLineDb.getPriceLibraryId());
+                        if (unitPrice != null) {
+                            poLine.setModifyPriceFlag(poLine.getUnitPrice().compareTo(unitPrice));
+                        }
+                    }
+
+                    if (!ObjectUtils.isEmpty(poLineDb.getPrLineId()) && poLine.getPriceLibraryId() == null && "CATALOGUE".equals(poHeader.getPoSourcePlatform())) {
+                        PrLine prLine = (PrLine)this.prLineRepository.selectByPrimaryKey(poLineDb.getPrLineId());
+                        LOGGER.debug("24808获取订单单价：{}", poLine.getUnitPrice());
+                        if (!ObjectUtils.isEmpty(prLine.getUnitPrice()) && Objects.nonNull(poLine.getUnitPrice())) {
+                            poLine.setModifyPriceFlag(poLine.getUnitPrice().compareTo(prLine.getUnitPrice()));
+                        }
+                    }
+                }
+
+                AccountAssignType.validPoRequiredFields(poUpdateLineList, this.accountAssignTypeLineRepository);
+                String domesticCurrencyCode = poHeader.getDomesticCurrencyCode();
+                poUpdateLineList.forEach((poLinex) -> {
+                    poLinex.modifyPricePrecisionByCurrencyCode(this.mdmService, domesticCurrencyCode);
+                });
+                this.setPoLineDomesticInfo(poUpdateLineList, poHeader);
+                LOGGER.debug("22875-poLineRepository.batchUpdateOptional：date{}", JSONObject.toJSONString(poUpdateLineList));
+                this.poLineRepository.batchUpdateOptional(poUpdateLineList, new String[]{"itemId", "itemCode", "itemName", "departmentId", "clearOrganizationId", "copeOrganizationId", "accountAssignTypeId", "accountSubjectId", "accountSubjectNum", "costId", "costCode", "wbsCode", "wbs", "priceContractFlag", "returnedFlag", "tax_included_line_amount", "line_amount", "domesticLineAmount", "domesticTaxIncludedLineAmount", "domesticTaxIncludedPrice", "domesticUnitPrice", "exchangeRate", "projectCategory", "modifyPriceFlag","pcHeaderId"});
+                this.poLineRepository.batchUpdateByPrimaryKeySelective(poUpdateLineList);
+                this.poLineLocationRepository.batchUpdateByPrimaryKeySelective(updateLocationList);
+                List<PoLine> poLineListInDb = this.poLineRepository.selectByCondition(Condition.builder(PoLine.class).andWhere(Sqls.custom().andEqualTo("poHeaderId", poHeader.getPoHeaderId())).build());
+                poHeader.modifyAmountAndTaxIncludeAmount(poLineListInDb);
+                poHeader.modifyPricePrecisionByCurrencyCode(this.mdmService);
+                poHeader.modifyDomesticAmountAndTaxIncludeAmount(poLineListInDb, this.mdmService);
+                if (CollectionUtils.isNotEmpty(poUpdateLineList)) {
+                    poUpdateLineList.addAll((Collection)Optional.ofNullable(poInsertLineList).orElse(new ArrayList()));
+                    poHeader.setModifyPriceFlag(0);
+                    Iterator var28 = poUpdateLineList.iterator();
+
+                    while(var28.hasNext()) {
+                        PoLine poLine = (PoLine)var28.next();
+                        if (!(new Integer(0)).equals(poLine.getModifyPriceFlag())) {
+                            poHeader.setModifyPriceFlag(1);
+                            break;
+                        }
+                    }
+                }
+
+                this.poHeaderDomainService.initSettleSupplier(poHeader, poHeaderInDB);
+                this.poHeaderRepository.updateOptional(poHeader, new String[]{"poTypeId", "supplierCompanyId", "supplierCompanyName", "supplierId", "supplierName", "supplierCode", "supplierTenantId", "companyId", "companyName", "ouId", "purchaseOrgId", "agentId", "currencyCode", "remark", "termsId", "amount", "taxIncludeAmount", "modifyPriceFlag", "domesticTaxIncludeAmount", "domesticAmount", "originalPoHeaderId"});
+                this.poHeaderDomainService.initPoMessage(poDTO);
+                return poDTO;
+            }
+        }
+
+    }
+
+    private String getBenchPriceCnf(PoHeaderDetailDTO poHeaderDetailDTO) {
+        HashMap<String, String> paramMap = new HashMap(2);
+        paramMap.put("company", Optional.ofNullable(String.valueOf(poHeaderDetailDTO.getCompanyId())).orElse(""));
+        paramMap.put("supplier", Optional.ofNullable(String.valueOf(poHeaderDetailDTO.getSupplierId())).orElse(""));
+        String cnfResults = null;
+
+        try {
+            cnfResults = (String) CnfHelper.select(poHeaderDetailDTO.getTenantId(), "SITE.SSRC.QUOTATION_SET", String.class).invokeWithParameter(paramMap);
+            LOGGER.debug("25583-Cnf returns: {}", cnfResults.toString());
+        } catch (Exception var5) {
+            LOGGER.error("25583-fail to query config-center for exception:{}", var5);
+        }
+
+        return cnfResults;
     }
 
 }
