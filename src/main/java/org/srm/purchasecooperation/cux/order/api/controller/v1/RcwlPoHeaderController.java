@@ -168,9 +168,13 @@ public class RcwlPoHeaderController extends BaseController {
             this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
         }
         log.info("版本号2：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
-         PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
+        PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
+        PoHeader poHeader = new PoHeader();
+        poHeader.setPoHeaderId(poResult.getPoHeaderId());
+        poHeader.setTenantId(poResult.getTenantId());
+
         //更新版本号
-        poOrderSavaDTO.getPoHeaderDetailDTO().setObjectVersionNumber(poResult.getObjectVersionNumber());
+        poOrderSavaDTO.getPoHeaderDetailDTO().setObjectVersionNumber(poHeaderRepository.selectOne(poHeader).getObjectVersionNumber());
         log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         //提交
         this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
