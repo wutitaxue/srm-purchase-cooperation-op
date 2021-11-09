@@ -226,6 +226,8 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             for (Integer i = itemLine.getAttributeDate1Year(); i <= itemLine.getNeededDateYear(); i++) {
                 yearPrLineYears.add(i);
             }
+            // 设置行金额为6位小数
+            itemLine.setLineAmount(itemLine.getLineAmount().setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP));
             rcwlBudgetDistributionDTO.setBudgetDisYears(yearPrLineYears);
         });
         // 根据采购申请头、行id和申请行的年份集合去查询跨年预算的值
@@ -247,7 +249,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 } else if (i.equals(itemLine.getNeededDateYear())) {
                     // 若当前行【占用年份】=A2,则为【申请行总金额】/【占用总时长（月）】*B2
                     // 计算允差+最后一年的系统占用分摊金额
-                    BigDecimal tolerance = itemLine.getLineAmount().subtract(rcwlBudgetDistributionResults.stream().map(RcwlBudgetDistributionDTO::getBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
+                    BigDecimal tolerance = itemLine.getLineAmount().subtract(rcwlBudgetDistributionResults.stream().map(RcwlBudgetDistributionDTO::getAutoCalculateBudgetDisAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
                     rcwlBudgetDistributionResult.setAutoCalculateBudgetDisAmount(tolerance);
                 } else {
                     // 前两者不满足，则为【申请行总金额】/【占用总时长（月）】*12
@@ -262,8 +264,6 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                 } else {
                     rcwlBudgetDistributionResult.setBudgetDisAmount(rcwlBudgetDistributionResult.getAutoCalculateBudgetDisAmount());
                 }
-                // 强制行金额显示六位
-                rcwlBudgetDistributionResult.setLineAmount(rcwlBudgetDistributionResult.getLineAmount().setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP));
                 rcwlBudgetDistributionResults.add(rcwlBudgetDistributionResult);
             }
             // -------------- 计算系统分摊金额 end -------------------------------------------
