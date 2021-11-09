@@ -138,7 +138,7 @@
         sph.publish_cancel_flag,
         sph.closed_flag,
         sph.purchase_org_id,
-        sph.attribute_varchar1,
+        sph.attribute_varchar2,
         sph.attribute_bigint1,
         sot.return_order_flag,
         com.company_num,
