@@ -34,9 +34,10 @@ public interface RcwlBudgetDistributionService {
      *
      * @param tenantId
      * @param rcwlBudgetDistributionDTO
+     * @param batchFlag  批量计算标识(用于保存计算,batchFlag为ture表示批量计算)
      * @return
      */
-    List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine (Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
+    List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine (Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO, Boolean batchFlag);
 
     /**
      * 跨年预算分摊保存/更新

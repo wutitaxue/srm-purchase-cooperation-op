@@ -202,7 +202,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
     }
 
     @Override
-    public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
+    public List<RcwlBudgetDistributionDTO> selectBudgetDistributionByPrLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO, Boolean batchFlag) {
         // prLine不为空,先计算行金额,表示是采购申请变更
         PrLine prLine = rcwlBudgetDistributionDTO.getPrLine();
         if (!ObjectUtils.isEmpty(prLine)) {
@@ -255,7 +255,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
                             .multiply(new BigDecimal(12).setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP)));
                 }
                 // 根据采购申请头、行id和申请行的年份去查询跨年预算的值
-                if (!org.springframework.util.CollectionUtils.isEmpty(rcwlBudgetDistributionRealValues)) {
+                if (!org.springframework.util.CollectionUtils.isEmpty(rcwlBudgetDistributionRealValues) && !batchFlag) {
                     Integer finalI = i;
                     BigDecimal budgetDisAmount = rcwlBudgetDistributionRealValues.stream().filter(rcwlBudgetDistributionRealValue -> rcwlBudgetDistributionDTO.getPrHeaderId().equals(rcwlBudgetDistributionRealValue.getPrHeaderId()) && rcwlBudgetDistributionDTO.getPrLineId().equals(rcwlBudgetDistributionRealValue.getPrLineId()) && finalI.equals(rcwlBudgetDistributionRealValue.getBudgetDisYear())).findFirst().orElse(new RcwlBudgetDistributionDTO()).getBudgetDisAmount();
                     rcwlBudgetDistributionResult.setBudgetDisAmount(budgetDisAmount);

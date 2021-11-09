@@ -60,7 +60,7 @@ public class RcwlBudgetDistributionController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/calculate")
     public ResponseEntity<List<RcwlBudgetDistributionDTO>> calculateBudget(@PathVariable(value = "organizationId") long tenantId, @RequestBody RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO) {
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO, Boolean.FALSE);
         return Results.success(rcwlBudgetDistributionDTOS);
     }
 
