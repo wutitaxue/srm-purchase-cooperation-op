@@ -275,7 +275,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     || !prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(originPrLineMap.get(prLine.getPrLineId()).getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM"))));
             if (needAgainCalculateBudget) {
                 // 重新计算跨年预算数据
-                List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build());
+                List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
                 rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
             }
         });
@@ -381,7 +381,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         });
         // 查询历史版本号
         List<RcwlPrLineHis> rcwlPrLineHisByPrHeadId = rcwlPrLineHisRepository.selectByCondition(Condition.builder(RcwlPrLineHis.class).andWhere(Sqls.custom().andEqualTo(RcwlPrLineHis.FIELD_PR_HEADER_ID, prHeader.getPrHeaderId()).andEqualTo(RcwlPrLineHis.FIELD_TENANT_ID, tenantId)).build());
-        Long version = CollectionUtils.isEmpty(rcwlPrLineHisByPrHeadId) ? 1 : rcwlPrLineHisByPrHeadId.get(0).getVersion();
+        Long version = CollectionUtils.isEmpty(rcwlPrLineHisByPrHeadId) ? 1 : (rcwlPrLineHisByPrHeadId.get(0).getVersion() + 1);
         prLineHistories.forEach(prLineHistory -> prLineHistory.setVersion(version));
         rcwlPrLineHisRepository.batchInsertSelective(prLineHistories);
         // ----------add by wangjie 在行处理之前先记录历史数据 end ---------------------
