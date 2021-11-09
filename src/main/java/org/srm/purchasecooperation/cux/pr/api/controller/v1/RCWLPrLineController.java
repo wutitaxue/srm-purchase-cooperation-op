@@ -36,6 +36,7 @@ import org.srm.purchasecooperation.pr.api.dto.PrLineCloseResultDTO;
 import org.srm.purchasecooperation.pr.app.service.PrLineService;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
 import org.srm.purchasecooperation.pr.domain.PurchaseCompanyVo;
+import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
@@ -43,6 +44,7 @@ import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 import org.srm.web.annotation.Tenant;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -181,7 +183,11 @@ public class RCWLPrLineController {
     @ProcessCacheValue
     public ResponseEntity<PrLine> updateLineInfo(@PathVariable("organizationId") Long tenantId, @RequestBody PrLine prLine) {
         SecurityTokenHelper.validToken(prLine);
-        prLineRepository.updateByPrimaryKey(prLine);
-        return Results.success(prLine);
+        PrHeader prHeaderParameter = new PrHeader();
+        prHeaderParameter.setPrHeaderId(prLine.getPrHeaderId());
+        PrHeader prHeader = prHeaderRepository.selectByPrimaryKey(prHeaderParameter);
+        prHeader.setPrLineList(Collections.singletonList(prLine));
+        List<PrLine> prLines = prLineService.updatePrLines(prHeader);
+        return Results.success(prLines.get(0));
     }
 }
