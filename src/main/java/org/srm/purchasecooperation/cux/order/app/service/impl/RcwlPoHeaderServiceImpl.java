@@ -939,6 +939,14 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public PoDTO operateOrder(PoOrderSaveDTO poOrderSavaDTO) {
+        if ("CONTRACT_ORDER_WJ".equals(poOrderSavaDTO.getPoHeaderDetailDTO().getSourceBillTypeCode())){
+            //无价合同计算行金额
+            if (CollectionUtils.isNotEmpty(poOrderSavaDTO.getPoLineDetailDTOs())){
+                for (PoLineDetailDTO poLineDetail :poOrderSavaDTO.getPoLineDetailDTOs()){
+                    poLineDetail.setLineAmount(poLineDetail.getEnteredTaxIncludedPrice().multiply(poLineDetail.getQuantity()));
+                }
+            }
+        }
         ConfigQueryVO configQueryVO = this.poHeaderMapper.selectConfigParam(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), poOrderSavaDTO.getPoHeaderDetailDTO().getPoHeaderId());
         configQueryVO.setConfigCode("SITE.SPUC.PO.REF_PRICE_LIB");
         String enablePriceLib = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
@@ -966,6 +974,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 BeanUtils.copyProperties(poLineDetail,rcwlBudgetDistributionDTO);
                 rcwlBudgetDistributionDTO.setAttributeDate1(poLineDetail.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                 rcwlBudgetDistributionDTO.setNeedByDate(poLineDetail.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionDTO.setLineAmount(poLineDetail.getLineAmount());
                 rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), rcwlBudgetDistributionDTO);
             }
         }
