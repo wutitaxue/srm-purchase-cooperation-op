@@ -1023,7 +1023,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 });
                 this.setPoLineDomesticInfo(poUpdateLineList, poHeader);
                 LOGGER.debug("22875-poLineRepository.batchUpdateOptional：date{}", JSONObject.toJSONString(poUpdateLineList));
-                this.poLineRepository.batchUpdateOptional(poUpdateLineList, new String[]{"itemId", "itemCode", "itemName", "departmentId", "clearOrganizationId", "copeOrganizationId", "accountAssignTypeId", "accountSubjectId", "accountSubjectNum", "costId", "costCode", "wbsCode", "wbs", "priceContractFlag", "returnedFlag", "tax_included_line_amount", "line_amount", "domesticLineAmount", "domesticTaxIncludedLineAmount", "domesticTaxIncludedPrice", "domesticUnitPrice", "exchangeRate", "projectCategory", "modifyPriceFlag","pcHeaderId"});
+                this.poLineRepository.batchUpdateOptional(poUpdateLineList, new String[]{"itemId", "itemCode", "itemName", "departmentId", "clearOrganizationId", "copeOrganizationId", "accountAssignTypeId", "accountSubjectId", "accountSubjectNum", "costId", "costCode", "wbsCode", "wbs", "priceContractFlag", "returnedFlag", "tax_included_line_amount", "line_amount", "domesticLineAmount", "domesticTaxIncludedLineAmount", "domesticTaxIncludedPrice", "domesticUnitPrice", "exchangeRate", "projectCategory", "modifyPriceFlag"});
                 this.poLineRepository.batchUpdateByPrimaryKeySelective(poUpdateLineList);
                 this.poLineLocationRepository.batchUpdateByPrimaryKeySelective(updateLocationList);
                 List<PoLine> poLineListInDb = this.poLineRepository.selectByCondition(Condition.builder(PoLine.class).andWhere(Sqls.custom().andEqualTo("poHeaderId", poHeader.getPoHeaderId())).build());
@@ -1046,7 +1046,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 this.poHeaderDomainService.initSettleSupplier(poHeader, poHeaderInDB);
                 this.poHeaderRepository.updateOptional(poHeader, new String[]{"poTypeId", "supplierCompanyId", "supplierCompanyName", "supplierId", "supplierName", "supplierCode", "supplierTenantId", "companyId", "companyName", "ouId", "purchaseOrgId", "agentId", "currencyCode", "remark", "termsId", "amount", "taxIncludeAmount", "modifyPriceFlag", "domesticTaxIncludeAmount", "domesticAmount", "originalPoHeaderId"});
-                this.poHeaderDomainService.initPoMessage(poDTO);
+                //无价合同
+                if (!"CONTRACT_ORDER_WJ".equals(poOrderSaveDTO.getPoHeaderDetailDTO().getSourceBillTypeCode())){
+                    this.poHeaderDomainService.initPoMessage(poDTO);
+                }
                 return poDTO;
             }
         }
