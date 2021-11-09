@@ -170,7 +170,7 @@ public class RcwlPoHeaderController extends BaseController {
         log.info("版本号2：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
          PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
         //更新版本号
-        poOrderSavaDTO.setObjectVersionNumber(poResult.getObjectVersionNumber());
+        poOrderSavaDTO.getPoHeaderDetailDTO().setObjectVersionNumber(poResult.getObjectVersionNumber());
         log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         //提交
         this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
