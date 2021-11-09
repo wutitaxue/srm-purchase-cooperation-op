@@ -357,7 +357,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                         && rcwlBudgetDistributionDTO.getPrLineId().equals(changeAction.getPrLineId())
                         && rcwlBudgetDistributionDTO.getBudgetDisYear().equals(changeAction.getBudgetDisYear())).findFirst().orElse(new RcwlBudgetDistributionDTO()).getBudgetDisAmount()) == 0)
                 .map(RcwlBudgetChangeAction::getPrLineId).collect(Collectors.toList());
-        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(notChangedPrLineIds).changeSubmit(BaseConstants.Flag.YES).budgetGroup(RcwlBudgetChangeAction.NEW).enabledFlag(BaseConstants.Flag.NO).build());
+        if (CollectionUtils.isNotEmpty(notChangedPrLineIds)) {
+            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(notChangedPrLineIds).changeSubmit(BaseConstants.Flag.YES).budgetGroup(RcwlBudgetChangeAction.NEW).enabledFlag(BaseConstants.Flag.NO).build());
+        }
         // ---------------- add by wangjie 把未变更的变更跨年预算删掉,主要是为了防止占用预算变更,日期和行金额都不变,变更完成之后反悔的情况 end ---------------------------------
         // -------------------------add by wangjie 将上个版本的预算数据插入为old值 begin--------------------------
         // 筛选budget_group为old的条数
