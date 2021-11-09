@@ -219,6 +219,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionResults = new ArrayList<>();
         // 根据采购申请头、行id计算跨年预算的值
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionRepository.selectBudgetDistributionByPrLine(tenantId, rcwlBudgetDistributionDTO);
+        // 上面list只有一行数据,不存在双层for效率问题
         rcwlBudgetDistributionDTOS.forEach(itemLine -> {
             List<Integer> yearPrLineYears = new ArrayList<>(Integer.parseInt(String.valueOf(itemLine.getNeededDateYear() - itemLine.getAttributeDate1Year() + 1)));
             for (Integer i = itemLine.getAttributeDate1Year(); i <= itemLine.getNeededDateYear(); i++) {

@@ -208,7 +208,7 @@
         <if test="enabledFlag != null">
             AND enabled_flag = #{enabledFlag}
         </if>
-        <if test=" budgetGroup != null and changeSubmit == 1 ">
+        <if test="budgetGroup != null and changeSubmit == 1">
             AND budget_group = #{budgetGroup}
         </if>
     </delete>
