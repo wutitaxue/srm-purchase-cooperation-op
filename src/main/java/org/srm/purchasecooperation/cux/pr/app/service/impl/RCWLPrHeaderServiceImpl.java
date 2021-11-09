@@ -284,7 +284,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     || !prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(originPrLineMap.get(prLine.getPrLineId()).getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM"))));
             if (needAgainCalculateBudget) {
                 // 重新计算跨年预算数据
-                List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build());
+                List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
                 rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
             }
         });
