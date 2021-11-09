@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.base.BaseController;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
@@ -24,6 +26,7 @@ import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO;
+import org.srm.purchasecooperation.order.api.dto.PoHeaderDetailDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
 import org.srm.purchasecooperation.order.app.service.PoChangeByContractService;
 import org.srm.purchasecooperation.order.app.service.PoHeaderService;
@@ -36,6 +39,8 @@ import org.srm.purchasecooperation.order.domain.service.PoHeaderDomainService;
 import org.srm.purchasecooperation.order.domain.vo.PoHeaderAccordingToLineOfReferenceVO;
 import org.srm.web.annotation.Tenant;
 
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,7 +53,7 @@ import java.util.List;
         tags = {"Po Header"}
 )
 @Tenant("SRM-RCWL")
-public class RcwlPoHeaderController {
+public class RcwlPoHeaderController extends BaseController {
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderController.class);
     @Autowired
     private PoHeaderService poHeaderService;
@@ -138,5 +143,53 @@ public class RcwlPoHeaderController {
             @Encrypt PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO){
         poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
         return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
+    }
+
+    @ApiOperation("采购订单提交")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping({"/po-header/submit"})
+    public ResponseEntity<PoDTO> submittedProcess(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PoOrderSaveDTO poOrderSavaDTO, HttpServletRequest request) {
+        //提交前自动保存
+        poOrderSavaDTO.getPoLineDetailDTOs().forEach((item) -> {
+            if (item.getTaxId() != null) {
+                BigDecimal taxRate = this.poLineService.selectTaxById(item.getTaxId());
+                if (taxRate != null) {
+                    item.setTaxRate(taxRate);
+                }
+            }
+
+        });
+        this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
+        poOrderSavaDTO.getPoHeaderDetailDTO().validationSupplier();
+        if (!poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("E-COMMERCE") && !poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("CATALOGUE")) {
+            this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
+        }
+         PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
+        //更新版本号
+        poOrderSavaDTO.setObjectVersionNumber(poResult.getObjectVersionNumber());
+        //提交
+        this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
+        poOrderSavaDTO.getPoHeaderDetailDTO().validationSupplier();
+        poOrderSavaDTO.getPoLineDetailDTOs().forEach((item) -> {
+            if (item.getTaxId() != null) {
+                BigDecimal taxRate = this.poLineService.selectTaxById(item.getTaxId());
+                if (taxRate != null) {
+                    item.setTaxRate(taxRate);
+                }
+            }
+
+        });
+        if (!poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("E-COMMERCE") && !poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("CATALOGUE")) {
+            this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
+        }
+
+        PoDTO poDTO = this.poHeaderService.submittedPo(poOrderSavaDTO);
+        String cacheKey = poOrderSavaDTO.getPoHeaderDetailDTO().getCacheKey();
+        if (!StringUtils.isEmpty(cacheKey)) {
+            List<PoDTO> poDTOS = Collections.singletonList(poDTO);
+            this.poHeaderService.clearPoCreatingCache(cacheKey, poDTOS);
+        }
+
+        return Results.success(poDTO);
     }
 }
