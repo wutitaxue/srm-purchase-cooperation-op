@@ -203,31 +203,34 @@ public class RcwlPoHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping({"/po-header/submit"})
     public ResponseEntity<PoDTO> submittedProcess(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PoOrderSaveDTO poOrderSavaDTO, HttpServletRequest request) {
-        log.info("版本号1：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
-        //提交前自动保存
-        poOrderSavaDTO.getPoLineDetailDTOs().forEach((item) -> {
-            if (item.getTaxId() != null) {
-                BigDecimal taxRate = this.poLineService.selectTaxById(item.getTaxId());
-                if (taxRate != null) {
-                    item.setTaxRate(taxRate);
-                }
-            }
+//        log.info("版本号1：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
+//        //提交前自动保存
+//        poOrderSavaDTO.getPoLineDetailDTOs().forEach((item) -> {
+//            if (item.getTaxId() != null) {
+//                BigDecimal taxRate = this.poLineService.selectTaxById(item.getTaxId());
+//                if (taxRate != null) {
+//                    item.setTaxRate(taxRate);
+//                }
+//            }
+//
+//        });
+//        this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
+//        poOrderSavaDTO.getPoHeaderDetailDTO().validationSupplier();
+//        if (!poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("E-COMMERCE") && !poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("CATALOGUE")) {
+//            this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
+//        }
+//        log.info("版本号2：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
+//        PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
+//        PoHeader poHeader = new PoHeader();
+//        poHeader.setPoHeaderId(poResult.getPoHeaderId());
+//        poHeader.setTenantId(poResult.getTenantId());
+//
+//        //更新版本号
+//        poOrderSavaDTO.getPoHeaderDetailDTO().setObjectVersionNumber(poHeaderRepository.selectOne(poHeader).getObjectVersionNumber());
+//        log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
 
-        });
-        this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
-        poOrderSavaDTO.getPoHeaderDetailDTO().validationSupplier();
-        if (!poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("E-COMMERCE") && !poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("CATALOGUE")) {
-            this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
-        }
-        log.info("版本号2：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
-        PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
-        PoHeader poHeader = new PoHeader();
-        poHeader.setPoHeaderId(poResult.getPoHeaderId());
-        poHeader.setTenantId(poResult.getTenantId());
 
-        //更新版本号
-        poOrderSavaDTO.getPoHeaderDetailDTO().setObjectVersionNumber(poHeaderRepository.selectOne(poHeader).getObjectVersionNumber());
-        log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
+
         //提交
         this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
         poOrderSavaDTO.getPoHeaderDetailDTO().validationSupplier();
