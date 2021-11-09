@@ -27,7 +27,7 @@ import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderCreateService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineMapper;
-import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;PoHeaderDetailDTO
+import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderSingleReferenceDTO;
