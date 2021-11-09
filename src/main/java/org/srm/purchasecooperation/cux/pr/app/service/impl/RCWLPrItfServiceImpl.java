@@ -291,8 +291,9 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
                 });
             }
         } else if ("O".equals(flag)) {
+            PrHeader newPrHeader = prHeaderRepository.selectByPrimaryKey(prHeader.getPrHeaderId());
             //add by 21420 提交时做另外的逻辑
-            if(Constants.PlanHeaderApprovalStatus.PANDING.equals(prHeader.getPrStatusCode()) || Constants.PlanHeaderApprovalStatus.CHANGE.equals(prHeader.getPrStatusCode())){
+            if(Constants.PlanHeaderApprovalStatus.PANDING.equals(newPrHeader.getPrStatusCode()) || Constants.PlanHeaderApprovalStatus.CHANGE.equals(newPrHeader.getPrStatusCode())){
                 if (CollectionUtils.isNotEmpty(lineDetailList)) {
                     lineDetailList.forEach(prDetailLine -> {
                         //按照预算单在预算拆分表scux_rcwl_budget_distribution中pr_line_id有几条数据进行拆分成几组
