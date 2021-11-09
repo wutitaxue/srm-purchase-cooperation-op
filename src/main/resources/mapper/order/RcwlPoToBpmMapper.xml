@@ -6,7 +6,7 @@
         SELECT
             spll.need_by_date,
             st.description tax_description,
---             hio.organization_name inv_organization_name,
+            hio.organization_name inv_organization_name,
             hi.inventory_name,
             sba.budget_account_name,
             spc.pc_num,
@@ -16,7 +16,7 @@
             sodr_po_line AS spl
         LEFT JOIN  sodr_po_line_location spll ON spll.po_header_id = spl.po_header_id AND spll.po_line_id = spl.po_line_id
         LEFT JOIN  smdm_tax st ON st.tax_id = spl.tax_id
---         LEFT JOIN  hpfm_inv_organization hio ON hio.organization_id = spl.inv_organization_id
+        LEFT JOIN  hpfm_inv_organization hio ON hio.organization_id = spl.inv_organization_id
         LEFT JOIN  hpfm_inventory hi ON hi.inventory_id = spll.inv_inventory_id
         LEFT JOIN  smdm_budget_account sba ON sba.budget_account_num = spl.attribute_varchar21
         LEFT JOIN spcm_pc_header spc ON spc.pc_header_id = spl.pc_header_id
