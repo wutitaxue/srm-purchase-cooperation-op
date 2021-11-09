@@ -8,6 +8,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.base.BaseController;
@@ -47,6 +48,7 @@ import java.util.List;
 /**
  * @author bin.zhang
  */
+@Slf4j
 @RestController("RcwlPoHeaderController.v1")
 @RequestMapping({"/v1/{organizationId}"})
 @Api(
@@ -149,6 +151,7 @@ public class RcwlPoHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping({"/po-header/submit"})
     public ResponseEntity<PoDTO> submittedProcess(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PoOrderSaveDTO poOrderSavaDTO, HttpServletRequest request) {
+        log.info("版本号1：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         //提交前自动保存
         poOrderSavaDTO.getPoLineDetailDTOs().forEach((item) -> {
             if (item.getTaxId() != null) {
@@ -164,9 +167,11 @@ public class RcwlPoHeaderController extends BaseController {
         if (!poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("E-COMMERCE") && !poOrderSavaDTO.getPoHeaderDetailDTO().getPoSourcePlatform().equals("CATALOGUE")) {
             this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
         }
+        log.info("版本号2：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
          PoDTO poResult = this.poHeaderService.operateOrder(poOrderSavaDTO);
         //更新版本号
         poOrderSavaDTO.setObjectVersionNumber(poResult.getObjectVersionNumber());
+        log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         //提交
         this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});
         poOrderSavaDTO.getPoHeaderDetailDTO().validationSupplier();
@@ -183,7 +188,9 @@ public class RcwlPoHeaderController extends BaseController {
             this.validList(poOrderSavaDTO.getPoLineDetailDTOs(), new Class[]{org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO.UpdateCheck.class});
         }
 
+        log.info("版本号4：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         PoDTO poDTO = this.poHeaderService.submittedPo(poOrderSavaDTO);
+        log.info("版本号5：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         String cacheKey = poOrderSavaDTO.getPoHeaderDetailDTO().getCacheKey();
         if (!StringUtils.isEmpty(cacheKey)) {
             List<PoDTO> poDTOS = Collections.singletonList(poDTO);
