@@ -61,6 +61,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -137,6 +138,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private PoLineMapper poLineMapper;
     @Autowired
     private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
+    @Autowired
+    private RcwlBudgetDistributionService rcwlBudgetDistributionService;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
@@ -931,6 +934,42 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         if (totalBudgetDisAmount.compareTo(Optional.ofNullable(poLineDetailDTO.getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
             throw new CommonException("订单行号为【"+poLineDetailDTO.getLineNum()+"】的行金额与预算占用合计必须相等，请重新维护预算拆分！");
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public PoDTO operateOrder(PoOrderSaveDTO poOrderSavaDTO) {
+        ConfigQueryVO configQueryVO = this.poHeaderMapper.selectConfigParam(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), poOrderSavaDTO.getPoHeaderDetailDTO().getPoHeaderId());
+        configQueryVO.setConfigCode("SITE.SPUC.PO.REF_PRICE_LIB");
+        String enablePriceLib = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
+        configQueryVO.setConfigCode("SITE.SPUC.PO.PRICE_LIB_STRATEGY");
+        String serviceCode = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
+        PoHeaderDetailDTO poHeaderDetailDTO = poOrderSavaDTO.getPoHeaderDetailDTO();
+        poOrderSavaDTO.setPoLineMysql(this.poLineMapper.selectByPoHeaderIdList(Arrays.asList(poHeaderDetailDTO.getPoHeaderId())));
+        String tenantNum = TenantInfoHelper.selectByTenantId(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId()).getTenantNum();
+
+        try {
+            TaskResultBox taskResultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_ORDER_PRICE_SOURCE_TYPE", tenantNum, poOrderSavaDTO);
+            LOGGER.info("operateOrder taskResultBox:{}", JSONObject.toJSONString(taskResultBox));
+            poOrderSavaDTO = (PoOrderSaveDTO)taskResultBox.get(0, PoOrderSaveDTO.class);
+            LOGGER.info("operateOrder taskResultBox:{}", JSONObject.toJSONString(poOrderSavaDTO));
+        } catch (TaskNotExistException var8) {
+            LOGGER.info("============ORDER_PRICE_SOURCE_TYPE--operateOrder-TaskNotExistException=============={}", new Object[]{tenantNum, var8.getMessage(), var8.getStackTrace()});
+        }
+
+        PoDTO poDTO = (poHeaderDetailDTO.isByErpOrSrmPr() || "PURCHASE_ORDER".equals(poHeaderDetailDTO.getSourceBillTypeCode())) && BaseConstants.Flag.YES.toString().equals(enablePriceLib) && StringUtils.isNotEmpty(serviceCode) && !"NULL".equals(serviceCode) && poOrderSavaDTO.getPoLineDetailDTOs() != null && poOrderSavaDTO.getPoLineDetailDTOs().size() > 0 ? ((PoHeaderService)this.self()).updatePoHeaderAndPoLineSNewPrice(poOrderSavaDTO) : ((PoHeaderService)this.self()).updatePoHeaderAndPoLineS(poOrderSavaDTO);
+
+        //新建更新完成后，自动计算跨年预算数据
+        if (CollectionUtils.isNotEmpty(poOrderSavaDTO.getPoLineDetailDTOs())){
+            for (PoLineDetailDTO poLineDetail :poOrderSavaDTO.getPoLineDetailDTOs()){
+                RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
+                BeanUtils.copyProperties(poLineDetail,rcwlBudgetDistributionDTO);
+                rcwlBudgetDistributionDTO.setAttributeDate1(poLineDetail.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionDTO.setNeedByDate(poLineDetail.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), rcwlBudgetDistributionDTO);
+            }
+        }
+        return poDTO;
     }
 
 }
