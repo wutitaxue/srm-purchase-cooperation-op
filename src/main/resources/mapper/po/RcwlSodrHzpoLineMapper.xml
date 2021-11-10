@@ -29,10 +29,10 @@
             sic.category_name,
             srshh.po_num,
             srshh.purchase_org_name,
-            ses.supplier_name
+            ssb.company_name AS supplier_name
         FROM
             scux_rcwl_sodr_hzpo_line srshl LEFT JOIN smdm_item_category sic ON sic.category_code=srshl.sku_category_code,
-            scux_rcwl_sodr_hzpo_header srshh LEFT JOIN sslm_external_supplier ses ON srshh.unified_social_code = ses.unified_social_code
+            scux_rcwl_sodr_hzpo_header srshh LEFT JOIN sslm_supplier_basic ssb ON srshh.unified_social_code = ssb.unified_social_code
         WHERE
             srshl.po_header_id = srshh.po_header_id
         <if test="poLineId != null">
@@ -50,7 +50,7 @@
         </if>
         <if test="supplierName != null">
             <bind name = "supplierNameLike" value = "'%'+ supplierName +'%'"></bind>
-            AND ses.supplier_name LIKE #{supplierNameLike}
+            AND ssb.company_name LIKE #{supplierNameLike}
         </if>
         <if test="purchaseOrgName != null">
             <bind name = "purchaseOrgNameLike" value = "'%'+ purchaseOrgName +'%'"></bind>
