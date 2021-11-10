@@ -313,8 +313,11 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据先删除,自动插入至scux_rcwl_budget_distribution表 begin--------------------------
             // 所有未跨年的预算
             List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
-            // 删除原有的旧数据
-            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getPrLineId).collect(Collectors.toList())).build());
+            // 删除原有的未跨年旧数据
+            List<Long> prLineIds = rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getPrLineId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(prLineIds)) {
+                rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineIds).build());
+            }
             rcwlBudgetDistributionRepository.batchInsert(rcwlBudgetDistributions);
             // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据先删除,自动插入至scux_rcwl_budget_distribution表 end--------------------------
             //判断是否能触发接口
