@@ -376,8 +376,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 end---------
         // ---------------- add by wangjie 把未变更的变更跨年预算删掉,主要是为了防止占用预算变更,日期和行金额都不变,变更完成之后反悔的情况 begin -------------------------------
         // 筛选未变更过的申请行id集合
-        List<Long> prLineNotChangedPrLineIds = changePrlines.stream().map(PrLine::getPrLineId).filter(prLineId -> !changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toSet()).contains(prLineId)).collect(Collectors.toList());
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineNotChangedPrLineIds).build());
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
         // 筛选实际预算分摊金额未变更过的变更预算
         List<Long> notChangedPrLineIds = rcwlNewBudgetChangeActionsNotEnableds.stream().filter(changeAction -> changeAction.getBudgetDisAmount().compareTo(rcwlBudgetDistributions.stream().filter(rcwlBudgetDistributionDTO -> rcwlBudgetDistributionDTO.getPrHeaderId().equals(changeAction.getPrHeaderId())
                         && rcwlBudgetDistributionDTO.getPrLineId().equals(changeAction.getPrLineId())
