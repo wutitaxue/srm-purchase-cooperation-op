@@ -267,9 +267,10 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         LOGGER.debug("========================申请行2:{}",prHeader.getPrLineList());
         if (CollectionUtils.isNotEmpty(prHeader.getPrLineList())) {
             prHeader.getPrLineList().forEach(prLine -> {
+                LOGGER.debug("准备prLine数据:{}",prLine);
                 // 新增行：保存前端传的所有ID为空的需求行数据，并重新生成预算分摊数据插表
                 // 更新行：判断数量，不含税单价，需求开始、结束日期的年，月是否有变化，有变化则重新生成预算分摊数据插表，无变化则不做操作
-                boolean needAgainCalculateBudget = changePrLineList.stream().noneMatch(originPrLine -> prLine.getPrLineId().equals(originPrLine.getPrLineId()))
+                /*boolean needAgainCalculateBudget = changePrLineList.stream().noneMatch(originPrLine -> prLine.getPrLineId().equals(originPrLine.getPrLineId()))
                         || (prLine.getQuantity().compareTo(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getQuantity()) != 0
                         || prLine.getUnitPrice().compareTo(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getUnitPrice()) != 0
                         || !prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")))
@@ -278,7 +279,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
                     // 重新计算跨年预算数据
                     List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
                     rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
-                }
+                }*/
                 LOGGER.debug("===============================>保存预算分摊计算完成<======================================");
             });
         }
