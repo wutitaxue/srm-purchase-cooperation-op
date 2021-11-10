@@ -247,6 +247,9 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
     public void deleteLines(Long prHeaderId, List<PrLine> prLines) {
         super.deleteLines(prHeaderId, prLines);
         // 行删除之后需要预算信息
-        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(prLines.get(0).getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(prLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList())).build());
+        List<Long> prLineIds = prLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(prLineIds)) {
+            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(prLines.get(0).getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(prLineIds).build());
+        }
     }
 }

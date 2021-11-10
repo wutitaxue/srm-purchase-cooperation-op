@@ -4,11 +4,15 @@
 
     <select id="selectList" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
         SELECT
-            *
+            spl.object_version_number,
+            srplh.*
         FROM
-            ( SELECT * FROM scux_rcwl_pr_line_his srplh WHERE srplh.pr_header_id = #{prHeaderId} AND srplh.tenant_id = #{tenantId}
-        ORDER BY srplh.version DESC LIMIT 1 ) temp
-        GROUP BY
-            temp.pr_header_id
+            ( SELECT MAX( version ) version, pr_line_id, pr_header_id FROM scux_rcwl_pr_line_his WHERE pr_header_id = #{prHeaderId} AND tenant_id = #{tenantId} ) temp,
+            scux_rcwl_pr_line_his srplh
+                LEFT JOIN sprm_pr_line spl ON srplh.pr_header_id = spl.pr_header_id
+                AND srplh.pr_line_id = spl.pr_line_id
+        WHERE
+            srplh.pr_header_id = temp.pr_header_id
+          AND srplh.version = temp.version
     </select>
 </mapper>
