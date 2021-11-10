@@ -1,6 +1,8 @@
 package org.srm.purchasecooperation.cux.order.app.service.impl;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,13 +10,17 @@ import org.srm.purchasecooperation.cux.order.app.service.RcwlPoBudgetItfService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoSubmitBpmService;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
+import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
+
+import java.util.Date;
 
 /**
  * @author pengxu.zhi@hand-china.com
  * @desc ...
  * @date 2021-11-02 15:26:14
  */
+@Slf4j
 @Service
 public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
 
@@ -22,6 +28,8 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
     private PoHeaderMapper poHeaderMapper;
     @Autowired
     private RcwlPoBudgetItfService rcwlPoBudgetItfService;
+    @Autowired
+    private PoHeaderRepository poHeaderRepository;
 
     @Override
     public void rcwlSubmitBpmSuccessed(Long tenantId, String poNum, String procInstID, String newProcURL) {
@@ -42,9 +50,19 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
         poHeaderCondition.setPoNum(poNum);
         poHeaderCondition.setTenantId(tenantId);
         PoHeader poHeader = poHeaderMapper.selectOne(poHeaderCondition);
+        //获取自动发布配置
+        String manualPublicFlag = this.poHeaderRepository.getPoConfigCodeValue(tenantId, poHeader.getPoHeaderId(), "SITE.SPUC.PO.MANUAL_PUBLISH");
+        log.info("订单自动发布配置信息：{}",manualPublicFlag);
+
         //SODR.PO_STATUS
-        poHeader.setStatusCode("APPROVED");
-        poHeaderMapper.updateOptional(poHeader, new String[]{"statusCode"});
+        poHeader.setApprovedFlag(1);
+        poHeader.setApprovedDate(new Date());
+        if (StringUtils.isNotEmpty(manualPublicFlag) && "1".equals(manualPublicFlag)) {
+            poHeader.setStatusCode("APPROVED");
+        } else {
+            poHeader.setStatusCode("PUBLISHED");
+        }
+        poHeaderMapper.updateOptional(poHeader, new String[]{"statusCode","approvedFlag","approvedDate"});
     }
 
     @SneakyThrows
