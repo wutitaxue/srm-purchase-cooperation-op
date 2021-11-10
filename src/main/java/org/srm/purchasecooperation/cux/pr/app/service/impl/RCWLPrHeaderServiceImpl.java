@@ -669,6 +669,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // ----------------------- add by wangjie 复制的采购申请,需要复制预算数据 begin ------------------------------------------
         PrHeader finalCopyPrHeader = copyPrHeader;
         copyPrHeader.getPrLineList().forEach(prLine -> {
+            LOGGER.debug("============>复制采购申请需要重新计算预算:{}<=============", prLine);
             // 重新计算跨年预算数据
             List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(finalCopyPrHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
             rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
