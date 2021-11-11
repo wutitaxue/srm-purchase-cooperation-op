@@ -7,6 +7,7 @@ import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
 import org.hzero.core.message.MessageAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineImportValidator;
@@ -26,6 +27,7 @@ import java.util.function.Function;
         templateCode = "SPRM.PR_LINE"
 )})
 @Tenant("SRM-RCWL")
+@Primary
 public class RcwlPrLineImportValidator extends PrLineImportValidator {
     @Autowired
     private ObjectMapper objectMapper;
@@ -73,26 +75,29 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
         //需要校验导入模板中的物料名称、规格、型号、单位和物料基本信息中（smdm_item）数据是否一致
         if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
             List<PrLine> prLineVOs = this.prImportMapper.queryItemInfo(prLineImportVO);
-            PrLine prLineVO = prLineVOs.get(0);
-            String checkVarchar = prLineVO.getAttributeVarchar15();
-            if (!StringUtils.equals(checkVarchar, "1")) {
-                if(!StringUtils.equals(prLineImportVO.getItemName(), prLineVO.getItemName())){
-                    getContext().addErrorMsg("导入模板中的物料名称与物料基本信息的物料名称不一致");
-                    return false;
+            if(!prLineVOs.isEmpty()){
+                PrLine prLineVO = prLineVOs.get(0);
+                String checkVarchar = prLineVO.getAttributeVarchar15();
+                if (!StringUtils.equals(checkVarchar, "1")) {
+                    if(!StringUtils.equals(prLineImportVO.getItemName(), prLineVO.getItemName())){
+                        getContext().addErrorMsg("导入模板中的物料名称与物料基本信息的物料名称不一致");
+                        return false;
+                    }
+                    if(!StringUtils.equals(prLineImportVO.getItemSpecs(), prLineVO.getItemSpecs())){
+                        getContext().addErrorMsg("导入模板中的规格与物料基本信息的规格不一致");
+                        return false;
+                    }
+                    if(!StringUtils.equals(prLineImportVO.getItemModel(), prLineVO.getItemModel())){
+                        getContext().addErrorMsg("导入模板中的型号与物料基本信息的型号不一致");
+                        return false;
+                    }
+                    if(!StringUtils.equals(prLineImportVO.getUomCode(), prLineVO.getAttributeVarchar1())){
+                        getContext().addErrorMsg("导入模板中的计量单位编码与物料基本信息的计量单位编码不一致");
+                        return false;
+                    }
                 }
-                if(!StringUtils.equals(prLineImportVO.getItemSpecs(), prLineVO.getItemSpecs())){
-                    getContext().addErrorMsg("导入模板中的规格与物料基本信息的规格不一致");
-                    return false;
-                }
-                if(!StringUtils.equals(prLineImportVO.getItemModel(), prLineVO.getItemModel())){
-                    getContext().addErrorMsg("导入模板中的型号与物料基本信息的型号不一致");
-                    return false;
-                }
-                if(!StringUtils.equals(prLineImportVO.getUomCode(), prLineVO.getAttributeVarchar1())){
-                    getContext().addErrorMsg("导入模板中的计量单位编码与物料基本信息的计量单位编码不一致");
-                    return false;
-                }
-
+            } else {
+                getContext().addErrorMsg("物料编码不存在，请重新维护");
             }
         }
         //this.codeValid(prLineImportVO, this.prImportMapper::queryInvOrganizationInfo, prLineImportVO.getInvOrganizationCode(), (String)PrLineImportVO.FIELD_NAME_MAP.get("invOrganizationCode"), "sprm.pr_line_import.inv_organization_error", true);
