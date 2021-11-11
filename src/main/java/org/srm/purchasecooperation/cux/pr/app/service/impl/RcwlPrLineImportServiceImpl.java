@@ -129,6 +129,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                 String checkVarchar = prLineVO.getAttributeVarchar15();
                 List<PrLine> prLines = this.prImportMapper.queryItemInfo(prLineImportVO);
                 prLineTmp = prLines.get(0);
+                prLine.setItemId(prLineTmp.getItemId());
                 prLine.setItemAbcClass(prLineTmp.getItemAbcClass());
                 prLine.setUomId(prLineTmp.getUomId());
                 String itemOrgUomFlag = this.customizeSettingHelper.queryBySettingCode(tenantId, "000112");
