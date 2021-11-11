@@ -41,7 +41,7 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
     public boolean validate(String data) {
         RcwlPrLineImportVO prLineImportVO;
         try {
-            prLineImportVO = (RcwlPrLineImportVO)this.objectMapper.readValue(data, PrLineImportVO.class);
+            prLineImportVO = this.objectMapper.readValue(data, RcwlPrLineImportVO.class);
         } catch (IOException var6) {
             super.getContext().addErrorMsg(MessageAccessor.getMessage("error.data_invalid").desc());
             return false;
