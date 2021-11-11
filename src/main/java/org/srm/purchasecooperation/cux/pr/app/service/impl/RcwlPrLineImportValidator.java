@@ -3,17 +3,18 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.boot.imported.app.service.ValidatorHandler;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
 import org.hzero.core.message.MessageAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineImportValidator;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineImportVO;
 import org.srm.purchasecooperation.pr.domain.vo.UnitVO;
-import org.srm.purchasecooperation.pr.infra.mapper.PrImportMapper;
+import org.srm.web.annotation.Tenant;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,11 +24,12 @@ import java.util.function.Function;
 @ImportValidators({@ImportValidator(
         templateCode = "SPRM.PR_LINE"
 )})
-public class RcwlPrLineImportValidator extends ValidatorHandler {
+@Tenant("SRM-RCWL")
+public class RcwlPrLineImportValidator extends PrLineImportValidator {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private PrImportMapper prImportMapper;
+    private RcwlPrImportMapper prImportMapper;
     @Autowired
     private PrHeaderRepository prHeaderRepository;
 
@@ -62,6 +64,32 @@ public class RcwlPrLineImportValidator extends ValidatorHandler {
     }
 
     private boolean importValidator(PrLineImportVO prLineImportVO) {
+        //需求结束日期不可小于需求开始日期
+        if (prLineImportVO.getNeededDate().isBefore(prLineImportVO.getStartDate())) {
+            getContext().addErrorMsg("需求结束日期不可小于需求开始日期");
+            return false;
+        }
+        //需要校验导入模板中的物料名称、规格、型号、单位和物料基本信息中（smdm_item）数据是否一致
+        if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
+            List<PrLine> prLineVOs = this.prImportMapper.queryItemInfo(prLineImportVO);
+            PrLine prLineVO = prLineVOs.get(0);
+            String checkVarchar = prLineVO.getAttributeVarchar15();
+            if (!StringUtils.equals(checkVarchar, "1")) {
+                if(!StringUtils.equals(prLineImportVO.getItemName(), prLineVO.getItemName())){
+                    getContext().addErrorMsg("导入模板中的物料名称与物料基本信息的物料名称不一致");
+                }
+                if(!StringUtils.equals(prLineImportVO.getItemSpecs(), prLineVO.getItemSpecs())){
+                    getContext().addErrorMsg("导入模板中的规格与物料基本信息的规格不一致");
+                }
+                if(!StringUtils.equals(prLineImportVO.getItemModel(), prLineVO.getItemModel())){
+                    getContext().addErrorMsg("导入模板中的型号与物料基本信息的型号不一致");
+                }
+                if(!StringUtils.equals(prLineImportVO.getUomCode(), prLineVO.getAttributeVarchar1())){
+                    getContext().addErrorMsg("导入模板中的计量单位编码与物料基本信息的计量单位编码不一致");
+                }
+
+            }
+        }
         //this.codeValid(prLineImportVO, this.prImportMapper::queryInvOrganizationInfo, prLineImportVO.getInvOrganizationCode(), (String)PrLineImportVO.FIELD_NAME_MAP.get("invOrganizationCode"), "sprm.pr_line_import.inv_organization_error", true);
         //this.codeValid(prLineImportVO, this.prImportMapper::queryInventoryInfo, prLineImportVO.getInventoryCode(), (String)PrLineImportVO.FIELD_NAME_MAP.get("inventoryCode"), "sprm.pr_line_import.inventory_code_error", false);
         if (!prLineImportVO.isValidFlag()) {
