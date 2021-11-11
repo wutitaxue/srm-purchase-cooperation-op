@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper">
+
+    <select id="queryItemInfo" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        si.item_id,
+        si.item_code,
+        sit.item_name,
+        si.item_abc AS itemAbcClass,
+        si.specifications AS itemSpecs,
+        si.model AS itemModel,
+        si.drawing_version,
+        sic.category_id,
+        sic.category_code,
+        hu.uom_id,
+        hu.uom_code AS attributeVarchar1,
+        hut.uom_name
+        FROM smdm_item si
+        LEFT JOIN smdm_item_tl sit ON sit.item_id = si.item_id AND sit.lang = #{lang}
+        LEFT JOIN smdm_uom hu ON hu.uom_id = si.primary_uom_id
+        LEFT JOIN smdm_uom_tl hut ON hut.uom_id = hu.uom_id AND hut.lang = #{lang}
+        LEFT JOIN smdm_item_category_assign sica ON sica.item_id = si.item_id
+        LEFT JOIN smdm_item_category sic ON sic.category_id = sica.category_id
+        WHERE si.tenant_id = #{tenantId}
+        AND si.item_code = #{itemCode}
+        AND si.enabled_flag = 1
+    </select>
+
+    <select id="queryCategoryInfo" resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+        SELECT
+        sic.category_id,
+        sic.category_code,
+        sic.attribute_varchar15
+        FROM smdm_item_category sic
+        WHERE sic.tenant_id = #{tenantId}
+        AND sic.category_code = #{categoryCode}
+        AND sic.enabled_flag = 1
+    </select>
+</mapper>
