@@ -265,20 +265,29 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         }
         // -------------------------add by wangjie 采购申请头保存增加预算分摊自动生成预算行逻辑 begin--------------------------
         LOGGER.debug("========================申请行2:{}",prHeader.getPrLineList());
-        prHeader.getPrLineList().forEach(prLine -> {
-            // 新增行：保存前端传的所有ID为空的需求行数据，并重新生成预算分摊数据插表
-            // 更新行：判断数量，不含税单价，需求开始、结束日期的年，月是否有变化，有变化则重新生成预算分摊数据插表，无变化则不做操作
-            boolean needAgainCalculateBudget = changePrLineList.stream().noneMatch(originPrLine -> prLine.getPrLineId().equals(originPrLine.getPrLineId()))
-                    || (prLine.getQuantity().compareTo(originPrLineMap.get(prLine.getPrLineId()).getQuantity()) != 0
-                    || prLine.getUnitPrice().compareTo(originPrLineMap.get(prLine.getPrLineId()).getUnitPrice()) != 0
-                    || !prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(originPrLineMap.get(prLine.getPrLineId()).getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")))
-                    || !prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(originPrLineMap.get(prLine.getPrLineId()).getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM"))));
-            if (needAgainCalculateBudget) {
-                // 重新计算跨年预算数据
-                List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
-                rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
+        if (CollectionUtils.isNotEmpty(prHeader.getPrLineList())) {
+            for (PrLine prLine : prHeader.getPrLineList()) {
+                LOGGER.debug("准备prLine数据:{}===>{}", prLine, prLine.getAttributeDate1());
+                // 新增行：保存前端传的所有ID为空的需求行数据，并重新生成预算分摊数据插表
+                // 更新行：判断数量，不含税单价，需求开始、结束日期的年，月是否有变化，有变化则重新生成预算分摊数据插表，无变化则不做操作
+                if (!ObjectUtils.isEmpty(prLine.getAttributeDate1())) {
+                    boolean needAgainCalculateBudget = false;
+                    if (!ObjectUtils.isEmpty(originPrLineMap)) {
+                        needAgainCalculateBudget = changePrLineList.stream().noneMatch(originPrLine -> prLine.getPrLineId().equals(originPrLine.getPrLineId()))
+                                || (prLine.getQuantity().compareTo(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getQuantity()) != 0
+                                || prLine.getUnitPrice().compareTo(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getUnitPrice()) != 0
+                                || !prLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")))
+                                || !prLine.getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM")).equals(Objects.requireNonNull(originPrLineMap).get(prLine.getPrLineId()).getNeededDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM"))));
+                    }
+                    if (needAgainCalculateBudget || ObjectUtils.isEmpty(originPrLineMap)) {
+                        // 重新计算跨年预算数据
+                        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
+                        rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
+                    }
+                }
             }
-        });
+            LOGGER.debug("===============================>保存预算分摊计算完成<======================================");
+        }
         // -------------------------add by wangjie 采购申请头保存增加预算分摊自动生成预算行逻辑 end--------------------------
         return prHeader;
     }
@@ -300,8 +309,11 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据先删除,自动插入至scux_rcwl_budget_distribution表 begin--------------------------
             // 所有未跨年的预算
             List<RcwlBudgetDistribution> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistributionNotAcrossYear(prHeader.getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
-            // 删除原有的旧数据
-            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getPrLineId).collect(Collectors.toList())).build());
+            // 删除原有的未跨年旧数据
+            List<Long> prLineIds = rcwlBudgetDistributions.stream().map(RcwlBudgetDistribution::getPrLineId).collect(Collectors.toList());
+            if (CollectionUtils.isNotEmpty(prLineIds)) {
+                rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineIds).build());
+            }
             rcwlBudgetDistributionRepository.batchInsert(rcwlBudgetDistributions);
             // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据先删除,自动插入至scux_rcwl_budget_distribution表 end--------------------------
             //判断是否能触发接口
@@ -350,8 +362,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // ----------------add by wangjie 校验同一个采购申请行id下预算分摊总金额=采购申请行总金额;同一个采购申请行id下需求日期从及需求日期至的年份在scux_rcwl_budget_distribution中均存在，否则报错 end---------
         // ---------------- add by wangjie 把未变更的变更跨年预算删掉,主要是为了防止占用预算变更,日期和行金额都不变,变更完成之后反悔的情况 begin -------------------------------
         // 筛选未变更过的申请行id集合
-        List<Long> prLineNotChangedPrLineIds = changePrlines.stream().map(PrLine::getPrLineId).filter(prLineId -> !changedPrLines.stream().map(PrLine::getPrLineId).collect(Collectors.toSet()).contains(prLineId)).collect(Collectors.toList());
-        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineNotChangedPrLineIds).build());
+        List<RcwlBudgetDistributionDTO> rcwlBudgetDistributions = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).build());
         // 筛选实际预算分摊金额未变更过的变更预算
         List<Long> notChangedPrLineIds = rcwlNewBudgetChangeActionsNotEnableds.stream().filter(changeAction -> changeAction.getBudgetDisAmount().compareTo(rcwlBudgetDistributions.stream().filter(rcwlBudgetDistributionDTO -> rcwlBudgetDistributionDTO.getPrHeaderId().equals(changeAction.getPrHeaderId())
                         && rcwlBudgetDistributionDTO.getPrLineId().equals(changeAction.getPrLineId())
@@ -605,9 +616,11 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     public PrHeader copyPurchaseRequests(Long tenantId, PrHeader prHeader) {
         LOGGER.debug("12705 copyPurchaseRequests ====用户信息:{},采购申请=:{}", DetailsHelper.getUserDetails(), JSON.toJSONString(Arrays.asList(prHeader)));
         List<String> headCopyFields = new ArrayList(Arrays.asList(PrHeader.SRM_COPY_FIELD_LIST));
-        List<String> lineCopyFields = new ArrayList(Arrays.asList(PrLine.SRM_COPY_FIELD_LIST));
+        // 重新设置复制的字段
+        String[] SRM_COPY_FIELD_LIST = new String[]{"attributeDate1", "tenantId", "lineNum", "displayLineNum", "companyId", "purchaseOrgId", "purchaseAgentId", "requestDate", "requestedBy", "prRequestedName", "invOrganizationId", "inventoryId", "itemId", "itemCode", "itemName", "itemAbcClass", "drawingNum", "projectNum", "projectName", "craneNum", "productId", "productNum", "productName", "catalogId", "catalogName", "categoryId", "uomId", "quantity", "taxId", "taxRate", "currencyCode", "unitPrice", "taxIncludedUnitPrice", "lineAmount", "taxIncludedLineAmount", "neededDate", "supplierTenantId", "supplierId", "supplierCode", "supplierName", "supplierCompanyId", "supplierCompanyName", "canVatFlag", "erpEditStatus", "attachmentUuid", "remark", "lineFreight", "urgentFlag", "urgentDate", "costId", "costCode", "accountSubjectId", "accountSubjectNum", "wbs", "lastPurchasePrice", "itemModel", "itemSpecs", "itemProperties", "agentId", "keeperUserId", "accepterUserId", "costPayerUserId", "address", "innerPoNum", "jdPrice", "purchaseOrgGroupName", "companyOrgName", "costAnchDepDesc", "expBearDep", "sourcePlatformCode", "surfaceTreatFlag", "reqTypeCode", "accepterUserName", "agentName", "keeperUserName", "batchNo", "taxCode", "companyOrgId", "costAnchDepId", "expBearDepId", "overseasProcurement", "drawingVersion", "supplierItemCode", "supplierItemName", "frameAgreementNum", "wbsCode", "taxWithoutFreightPrice", "benchmarkPrice", "changePercent", "unitPriceBatch", "projectCategory", "assets", "assetChildNum", "accountAssignTypeId", "purchaseLineTypeId", "budgetIoFlag", "taxIncludedBudgetUnitPrice", "qualityStandard", "freightLineFlag", "budgetAccountId", "budgetAccountNum", "receiverInformation", "businessCardFlag", "receiveAddress", "receiveContactName", "receiveTelNum", "cartUserId", "cartUserType", "budgetAccountDeptno", "budgetAccountPrice"};
+        List<String> lineCopyFields = new ArrayList(Arrays.asList(SRM_COPY_FIELD_LIST));
         String tenantNum = TenantInfoHelper.selectByTenantId(tenantId).getTenantNum();
-
+        LOGGER.debug("============>复制采购申请获取到的tenantNum为:{}<================", tenantNum);
         try {
             PrCopyFieldsVO prCopyFieldsVO = new PrCopyFieldsVO();
             TaskResultBox taskResultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_PR_COPY_FIELDS", tenantNum, prCopyFieldsVO);
@@ -659,6 +672,15 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         copyPrHeader.setPrLineList(copyPrLineList);
         copyPrHeader.setPrLineList(this.prLineService.updatePrLines(copyPrHeader));
 
+        // ----------------------- add by wangjie 复制的采购申请,需要复制预算数据 begin ------------------------------------------
+        PrHeader finalCopyPrHeader = copyPrHeader;
+        copyPrHeader.getPrLineList().forEach(prLine -> {
+            LOGGER.debug("============>复制采购申请需要重新计算预算:{}<=============", prLine);
+            // 重新计算跨年预算数据
+            List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDTOS = rcwlBudgetDistributionService.selectBudgetDistributionByPrLine(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(finalCopyPrHeader.getPrHeaderId()).prLineId(prLine.getPrLineId()).build(), Boolean.TRUE);
+            rcwlBudgetDistributionService.createBudgetDistributions(prHeader.getTenantId(), rcwlBudgetDistributionDTOS);
+        });
+        // ----------------------- add by wangjie 复制的采购申请,需要复制预算数据 end --------------------------------------------
         return copyPrHeader;
     }
 

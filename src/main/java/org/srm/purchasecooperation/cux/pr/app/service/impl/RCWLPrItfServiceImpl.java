@@ -848,7 +848,7 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService {
         rcwlBudgetChangeActionQuery.setPrHeaderId(oldPrHeader.getPrHeaderId());
         rcwlBudgetChangeActionQuery.setTenantId(tenantId);
         List<RcwlBudgetChangeAction> rcwlBudgetChangeActions = rcwlBudgetChangeActionRepository.selectMaxPrActionData(rcwlBudgetChangeActionQuery);
-        List<Long> prLineIds = prLineList.stream().map(PrLine::getPrLineId).collect(Collectors.toList());
+        List<Long> prLineIds = rcwlBudgetChangeActions.stream().map(RcwlBudgetChangeAction::getPrLineId).collect(Collectors.toList());
         // 需要删除的预算数据
         List<RcwlBudgetDistributionDTO> rcwlBudgetDistributionDelete = rcwlBudgetDistributionRepository.selectBudgetDistribution(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(oldPrHeader.getPrHeaderId()).prLineIds(prLineIds).build());
         List<RcwlBudgetDistribution> rcwlBudgetDistributions=new ArrayList<>(rcwlBudgetDistributionDelete.size());
