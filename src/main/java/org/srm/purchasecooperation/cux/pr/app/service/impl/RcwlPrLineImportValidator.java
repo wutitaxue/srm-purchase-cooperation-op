@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
+import org.srm.purchasecooperation.cux.sinv.infra.util.TenantValue;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineImportValidator;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
@@ -24,10 +25,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @ImportValidators({@ImportValidator(
-        templateCode = "SPRM.PR_LINE"
+        templateCode = "SPRM.PR_LINE",
+        tenantNum = TenantValue.tenantV
 )})
 @Tenant("SRM-RCWL")
-@Primary
 public class RcwlPrLineImportValidator extends PrLineImportValidator {
     @Autowired
     private ObjectMapper objectMapper;
@@ -98,6 +99,7 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
                 }
             } else {
                 getContext().addErrorMsg("物料编码不存在，请重新维护");
+                return false;
             }
         }
         //this.codeValid(prLineImportVO, this.prImportMapper::queryInvOrganizationInfo, prLineImportVO.getInvOrganizationCode(), (String)PrLineImportVO.FIELD_NAME_MAP.get("invOrganizationCode"), "sprm.pr_line_import.inv_organization_error", true);
