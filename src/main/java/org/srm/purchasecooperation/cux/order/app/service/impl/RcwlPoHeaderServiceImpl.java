@@ -1688,7 +1688,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         //更新完成后，自动计算跨年预算数据
         if (CollectionUtils.isNotEmpty(poOrderSavaDTO.getPoLineDetailDTOs())){
 
-            List<PoLineDetailDTO> poLineDetailDTOList = poOrderSavaDTO.getPoLineDetailDTOs().stream().filter(line -> Objects.nonNull(line.getPoLineId())).collect(Collectors.toList());
+            //零星申请、其他采购申请、总价合同订单无需生成跨年预算数据
+            List<PoLineDetailDTO> poLineDetailDTOList = poOrderSavaDTO.getPoLineDetailDTOs().stream().filter(line -> Objects.nonNull(line.getPoLineId())
+            && !"PURCHASE_REQUEST".equals(line.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(line.getSourceBillTypeCode())
+                    && !"CONTRACT_ORDER".equals(line.getSourceBillTypeCode())).collect(Collectors.toList());
 
             if (CollectionUtils.isNotEmpty(poLineDetailDTOList)) {
                 for (PoLineDetailDTO poLineDetail : poLineDetailDTOList) {
@@ -1977,22 +1980,26 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             });
             this.poLineLocationRepository.batchInsertSelective(poLineLocationList);
 
-            //生成每一行的跨年预算数据
-            for (PoLineLocation poLineLocation:poLineLocationList){
-                PoLine poLineQuery = new PoLine();
-                poLineQuery.setPoHeaderId(poLineLocation.getPoHeaderId());
-                poLineQuery.setPoLineId(poLineLocation.getPoLineId());
-                poLineQuery.setTenantId(poLineLocation.getTenantId());
-                PoLine poLine = poLineRepository.selectOne(poLineQuery);
-                RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
-                rcwlBudgetDistributionDTO.setAttributeDate1(poLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                rcwlBudgetDistributionDTO.setNeedByDate(poLineLocation.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                rcwlBudgetDistributionDTO.setLineAmount(poLine.getLineAmount());
-                rcwlBudgetDistributionDTO.setPoHeaderId(poLineLocation.getPoHeaderId());
-                rcwlBudgetDistributionDTO.setPoLineId(poLineLocation.getPoLineId());
-                rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poHeader.getTenantId(), rcwlBudgetDistributionDTO);
+            //零星申请、其他采购申请、总价合同订单不生成跨年预算数据
+            log.info("订单单据来源:{}",poHeader.getSourceBillTypeCode());
+            if (!"PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())
+                    && !"CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode())){
+                //生成每一行的跨年预算数据
+                for (PoLineLocation poLineLocation:poLineLocationList){
+                    PoLine poLineQuery = new PoLine();
+                    poLineQuery.setPoHeaderId(poLineLocation.getPoHeaderId());
+                    poLineQuery.setPoLineId(poLineLocation.getPoLineId());
+                    poLineQuery.setTenantId(poLineLocation.getTenantId());
+                    PoLine poLine = poLineRepository.selectOne(poLineQuery);
+                    RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
+                    rcwlBudgetDistributionDTO.setAttributeDate1(poLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                    rcwlBudgetDistributionDTO.setNeedByDate(poLineLocation.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                    rcwlBudgetDistributionDTO.setLineAmount(poLine.getLineAmount());
+                    rcwlBudgetDistributionDTO.setPoHeaderId(poLineLocation.getPoHeaderId());
+                    rcwlBudgetDistributionDTO.setPoLineId(poLineLocation.getPoLineId());
+                    rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poHeader.getTenantId(), rcwlBudgetDistributionDTO);
+                }
             }
-
 
             if (poHeader.isByErpOrSrmPr()) {
                 PoOrderSaveDTO poOrderSaveDTO = new PoOrderSaveDTO();
