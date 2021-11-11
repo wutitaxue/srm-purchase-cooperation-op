@@ -7,6 +7,7 @@ import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
 import org.hzero.core.message.MessageAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineImportValidator;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -38,9 +39,9 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
 
     @Override
     public boolean validate(String data) {
-        PrLineImportVO prLineImportVO;
+        RcwlPrLineImportVO prLineImportVO;
         try {
-            prLineImportVO = (PrLineImportVO)this.objectMapper.readValue(data, PrLineImportVO.class);
+            prLineImportVO = (RcwlPrLineImportVO)this.objectMapper.readValue(data, PrLineImportVO.class);
         } catch (IOException var6) {
             super.getContext().addErrorMsg(MessageAccessor.getMessage("error.data_invalid").desc());
             return false;
