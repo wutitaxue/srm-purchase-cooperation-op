@@ -1658,7 +1658,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             //无价合同计算行金额
             if (CollectionUtils.isNotEmpty(poOrderSavaDTO.getPoLineDetailDTOs())){
                 for (PoLineDetailDTO poLineDetail :poOrderSavaDTO.getPoLineDetailDTOs()){
-                    poLineDetail.setLineAmount(poLineDetail.getEnteredTaxIncludedPrice().multiply(poLineDetail.getQuantity()));
+//                    poLineDetail.setLineAmount(poLineDetail.getEnteredTaxIncludedPrice().multiply(poLineDetail.getQuantity()));
+                    BigDecimal taxNotIncludePrice = poLineDetail.getEnteredTaxIncludedPrice().divide(BigDecimal.ONE.add(poLineDetail.getTaxRate().divide(new BigDecimal("100"))), ConstantsOfBigDecimal.SCALE_OF_TEN, RoundingMode.HALF_UP);
+                    poLineDetail.setLineAmount(taxNotIncludePrice.multiply(poLineDetail.getQuantity()));
                 }
             }
         }
