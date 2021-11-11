@@ -27,5 +27,12 @@ public interface RcwlPrImportMapper extends PrImportMapper {
     @Override
     PrLine queryCategoryInfo(PrLineImportVO prLineImportVO);
 
+    /**
+     * 根据公司Id查询库存组织
+     * 查询参数：tenantId                 租户ID
+     *           ouId                     业务实体
+     *           invOrganizationCode      组织编码
+     * @return
+     */
     PrLine queryInvOrganizationInfoByCompanyId(@Param("companyId") Long companyId);
 }
