@@ -3,7 +3,6 @@ package org.srm.purchasecooperation.cux.pr.infra.validator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.boot.imported.app.service.ValidatorHandler;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
 import org.slf4j.Logger;
@@ -11,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
+import org.srm.purchasecooperation.pr.app.service.impl.PrLineImportValidator;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
 })
 
 
-public class RcwlPrLineImportValidator extends ValidatorHandler {
+public class RcwlPrLineImportValidator extends PrLineImportValidator {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
