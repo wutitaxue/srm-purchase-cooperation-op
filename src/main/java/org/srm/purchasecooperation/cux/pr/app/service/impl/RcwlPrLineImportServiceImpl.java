@@ -72,7 +72,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
 
         List prLineImportVOList;
         try {
-            prLineImportVOList = (List)this.objectMapper.readValue(voStr, this.objectMapper.getTypeFactory().constructParametricType(List.class, new Class[]{RcwlPrLineImportVO.class}));
+            prLineImportVOList = this.objectMapper.readValue(voStr, this.objectMapper.getTypeFactory().constructParametricType(List.class, new Class[]{RcwlPrLineImportVO.class}));
         } catch (IOException var8) {
             return false;
         }
@@ -82,7 +82,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
         } else {
             Long tenantId = DetailsHelper.getUserDetails().getTenantId();
             Long prHeaderId = Long.valueOf(this.getArgs().get("prHeaderId").toString());
-            PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
+            PrHeader prHeader = this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
             if (prHeader != null && tenantId.equals(prHeader.getTenantId())) {
                 List<PrLine> prLines = this.convertPrLine(prHeader, prLineImportVOList);
                 this.importPrLine(prHeader, prLines);
@@ -106,7 +106,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
             prLineImportVO.setCompanyId(prHeader.getCompanyId());
             prLine = CommonConverter.beanConvert(PrLine.class, prLineImportVO);
             prLine.addHeaderField(prHeader);
-            PrLine prLineTmp = this.prImportMapper.queryInvOrganizationInfo(prLineImportVO);
+            PrLine prLineTmp;
             //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
             PrLine prLineOrg = this.prImportMapper.queryInvOrganizationInfoByCompanyId(prHeader.getCompanyId());
             prLine.setInvOrganizationId(prLineOrg.getInvOrganizationId());
@@ -124,10 +124,11 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
             }
 
             if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
+                prLine.setItemCode(prLineImportVO.getItemCode());
                 PrLine prLineVO = this.prImportMapper.queryCategoryInfo(prLineImportVO);
                 String checkVarchar = prLineVO.getAttributeVarchar15();
                 List<PrLine> prLines = this.prImportMapper.queryItemInfo(prLineImportVO);
-                prLineTmp = (PrLine)prLines.get(0);
+                prLineTmp = prLines.get(0);
                 prLine.setItemAbcClass(prLineTmp.getItemAbcClass());
                 prLine.setUomId(prLineTmp.getUomId());
                 String itemOrgUomFlag = this.customizeSettingHelper.queryBySettingCode(tenantId, "000112");
@@ -276,11 +277,9 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
     private void importPrLine(PrHeader prHeader, List<PrLine> prLineList) {
         prHeader.setPrLineList(prLineList);
         this.prHeaderService.updatePrHeader(prHeader);
-        prLineList = (List)prLineList.stream().peek((prLine) -> {
+        prLineList = prLineList.stream().peek((prLine) -> {
             prLine.setPurchaseAgentId((Long)prLine.getFlex().get("purchaseAgentId"));
-        }).filter((prLine) -> {
-            return Objects.nonNull(prLine.getPurchaseAgentId());
-        }).collect(Collectors.toList());
+        }).filter((prLine) -> Objects.nonNull(prLine.getPurchaseAgentId())).collect(Collectors.toList());
         this.prLineRepository.batchUpdateOptional(prLineList, new String[]{"purchaseAgentId"});
     }
 }
