@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.po.itf.infra.mapper.RcwlSodrHzpoItfMapper">
+
+
+    <select id="getTenantId" resultType="java.lang.Long">
+        SELECT
+        hg.tenant_id
+        FROM
+        hpfm_group hg
+        WHERE hg.core_flag = 1
+    </select>
+
+    <select id="checkUnifiedSocialCode" resultType="java.lang.Long">
+        SELECT
+            count(0)
+        FROM
+            sslm_supplier_basic ssb
+        WHERE ssb.tenant_id = #{tenantId}
+        AND ssb.unified_social_code = #{unifiedSocialCode}
+    </select>
+
+    <select id="checkSkuCategoryCode" resultType="java.lang.Long">
+        SELECT
+            count(0)
+        FROM
+            smdm_item_category sic
+        WHERE sic.tenant_id = #{tenantId}
+       AND sic.category_code = #{skuCategoryCode}
+    </select>
+
+    <select id="checkSkuNo" resultType="java.lang.Long">
+        SELECT
+            count(0)
+        FROM
+            smpc_sku ss
+        WHERE ss.tenant_id = #{tenantId}
+          AND ss.sku_code = #{skuNo}
+    </select>
+
+    <select id="querySkuInfo" resultType="org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSkuInfoDTO">
+        SELECT ss.sku_code,
+               ss.sku_name,
+               sic.category_code
+        FROM smpc_sku ss
+                 LEFT JOIN smpc_sku_mapping ssm ON ss.sku_id = ssm.sku_id AND ssm.mapping_type = 'ITEM_CATEGORY'
+                 LEFT JOIN smdm_item_category sic ON ssm.mapping_data = sic.category_id
+        WHERE ss.tenant_id = #{tenantId}
+          AND ss.sku_code IN
+        <foreach collection="skuNos" item="skuNo" index="index" separator="," open="(" close=")">
+            #{skuNo}
+        </foreach>
+    </select>
+
+</mapper>

@@ -155,6 +155,8 @@ public class RcwlSodrHzpoHeader extends AuditDomain {
     @ApiModelProperty(value = "账期模式", required = true)
     @NotBlank
     private String paymentTerms;
+    @ApiModelProperty(value = "发票类型")
+    private String invoiceType;
 
     //
     // 非数据库字段
@@ -505,4 +507,11 @@ public class RcwlSodrHzpoHeader extends AuditDomain {
         this.paymentTerms = paymentTerms;
     }
 
+    public String getInvoiceType() {
+        return invoiceType;
+    }
+
+    public void setInvoiceType(String invoiceType) {
+        this.invoiceType = invoiceType;
+    }
 }
