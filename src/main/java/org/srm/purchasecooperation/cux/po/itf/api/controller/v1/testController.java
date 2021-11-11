@@ -71,7 +71,7 @@ public class testController {
     private RcwlSodrHzpoHeaderRepository rcwlSodrHzpoHeaderRepository;
 
     @ApiOperation(value = "华住订单状态更新接口")
-    @Permission(level = ResourceLevel.SITE,permissionPublic = true)
+    @Permission(level = ResourceLevel.SITE)
     @GetMapping
     public RcwlOrderStatusRcvDTO list() {
         //设置查询DTO
