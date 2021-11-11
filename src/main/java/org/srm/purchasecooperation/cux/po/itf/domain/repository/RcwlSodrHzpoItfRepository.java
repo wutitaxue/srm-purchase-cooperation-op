@@ -1,5 +1,9 @@
 package org.srm.purchasecooperation.cux.po.itf.domain.repository;
 
+import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSkuInfoDTO;
+
+import java.util.List;
+
 /**
  * @Author: longjunquan 21420
  * @Date: 2021/10/25 17:03
@@ -39,5 +43,13 @@ public interface RcwlSodrHzpoItfRepository {
      * @return
      */
     Long checkSkuNode(Long tenantId, String skuNo);
+    /**
+    * 查询商品信息
+     *
+    * @param tenantId
+    * @param skuNos
+    * @return
+    */
+    List<RcwlSkuInfoDTO> querySkuInfo(Long tenantId, List<String> skuNos );
 
 }

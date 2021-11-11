@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.po.itf.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,24 +25,28 @@ public class RcwlSodrHzpoLineDTO extends AuditDomain {
     private String lineStatus;
 
     @ApiModelProperty(value = "行号")
+    @JsonProperty("itemId")
     private String lineNum;
 
     @ApiModelProperty(value = "商品分类编号")
     private String skuCategoryCode;
 
     @ApiModelProperty(value = "商品编号")
+    @JsonProperty("skuCode")
     private String skuNo;
 
     @ApiModelProperty(value = "商品名称")
     private String skuName;
 
     @ApiModelProperty(value = "销售单价")
+    @JsonProperty("price")
     private BigDecimal unitPrice;
 
     @ApiModelProperty(value = "购买数量")
     private BigDecimal quantity;
 
     @ApiModelProperty(value = "小计")
+    @JsonProperty("itemAmout")
     private BigDecimal lineAmount;
 
     @ApiModelProperty(value = "协议价")

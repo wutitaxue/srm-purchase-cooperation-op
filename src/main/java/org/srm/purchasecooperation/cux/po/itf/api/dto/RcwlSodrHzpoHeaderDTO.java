@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.cux.po.itf.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,18 +27,20 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     private Long tenantId;
 
     @ApiModelProperty(value = "订单编号")
-   
+    @JsonProperty("orderSn")
     private String poNum;
 
     @ApiModelProperty(value = "订单状态,值集SCUX_RCWL_HZPO_STATUS")
+    @JsonProperty("type")
    
     private String statusCode;
 
     @ApiModelProperty(value = "酒店编号")
-   
+    @JsonProperty("merchantCode")
     private String purchaseOrgNum;
 
     @ApiModelProperty(value = "酒店名称")
+    @JsonProperty("hotelName")
    
     private String purchaseOrgName;
 
@@ -53,6 +56,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
             pattern = BaseConstants.Pattern.DATETIME,
             timezone = "GMT+8"
     )
+    @JsonProperty("createTime")
     private LocalDateTime orderDate;
 
     @ApiModelProperty(value = "供应商确认日期")
@@ -96,6 +100,7 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     private LocalDate confirmReceiptDate;
 
     @ApiModelProperty(value = "供应商统一社会信用代码")
+    @JsonProperty("creditCode")
    
     private String unifiedSocialCode;
 
@@ -103,14 +108,17 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     private String paymentChannel;
 
     @ApiModelProperty(value = "下单人")
-   
+    @JsonProperty("receiverName")
+
     private String orderer;
 
     @ApiModelProperty(value = "订单含税总额")
+    @JsonProperty("totalAmount")
    
     private BigDecimal taxIncludeAmount;
 
     @ApiModelProperty(value = "运费")
+    @JsonProperty("freightAmount")
    
     private BigDecimal freightFee;
 
@@ -119,18 +127,22 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     private BigDecimal installationFee;
 
     @ApiModelProperty(value = "优惠金额")
+    @JsonProperty("discountAmount")
    
     private BigDecimal discountedPrice;
 
     @ApiModelProperty(value = "优惠原因")
+    @JsonProperty("DiscountedReason")
    
     private String discountedReason;
 
     @ApiModelProperty(value = "收货地址（省）")
+    @JsonProperty("province")
    
     private String shippingAddressProvince;
 
     @ApiModelProperty(value = "收货地址（市）")
+    @JsonProperty("city")
    
     private String shippingAddressCity;
 
@@ -161,6 +173,10 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     @ApiModelProperty(value = "账期模式")
    
     private String paymentTerms;
+
+    @ApiModelProperty(value = "发票类型")
+
+    private String invoiceType;
 
     @ApiModelProperty(value = "二开订单行")
     private List<RcwlSodrHzpoLineDTO> data;

@@ -2,8 +2,11 @@ package org.srm.purchasecooperation.cux.po.itf.infra.repository.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSkuInfoDTO;
 import org.srm.purchasecooperation.cux.po.itf.domain.repository.RcwlSodrHzpoItfRepository;
 import org.srm.purchasecooperation.cux.po.itf.infra.mapper.RcwlSodrHzpoItfMapper;
+
+import java.util.List;
 
 /**
  * @Author: longjunquan 21420
@@ -32,6 +35,11 @@ public class RcwlSodrHzpoItfRepositoryImpl implements RcwlSodrHzpoItfRepository 
     @Override
     public Long checkSkuNode(Long tenantId, String skuNo) {
         return rcwlSodrHzpoItfMapper.checkSkuNo(tenantId,skuNo);
+    }
+
+    @Override
+    public  List<RcwlSkuInfoDTO> querySkuInfo(Long tenantId, List<String> skuNos) {
+        return rcwlSodrHzpoItfMapper.querySkuInfo(tenantId,skuNos);
     }
 
 }

@@ -2,6 +2,7 @@ package org.srm.purchasecooperation.cux.po.itf.app.service;
 
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoHeader;
 import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoHeaderDTO;
+import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoReturnDTO;
 
 /**
  * @Author: longjunquan 21420
@@ -10,5 +11,5 @@ import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoHeaderDTO;
  */
 public interface RcwlSodrHzpoItfService {
 
-    RcwlSodrHzpoHeader handleItfData(RcwlSodrHzpoHeaderDTO itfData);
+    RcwlSodrHzpoReturnDTO handleItfData(RcwlSodrHzpoHeaderDTO itfData);
 }

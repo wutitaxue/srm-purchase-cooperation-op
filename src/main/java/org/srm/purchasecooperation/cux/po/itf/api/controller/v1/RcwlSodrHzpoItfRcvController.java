@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoHeader;
 import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoHeaderDTO;
+import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoReturnDTO;
 import org.srm.purchasecooperation.cux.po.itf.app.service.RcwlSodrHzpoItfService;
 
 /**
@@ -29,7 +30,8 @@ public class RcwlSodrHzpoItfRcvController {
     @ApiOperation(value = "接收二开订单接口数据")
     @Permission(level = ResourceLevel.SITE)
     @PostMapping("/rcwl-sodr-hzpo/receiver-data")
-    public RcwlSodrHzpoHeader receivePoRestData(@RequestBody RcwlSodrHzpoHeaderDTO itfData){
+    public RcwlSodrHzpoReturnDTO receivePoRestData(@RequestBody RcwlSodrHzpoHeaderDTO itfData){
+        LOGGER.info("itfData:{}",itfData);
 
           return rcwlSodrHzpoItfService.handleItfData(itfData);
 
