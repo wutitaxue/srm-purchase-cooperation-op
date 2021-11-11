@@ -74,7 +74,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         if (CollectionUtils.isEmpty(budgetDistributionsInDB) || !Collections.max(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedEndDateYear())
         || !Collections.min(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedStartDateYear())){
             log.info("未创建或年份不匹配");
-            return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, null);
+            return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB, 0);
         }
 
         //校验各年原预算值（手工）是否等于行金额
@@ -86,11 +86,12 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
 
         //重新计算系统预算，获取原手工预算，重新创建
         log.info("已有数据且年份匹配");
-        List<RcwlBudgetDistribution> budgetDistributionCreateList = createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB);
+        List<RcwlBudgetDistribution> budgetDistributionCreateList = createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB, 1);
         return budgetDistributionCreateList;
     }
 
-    private List<RcwlBudgetDistribution> createBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO, List<RcwlBudgetDistribution> budgetDistributionsInDB) {
+    private List<RcwlBudgetDistribution> createBudgetDistributionByPoLine(Long tenantId, RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO,
+                                                                          List<RcwlBudgetDistribution> budgetDistributionsInDB, Integer amountBackFlag) {
         List<RcwlBudgetDistribution> budgetDistributionCreateList = new ArrayList<>();
 
         String poAndPoLineNum = rcwlBudgetDistributionMapper.selectPoAndPoLineNum(tenantId, rcwlBudgetDistributionDTO.getPoHeaderId(), rcwlBudgetDistributionDTO.getPoLineId());
@@ -135,7 +136,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
             budgetDistribution.setBudgetDisAmountCal(budgetDisAmountCal);
             budgetDistribution.setBudgetDisAmount(budgetDisAmountCal);
 
-            if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)){
+            if (CollectionUtils.isNotEmpty(budgetDistributionsInDB) && Integer.valueOf(1).equals(amountBackFlag)){
                 Integer finalI = i;
                 List<RcwlBudgetDistribution> rcwlBudgetDistributions = budgetDistributionsInDB.stream()
                         .filter(bd -> finalI.equals(bd.getBudgetDisYear())).collect(Collectors.toList());
