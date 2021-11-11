@@ -2,10 +2,6 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
-import java.io.IOException;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.imported.app.service.ValidatorHandler;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
@@ -19,10 +15,15 @@ import org.srm.purchasecooperation.pr.domain.vo.PrLineImportVO;
 import org.srm.purchasecooperation.pr.domain.vo.UnitVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrImportMapper;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 @ImportValidators({@ImportValidator(
         templateCode = "SPRM.PR_LINE"
 )})
-public class RcwlPrLineImportValidator extends PrLineImportValidator {
+public class RcwlPrLineImportValidator extends ValidatorHandler {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
