@@ -1579,8 +1579,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poToBpmDTO.setAmount(String.valueOf(poDTO.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmDTO.setTaxIncludeAmount(String.valueOf(poDTO.getTaxIncludeAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
         poToBpmDTO.setCurrencyCode(poDTO.getCurrencyCode());
-        poToBpmDTO.setCompanyId(poDTO.getCompanyName());
-        poToBpmDTO.setTempKey(poDTO.getSupplierName());
+        poToBpmDTO.setCompanyId(StringUtils.isNotBlank(poDTO.getCompanyName())?poDTO.getCompanyName():this.rcwlPoToBpmMapper.selectCompanyName(poDTO.getTenantId(),poDTO.getCompanyId()));
+        poToBpmDTO.setTempKey(StringUtils.isNotBlank(poDTO.getSupplierName())?poDTO.getSupplierName():this.rcwlPoToBpmMapper.selectSupplierName(poDTO.getTenantId(),poDTO.getSupplierCode()));
         poToBpmDTO.setEsPurchaseOrgId(this.rcwlPoToBpmMapper.selectEsPurchaseOrgName(poDTO.getTenantId(),poDTO.getPurchaseOrgId()));
         poToBpmDTO.setPoTypeId(this.rcwlPoToBpmMapper.selectOrderTypeName(poDTO.getTenantId(),poDTO.getPoTypeId()));
         poToBpmDTO.setAttributeVarchar1(poDTO.getAttributeVarchar1());

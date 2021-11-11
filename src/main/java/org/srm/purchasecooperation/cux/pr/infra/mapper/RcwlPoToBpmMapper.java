@@ -51,4 +51,20 @@ public interface RcwlPoToBpmMapper {
      * @return
      */
     String selectAgentName(Long tenantId, Long agentId);
+
+    /**
+     * 获取公司名称
+     * @param tenantId
+     * @param companyId
+     * @return
+     */
+    String selectCompanyName(Long tenantId, Long companyId);
+
+    /**
+     * 获取供应商名称
+     * @param tenantId
+     * @param supplierCode
+     * @return
+     */
+    String selectSupplierName(Long tenantId, String supplierCode);
 }

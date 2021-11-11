@@ -65,4 +65,24 @@
             and hpa.purchase_agent_id = #{agentId}
     </select>
 
+    <select id="selectCompanyName" resultType="java.lang.String">
+        SELECT
+            hc.company_name
+        FROM
+            hpfm_company hc
+        WHERE
+            hc.tenant_id = #{tenantId}
+          and hc.company_id = #{companyId}
+    </select>
+
+    <select id="selectSupplierName" resultType="java.lang.String">
+        SELECT
+            ssb.company_name
+        FROM
+            sslm_supplier_basic ssb
+        WHERE
+            ssb.tenant_id = #{tenantId}
+          and ssb.company_num = #{supplierCode}
+    </select>
+
 </mapper>
