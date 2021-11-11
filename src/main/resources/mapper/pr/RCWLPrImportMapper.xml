@@ -38,4 +38,13 @@
         AND sic.category_code = #{categoryCode}
         AND sic.enabled_flag = 1
     </select>
+
+    <select id="queryInvOrganizationInfoByCompanyId"
+            resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
+        SELECT DISTINCT hio.organization_code, hio.organization_name
+        FROM sprm_pr_header sph
+        LEFT JOIN hpfm_company hc ON sph.company_id = hc.company_id
+        LEFT JOIN hpfm_inv_organization hio ON hc.company_id = hio.organization_id
+        WHERE sph.company_id = #{companyId};
+    </select>
 </mapper>

@@ -1,5 +1,7 @@
 package org.srm.purchasecooperation.cux.pr.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineImportVO;
 import org.srm.purchasecooperation.pr.infra.mapper.PrImportMapper;
@@ -24,4 +26,6 @@ public interface RcwlPrImportMapper extends PrImportMapper {
      */
     @Override
     PrLine queryCategoryInfo(PrLineImportVO prLineImportVO);
+
+    PrLine queryInvOrganizationInfoByCompanyId(@Param("companyId") Long companyId);
 }
