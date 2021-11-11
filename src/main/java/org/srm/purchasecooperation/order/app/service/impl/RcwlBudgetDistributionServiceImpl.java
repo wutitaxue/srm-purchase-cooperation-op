@@ -74,7 +74,7 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         if (CollectionUtils.isEmpty(budgetDistributionsInDB) || !Collections.max(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedEndDateYear())
         || !Collections.min(budgetDisYears).equals(rcwlBudgetDistributionDTO.getNeedStartDateYear())){
             log.info("未创建或年份不匹配");
-            return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO,null);
+            return createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB);
         }
 
         //校验各年原预算值（手工）是否等于行金额
