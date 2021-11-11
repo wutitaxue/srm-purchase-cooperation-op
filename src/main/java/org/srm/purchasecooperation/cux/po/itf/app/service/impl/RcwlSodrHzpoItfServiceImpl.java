@@ -15,13 +15,17 @@ import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoHeader;
 import org.srm.purchasecooperation.cux.po.domain.entity.RcwlSodrHzpoLine;
 import org.srm.purchasecooperation.cux.po.domain.repository.RcwlSodrHzpoHeaderRepository;
 import org.srm.purchasecooperation.cux.po.domain.repository.RcwlSodrHzpoLineRepository;
+import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSkuInfoDTO;
 import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoHeaderDTO;
 import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoLineDTO;
+import org.srm.purchasecooperation.cux.po.itf.api.dto.RcwlSodrHzpoReturnDTO;
 import org.srm.purchasecooperation.cux.po.itf.app.service.RcwlSodrHzpoItfService;
 import org.srm.purchasecooperation.cux.po.itf.domain.repository.RcwlSodrHzpoItfRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: longjunquan 21420
@@ -40,38 +44,44 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
     @Autowired
     LovFeignClient lovFeignClient;
     @Override
-    public RcwlSodrHzpoHeader handleItfData(RcwlSodrHzpoHeaderDTO itfData) {
+    public RcwlSodrHzpoReturnDTO handleItfData(RcwlSodrHzpoHeaderDTO itfData) {
         //校验头数据
         //Tenant_id：hpfm_group表中core_flag为1的tanant_id
         Long tenantId = rcwlSodrHzpoItfRepository.getTenantId();
         itfData.setTenantId(tenantId);
         //判断接口传入的状态代码是否在系统中存在
         boolean existsFlag = false;
-        List<LovValueDTO> lovValueDTOLists = lovFeignClient.queryLovValue("SCUX_RCWL_HZPO_STATUS",tenantId);
-        for(LovValueDTO lovValueDTOList:lovValueDTOLists ){
-            if(lovValueDTOList.getValue().equals(itfData.getStatusCode())){
-                existsFlag = true;
-            }
-        }
-        Assert.isTrue(existsFlag,MessageAccessor.getMessage("error.sodrhzpo_status_error", LanguageHelper.locale()).desc());
-
         //unified_social_code：关联sslm_supplier_basic中unified_social_code，校验必须存在
         Long existsCount = rcwlSodrHzpoItfRepository.checkUnifiedSocialCode(tenantId,itfData.getUnifiedSocialCode());
         Assert.isTrue(!existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
 
         //校验行数据
         List<RcwlSodrHzpoLineDTO> rcwlSodrHzpoLineDTOList = itfData.getData();
+        List<String> skuCodes = new ArrayList<>();
         rcwlSodrHzpoLineDTOList.forEach(poLine ->{
-            Long categoryCodeCount = rcwlSodrHzpoItfRepository.checkSkuCategoryCode(tenantId,poLine.getSkuCategoryCode());
+            skuCodes.add(poLine.getSkuNo());
             Long noCount = rcwlSodrHzpoItfRepository.checkSkuNode(tenantId,poLine.getSkuNo());
-            Assert.isTrue(!categoryCodeCount.equals(0L), MessageAccessor.getMessage("error.product.category.does.not.exist" , LanguageHelper.locale()).desc());
             Assert.isTrue(!noCount.equals(0L),MessageAccessor.getMessage("smpc.error.sku.not.exists",LanguageHelper.locale()).desc());
-
+        });
+        //根据skuCode查找商品名称和品类
+        List<RcwlSkuInfoDTO> skuInfos = rcwlSodrHzpoItfRepository.querySkuInfo(tenantId,skuCodes);
+        skuInfos.forEach(skuInfo -> {
+            rcwlSodrHzpoLineDTOList.forEach(itfInfo->{
+                if(itfInfo.getSkuNo().equals(skuInfo.getSkuCode())){
+                    LOGGER.info("接口中的数据:{}",itfInfo.toString());
+                    LOGGER.info("数据库中的数据:{}",skuInfo.toString());
+                    //报文中的商品名称/品类如果不为空并且与数据库中查询到的值不一样的话则报错
+                    Assert.isTrue(itfInfo.getSkuName() == null || itfInfo.getSkuName().equals(skuInfo.getSkuName()),MessageAccessor.getMessage("small.name.of.the.product.is.inconsistent",LanguageHelper.locale()).desc());
+                    Assert.isTrue(itfInfo.getSkuCategoryCode() == null || itfInfo.getSkuCategoryCode().equals(skuInfo.getCategoryCode()),MessageAccessor.getMessage("error.item_category_not_exists",LanguageHelper.locale()).desc());
+                    itfInfo.setSkuName(skuInfo.getSkuName());
+                    itfInfo.setSkuCategoryCode(skuInfo.getCategoryCode());
+                }
+            });
         });
         return createOrUpdatePo(tenantId,itfData);
     }
 
-    RcwlSodrHzpoHeader createOrUpdatePo(Long tenantId,RcwlSodrHzpoHeaderDTO itfData){
+    RcwlSodrHzpoReturnDTO createOrUpdatePo(Long tenantId,RcwlSodrHzpoHeaderDTO itfData){
         //查找头信息，查到就更新，否则新增
         List<RcwlSodrHzpoLine> addList = new ArrayList<>();
         List<RcwlSodrHzpoLine> updateList = new ArrayList<>();
@@ -98,7 +108,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
             if(CollectionUtils.isNotEmpty(addList)){
                 rcwlSodrHzpoLineRepository.batchInsert(addList);
             }
-           return newPoHeader;
+           return RcwlSodrHzpoReturnDTO.success();
         }
         else{
             itfData.setPoHeaderId(poHeader.getPoHeaderId());
@@ -140,7 +150,7 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                 LOGGER.info("poLine:{}",updateList);
                 rcwlSodrHzpoLineRepository.batchUpdateByPrimaryKey(updateList);
             }
-            return poHeader;
+            return RcwlSodrHzpoReturnDTO.success();
         }
     }
 
