@@ -64,7 +64,7 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
         }
     }
 
-    private boolean importValidator(PrLineImportVO prLineImportVO) {
+    private boolean importValidator(RcwlPrLineImportVO prLineImportVO) {
         //需求结束日期不可小于需求开始日期
         if (prLineImportVO.getNeededDate().isBefore(prLineImportVO.getStartDate())) {
             getContext().addErrorMsg("需求结束日期不可小于需求开始日期");
