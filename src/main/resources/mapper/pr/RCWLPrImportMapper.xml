@@ -41,10 +41,9 @@
 
     <select id="queryInvOrganizationInfoByCompanyId"
             resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
-        SELECT DISTINCT hio.organization_code, hio.organization_name
-        FROM sprm_pr_header sph
-        LEFT JOIN hpfm_company hc ON sph.company_id = hc.company_id
+        SELECT hio.organization_code, hio.organization_name
+        FROM hpfm_company hc
         LEFT JOIN hpfm_inv_organization hio ON hc.company_id = hio.organization_id
-        WHERE sph.company_id = #{companyId};
+        WHERE hc.company_id = #{companyId};
     </select>
 </mapper>
