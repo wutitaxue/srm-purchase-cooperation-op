@@ -41,7 +41,10 @@
 
     <select id="queryInvOrganizationInfoByCompanyId"
             resultType="org.srm.purchasecooperation.pr.domain.entity.PrLine">
-        SELECT hio.organization_code, hio.organization_name
+        SELECT
+        hio.organization_id   AS invOrganizationId,
+        hio.organization_name AS invOrganizationName,
+        hio.organization_code
         FROM hpfm_company hc
         LEFT JOIN hpfm_inv_organization hio ON hc.company_id = hio.organization_id
         WHERE hc.company_id = #{companyId};
