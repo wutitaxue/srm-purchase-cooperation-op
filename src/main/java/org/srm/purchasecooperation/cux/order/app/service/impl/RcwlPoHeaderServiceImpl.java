@@ -41,14 +41,17 @@ import org.srm.purchasecooperation.order.domain.entity.*;
 import org.srm.purchasecooperation.order.domain.repository.*;
 import org.srm.purchasecooperation.order.domain.service.*;
 import org.srm.purchasecooperation.order.domain.vo.*;
+import org.srm.purchasecooperation.order.infra.constant.PoConstants;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
 import org.srm.purchasecooperation.order.infra.mapper.PoLineMapper;
 import org.srm.purchasecooperation.order.infra.utils.FieldUtils;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.PrLineChangeDto;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
+import org.srm.purchasecooperation.pr.domain.entity.AccountAssignType;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
+import org.srm.purchasecooperation.pr.domain.repository.AccountAssignTypeLineRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
@@ -140,6 +143,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
     @Autowired
     private RcwlBudgetDistributionService rcwlBudgetDistributionService;
+    @Autowired
+    private GeneratorPoByPcDomainService generatorPoByPcDomainService;
+    @Autowired
+    private AccountAssignTypeLineRepository accountAssignTypeLineRepository;
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
@@ -965,20 +972,116 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             LOGGER.info("============ORDER_PRICE_SOURCE_TYPE--operateOrder-TaskNotExistException=============={}", new Object[]{tenantNum, var8.getMessage(), var8.getStackTrace()});
         }
 
+        //来源系统是SRM、ERP或者、SHOP并且单据来源是其他采购申请
         PoDTO poDTO = (poHeaderDetailDTO.isByErpOrSrmPr() || "PURCHASE_ORDER".equals(poHeaderDetailDTO.getSourceBillTypeCode())) && BaseConstants.Flag.YES.toString().equals(enablePriceLib) && StringUtils.isNotEmpty(serviceCode) && !"NULL".equals(serviceCode) && poOrderSavaDTO.getPoLineDetailDTOs() != null && poOrderSavaDTO.getPoLineDetailDTOs().size() > 0 ? ((PoHeaderService)this.self()).updatePoHeaderAndPoLineSNewPrice(poOrderSavaDTO) : ((PoHeaderService)this.self()).updatePoHeaderAndPoLineS(poOrderSavaDTO);
 
-        //新建更新完成后，自动计算跨年预算数据
+        //更新完成后，自动计算跨年预算数据
         if (CollectionUtils.isNotEmpty(poOrderSavaDTO.getPoLineDetailDTOs())){
-            for (PoLineDetailDTO poLineDetail :poOrderSavaDTO.getPoLineDetailDTOs()){
-                RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
-                BeanUtils.copyProperties(poLineDetail,rcwlBudgetDistributionDTO);
-                rcwlBudgetDistributionDTO.setAttributeDate1(poLineDetail.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                rcwlBudgetDistributionDTO.setNeedByDate(poLineDetail.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                rcwlBudgetDistributionDTO.setLineAmount(poLineDetail.getLineAmount());
-                rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), rcwlBudgetDistributionDTO);
+
+            List<PoLineDetailDTO> poLineDetailDTOList = poOrderSavaDTO.getPoLineDetailDTOs().stream().filter(line -> Objects.nonNull(line.getPoLineId())).collect(Collectors.toList());
+
+            if (CollectionUtils.isNotEmpty(poLineDetailDTOList)) {
+                for (PoLineDetailDTO poLineDetail : poLineDetailDTOList) {
+                    RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
+                    BeanUtils.copyProperties(poLineDetail, rcwlBudgetDistributionDTO);
+                    rcwlBudgetDistributionDTO.setAttributeDate1(poLineDetail.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                    rcwlBudgetDistributionDTO.setNeedByDate(poLineDetail.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                    rcwlBudgetDistributionDTO.setLineAmount(poLineDetail.getLineAmount());
+                    rcwlBudgetDistributionDTO.setPoHeaderId(poOrderSavaDTO.getPoHeaderDetailDTO().getPoHeaderId());
+                    rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), rcwlBudgetDistributionDTO);
+                }
             }
         }
         return poDTO;
+    }
+
+    @Transactional(rollbackFor = {Exception.class})
+    public void insertPoLineAndLocationLine(List<PoLine> poLineList, PoHeader poHeader) {
+        if (!CollectionUtils.isEmpty(poLineList)) {
+            AccountAssignType.validPoRequiredFields(poLineList, this.accountAssignTypeLineRepository);
+            PoLine poLineOfHeader = new PoLine();
+            poLineOfHeader.setPoHeaderId(poHeader.getPoHeaderId());
+            poLineOfHeader.setTenantId(poHeader.getTenantId());
+            Long lineNum = this.poLineRepository.queryMaxPoLineNum(poLineOfHeader);
+            Iterator var5 = poLineList.iterator();
+
+            while(var5.hasNext()) {
+                PoLine poLine = (PoLine)var5.next();
+                lineNum = lineNum + PoConstants.IdInCreaseSize.ONE;
+                poLine.setTenantId(poHeader.getTenantId());
+                poLine.setVersionNum(poHeader.getVersionNum().longValue());
+                if (!poHeader.getSourceBillTypeCode().equals("PURCHASE_ORDER")) {
+                    poLine.setCurrencyCode(poHeader.getCurrencyCode());
+                }
+
+                poLine.setPoHeaderId(poHeader.getPoHeaderId());
+                poLine.setLineNum(lineNum);
+                poLine.setDisplayLineNum(lineNum.toString());
+                if (CollectionUtils.isNotEmpty(poLine.getPoLineLocationList())) {
+                    PoLineLocation poLineLocation = (PoLineLocation)poLine.getPoLineLocationList().get(0);
+                    poLineLocation.setTenantId(poHeader.getTenantId());
+                    poLineLocation.setVersionNum(poHeader.getVersionNum());
+                    poLineLocation.setPoHeaderId(poHeader.getPoHeaderId());
+                    poLineLocation.setLineLocationNum(PoConstants.IdInCreaseSize.ONE);
+                    poLineLocation.setDisplayLineLocationNum(PoConstants.IdInCreaseSize.ONE.toString());
+                }
+            }
+
+            poLineList.forEach((poLinex) -> {
+                poLinex.modifyPricePrecisionByCurrencyCode(this.mdmService, poHeader.getDomesticCurrencyCode());
+            });
+            this.setPoLineDomesticInfo(poLineList, poHeader);
+            this.poLineRepository.batchInsertSelective(poLineList);
+
+            List<PoLineLocation> poLineLocationList = new ArrayList();
+            List<PoLineDetailDTO> poLineDetailDTOList = new ArrayList();
+            poLineList.forEach((poLinex) -> {
+                if (CollectionUtils.isNotEmpty(poLinex.getPoLineLocationList())) {
+                    PoLineLocation poLineLocation = (PoLineLocation)poLinex.getPoLineLocationList().get(0);
+                    poLineLocation.setPoLineId(poLinex.getPoLineId());
+                    poLineLocationList.add(poLineLocation);
+                    PoLineDetailDTO poLineDetailDTO = new PoLineDetailDTO();
+                    poLineDetailDTO.setPoLineId(poLinex.getPoLineId());
+                    poLineDetailDTO.setLineNum(Integer.valueOf(poLinex.getLineNum().toString()));
+                    poLineDetailDTO.setHoldPcHeaderId(poLinex.getHoldPcHeaderId());
+                    poLineDetailDTO.setHoldPcLineId(poLinex.getHoldPcLineId());
+                    poLineDetailDTO.setQuantity(poLinex.getQuantity());
+                    poLineDetailDTOList.add(poLineDetailDTO);
+                }
+
+            });
+            this.poLineLocationRepository.batchInsertSelective(poLineLocationList);
+
+            //生成每一行的跨年预算数据
+            for (PoLineLocation poLineLocation:poLineLocationList){
+                PoLine poLineQuery = new PoLine();
+                poLineQuery.setPoHeaderId(poLineLocation.getPoHeaderId());
+                poLineQuery.setPoLineId(poLineLocation.getPoLineId());
+                poLineQuery.setTenantId(poLineLocation.getTenantId());
+                PoLine poLine = poLineRepository.selectOne(poLineQuery);
+                RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
+                rcwlBudgetDistributionDTO.setAttributeDate1(poLine.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionDTO.setNeedByDate(poLineLocation.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                rcwlBudgetDistributionDTO.setLineAmount(poLine.getLineAmount());
+                rcwlBudgetDistributionDTO.setPoHeaderId(poLineLocation.getPoHeaderId());
+                rcwlBudgetDistributionDTO.setPoLineId(poLineLocation.getPoLineId());
+                rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poHeader.getTenantId(), rcwlBudgetDistributionDTO);
+            }
+
+
+            if (poHeader.isByErpOrSrmPr()) {
+                PoOrderSaveDTO poOrderSaveDTO = new PoOrderSaveDTO();
+                poOrderSaveDTO.setPoLineDetailDTOs(poLineDetailDTOList);
+                this.generatorPoByPcDomainService.holdPc(poLineList, poHeader.getTenantId());
+                PoDTO poDTO = new PoDTO();
+                poDTO.setPoHeaderId(poHeader.getPoHeaderId());
+                poDTO.setPoNum(poHeader.getPoNum());
+                this.generatorPoByPrDomainService.holdPr(poLineList, poDTO);
+            } else {
+                this.modifyPrLineAndPrHeaderOfPoLineList(poLineList);
+            }
+
+        }
     }
 
 }
