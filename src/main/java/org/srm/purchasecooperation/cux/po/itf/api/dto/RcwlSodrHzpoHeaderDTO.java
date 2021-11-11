@@ -132,7 +132,6 @@ public class RcwlSodrHzpoHeaderDTO  extends AuditDomain {
     private BigDecimal discountedPrice;
 
     @ApiModelProperty(value = "优惠原因")
-    @JsonProperty("DiscountedReason")
    
     private String discountedReason;
 
