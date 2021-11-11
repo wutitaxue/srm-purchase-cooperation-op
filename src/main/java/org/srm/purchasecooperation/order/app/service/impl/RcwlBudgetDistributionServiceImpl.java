@@ -148,9 +148,9 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         }
 
         //清除原数据
-        rcwlBudgetDistributionRepository.delete(RcwlBudgetDistribution.builder()
-                .poHeaderId(rcwlBudgetDistributionDTO.getPoHeaderId()).poLineId(rcwlBudgetDistributionDTO.getPoLineId())
-                .tenantId(rcwlBudgetDistributionDTO.getTenantId()).build());
+        if (CollectionUtils.isNotEmpty(budgetDistributionsInDB)) {
+            rcwlBudgetDistributionRepository.batchDeleteByPrimaryKey(budgetDistributionsInDB);
+        }
 
         rcwlBudgetDistributionRepository.batchInsert(budgetDistributionCreateList);
 
