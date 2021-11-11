@@ -77,15 +77,19 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
             if (!StringUtils.equals(checkVarchar, "1")) {
                 if(!StringUtils.equals(prLineImportVO.getItemName(), prLineVO.getItemName())){
                     getContext().addErrorMsg("导入模板中的物料名称与物料基本信息的物料名称不一致");
+                    return false;
                 }
                 if(!StringUtils.equals(prLineImportVO.getItemSpecs(), prLineVO.getItemSpecs())){
                     getContext().addErrorMsg("导入模板中的规格与物料基本信息的规格不一致");
+                    return false;
                 }
                 if(!StringUtils.equals(prLineImportVO.getItemModel(), prLineVO.getItemModel())){
                     getContext().addErrorMsg("导入模板中的型号与物料基本信息的型号不一致");
+                    return false;
                 }
                 if(!StringUtils.equals(prLineImportVO.getUomCode(), prLineVO.getAttributeVarchar1())){
                     getContext().addErrorMsg("导入模板中的计量单位编码与物料基本信息的计量单位编码不一致");
+                    return false;
                 }
 
             }
