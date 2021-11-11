@@ -5,16 +5,10 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
  * @author: bin.zhang
  * @createDate: 2021/6/7 14:39
  */
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.boot.imported.app.service.BatchImportHandler;
 import org.hzero.boot.imported.infra.validator.annotation.ImportService;
 import org.hzero.core.base.BaseConstants.Flag;
 import org.hzero.core.convert.CommonConverter;
@@ -25,6 +19,7 @@ import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.purchasecooperation.cux.pr.domain.vo.BudgetAccountVO;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RCWLPrLineMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.order.api.dto.UserCacheDTO;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderCurrencyDto;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
@@ -33,10 +28,15 @@ import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
-import org.srm.purchasecooperation.pr.domain.vo.PrLineImportVO;
 import org.srm.purchasecooperation.pr.domain.vo.UnitVO;
-import org.srm.purchasecooperation.pr.infra.mapper.PrImportMapper;
 import org.srm.web.annotation.Tenant;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @ImportService(
         templateCode = "SPRM.PR_LINE"
@@ -47,7 +47,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private PrImportMapper prImportMapper;
+    private RcwlPrImportMapper prImportMapper;
     @Autowired
     private PrHeaderRepository prHeaderRepository;
     @Autowired
@@ -122,11 +122,10 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
             }
 
             if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
+                PrLine prLineVO = this.prImportMapper.queryCategoryInfo(prLineImportVO);
+                String checkVarchar = prLineVO.getAttributeVarchar15();
                 List<PrLine> prLines = this.prImportMapper.queryItemInfo(prLineImportVO);
                 prLineTmp = (PrLine)prLines.get(0);
-                prLine.setItemId(prLineTmp.getItemId());
-                prLine.setItemCode(prLineTmp.getItemCode());
-                prLine.setItemName(prLineTmp.getItemName());
                 prLine.setItemAbcClass(prLineTmp.getItemAbcClass());
                 prLine.setUomId(prLineTmp.getUomId());
                 String itemOrgUomFlag = this.customizeSettingHelper.queryBySettingCode(tenantId, "000112");
@@ -136,11 +135,32 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                         prLine.setUomId(uomId);
                     }
                 }
-
-                prLine.setItemModel((String)StringUtils.defaultIfEmpty(prLineTmp.getItemModel(), prLine.getItemModel()));
-                prLine.setItemSpecs((String)StringUtils.defaultIfEmpty(prLineTmp.getItemSpecs(), prLine.getItemSpecs()));
-                if (prLines.size() == 1) {
-                    prLine.setCategoryId(prLineTmp.getCategoryId());
+                //导入行的物料名称、规格、型号、单位有值的话，物料名称、规格、型号以导入模板的为准，
+                //单位需校验在系统中存在；如果模板中没有值，那么导入之后，系统自动根据物料编码带出。
+                if (StringUtils.equals(checkVarchar, "1")) {
+                    if (StringUtils.isEmpty(prLine.getItemName())) {
+                        prLine.setItemName(prLineTmp.getItemName());
+                    }
+                    if (StringUtils.isEmpty(prLine.getItemSpecs())) {
+                        prLine.setItemSpecs(prLineTmp.getItemSpecs());
+                    }
+                    if (StringUtils.isEmpty(prLine.getItemModel())) {
+                        prLine.setItemModel(prLineTmp.getItemModel());
+                    }
+                    if (StringUtils.isEmpty(prLineImportVO.getUomCode())) {
+                        prLine.setUomId(prLineTmp.getUomId());
+                    }
+                    if (prLines.size() == 1) {
+                        prLine.setCategoryId(prLineTmp.getCategoryId());
+                    }
+                } else {
+                    prLine.setItemName(prLine.getItemName());
+                    prLine.setItemSpecs(prLine.getItemSpecs());
+                    prLine.setItemModel(prLine.getItemModel());
+                    prLine.setUomId(prLineTmp.getUomId());
+                    if (prLines.size() == 1) {
+                        prLine.setCategoryId(prLineTmp.getCategoryId());
+                    }
                 }
             } else {
                 prLine.setUomId(this.prImportMapper.queryUomInfo(prLineImportVO).getUomId());
