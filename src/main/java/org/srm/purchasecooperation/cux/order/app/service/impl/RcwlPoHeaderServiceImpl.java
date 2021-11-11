@@ -1659,7 +1659,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             if (CollectionUtils.isNotEmpty(poOrderSavaDTO.getPoLineDetailDTOs())){
                 for (PoLineDetailDTO poLineDetail :poOrderSavaDTO.getPoLineDetailDTOs()){
 //                    poLineDetail.setLineAmount(poLineDetail.getEnteredTaxIncludedPrice().multiply(poLineDetail.getQuantity()));
-                    BigDecimal taxNotIncludePrice = poLineDetail.getEnteredTaxIncludedPrice().divide(BigDecimal.ONE.add(poLineDetail.getTaxRate().divide(new BigDecimal("100"))), 6, RoundingMode.HALF_UP);
+                    BigDecimal taxNotIncludePrice = poLineDetail.getEnteredTaxIncludedPrice().divide(BigDecimal.ONE.add(poLineDetail.getTaxRate().divide(new BigDecimal("100"))), 10, RoundingMode.HALF_UP);
                     poLineDetail.setLineAmount(taxNotIncludePrice.multiply(poLineDetail.getQuantity()));
                     log.info("无价合同计算行金额:{},{},{}",taxNotIncludePrice,poLineDetail.getQuantity(),poLineDetail.getLineAmount());
                 }
@@ -1696,11 +1696,18 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
             if (CollectionUtils.isNotEmpty(poLineDetailDTOList)) {
                 for (PoLineDetailDTO poLineDetail : poLineDetailDTOList) {
+                    PoLine poLineQuery = new PoLine();
+                    poLineQuery.setPoHeaderId(poLineDetail.getPoHeaderId());
+                    poLineQuery.setPoLineId(poLineDetail.getPoLineId());
+                    poLineQuery.setTenantId(poLineDetail.getTenantId());
+                    PoLine poLine = poLineRepository.selectOne(poLineQuery);
+                    log.info("数据库行金额:{}",poLine.getLineAmount());
+
                     RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO = new RcwlBudgetDistributionDTO();
                     BeanUtils.copyProperties(poLineDetail, rcwlBudgetDistributionDTO);
                     rcwlBudgetDistributionDTO.setAttributeDate1(poLineDetail.getAttributeDate1().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                     rcwlBudgetDistributionDTO.setNeedByDate(poLineDetail.getNeedByDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                    rcwlBudgetDistributionDTO.setLineAmount(poLineDetail.getLineAmount());
+                    rcwlBudgetDistributionDTO.setLineAmount(poLine.getLineAmount());
                     rcwlBudgetDistributionDTO.setPoHeaderId(poOrderSavaDTO.getPoHeaderDetailDTO().getPoHeaderId());
                     rcwlBudgetDistributionService.selectBudgetDistributionByPoLine(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), rcwlBudgetDistributionDTO);
                 }

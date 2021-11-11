@@ -80,13 +80,14 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         //校验各年原预算值（手工）是否等于行金额
         BigDecimal totalBudgetDisAmount = budgetDistributionsInDB.stream().map(bd -> Optional.ofNullable(bd.getBudgetDisAmount()).orElse(BigDecimal.ZERO)).reduce(BigDecimal.ZERO, BigDecimal::add);
         log.info("订单行总金额：{},各年原预算值（手工）：{}",rcwlBudgetDistributionDTO.getLineAmount(),totalBudgetDisAmount);
+        Integer amountBackFlag = 1;
         if (totalBudgetDisAmount.compareTo(Optional.ofNullable(rcwlBudgetDistributionDTO.getLineAmount()).orElse(BigDecimal.ZERO))!= 0){
-            budgetDistributionsInDB = null;
+            amountBackFlag = 0;
         }
 
         //重新计算系统预算，获取原手工预算，重新创建
         log.info("已有数据且年份匹配");
-        List<RcwlBudgetDistribution> budgetDistributionCreateList = createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB, 1);
+        List<RcwlBudgetDistribution> budgetDistributionCreateList = createBudgetDistributionByPoLine(tenantId, rcwlBudgetDistributionDTO, budgetDistributionsInDB, amountBackFlag);
         return budgetDistributionCreateList;
     }
 
