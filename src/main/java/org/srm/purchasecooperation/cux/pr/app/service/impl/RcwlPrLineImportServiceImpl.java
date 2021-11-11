@@ -104,7 +104,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
             prLineImportVO.setOuId(prHeader.getOuId());
             prLineImportVO.setPurchaseOrgId(prHeader.getPurchaseOrgId());
             prLineImportVO.setCompanyId(prHeader.getCompanyId());
-            prLine = (PrLine)CommonConverter.beanConvert(PrLine.class, prLineImportVO);
+            prLine = CommonConverter.beanConvert(PrLine.class, prLineImportVO);
             prLine.addHeaderField(prHeader);
             PrLine prLineTmp = this.prImportMapper.queryInvOrganizationInfo(prLineImportVO);
             //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
