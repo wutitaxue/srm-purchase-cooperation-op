@@ -160,6 +160,9 @@ public class RcwlBudgetDistributionServiceImpl implements RcwlBudgetDistribution
         //订单行金额
         Assert.notNull(rcwlBudgetDistributionDTO.getLineAmount(), "error.line_amount_not_exists");
 
+        //四舍五入保留六位小数
+        rcwlBudgetDistributionDTO.setLineAmount(rcwlBudgetDistributionDTO.getLineAmount().setScale(RcwlBudgetDistribution.SIX, RoundingMode.HALF_UP));
+
         //订单开始日期
         LocalDate startDate = rcwlBudgetDistributionDTO.getAttributeDate1();
         Assert.notNull(startDate, "error.start_date_not_exists");
