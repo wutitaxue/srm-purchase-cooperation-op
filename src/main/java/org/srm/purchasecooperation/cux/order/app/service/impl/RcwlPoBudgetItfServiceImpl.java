@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author pengxu.zhi@hand-china.com 2021-11-03
@@ -239,10 +240,16 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         //获取接口所需数据
         RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, occupyFlag);
 
-        PoLine poLine = new PoLine();
-        poLine.setPoHeaderId(poDTO.getPoHeaderId());
+//        PoLine poLine = new PoLine();
+//        poLine.setPoHeaderId(poDTO.getPoHeaderId());
 //        List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
+
         List<PoBudgetOccupyLineVO> lineDetailList = rcwlPoBudgetOccupyMapper.selectBudgetDistributionByLine(tenantId, poDTO.getPoHeaderId());
+        logger.info("关联跨年预算分配数据：" + lineDetailList.size());
+        if (CollectionUtils.isEmpty(lineDetailList)){
+            lineDetailList = rcwlPoBudgetOccupyMapper.selectNoBudgetDistributionPoLine(tenantId, poDTO.getPoHeaderId());
+            logger.info("无跨年预算分配数据：" + lineDetailList.size());
+        }
 
         List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
 
@@ -433,7 +440,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         //rcwlItfPrLineDetailDTO.setYszyje(prDetailLine.getTaxIncludedLineAmount().toString());
         //修改为取不含税金额
-        rcwlItfPrLineDetailDTO.setYszyje(String.valueOf(poDetailLine.getLineAmount()));
+//        rcwlItfPrLineDetailDTO.setYszyje(String.valueOf(poDetailLine.getLineAmount()));
         if (poDetailLine.getAttributeVarchar21() == null) {
             throw new CommonException("业务用途为空");
         }
@@ -472,13 +479,15 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
 
         if ("01".equals(occupyFlag)){
             //预算占用金额
-            rcwlItfPrLineDetailDTO.setYszyje(poDetailLine.getBudgetDisAmount().toString());
+            rcwlItfPrLineDetailDTO.setYszyje(StringUtils.isNotBlank(poDetailLine.getBudgetDisAmount().toString())?
+                    poDetailLine.getBudgetDisAmount().toString():poDetailLine.getLineAmount().toString());
         }else {
             //释放固定为0
             rcwlItfPrLineDetailDTO.setYszyje("0");
         }
         //预算占用日期 YYYY-MM-DD
-        rcwlItfPrLineDetailDTO.setYsdate(poDetailLine.getBudgetDisYear() + "-01-01");
+        rcwlItfPrLineDetailDTO.setYsdate(Objects.nonNull(poDetailLine.getBudgetDisYear())?
+                (poDetailLine.getBudgetDisYear() + "-01-01"):(poDetailLine.getCreationDate().getYear()+"-01-01"));
         rcwlItfPrLineDetailDTO.setLine(poDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }

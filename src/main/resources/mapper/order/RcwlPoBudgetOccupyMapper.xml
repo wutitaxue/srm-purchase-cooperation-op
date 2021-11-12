@@ -21,4 +21,15 @@
             srbd.budget_dis_year
     </select>
 
+    <select id="selectNoBudgetDistributionPoLine"
+            resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PoBudgetOccupyLineVO">
+        SELECT
+            spl.*
+        FROM
+            sodr_po_line spl
+        WHERE
+            spl.tenant_id = #{tenantId}
+          AND spl.po_header_id = #{poHeaderId}
+    </select>
+
 </mapper>

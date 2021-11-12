@@ -1502,9 +1502,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 poDTO.setObjectVersionNumber(poHeader.getObjectVersionNumber());
             }
             //无需审批自动发布、电商商城数据自动确认
-            PoHeader poHeader = this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
-            log.info("无需审批:{},{}", poDTO.getPoHeaderId(), poHeader);
-            rcwlPoSubmitBpmService.approveProcess(poDTO.getPoHeaderId(), poHeader, 0);
+            rcwlPoSubmitBpmService.approveProcess(poHeaderInDB.getTenantId(), poHeaderInDB, 0);
         }
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), poDTO.getTenantId(), "UPDATE");
         return poDTO;
