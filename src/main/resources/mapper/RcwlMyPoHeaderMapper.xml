@@ -140,6 +140,8 @@
         sph.purchase_org_id,
         sph.attribute_varchar2,
         sph.attribute_bigint1,
+        sph.attribute_date2,
+        sph.attribute_date3,
         sot.return_order_flag,
         com.company_num,
         (
