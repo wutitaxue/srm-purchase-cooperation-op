@@ -98,5 +98,7 @@ public class RcwlBudgetDistributionDTO {
     @ApiModelProperty(value = "预算组别 old为旧数据，new为新数据")
     private String budgetGroup;
 
+    @ApiModelProperty(value = "当年年份")
+    private Integer currentYear;
 
 }

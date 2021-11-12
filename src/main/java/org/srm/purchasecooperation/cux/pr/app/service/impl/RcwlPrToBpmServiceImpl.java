@@ -27,6 +27,8 @@ import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrToBpmMapper;
 import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrToBpmService;
 import org.srm.purchasecooperation.cux.pr.utils.DateTimeUtil;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
+import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
+import org.srm.purchasecooperation.order.infra.mapper.RcwlBudgetDistributionMapper;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
 import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
@@ -58,6 +60,8 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
     private RcwlPrToBpmMapper rcwlPrToBpmMapper;
     @Autowired
     private PrLineRepository prLineRepository;
+    @Autowired
+    private RcwlBudgetDistributionMapper rcwlBudgetDistributionMapper;
 
     /**
      * @param prHeader
@@ -161,6 +165,11 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
     private PrToBpmDTO setHeaderDataMap(PrHeader header, String typeStr, String subject) {
         PrToBpmDTO prToBpmDTO = new PrToBpmDTO();
         Employee employee = EmployeeHelper.getEmployee(header.getCreatedBy(), header.getTenantId());
+        // ------------------------ add by wangjie PM接口需要增加传输字段：采购员、本年预算占用总金额 begin --------------------------
+        PrToBpmDTO prToBpmPrDataDTO = rcwlBudgetDistributionMapper.selectPrBPMResult(RcwlBudgetDistributionDTO.builder().prHeaderId(header.getPrHeaderId()).tenantId(header.getTenantId()).currentYear(Calendar.getInstance().get(Calendar.YEAR)).changeSubmit("预算变更".equals(typeStr) ? 1 : null).build());
+        prToBpmDTO.setPurchaseAgent(prToBpmPrDataDTO.getPurchaseAgent());
+        prToBpmDTO.setPresentBudgetSum(prToBpmPrDataDTO.getPresentBudgetSum());
+        // ------------------------ add by wangjie PM接口需要增加传输字段：采购员、本年预算占用总金额 end --------------------------
         prToBpmDTO.setSubject(subject);
         prToBpmDTO.setTypeStr(typeStr);
         prToBpmDTO.setPrNum(header.getPrNum());

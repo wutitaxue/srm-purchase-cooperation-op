@@ -1,6 +1,7 @@
 package org.srm.purchasecooperation.order.infra.mapper;
 
 import io.choerodon.mybatis.common.BaseMapper;
+import org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmDTO;
 import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
 import org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution;
 
@@ -51,4 +52,12 @@ public interface RcwlBudgetDistributionMapper extends BaseMapper<RcwlBudgetDistr
      * @return 采购申请中未跨年的预算分摊
      */
     void deleteBudgetDistributionNotAcrossYear(RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
+
+    /**
+     * 采购申请、采购变更申请提交传输BPM数据
+     *
+     * @param rcwlBudgetDistributionDTO
+     * @return
+     */
+    PrToBpmDTO selectPrBPMResult (RcwlBudgetDistributionDTO rcwlBudgetDistributionDTO);
 }

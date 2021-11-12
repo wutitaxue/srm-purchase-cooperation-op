@@ -212,4 +212,26 @@
             AND budget_group = #{budgetGroup}
         </if>
     </delete>
+
+    <select id="selectPrBPMResult" resultType="org.srm.purchasecooperation.cux.pr.api.dto.PrToBpmDTO" parameterType="org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO">
+        SELECT
+            hpa.purchase_agent_name purchaseAgent,
+            (
+                SELECT SUM( budget_dis_amount ) budget_dis_amount FROM
+                <if test="changeSubmit == null or changeSubmit !=1">
+                    scux_rcwl_budget_distribution
+                </if>
+                <if test="changeSubmit == 1">
+                    scux_rcwl_budget_change_action
+                </if>
+                WHERE pr_header_id = #{prHeaderId} AND tenant_id = #{tenantId} AND budget_dis_year = #{currentYear}
+            ) presentBudgetSum
+        FROM
+            sprm_pr_header sph,
+            hpfm_purchase_agent hpa
+        WHERE
+            sph.purchase_agent_id = hpa.purchase_agent_id
+          AND sph.pr_header_id = #{prHeaderId}
+          AND sph.tenant_id = #{tenantId}
+    </select>
 </mapper>
