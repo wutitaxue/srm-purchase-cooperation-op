@@ -12,18 +12,24 @@ import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.interfaces.sdk.invoke.InterfaceInvokeSdk;
 import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
+import org.hzero.boot.platform.lov.dto.LovValueDTO;
+import org.hzero.boot.platform.lov.feign.LovFeignClient;
 import org.hzero.boot.scheduler.infra.enums.ReturnT;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.core.helper.LanguageHelper;
+import org.hzero.core.message.MessageAccessor;
 import org.hzero.core.util.Results;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -69,6 +75,8 @@ public class testController {
     private InterfaceInvokeSdk interfaceInvokeSdk;
     @Autowired
     private RcwlSodrHzpoHeaderRepository rcwlSodrHzpoHeaderRepository;
+    @Autowired
+    LovFeignClient lovFeignClient;
 
     @ApiOperation(value = "华住订单状态更新接口")
     @Permission(level = ResourceLevel.SITE)
@@ -119,6 +127,7 @@ public class testController {
             } else {
                 //查询表中订单编号
                 List<RcwlSodrHzpoHeader> headers = rcwlSodrHzpoHeaderRepository.selectAll();
+                long tenantId = headers.get(0).getTenantId();
                 List<String> orderNums = new ArrayList<>();
                 headers.forEach(header -> {
                     orderNums.add(header.getPoNum());
@@ -126,6 +135,7 @@ public class testController {
                 //获取报文中的所有订单编号
                 List<String> queryOrderNums = new ArrayList<>();
                 List<RcwlOrderStatusDTO> rcwlOrderStatusDTOS = responseDTO.getData();
+                LOGGER.info("处理数据：{}",rcwlOrderStatusDTOS);
                 Map<String, RcwlOrderStatusDTO> orderMap = new HashMap<>();
                 rcwlOrderStatusDTOS.forEach(order -> {
                     orderMap.put(order.getOrderId(), order);
@@ -137,27 +147,40 @@ public class testController {
                 tableExistsNum.forEach(item -> {
                     updateLists.add(orderMap.get(item));
                 });
+                //校验状态代码
+                List<LovValueDTO> statusLovValues = lovFeignClient.queryLovValue("SCUX_RCWL_HZPO_STATUS",tenantId);
+                List<String> statusValues = new ArrayList<>();
+                statusLovValues.forEach(statusLovValue->{
+                    statusValues.add(statusLovValue.getValue());
+                }
+                );
                 //处理更新list中的日期与ID
                 List<RcwlSodrHzpoHeader> updateHeaders = new ArrayList<>();
                 updateLists.forEach(updateList -> {
-                    headers.forEach(header -> {
-                        if (updateList.getOrderId().equals(header.getPoNum())) {
-                            header.setStatusCode(updateList.getStatus());
-                            if (StringUtils.isNotBlank(updateList.getConfirmTime())) {
-                                header.setConfirmedDate(Instant.ofEpochMilli(Long.parseLong(updateList.getConfirmTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                    if(statusValues.contains(updateList.getStatus())){
+                        headers.forEach(header -> {
+                            if (updateList.getOrderId().equals(header.getPoNum())) {
+                                header.setStatusCode(updateList.getStatus());
+                                if (StringUtils.isNotBlank(updateList.getConfirmTime())) {
+                                    header.setConfirmedDate(Instant.ofEpochMilli(Long.parseLong(updateList.getConfirmTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                                }
+                                if (StringUtils.isNotBlank(updateList.getShipTime())) {
+                                    header.setFirstShippingDate(Instant.ofEpochMilli(Long.parseLong(updateList.getShipTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                                }
+                                if (StringUtils.isNotBlank(updateList.getSigningTime())) {
+                                    header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                                }
                             }
-                            if (StringUtils.isNotBlank(updateList.getShipTime())) {
-                                header.setFirstShippingDate(Instant.ofEpochMilli(Long.parseLong(updateList.getShipTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-                            }
-                            if (StringUtils.isNotBlank(updateList.getSigningTime())) {
-                                header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-                            }
-                        }
-                        updateHeaders.add(header);
-                    });
+                            updateHeaders.add(header);
+                        });
+                    }
                 });
-                //更新数据
-                rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
+                if (CollectionUtils.isNotEmpty(updateHeaders)) {
+                    //更新数据
+                    rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
+                } else {
+                    LOGGER.info("没有数据更新");
+                }
             }
         } catch (Exception e) {
             throw new CommonException("调用接口失败! {0}"+e.toString(), e.toString());
