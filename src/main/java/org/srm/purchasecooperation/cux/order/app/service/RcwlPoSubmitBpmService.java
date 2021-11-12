@@ -1,6 +1,8 @@
 package org.srm.purchasecooperation.cux.order.app.service;
 
 
+import org.srm.purchasecooperation.order.domain.entity.PoHeader;
+
 public interface RcwlPoSubmitBpmService {
 
     /**
@@ -23,5 +25,12 @@ public interface RcwlPoSubmitBpmService {
      * @param poNum
      */
     void rcwlSubmitBpmApproved(Long tenantId, String poNum);
+
+    /**
+     * 审批通过发布确认
+     * @param tenantId
+     * @param poHeader
+     */
+    void approveProcess(Long tenantId, PoHeader poHeader);
 
 }
