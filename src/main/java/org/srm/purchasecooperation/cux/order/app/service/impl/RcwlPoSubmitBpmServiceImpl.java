@@ -116,6 +116,11 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
         poHeaderCondition.setPoNum(poNum);
         poHeaderCondition.setTenantId(tenantId);
         PoHeader poHeader = poHeaderMapper.selectOne(poHeaderCondition);
+        this.approveProcess(tenantId, poHeader);
+    }
+
+    @Override
+    public void approveProcess(Long tenantId, PoHeader poHeader) {
         //获取自动发布配置
         String manualPublicFlag = this.poHeaderRepository.getPoConfigCodeValue(tenantId, poHeader.getPoHeaderId(), "SITE.SPUC.PO.MANUAL_PUBLISH");
         log.info("订单自动发布配置信息：{}",manualPublicFlag);
@@ -154,6 +159,9 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
             this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), poDTO.getTenantId(), "UPDATE");
         }
     }
+
+
+
 
     @SneakyThrows
     @Override

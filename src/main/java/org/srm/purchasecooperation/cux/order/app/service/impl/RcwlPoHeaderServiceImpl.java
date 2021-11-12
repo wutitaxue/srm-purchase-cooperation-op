@@ -51,6 +51,7 @@ import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmDTO;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmLineDTO;
 import org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoBudgetItfService;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoSubmitBpmService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.cux.order.util.TennantValue;
@@ -216,6 +217,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private PlanService planService;
     @Autowired
     private MessageProducer messageProducer;
+    @Autowired
+    private RcwlPoSubmitBpmService rcwlPoSubmitBpmService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
@@ -1316,6 +1319,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode" });
                 poDTO.setObjectVersionNumber(poHeader.getObjectVersionNumber());
             }
+            //无需审批自动发布、电商商城数据自动确认
+            rcwlPoSubmitBpmService.approveProcess(poDTO.getPoHeaderId(), poHeaderInDB);
         }
         this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), poDTO.getTenantId(), "UPDATE");
         return poDTO;
