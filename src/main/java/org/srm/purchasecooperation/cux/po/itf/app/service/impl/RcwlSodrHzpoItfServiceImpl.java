@@ -82,8 +82,8 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
                     LOGGER.info("接口中的数据:{}",itfInfo.toString());
                     LOGGER.info("数据库中的数据:{}",skuInfo.toString());
                     //报文中的商品名称/品类如果不为空并且与数据库中查询到的值不一样的话则报错
-                    Assert.isTrue(itfInfo.getSkuName() == null || itfInfo.getSkuName().equals(skuInfo.getSkuName()),MessageAccessor.getMessage("small.name.of.the.product.is.inconsistent",LanguageHelper.locale()).desc());
-                    Assert.isTrue(itfInfo.getSkuCategoryCode() == null || itfInfo.getSkuCategoryCode().equals(skuInfo.getCategoryCode()),MessageAccessor.getMessage("error.item_category_not_exists",LanguageHelper.locale()).desc());
+                    Assert.isTrue((itfInfo.getSkuName() == null || itfInfo.getSkuName().length() == 0) || itfInfo.getSkuName().equals(skuInfo.getSkuName()),MessageAccessor.getMessage("small.name.of.the.product.is.inconsistent",LanguageHelper.locale()).desc());
+                    Assert.isTrue((itfInfo.getSkuCategoryCode() == null || itfInfo.getSkuCategoryCode().length() == 0) || itfInfo.getSkuCategoryCode().equals(skuInfo.getCategoryCode()),MessageAccessor.getMessage("error.item_category_not_exists",LanguageHelper.locale()).desc());
                     itfInfo.setSkuName(skuInfo.getSkuName());
                     itfInfo.setSkuCategoryCode(skuInfo.getCategoryCode());
                 }
