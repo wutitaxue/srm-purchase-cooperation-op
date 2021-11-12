@@ -46,7 +46,7 @@ public class RcwlSodrHzpoLineController extends BaseController {
     @ApiOperation(value = "华住订单行列表")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping
-    public ResponseEntity<Page<RcwlSodrHzpoLineDTO>> list(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoLine.FIELD_PO_LINE_ID,
+    public ResponseEntity<Page<RcwlSodrHzpoLineDTO>> hzpoLineList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoLine.FIELD_PO_LINE_ID,
             direction = Sort.Direction.ASC) PageRequest pageRequest) {
         Page<RcwlSodrHzpoLineDTO> list = rcwlSodrHzpoLineRepository.pagePoLineList(tenantId, rcwlSodrHzpoLineDTO, pageRequest);
         return Results.success(list);
@@ -56,7 +56,7 @@ public class RcwlSodrHzpoLineController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/export")
     @ExcelExport(RcwlSodrHzpoLineDTO.class)
-    public ResponseEntity<List<RcwlSodrHzpoLineDTO>> exportList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, ExportParam exportParam,
+    public ResponseEntity<List<RcwlSodrHzpoLineDTO>> exportHzpoLineList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoLineDTO rcwlSodrHzpoLineDTO, ExportParam exportParam,
                                                                 HttpServletResponse response) {
         List<RcwlSodrHzpoLineDTO> list = rcwlSodrHzpoLineRepository.exportPoLineList(tenantId, rcwlSodrHzpoLineDTO);
         return Results.success(list);

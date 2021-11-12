@@ -48,7 +48,7 @@ public class RcwlSodrHzpoHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping
     @ProcessLovValue(targetField = BaseConstants.FIELD_BODY)
-    public ResponseEntity<Page<RcwlSodrHzpoHeaderDTO>> list(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoHeader.FIELD_PO_HEADER_ID,
+    public ResponseEntity<Page<RcwlSodrHzpoHeaderDTO>> hzpoHeaderList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, @ApiIgnore @SortDefault(value = RcwlSodrHzpoHeader.FIELD_PO_HEADER_ID,
             direction = Sort.Direction.ASC) PageRequest pageRequest) {
         Page<RcwlSodrHzpoHeaderDTO> list = rcwlSodrHzpoHeaderRepository.pagePoHeaderList(tenantId, rcwlSodrHzpoHeaderDTO, pageRequest);
         return Results.success(list);
@@ -59,7 +59,7 @@ public class RcwlSodrHzpoHeaderController extends BaseController {
     @GetMapping("/export")
     @ProcessLovValue
     @ExcelExport(RcwlSodrHzpoHeaderDTO.class)
-    public ResponseEntity<List<RcwlSodrHzpoHeaderDTO>> exportList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, ExportParam exportParam,
+    public ResponseEntity<List<RcwlSodrHzpoHeaderDTO>> exportHzpoHeaderList(@PathVariable("organizationId") Long tenantId, RcwlSodrHzpoHeaderDTO rcwlSodrHzpoHeaderDTO, ExportParam exportParam,
                                                                   HttpServletResponse response) {
         List<RcwlSodrHzpoHeaderDTO> list = rcwlSodrHzpoHeaderRepository.exportPoHeaderList(tenantId, rcwlSodrHzpoHeaderDTO);
         return Results.success(list);
