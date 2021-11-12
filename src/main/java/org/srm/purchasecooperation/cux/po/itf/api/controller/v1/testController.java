@@ -170,8 +170,8 @@ public class testController {
                                 if (StringUtils.isNotBlank(updateList.getSigningTime())) {
                                     header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
                                 }
+                                updateHeaders.add(header);
                             }
-                            updateHeaders.add(header);
                         });
                     }
                 });
