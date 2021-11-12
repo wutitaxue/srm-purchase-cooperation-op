@@ -25,7 +25,7 @@ import java.util.List;
 @NoArgsConstructor
 public class RcwlSodrHzpoHeaderDTO {
     private Long poHeaderId;
-    @ApiModelProperty(value = "")
+    @ApiModelProperty(value = "租户ID")
     private Long tenantId;
     @ApiModelProperty(value = "订单编号")
     @ExcelColumn(title = "订单编号", order = 20)
@@ -142,6 +142,14 @@ public class RcwlSodrHzpoHeaderDTO {
     @ApiModelProperty(value = "账期模式")
     @ExcelColumn(title = "账期模式", order = 280)
     private String paymentTerms;
+    @ApiModelProperty("发票类型")
+    @LovValue(
+            lovCode = "SCUX_RCWL_INVOICE_TYPE",
+            meaningField = "invoiceTypeMeaning"
+    )
+    private String invoiceType;
+    @ExcelColumn(title = "发票类型", order = 300)
+    private String invoiceTypeMeaning;
 
     @ApiModelProperty(value = "供应商编号")
     @ExcelColumn(title = "供应商编号", order = 60)
