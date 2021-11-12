@@ -154,18 +154,21 @@ public class RcwlPoHeaderController {
     public ResponseEntity delete(@Encrypt @RequestBody List<PoHeader> poHeaderList, HttpServletRequest request) {
         SecurityTokenHelper.validToken(poHeaderList);
         this.poHeaderService.deletePoHeaderList(poHeaderList);
+        //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
+        for (PoHeader poHeader:poHeaderList){
+            PoDTO poDTO = new PoDTO();
+            BeanUtils.copyProperties(poHeader, poDTO);
+            try {
+                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poHeader.getTenantId(), "02");
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+
         String cacheKey = ((PoHeader)poHeaderList.get(0)).getCacheKey();
         if (!StringUtils.isEmpty(cacheKey)) {
             poHeaderList.stream().forEach((one) -> {
                 this.poCreatingRepository.deletePoHeaderInCache(cacheKey, one.getPoHeaderId());
-                //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
-                PoDTO poDTO = new PoDTO();
-                BeanUtils.copyProperties(one, poDTO);
-                try {
-                    rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, one.getTenantId(), "02");
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
             });
         }
         return Results.success();
