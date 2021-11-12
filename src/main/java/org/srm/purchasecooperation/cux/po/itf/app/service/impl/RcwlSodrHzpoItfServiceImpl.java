@@ -35,6 +35,7 @@ import java.util.Map;
 @Service
 public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlSodrHzpoItfServiceImpl.class);
+    private static final String STATUS_NEW = "1";
     @Autowired
     private RcwlSodrHzpoItfRepository rcwlSodrHzpoItfRepository;
     @Autowired
@@ -49,8 +50,18 @@ public class RcwlSodrHzpoItfServiceImpl implements RcwlSodrHzpoItfService {
         //Tenant_id：hpfm_group表中core_flag为1的tanant_id
         Long tenantId = rcwlSodrHzpoItfRepository.getTenantId();
         itfData.setTenantId(tenantId);
-        //判断接口传入的状态代码是否在系统中存在
+        //接口过来的数据默认为新建
+        itfData.setStatusCode(STATUS_NEW);
         boolean existsFlag = false;
+        //校验发票类型
+        List<LovValueDTO> lovValueDTOLists = lovFeignClient.queryLovValue("SCUX_RCWL_INVOICE_TYPE",tenantId);
+        for(LovValueDTO lovValueDTOList:lovValueDTOLists ){
+            if(lovValueDTOList.getValue().equals(itfData.getInvoiceType())){
+                existsFlag = true;
+            }
+        }
+        Assert.isTrue(existsFlag,MessageAccessor.getMessage("error.sodrhzpo_invoiceType_error", LanguageHelper.locale()).desc());
+
         //unified_social_code：关联sslm_supplier_basic中unified_social_code，校验必须存在
         Long existsCount = rcwlSodrHzpoItfRepository.checkUnifiedSocialCode(tenantId,itfData.getUnifiedSocialCode());
         Assert.isTrue(!existsCount.equals(0L), MessageAccessor.getMessage("supplier.not.exist", LanguageHelper.locale()).desc());
