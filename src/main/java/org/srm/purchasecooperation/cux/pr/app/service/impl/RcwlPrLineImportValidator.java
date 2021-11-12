@@ -5,13 +5,10 @@ import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.core.message.MessageAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
 import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
-import org.srm.purchasecooperation.cux.pr.infra.constant.Constants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.cux.sinv.infra.util.TenantValue;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineImportValidator;
@@ -80,6 +77,8 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
         if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
             PrLine prLineVO = this.prImportMapper.queryCategoryInfo(prLineImportVO);
             String checkVarchar = prLineVO.getAttributeVarchar15();
+            List<PrLine> prLines = this.prImportMapper.queryItemInfo(prLineImportVO);
+            prLineVO = prLines.get(0);
             if(!ObjectUtils.isEmpty(prLineVO)){
                 if (!StringUtils.equals(checkVarchar, "1")) {
                     if(!StringUtils.equals(prLineImportVO.getItemName(), prLineVO.getItemName())){
