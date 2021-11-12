@@ -112,54 +112,54 @@ public class testController {
             ResponsePayloadDTO responsePayloadDTO =
                     interfaceInvokeSdk.invoke(TENANTNUM, SERVICECODE, INTERFACECODE, payload);
             LOGGER.debug("responsePayloadDTO: {}", JSONObject.toJSONString(responsePayloadDTO));
-            RcwlOrderStatusRcvDTO responseDTO = JSONArray.parseObject(String.valueOf(responsePayloadDTO), RcwlOrderStatusRcvDTO.class);
+            RcwlOrderStatusRcvDTO responseDTO = JSONArray.parseObject(String.valueOf(responsePayloadDTO.getPayload()), RcwlOrderStatusRcvDTO.class);
             if (responseDTO == null) {
                 LOGGER.error("回传数据为空!");
             } else {
                 return responseDTO;
             }
-//                //查询表中订单编号
-//                List<RcwlSodrHzpoHeader> headers = rcwlSodrHzpoHeaderRepository.selectAll();
-//                List<String> orderNums = new ArrayList<>();
-//                headers.forEach(header -> {
-//                    orderNums.add(header.getPoNum());
-//                });
-//                //获取报文中的所有订单编号
-//                List<String> queryOrderNums = new ArrayList<>();
-//                List<RcwlOrderStatusDTO> rcwlOrderStatusDTOS = responseDTO.getData();
-//                Map<String, RcwlOrderStatusDTO> orderMap = new HashMap<>();
-//                rcwlOrderStatusDTOS.forEach(order -> {
-//                    orderMap.put(order.getOrderId(), order);
-//                    queryOrderNums.add(order.getOrderId());
-//                });
-//                //获取两个list都有的部分，这一部分需要做更新
-//                List<String> tableExistsNum = queryOrderNums.stream().filter(orderNums::contains).collect(Collectors.toList());
-//                List<RcwlOrderStatusDTO> updateLists = new ArrayList<>();
-//                tableExistsNum.forEach(item -> {
-//                    updateLists.add(orderMap.get(item));
-//                });
-//                //处理更新list中的日期与ID
-//                List<RcwlSodrHzpoHeader> updateHeaders = new ArrayList<>();
-//                updateLists.forEach(updateList -> {
-//                    headers.forEach(header -> {
-//                        if (updateList.getOrderId().equals(header.getPoNum())) {
-//                            header.setStatusCode(updateList.getStatus());
-//                            if (StringUtils.isNotBlank(updateList.getConfirmTime())) {
-//                                header.setConfirmedDate(Instant.ofEpochMilli(Long.parseLong(updateList.getConfirmTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-//                            }
-//                            if (StringUtils.isNotBlank(updateList.getShipTime())) {
-//                                header.setFirstShippingDate(Instant.ofEpochMilli(Long.parseLong(updateList.getShipTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-//                            }
-//                            if (StringUtils.isNotBlank(updateList.getSigningTime())) {
-//                                header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-//                            }
-//                        }
-//                        updateHeaders.add(header);
-//                    });
-//                });
-//                //更新数据
-//                rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
-//            }
+                //查询表中订单编号
+                List<RcwlSodrHzpoHeader> headers = rcwlSodrHzpoHeaderRepository.selectAll();
+                List<String> orderNums = new ArrayList<>();
+                headers.forEach(header -> {
+                    orderNums.add(header.getPoNum());
+                });
+                //获取报文中的所有订单编号
+                List<String> queryOrderNums = new ArrayList<>();
+                List<RcwlOrderStatusDTO> rcwlOrderStatusDTOS = responseDTO.getData();
+                Map<String, RcwlOrderStatusDTO> orderMap = new HashMap<>();
+                rcwlOrderStatusDTOS.forEach(order -> {
+                    orderMap.put(order.getOrderId(), order);
+                    queryOrderNums.add(order.getOrderId());
+                });
+                //获取两个list都有的部分，这一部分需要做更新
+                List<String> tableExistsNum = queryOrderNums.stream().filter(orderNums::contains).collect(Collectors.toList());
+                List<RcwlOrderStatusDTO> updateLists = new ArrayList<>();
+                tableExistsNum.forEach(item -> {
+                    updateLists.add(orderMap.get(item));
+                });
+                //处理更新list中的日期与ID
+                List<RcwlSodrHzpoHeader> updateHeaders = new ArrayList<>();
+                updateLists.forEach(updateList -> {
+                    headers.forEach(header -> {
+                        if (updateList.getOrderId().equals(header.getPoNum())) {
+                            header.setStatusCode(updateList.getStatus());
+                            if (StringUtils.isNotBlank(updateList.getConfirmTime())) {
+                                header.setConfirmedDate(Instant.ofEpochMilli(Long.parseLong(updateList.getConfirmTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                            }
+                            if (StringUtils.isNotBlank(updateList.getShipTime())) {
+                                header.setFirstShippingDate(Instant.ofEpochMilli(Long.parseLong(updateList.getShipTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                            }
+                            if (StringUtils.isNotBlank(updateList.getSigningTime())) {
+                                header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                            }
+                        }
+                        updateHeaders.add(header);
+                    });
+                });
+                //更新数据
+                rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
+            }
         } catch (Exception e) {
             throw new CommonException("调用接口失败! {0}"+e.toString(), e.toString());
         }
