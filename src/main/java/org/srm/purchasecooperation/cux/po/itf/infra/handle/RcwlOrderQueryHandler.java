@@ -10,6 +10,7 @@ import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.interfaces.sdk.invoke.InterfaceInvokeSdk;
 import org.hzero.boot.platform.lov.dto.LovValueDTO;
 import org.hzero.boot.platform.lov.feign.LovFeignClient;
+import org.hzero.boot.scheduler.infra.annotation.JobHandler;
 import org.hzero.boot.scheduler.infra.enums.ReturnT;
 import org.hzero.boot.scheduler.infra.handler.IJobHandler;
 import org.hzero.boot.scheduler.infra.tool.SchedulerTool;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  * @Date: 2021/11/9 15:36
  * @Description:
  */
+@JobHandler("RcwlHzorderStatusJob")
 public class RcwlOrderQueryHandler implements IJobHandler {
 
     private static final String ENT = "SUNAC";
