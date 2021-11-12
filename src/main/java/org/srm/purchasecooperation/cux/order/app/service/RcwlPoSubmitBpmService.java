@@ -31,6 +31,6 @@ public interface RcwlPoSubmitBpmService {
      * @param tenantId
      * @param poHeader
      */
-    void approveProcess(Long tenantId, PoHeader poHeader);
+    void approveProcess(Long tenantId, PoHeader poHeader, Integer mqFlag);
 
 }
