@@ -159,7 +159,7 @@ public class testController {
                 });
                 //更新数据
                 rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
-            }
+
         } catch (Exception e) {
             throw new CommonException("调用接口失败! {0}"+e.toString(), e.toString());
         }
