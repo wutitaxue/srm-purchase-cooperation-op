@@ -8,6 +8,8 @@ import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.interfaces.sdk.invoke.InterfaceInvokeSdk;
+import org.hzero.boot.platform.lov.dto.LovValueDTO;
+import org.hzero.boot.platform.lov.feign.LovFeignClient;
 import org.hzero.boot.scheduler.infra.enums.ReturnT;
 import org.hzero.boot.scheduler.infra.handler.IJobHandler;
 import org.hzero.boot.scheduler.infra.tool.SchedulerTool;
@@ -49,6 +51,8 @@ public class RcwlOrderQueryHandler implements IJobHandler {
     private InterfaceInvokeSdk interfaceInvokeSdk;
     @Autowired
     private RcwlSodrHzpoHeaderRepository rcwlSodrHzpoHeaderRepository;
+    @Autowired
+    LovFeignClient lovFeignClient;
 
     @Override
     public ReturnT execute(Map<String, String> map, SchedulerTool tool) {
@@ -104,12 +108,14 @@ public class RcwlOrderQueryHandler implements IJobHandler {
                 //查询表中订单编号
                 List<RcwlSodrHzpoHeader> headers = rcwlSodrHzpoHeaderRepository.selectAll();
                 List<String> orderNums = new ArrayList<>();
+                long tenantId = headers.get(0).getTenantId();
                 headers.forEach(header -> {
                     orderNums.add(header.getPoNum());
                 });
                 //获取报文中的所有订单编号
                 List<String> queryOrderNums = new ArrayList<>();
                 List<RcwlOrderStatusDTO> rcwlOrderStatusDTOS = responseDTO.getData();
+                LOGGER.info("处理数据：{}",rcwlOrderStatusDTOS);
                 Map<String, RcwlOrderStatusDTO> orderMap = new HashMap<>();
                 rcwlOrderStatusDTOS.forEach(order -> {
                     orderMap.put(order.getOrderId(), order);
@@ -121,24 +127,33 @@ public class RcwlOrderQueryHandler implements IJobHandler {
                 tableExistsNum.forEach(item -> {
                     updateLists.add(orderMap.get(item));
                 });
+                //校验状态代码
+                List<LovValueDTO> statusLovValues = lovFeignClient.queryLovValue("SCUX_RCWL_HZPO_STATUS",tenantId);
+                List<String> statusValues = new ArrayList<>();
+                statusLovValues.forEach(statusLovValue->{
+                            statusValues.add(statusLovValue.getValue());
+                        }
+                );
                 //处理更新list中的日期与ID
                 List<RcwlSodrHzpoHeader> updateHeaders = new ArrayList<>();
                 updateLists.forEach(updateList -> {
-                    headers.forEach(header -> {
-                        if (updateList.getOrderId().equals(header.getPoNum())) {
-                            header.setStatusCode(updateList.getStatus());
-                            if (StringUtils.isNotBlank(updateList.getConfirmTime())) {
-                                header.setConfirmedDate(Instant.ofEpochMilli(Long.parseLong(updateList.getConfirmTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                    if(statusValues.contains(updateList.getStatus())){
+                        headers.forEach(header -> {
+                            if (updateList.getOrderId().equals(header.getPoNum())) {
+                                header.setStatusCode(updateList.getStatus());
+                                if (StringUtils.isNotBlank(updateList.getConfirmTime())) {
+                                    header.setConfirmedDate(Instant.ofEpochMilli(Long.parseLong(updateList.getConfirmTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                                }
+                                if (StringUtils.isNotBlank(updateList.getShipTime())) {
+                                    header.setFirstShippingDate(Instant.ofEpochMilli(Long.parseLong(updateList.getShipTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                                }
+                                if (StringUtils.isNotBlank(updateList.getSigningTime())) {
+                                    header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
+                                }
                             }
-                            if (StringUtils.isNotBlank(updateList.getShipTime())) {
-                                header.setFirstShippingDate(Instant.ofEpochMilli(Long.parseLong(updateList.getShipTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-                            }
-                            if (StringUtils.isNotBlank(updateList.getSigningTime())) {
-                                header.setConfirmReceiptDate(Instant.ofEpochMilli(Long.parseLong(updateList.getSigningTime())).atZone(ZoneOffset.ofHours(8)).toLocalDate());
-                            }
-                        }
-                        updateHeaders.add(header);
-                    });
+                            updateHeaders.add(header);
+                        });
+                    }
                 });
                 //更新数据
                 rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
