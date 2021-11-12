@@ -8,6 +8,7 @@ import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
 import org.hzero.core.message.MessageAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.util.ObjectUtils;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RcwlPrLineImportVO;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.cux.sinv.infra.util.TenantValue;
@@ -75,10 +76,9 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
         }
         //需要校验导入模板中的物料名称、规格、型号、单位和物料基本信息中（smdm_item）数据是否一致
         if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
-            List<PrLine> prLineVOs = this.prImportMapper.queryItemInfo(prLineImportVO);
-            if(!prLineVOs.isEmpty()){
-                PrLine prLineVO = prLineVOs.get(0);
-                String checkVarchar = prLineVO.getAttributeVarchar15();
+            PrLine prLineVO = this.prImportMapper.queryCategoryInfo(prLineImportVO);
+            String checkVarchar = prLineVO.getAttributeVarchar15();
+            if(!ObjectUtils.isEmpty(prLineVO)){
                 if (!StringUtils.equals(checkVarchar, "1")) {
                     if(!StringUtils.equals(prLineImportVO.getItemName(), prLineVO.getItemName())){
                         getContext().addErrorMsg("导入模板中的物料名称与物料基本信息的物料名称不一致");
