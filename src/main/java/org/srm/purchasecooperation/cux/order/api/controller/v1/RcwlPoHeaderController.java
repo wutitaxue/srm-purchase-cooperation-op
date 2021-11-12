@@ -1,5 +1,6 @@
 package org.srm.purchasecooperation.cux.order.api.controller.v1;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -14,9 +15,11 @@ import org.hzero.boot.platform.lov.annotation.ProcessLovValue;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.base.BaseController;
 import org.hzero.core.util.Results;
+import org.hzero.mybatis.helper.SecurityTokenHelper;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,7 @@ import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderCreateService;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoBudgetItfService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineMapper;
 import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
@@ -93,6 +97,8 @@ public class RcwlPoHeaderController extends BaseController {
     private RcwlPoLineMapper rcwlPoLineMapper;
     @Autowired
     private RcwlPoHeaderCreateService rcwlPoHeaderCreateService;
+    @Autowired
+    private RcwlPoBudgetItfService rcwlPoBudgetItfService;
 
     @ApiOperation("手工审批通过采购订单")
     @Permission(
@@ -257,5 +263,28 @@ public class RcwlPoHeaderController extends BaseController {
         }
 
         return Results.success(poDTO);
+    }
+
+    @ApiOperation("采购订单整单删除")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @DeleteMapping({"/po-header"})
+    public ResponseEntity delete(@Encrypt @RequestBody List<PoHeader> poHeaderList, HttpServletRequest request) {
+        SecurityTokenHelper.validToken(poHeaderList);
+        this.poHeaderService.deletePoHeaderList(poHeaderList);
+        String cacheKey = ((PoHeader)poHeaderList.get(0)).getCacheKey();
+        if (!StringUtils.isEmpty(cacheKey)) {
+            poHeaderList.stream().forEach((one) -> {
+                this.poCreatingRepository.deletePoHeaderInCache(cacheKey, one.getPoHeaderId());
+                //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
+                PoDTO poDTO = new PoDTO();
+                BeanUtils.copyProperties(one, poDTO);
+                try {
+                    rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, one.getTenantId(), "02");
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+        return Results.success();
     }
 }

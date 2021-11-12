@@ -67,6 +67,9 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
     private RcwlPoToBpmMapper rcwlPoToBpmMapper;
     @Autowired
     private RcwlPoBudgetOccupyMapper rcwlPoBudgetOccupyMapper;
+    @Autowired
+    private PoHeaderRepository poHeaderRepository;
+
 
 
     private static final Logger logger = LoggerFactory.getLogger(RcwlPoBudgetItfServiceImpl.class);
@@ -486,13 +489,16 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
             rcwlItfPrLineDetailDTO.setYszyje("0");
         }
         //预算占用日期 YYYY-MM-DD
+        SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-dd");
+        String dateString = formatter.format(poDetailLine.getCreationDate());
         rcwlItfPrLineDetailDTO.setYsdate(Objects.nonNull(poDetailLine.getBudgetDisYear())?
-                (poDetailLine.getBudgetDisYear() + "-01-01"):(poDetailLine.getCreationDate().getYear()+"-01-01"));
+                (poDetailLine.getBudgetDisYear() + "-01-01"):dateString);;
         rcwlItfPrLineDetailDTO.setLine(poDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }
 
     public RCWLItfPrLineDTO initOccupy(PoDTO poDTO, Long tenantId, String flag) {
+        logger.info("========poDTO=======",poDTO);
         RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
         itfPrLineDTO.setMexternalsysid("CG");
         logger.info("预算占用标识flag:{}",flag);
@@ -507,7 +513,9 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         SimpleDateFormat formatter = new SimpleDateFormat("YYYY-MM-dd");
         String dateString = formatter.format(poDTO.getCreationDate());
         itfPrLineDTO.setBilldate(dateString);
-        itfPrLineDTO.setPaymentbillcode(poDTO.getPoNum());
+        PoHeader poHeader = new PoHeader();
+        BeanUtils.copyProperties(poDTO, poHeader);
+        itfPrLineDTO.setPaymentbillcode(StringUtils.isNotBlank(poDTO.getPoNum())?poDTO.getPoNum():poHeaderRepository.selectOne(poHeader).getPoNum());
         //测试使用
         String unitCode = rcwlItfPrDataRespository.selectSapCode(poDTO.getCompanyId(), tenantId);
         if (StringUtils.isEmpty(unitCode)) {
