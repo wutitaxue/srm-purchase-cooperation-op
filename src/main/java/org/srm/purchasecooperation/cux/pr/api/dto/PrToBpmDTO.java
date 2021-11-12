@@ -44,6 +44,17 @@ public class PrToBpmDTO implements Serializable {
     @JSONField(name = "REMARK")
     private String remark;
 
+    /**
+     * 采购员
+     */
+    @JSONField(name = "PURCHASE_AGENT")
+    private String purchaseAgent;
+    /**
+     * 当年预算总和
+     */
+    @JSONField(name = "PRESENTBUDGETSUM")
+    private String presentBudgetSum;
+
 
     @JSONField(name = "URL_MX")
     private String zYunUrl;
@@ -52,6 +63,22 @@ public class PrToBpmDTO implements Serializable {
     private List<PrToBpmLineDTO> prToBpmLineDTOList;
     @JSONField(name = "ATTACHMENTS1")
     private List<PrToBpmFileDTO> prToBpmFileDTOList;
+
+    public String getPurchaseAgent() {
+        return purchaseAgent;
+    }
+
+    public void setPurchaseAgent(String purchaseAgent) {
+        this.purchaseAgent = purchaseAgent;
+    }
+
+    public String getPresentBudgetSum() {
+        return presentBudgetSum;
+    }
+
+    public void setPresentBudgetSum(String presentBudgetSum) {
+        this.presentBudgetSum = presentBudgetSum;
+    }
 
     public String getzYunUrl() {
         return zYunUrl;
