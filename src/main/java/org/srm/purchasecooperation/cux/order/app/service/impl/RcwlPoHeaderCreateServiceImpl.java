@@ -29,6 +29,8 @@ import org.srm.common.util.StringToNumberUtils;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderCreateService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
+import org.srm.purchasecooperation.cux.order.domain.vo.PcHeaderVO;
+import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlSpcmPcSubjectMapper;
 import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoLineDetailDTO;
@@ -126,6 +128,8 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
     private PrLineRepository prLineRepository;
     @Autowired
     private RcwlPoHeaderServiceImpl poHeaderService;
+    @Autowired
+    private RcwlSpcmPcSubjectMapper rcwlSpcmPcSubjectMapper;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderCreateServiceImpl.class);
 
@@ -135,6 +139,15 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
         if (CollectionUtils.isEmpty(contractResultDTOList)) {
             throw new CommonException("spuc.order.subject_can_not_be_null", new Object[0]);
         } else {
+            //查询引用合同数据
+            ContractResultDTO contractResult = contractResultDTOList.get(0);
+            PcHeaderVO pcHeaderVO = rcwlSpcmPcSubjectMapper.selectSpcmPcHeader(contractResult.getPcHeaderId(), contractResult.getTenantId());
+            Date pcStartDateActive = null;
+            Date pcEndDateActive = null;
+            if (Objects.nonNull(pcHeaderVO)){
+                pcStartDateActive = pcHeaderVO.getStartDateActive();
+                pcEndDateActive = pcHeaderVO.getEndDateActive();
+            }
             Boolean autoTransferFlag = false;
             String autoPoStatus = null;
             if (PoConstants.autoTransferOrderFlag.YES.equals(((ContractResultDTO)contractResultDTOList.get(0)).getAutoTransferOrderFlag())) {
@@ -184,6 +197,9 @@ public class RcwlPoHeaderCreateServiceImpl implements RcwlPoHeaderCreateService 
             poLineList.forEach((poLinex) -> {
                 poLinex.modifyDomesticInfoByExchangeRate(this.mdmService, finalDomesticCurrencyCode);
             });
+            //合同起止日期
+            poDTO.setAttributeDate2(pcStartDateActive);
+            poDTO.setAttributeDate3(pcEndDateActive);
             poDTO.modifyDomesticAmountAndTaxIncludeAmount(poLineList, this.mdmService);
             poDTO.setSupplierTenantId(contractResultDTO.getSupplierTenantId());
             poDTO.setSupplierId(contractResultDTO.getSupplierId());
