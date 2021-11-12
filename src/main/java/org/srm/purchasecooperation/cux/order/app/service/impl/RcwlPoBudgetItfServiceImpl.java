@@ -498,7 +498,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
     }
 
     public RCWLItfPrLineDTO initOccupy(PoDTO poDTO, Long tenantId, String flag) {
-        logger.info("========poDTO=======",poDTO);
+        logger.info("========poDTO=======" + poDTO.toString());
         RCWLItfPrLineDTO itfPrLineDTO = new RCWLItfPrLineDTO();
         itfPrLineDTO.setMexternalsysid("CG");
         logger.info("预算占用标识flag:{}",flag);
@@ -514,7 +514,7 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         String dateString = formatter.format(poDTO.getCreationDate());
         itfPrLineDTO.setBilldate(dateString);
         PoHeader poHeader = new PoHeader();
-        BeanUtils.copyProperties(poDTO, poHeader);
+        poHeader.setPoHeaderId(poDTO.getPoHeaderId());
         itfPrLineDTO.setPaymentbillcode(StringUtils.isNotBlank(poDTO.getPoNum())?poDTO.getPoNum():poHeaderRepository.selectOne(poHeader).getPoNum());
         //测试使用
         String unitCode = rcwlItfPrDataRespository.selectSapCode(poDTO.getCompanyId(), tenantId);
