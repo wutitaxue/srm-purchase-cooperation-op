@@ -96,7 +96,7 @@ public class RcwlOrderQueryHandler implements IJobHandler {
             ResponsePayloadDTO responsePayloadDTO =
                     interfaceInvokeSdk.invoke(TENANTNUM, SERVICECODE, INTERFACECODE, payload);
             LOGGER.debug("responsePayloadDTO: {}", JSONObject.toJSONString(responsePayloadDTO));
-            RcwlOrderStatusRcvDTO responseDTO = JSONArray.parseObject(String.valueOf(responsePayloadDTO), RcwlOrderStatusRcvDTO.class);
+            RcwlOrderStatusRcvDTO responseDTO = JSONArray.parseObject(String.valueOf(responsePayloadDTO.getPayload()), RcwlOrderStatusRcvDTO.class);
             if (responseDTO == null) {
                 LOGGER.error("回传数据为空!");
                 return ReturnT.SUCCESS;
