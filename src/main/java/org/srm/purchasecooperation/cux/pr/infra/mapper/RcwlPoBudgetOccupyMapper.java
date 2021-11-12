@@ -20,4 +20,12 @@ public interface RcwlPoBudgetOccupyMapper {
      * @return
      */
     List<PoBudgetOccupyLineVO> selectBudgetDistributionByLine(Long tenantId, Long poHeaderId);
+
+    /**
+     * 根据订单行获取预算分配
+     * @param tenantId
+     * @param poHeaderId
+     * @return
+     */
+    List<PoBudgetOccupyLineVO> selectNoBudgetDistributionPoLine(Long tenantId, Long poHeaderId);
 }
