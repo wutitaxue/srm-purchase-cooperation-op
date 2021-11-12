@@ -76,6 +76,7 @@ public class testController {
     public RcwlOrderStatusRcvDTO list() {
         //设置查询DTO
         RcwlOrderStatusQueryDTO queryDTO = new RcwlOrderStatusQueryDTO();
+        RcwlOrderStatusRcvDTO responseDTO = new RcwlOrderStatusRcvDTO();
         queryDTO.setEnt(ENT);
         //设置当前时间戳
         queryDTO.setUpdateTimeEnd(System.currentTimeMillis());
@@ -112,12 +113,10 @@ public class testController {
             ResponsePayloadDTO responsePayloadDTO =
                     interfaceInvokeSdk.invoke(TENANTNUM, SERVICECODE, INTERFACECODE, payload);
             LOGGER.debug("responsePayloadDTO: {}", JSONObject.toJSONString(responsePayloadDTO));
-            RcwlOrderStatusRcvDTO responseDTO = JSONArray.parseObject(String.valueOf(responsePayloadDTO.getPayload()), RcwlOrderStatusRcvDTO.class);
-            if (responseDTO == null) {
+            responseDTO = JSONArray.parseObject(String.valueOf(responsePayloadDTO.getPayload()), RcwlOrderStatusRcvDTO.class);
+            if (responseDTO.getData() == null) {
                 LOGGER.error("回传数据为空!");
             } else {
-                return responseDTO;
-            }
                 //查询表中订单编号
                 List<RcwlSodrHzpoHeader> headers = rcwlSodrHzpoHeaderRepository.selectAll();
                 List<String> orderNums = new ArrayList<>();
@@ -159,20 +158,11 @@ public class testController {
                 });
                 //更新数据
                 rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
-
+            }
         } catch (Exception e) {
             throw new CommonException("调用接口失败! {0}"+e.toString(), e.toString());
         }
-        return null;
-    }
-    public static String strTo16(String s) {
-        String str = "";
-        for (int i = 0; i < s.length(); i++) {
-            int ch = (int) s.charAt(i);
-            String s4 = Integer.toHexString(ch);
-            str = str + s4;
-        }
-        return str;
+        return responseDTO;
     }
 
 }
