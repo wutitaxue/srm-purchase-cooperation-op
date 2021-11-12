@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.imported.infra.validator.annotation.ImportService;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.base.BaseConstants.Flag;
 import org.hzero.core.convert.CommonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,7 +142,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                 }
                 //导入行的物料名称、规格、型号、单位有值的话，物料名称、规格、型号以导入模板的为准，
                 //单位需校验在系统中存在；如果模板中没有值，那么导入之后，系统自动根据物料编码带出。
-                if (StringUtils.equals(checkVarchar, "1")) {
+                if (StringUtils.equals(checkVarchar, BaseConstants.Flag.YES.toString())) {
                     if (StringUtils.isEmpty(prLine.getItemName())) {
                         prLine.setItemName(prLineTmp.getItemName());
                     }
