@@ -29,6 +29,7 @@ import org.srm.purchasecooperation.order.domain.repository.PoLineRepository;
 import org.srm.purchasecooperation.order.domain.service.PoLineValidatorDomainService;
 import org.srm.purchasecooperation.order.domain.service.impl.PoLineValidatorDomainServiceImpl;
 import org.srm.purchasecooperation.order.infra.mapper.PoImportMapper;
+import org.srm.purchasecooperation.pr.domain.vo.PrLineImportVO;
 import org.srm.web.annotation.Tenant;
 
 @Component
@@ -211,9 +212,8 @@ public class RcwlPoLineValidatorDomainServiceImpl extends PoLineValidatorDomainS
         if (poLineDetailDTO.getNeedStartDate() == null){
             return false;
         }else {
-            ZoneId zone = ZoneId.systemDefault();
-            Instant instant = poLineDetailDTO.getNeedStartDate().atStartOfDay().atZone(zone).toInstant();
-            poLineDetailDTO.setAttributeDate1(Date.from(instant));
+            PrLineImportVO prLineImportVO = new PrLineImportVO();
+            poLineDetailDTO.setAttributeDate1(prLineImportVO.localDate2Date(poLineDetailDTO.getNeedStartDate()));
         }
 //        if (poLineDetailDTO.getNeededDate().isBefore(LocalDate.now())) {
 //            importData.addErrorMsg(MessageAccessor.getMessage("error.po.line.import_data_error").desc());
