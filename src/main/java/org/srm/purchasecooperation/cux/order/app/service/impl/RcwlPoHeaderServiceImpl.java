@@ -1449,6 +1449,18 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 BeanUtils.copyProperties(poHeader,poDTO);
                 //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
+                //查询头行数据
+                PoLine poLineQuery = new PoLine();
+                poLineQuery.setPoHeaderId(poHeader.getPoHeaderId());
+                poLineQuery.setTenantId(poHeader.getTenantId());
+                List<PoLine> poLineList = poLineRepository.select(poLineQuery);
+                PoHeader poHeaderQuery = new PoHeader();
+                poHeaderQuery.setPoHeaderId(poHeader.getPoHeaderId());
+                poHeaderQuery.setTenantId(poHeader.getTenantId());
+                PoHeader poHeaderInDB = poHeaderRepository.selectOne(poHeaderQuery);
+                //预算释放成功，释放申请数量
+                generatorPoByPrDomainService.releasePr(poLineList, poHeaderInDB);
+
                 poHeaderSet.add(poHeader.getPoHeaderId());
                 List<PoLineLocation> poLineLocations = this.poLineLocationMapper.selectByPoHeaderId(poHeader.getPoHeaderId(), poHeader.getTenantId());
                 if (CollectionUtils.isNotEmpty(poLineLocations)) {
