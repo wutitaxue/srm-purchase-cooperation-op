@@ -153,7 +153,6 @@ public class RcwlPoHeaderController {
     @DeleteMapping({"/po-header"})
     public ResponseEntity delete(@Encrypt @RequestBody List<PoHeader> poHeaderList, HttpServletRequest request) {
         SecurityTokenHelper.validToken(poHeaderList);
-        this.poHeaderService.deletePoHeaderList(poHeaderList);
         //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
         for (PoHeader poHeader:poHeaderList){
             PoDTO poDTO = new PoDTO();
@@ -164,7 +163,8 @@ public class RcwlPoHeaderController {
                 e.printStackTrace();
             }
         }
-
+        //删除订单
+        this.poHeaderService.deletePoHeaderList(poHeaderList);
         String cacheKey = ((PoHeader)poHeaderList.get(0)).getCacheKey();
         if (!StringUtils.isEmpty(cacheKey)) {
             poHeaderList.stream().forEach((one) -> {
