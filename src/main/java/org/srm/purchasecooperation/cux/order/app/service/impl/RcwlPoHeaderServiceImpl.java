@@ -1927,7 +1927,9 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 }
 
                 this.poHeaderDomainService.initSettleSupplier(poHeader, poHeaderInDB);
-                this.poHeaderRepository.updateOptional(poHeader, new String[]{"poTypeId", "supplierCompanyId", "supplierCompanyName", "supplierId", "supplierName", "supplierCode", "supplierTenantId", "companyId", "companyName", "ouId", "purchaseOrgId", "agentId", "currencyCode", "remark", "termsId", "amount", "taxIncludeAmount", "modifyPriceFlag", "domesticTaxIncludeAmount", "domesticAmount", "originalPoHeaderId"});
+                //更新未保存标识
+                poHeader.setUnSaveEnable(0);
+                this.poHeaderRepository.updateOptional(poHeader, new String[]{"poTypeId", "supplierCompanyId", "supplierCompanyName", "supplierId", "supplierName", "supplierCode", "supplierTenantId", "companyId", "companyName", "ouId", "purchaseOrgId", "agentId", "currencyCode", "remark", "termsId", "amount", "taxIncludeAmount", "modifyPriceFlag", "domesticTaxIncludeAmount", "domesticAmount", "originalPoHeaderId", "unSaveEnable"});
                 //无价合同
                 if (!"CONTRACT_ORDER_WJ".equals(poOrderSaveDTO.getPoHeaderDetailDTO().getSourceBillTypeCode())){
                     this.poHeaderDomainService.initPoMessage(poDTO);
