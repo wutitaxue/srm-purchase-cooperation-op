@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
 
     @Autowired
-    private PoHeaderMapper poHeaderMapper;
-    @Autowired
     private RcwlMyPoHeaderMapper rcwlMyPoHeaderMapper;
 
     @Override
@@ -46,7 +44,8 @@ public class RcwlMyPoHeaderRepositoryImpl extends PoHeaderRepositoryImpl {
 
         poHeader.setStatusCodes((Set)statusSet);
         return PageHelper.doPageAndSort(pageRequest, () -> {
-            Page<PoHeader> page = (Page<PoHeader>) poHeaderMapper.selectPoHeader(poHeader);
+//            Page<PoHeader> page = (Page<PoHeader>) poHeaderMapper.selectPoHeader(poHeader);
+            Page<PoHeader> page = (Page<PoHeader>) rcwlMyPoHeaderMapper.selectPoHeader(poHeader);
             List<PoHeader> collect = page.stream().map(m -> {
                 m.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(m.getPoHeaderId()));
                 return m;

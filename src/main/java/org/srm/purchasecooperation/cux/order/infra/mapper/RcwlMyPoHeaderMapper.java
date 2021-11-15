@@ -17,4 +17,6 @@ public interface RcwlMyPoHeaderMapper {
 
     List<PoHeaderSingleReferenceVO> selectPrHeader(@Param("tenantId") Long tenantId, @Param("dto") PoHeaderSingleReferenceDTO referenceDTO);
 
+    List<PoHeader> selectPoHeader(PoHeader poHeader);
+
 }
