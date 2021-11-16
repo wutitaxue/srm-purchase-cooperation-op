@@ -133,7 +133,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                 prLine.setItemAbcClass(prLineTmp.getItemAbcClass());
                 if(!StringUtils.isEmpty(prLineImportVO.getUomCode())){
                     PrLine prUomLine = this.prImportMapper.queryUomInfo(prLineImportVO);
-                    if(ObjectUtils.isEmpty(prUomLine)){
+                    if(!ObjectUtils.isEmpty(prUomLine)){
                         Long uomId = prUomLine.getUomId();
                         prLine.setUomId(uomId);
                     }
