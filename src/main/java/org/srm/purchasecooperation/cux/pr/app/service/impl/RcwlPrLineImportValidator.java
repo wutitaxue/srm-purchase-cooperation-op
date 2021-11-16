@@ -101,6 +101,14 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
                         getContext().addErrorMsg("导入模板中的计量单位编码与物料基本信息的计量单位编码不一致");
                         return false;
                     }
+                } else {
+                    if(!StringUtils.isEmpty(prLineImportVO.getUomCode())){
+                        PrLine prUomLine = this.prImportMapper.queryUomInfo(prLineImportVO);
+                        if(ObjectUtils.isEmpty(prUomLine)){
+                            this.addErrorMsg("sprm.pr_line_import.uom_error", prLineImportVO, null);
+                            return false;
+                        }
+                    }
                 }
             } else {
                 getContext().addErrorMsg("物料编码不存在，请重新维护");

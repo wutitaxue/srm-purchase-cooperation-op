@@ -131,15 +131,13 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                 prLineTmp = prLines.get(0);
                 prLine.setItemId(prLineTmp.getItemId());
                 prLine.setItemAbcClass(prLineTmp.getItemAbcClass());
-                Long uomId = this.prImportMapper.queryUomInfo(prLineImportVO).getUomId();
-                prLine.setUomId(uomId);
-                //String itemOrgUomFlag = this.customizeSettingHelper.queryBySettingCode(tenantId, "000112");
-                //if (StringUtils.isNotBlank(itemOrgUomFlag) && String.valueOf(Flag.YES).equals(itemOrgUomFlag)) {
-                //    Long uomId = this.prImportMapper.selectItemOrgUom(prLine);
-                //    if (uomId != null) {
-                //        prLine.setUomId(uomId);
-                //    }
-                //}
+                if(!StringUtils.isEmpty(prLineImportVO.getUomCode())){
+                    PrLine prUomLine = this.prImportMapper.queryUomInfo(prLineImportVO);
+                    if(ObjectUtils.isEmpty(prUomLine)){
+                        Long uomId = prUomLine.getUomId();
+                        prLine.setUomId(uomId);
+                    }
+                }
                 //导入行的物料名称、规格、型号、单位有值的话，物料名称、规格、型号以导入模板的为准，
                 //单位需校验在系统中存在；如果模板中没有值，那么导入之后，系统自动根据物料编码带出。
                 if (StringUtils.equals(checkVarchar, BaseConstants.Flag.YES.toString())) {
