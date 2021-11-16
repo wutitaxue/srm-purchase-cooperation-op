@@ -78,6 +78,7 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
             PrLine prLineVO = this.prImportMapper.queryCategoryInfo(prLineImportVO);
             if(ObjectUtils.isEmpty(prLineVO)){
                 this.addErrorMsg("sprm.pr_line_import.category_error", prLineImportVO, null);
+                return false;
             }
             String checkVarchar = prLineVO.getAttributeVarchar15();
             List<PrLine> prLines = this.prImportMapper.queryItemInfo(prLineImportVO);
