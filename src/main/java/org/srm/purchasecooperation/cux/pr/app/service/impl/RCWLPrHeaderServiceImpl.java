@@ -432,7 +432,9 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
             rcwlBudgetChangeActions.add(rcwlBudgetChangeAction);
         });
         // 删除旧数据(new数据要删,old数据不动)
-        rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).enabledFlag(BaseConstants.Flag.NO).budgetGroup(RcwlBudgetChangeAction.NEW).build());
+        if (CollectionUtils.isNotEmpty(prLineDeleteIds)) {
+            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(tenantId, RcwlBudgetDistributionDTO.builder().prHeaderId(prHeader.getPrHeaderId()).prLineIds(prLineDeleteIds).changeSubmit(BaseConstants.Flag.YES).enabledFlag(BaseConstants.Flag.NO).budgetGroup(RcwlBudgetChangeAction.NEW).build());
+        }
         // 把未跨年的预算变更加到变更数据里面
         rcwlNewBudgetChangeActionsNotEnableds.addAll(rcwlBudgetChangeActionRepository.batchInsertSelective(rcwlBudgetChangeActions));
         // -------------------------add by wangjie 后面增加的逻辑:将未跨年的需求行的预算数据自动插入至scux_rcwl_budget_distribution表 end--------------------------
