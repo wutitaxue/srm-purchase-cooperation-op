@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineLocationMapper">
+
+    <select id="selectPoLineLocation" resultType="org.srm.purchasecooperation.order.domain.vo.PoLineLocationVO">
+        <bind name="lang" value="@io.choerodon.mybatis.helper.LanguageHelper@language()"/>
+        SELECT
+        spll.po_line_id,
+        spll.po_line_location_id,
+        spll.po_header_id,
+        spll.tenant_id,
+        sph.status_code,
+        sph.po_num,
+        sph.display_po_num,
+        sph.po_source_platform,
+        sph.domestic_currency_code as header_domestic_currency_code,
+        spl.product_num,
+        spl.product_name,
+        spl.catalog_name,
+        spl.production_order_num,
+        ht.tax_rate,
+        (
+        CASE
+        WHEN sph.supplier_id IS NOT NULL AND sph.supplier_code IS NOT NULL THEN sph.supplier_code
+        WHEN sph.supplier_id IS NOT NULL AND sph.supplier_code IS NULL THEN ses.supplier_num
+        ELSE hsc.company_num
+        END
+        ) AS supplier_code,
+        (
+        CASE
+        WHEN sph.supplier_id IS NOT NULL AND sph.supplier_name IS NOT NULL THEN sph.supplier_name
+        WHEN sph.supplier_id IS NOT NULL AND sph.supplier_name IS NULL THEN ses.supplier_name
+        WHEN sph.supplier_id IS NULL AND sph.supplier_company_name IS NULL THEN hsc.company_name
+        ELSE sph.supplier_company_name
+        END
+        ) AS supplier_name,
+        sph.supplier_id,
+        sph.version_num,
+        sph.release_num,
+        sph.display_release_num,
+        spl.display_line_num,
+        spll.display_line_location_num,
+        (
+        CASE
+        <!-- WHEN (spl.item_code IS NULL AND spl.item_name IS NULL)THEN hit.item_code -->
+        WHEN spl.item_code IS NULL THEN hit.item_code
+        ELSE spl.item_code
+        END
+        )AS item_code,
+        (
+        CASE
+        WHEN (spl.item_code IS NULL AND spl.item_name IS NULL)THEN hit.item_name
+        ELSE spl.item_name
+        END
+        )AS item_name,
+        (CASE WHEN spl.common_name IS NULL THEN hit.common_name ELSE spl.common_name END) AS common_name,/*通用名*/
+        (CASE WHEN spl.old_item_code IS NULL THEN hit.used_item_code
+        ELSE spl.old_item_code END) AS old_item_code,
+        ( CASE WHEN #{nowDate,jdbcType=DATE}>spll.promise_delivery_date and sph.confirmed_flag = 1 and spl.cancelled_flag = 0 and sph.publish_cancel_flag = 0 and spll.closed_flag = 0 THEN (CASE spll.quantity WHEN spll.net_received_quantity THEN 0 ELSE 1 END) ELSE 0 END ) AS beyond_quantity,
+        spll.quantity,
+        spll.net_received_quantity,
+        spll.net_deliver_quantity,
+        <!-- 如果订单行上的退回标识为‘是’,则未入库数量为发运行数量*-1 - 已入库数量 -->
+        (case spl.returned_flag when 1 then -spll.quantity-spll.net_deliver_quantity else spll.quantity-spll.net_deliver_quantity end) as not_deliver_quantity,
+        spll.invoiced_quantity,
+        spl.unit_price,
+        spl.entered_tax_included_price,
+        spl.line_amount,
+        spl.tax_included_line_amount,
+        spl.unit_price_batch,
+        hu.uom_name,
+        hu.uom_code,
+        spl.currency_code,
+        spll.need_by_date,
+        spll.promise_delivery_date,
+        spl.specifications,
+        spl.model,
+        spl.manufacturer_name,
+        spl.brand,
+        sph.erp_status,
+        spll.closed_flag,
+        spll.frozen_flag,
+        spll.cancelled_flag,
+        spl.consigned_flag,
+        spl.returned_flag,
+        spl.free_flag,
+        spl.immed_shipped_flag,
+        spl.pr_header_id,
+        spl.pc_num,
+        spl.pc_header_id,
+        spll.remark,
+        spll.feedback,
+        spll.ship_to_third_party_name,
+        spll.ship_to_third_party_address,
+        spll.ship_to_third_party_contact,
+        sess.supplier_site_name,
+        sess.supplier_site_code,
+        spl.freight_line_flag,
+        (
+        CASE
+        WHEN sph.company_name IS NULL THEN hc.company_name
+        ELSE sph.company_name
+        END
+        ) AS company_name,
+        hou.ou_name,
+        sph.ou_id,
+        hpo.organization_name AS pur_organization_name,
+        hpa.purchase_agent_name,
+        hioe.organization_name AS inv_organization_name,
+        hi.inventory_name,
+        hl.location_name,
+        sph.bill_to_location_address,
+        su.uom_name AS price_uom_name,
+        sph.submitted_date,
+        sph.submitted_by,
+        sph.released_date,
+        sph.confirmed_date,
+        spll.urgent_flag,
+        spll.urgent_date,
+
+        case    when spch.pc_source_code='PURCHASE_NEED'      then sps.source_code
+        /*申请——》订单*/
+        when sprh.display_pr_num is not null          then sprh.display_pr_num
+        /*申请->寻源->协议->订单*/
+        when srlipc.pr_line_id is not null            then srlipc.pr_num
+        when sblipc.pr_line_id is not null            then sblipc.pr_num
+        /*申请->寻源->订单*/
+        when srli.pr_line_id is not null              then srli.pr_num
+        when sbli.pr_line_id is not null              then sbli.pr_num
+        end as display_pr_num,
+
+        case    when spch.pc_source_code='PURCHASE_NEED'      then sps.source_line_num
+        /*申请——》订单*/
+        when sprh.display_pr_num is not null          then sprl.display_line_num
+        /*申请->寻源->协议->订单*/
+        when srlipc.pr_line_id is not null            then srlipc.pr_line_num
+        when sblipc.pr_line_id is not null            then sblipc.pr_line_num
+        /*申请->寻源->订单*/
+        when srli.pr_line_id is not null              then srli.pr_line_num
+        when sbli.pr_line_id is not null              then sbli.pr_line_num
+        end as display_pr_line_num,
+
+        sph.source_code,
+        sph.external_system_code,
+        spll.delivery_date_reject_flag,
+        sph.supplier_company_id,
+        sph.supplier_company_name,
+        hsc.company_num AS supplier_company_code,
+        spll.can_create_asn_flag,
+        sph.publish_cancel_flag,
+        sph.confirmed_flag,
+        sph.erp_creation_date,
+        <!--            case when su1.real_name is null then su2.real_name else su1.real_name end erp_created_name,-->
+        case when sph.po_source_platform='ERP' then su1.real_name else su2.real_name end  erp_created_name,
+        sph.creation_date,
+        sph.created_by,
+        sph.incorrect_flag,
+        sph.incorrect_msg,
+        spll.object_version_number,
+        sot.order_type_code,
+        ( CASE WHEN spl.chart_code IS NULL or spl.chart_code ='' THEN hit.chart_code ELSE spl.chart_code END ) AS chart_code,/*图号*/
+        spl.chart_version,
+        sph.erp_contract_num,
+        sott.order_type_name,
+        spl.department_id,
+        CASE
+        WHEN
+        spll.delivery_sync_status IS NOT NULL THEN
+        spll.delivery_sync_status ELSE sph.delivery_sync_status
+        END AS delivery_sync_status,
+
+        CASE
+        WHEN
+        spll.delivery_sync_response_msg IS NOT NULL THEN
+        spll.delivery_sync_response_msg ELSE sph.delivery_sync_response_msg
+        END AS delivery_sync_response_msg,
+
+        CASE
+        WHEN
+        spll.delivery_sync_date IS NOT NULL THEN
+        spll.delivery_sync_date ELSE sph.delivery_sync_date
+        END AS delivery_sync_date,
+        spl.account_assign_type_id,
+        saat.account_assign_type_code,
+        hutl.unit_name AS department_name,
+        spl.project_category,
+        spll.original_quantity,
+        <!-- 如果承诺交货日期等于需求日期,延期标识为否 -->
+        CASE WHEN spll.need_by_date = spll.promise_delivery_date
+        THEN '1'
+        ELSE '0'
+        END AS delay_flag,
+        spll.confirm_flag
+        FROM
+        sodr_po_line_location spll
+        JOIN sodr_po_line spl ON spl.po_line_id = spll.po_line_id
+        JOIN sodr_po_header sph ON spl.po_header_id = sph.po_header_id
+        LEFT JOIN smdm_tax ht ON spl.tax_id = ht.tax_id
+        LEFT JOIN sslm_ext_supplier_site sess ON sess.supplier_site_id = sph.supplier_site_id
+        LEFT JOIN hpfm_operation_unit hou ON hou.ou_id = sph.ou_id
+        LEFT JOIN hpfm_purchase_organization hpo ON hpo.purchase_org_id = sph.purchase_org_id
+        LEFT JOIN hpfm_inv_organization hioe ON hioe.organization_id = spll.inv_organization_id
+        LEFT JOIN hpfm_inventory hi ON hi.inventory_id = spll.inv_inventory_id
+        LEFT JOIN hpfm_location hl ON hl.inventory_id = spll.inv_location_id
+        LEFT JOIN hpfm_purchase_agent hpa ON hpa.purchase_agent_id = sph.agent_id
+        LEFT JOIN smdm_item hit ON hit.item_id = spl.item_id
+        LEFT JOIN smdm_uom hu ON hu.uom_id = spl.uom_id
+        LEFT JOIN sslm_external_supplier ses ON ses.supplier_id = sph.supplier_id
+        LEFT JOIN hpfm_company hsesc ON hsesc.company_id = ses.link_id
+        LEFT JOIN smdm_uom su ON su.uom_id = spl.price_uom_id
+        LEFT JOIN sodr_order_type sot ON sot.order_type_id=sph.po_type_id
+        LEFT JOIN sodr_order_type_tl sott ON sott.order_type_id = sot.order_type_id AND sott.lang = #{lang}
+        LEFT JOIN hpfm_company hc ON sph.company_id = hc.company_id
+        LEFT JOIN spfm_partner sp ON sp.company_id=sph.company_id AND sp.partner_company_id = sph.supplier_company_id and sp.tenant_id = sph.tenant_id and sp.partner_tenant_id = sph.supplier_tenant_id
+        LEFT JOIN sslm_supplier_basic hsc ON sp.supplier_basic_id = hsc.supplier_basic_id
+        LEFT JOIN hpfm_unit_tl hutl on hutl.unit_id = spl.department_id and hutl.lang = #{lang}
+        LEFT JOIN sprm_account_assign_type saat ON saat.account_assign_type_id = spl.account_assign_type_id
+        LEFT JOIN iam_user su1 on sph.erp_created_name = su1.login_name
+        LEFT JOIN iam_user su2 on sph.created_by = su2.id
+
+        /*申请->订单*/
+        left join sprm_pr_line sprl on sprl.pr_line_id = spl.pr_line_id
+        left JOIN sprm_pr_header sprh ON sprl.pr_header_id = sprh.pr_header_id
+
+        /*申请->寻源->订单*/
+        /*申请->立项->寻源->订单*/
+        LEFT JOIN ssrc_source_change_history ssch on  sph.po_header_id=ssch.execute_bill_header_id and spl.po_line_id=ssch.execute_bill_line_id and ssch.executing_state='ORDER'
+        LEFT JOIN ssrc_source_result ssr on ssr.result_id=ssch.source_result_id
+        LEFT JOIN ssrc_rfx_line_item srli on srli.rfx_line_item_id=ssr.source_line_item_id AND ssr.source_from='RFX'
+        LEFT JOIN ssrc_bid_line_item sbli on sbli.bid_line_item_id=ssr.source_line_item_id AND ssr.source_from='BID'
+
+        /*申请-》协议——》订单*/
+        LEFT JOIN spcm_pc_change_history spcch ON spl.po_line_id = spcch.execute_bill_line_id and sph.po_header_id=spcch.execute_bill_header_id and spcch.execute_bill_type='ORDER'
+        LEFT JOIN spcm_pc_subject sps ON spcch.pc_subject_id=sps.pc_subject_id
+        LEFT JOIN spcm_pc_header spch ON sps.pc_header_id = spch.pc_header_id
+        /*申请->寻源->协议->订单*/
+        /*申请->立项->寻源->协议->订单*/
+        LEFT JOIN ssrc_source_result ssrpc ON ssrpc.result_id = sps.source_line_num AND spch.pc_source_code = 'SEARCH_SOURCE_RESULT'
+        LEFT JOIN ssrc_rfx_line_item srlipc on srlipc.rfx_line_item_id=ssrpc.source_line_item_id AND ssrpc.source_from='RFX'
+        LEFT JOIN ssrc_bid_line_item sblipc on sblipc.bid_line_item_id=ssrpc.source_line_item_id AND ssrpc.source_from='BID'
+
+        where
+        1=1
+        <if test="tenantId != null">
+            AND sph.tenant_id = #{tenantId}
+            AND spl.tenant_id = #{tenantId}
+            AND spll.tenant_id = #{tenantId}
+        </if>
+        <if test="supplierTenantId != null">
+            AND (
+            CASE
+            WHEN sph.supplier_tenant_id IS NULL
+            THEN hsesc.tenant_id
+            ELSE sph.supplier_tenant_id
+            END
+            ) = #{supplierTenantId}
+        </if>
+        <if test="poSourcePlatform != null and poSourcePlatform != ''">
+            AND sph.po_source_platform = #{poSourcePlatform}
+        </if>
+        <if test="beyondFlag != null">
+            AND ( CASE WHEN #{nowDate}>spll.promise_delivery_date and sph.confirmed_flag = 1 and spl.cancelled_flag = 0 and sph.publish_cancel_flag = 0 and spll.closed_flag = 0 THEN (CASE spll.quantity WHEN spll.net_received_quantity THEN 0 ELSE 1 END) ELSE 0 END ) = #{beyondFlag}
+        </if>
+        <if test="externalSystemCode != null">
+            AND sph.external_system_code = #{externalSystemCode}
+        </if>
+        <if test="supplierCompanyId != null">
+            AND sph.supplier_company_id = #{supplierCompanyId}
+        </if>
+        <if test="supplierCompanyIds != null and supplierCompanyIds.size() > 0">
+            AND sph.supplier_company_id IN
+            <foreach collection="supplierCompanyIds" open="(" close=")" separator="," item="supplierCompanyId">
+                #{supplierCompanyId}
+            </foreach>
+        </if>
+        <if test="poNum != null and poNum != ''">
+            <bind name="poNumLike" value="'%' + poNum + '%'"/>
+            AND sph.po_num LIKE #{poNumLike}
+        </if>
+        <if test="displayPoNum != null and displayPoNum != ''">
+            <bind name="displayPoNumLike" value="'%' + displayPoNum + '%'"/>
+            AND (sph.display_po_num LIKE #{displayPoNumLike} OR sph.po_num LIKE #{displayPoNumLike})
+        </if>
+        <if test="displayLineNum != null and displayLineNum != ''">
+            <bind name="displayLineNumLike" value="'%' + displayLineNum + '%'"/>
+            AND spl.display_line_num LIKE #{displayLineNumLike}
+        </if>
+        <if test="chartVersion != null and chartVersion != ''">
+            <bind name="chartVersionLike" value="'%' + chartVersion + '%'"/>
+            AND spl.chart_version LIKE #{chartVersionLike}
+        </if>
+        <if test="displayLineLocationNum != null and displayLineLocationNum != ''">
+            <bind name="displayLineLocationNumLike" value="'%' + displayLineLocationNum + '%'"/>
+            AND spll.display_line_location_num LIKE #{displayLineLocationNumLike}
+        </if>
+        <if test="supplierId != null">
+            and ses.supplier_id = #{supplierId}
+        </if>
+        <if test="supplierIds != null and supplierIds.size() > 0">
+            and ses.supplier_id IN
+            <foreach collection="supplierIds" open="(" close=")" separator="," item="supplierId">
+                #{supplierId}
+            </foreach>
+        </if>
+        <if test="releasedDateStart != null">
+            AND sph.released_date &gt;= #{releasedDateStart}
+        </if>
+        <if test="releasedDateEnd != null">
+            AND sph.released_date &lt; #{releasedDateEnd}
+        </if>
+        <if test="submittedDateStart != null">
+            AND sph.submitted_date &gt;= #{submittedDateStart}
+        </if>
+        <if test="submittedDateEnd != null">
+            AND sph.submitted_date &lt; #{submittedDateEnd}
+        </if>
+        <if test="confirmedDateStart != null">
+            AND sph.confirmed_date &gt;= #{confirmedDateStart}
+        </if>
+        <if test="confirmedDateEnd != null">
+            AND sph.confirmed_date &lt; #{confirmedDateEnd}
+        </if>
+        <if test="urgentDateStart != null">
+            AND sph.urgent_date &gt;= #{urgentDateStart}
+            AND spll.urgent_flag = 1
+        </if>
+        <if test="urgentDateEnd != null">
+            AND sph.urgent_date &lt; #{urgentDateEnd}
+            AND spll.urgent_flag = 1
+        </if>
+        <if test="needByDateStart != null">
+            AND spll.need_by_date &gt;= #{needByDateStart}
+        </if>
+        <if test="needByDateEnd != null">
+            AND spll.need_by_date &lt; #{needByDateEnd}
+        </if>
+        <if test="promiseDeliveryDateStart != null">
+            AND spll.promise_delivery_date &gt;= #{promiseDeliveryDateStart}
+        </if>
+        <if test="promiseDeliveryDateEnd != null">
+            AND spll.promise_delivery_date &lt; #{promiseDeliveryDateEnd}
+        </if>
+        <if test="erpCreationDateStart != null">
+            AND sph.erp_creation_date &gt;= #{erpCreationDateStart}
+        </if>
+        <if test="erpCreationDateEnd != null">
+            AND sph.erp_creation_date &lt; #{erpCreationDateEnd}
+        </if>
+        <if test="creationDateStart != null">
+            AND sph.creation_date &gt;= #{creationDateStart}
+        </if>
+        <if test="creationDateEnd != null">
+            AND sph.creation_date &lt; #{creationDateEnd}
+        </if>
+        <if test="companyId != null">
+            AND sph.company_id = #{companyId}
+        </if>
+        <if test="ouId != null">
+            AND sph.ou_id = #{ouId}
+        </if>
+        <if test="releaseNum != null and releaseNum != ''">
+            <bind name="releaseNumLike" value="'%' + releaseNum + '%'"/>
+            AND sph.release_num LIKE #{releaseNumLike}
+        </if>
+        <if test="displayReleaseNum != null and displayReleaseNum != ''">
+            <bind name="displayReleaseNumLike" value="'%' + displayReleaseNum + '%'"/>
+            AND sph.display_release_num = #{displayReleaseNumLike}
+        </if>
+        <if test="purchaseOrgId != null">
+            AND sph.purchase_org_id = #{purchaseOrgId}
+        </if>
+        <if test="agentId != null">
+            AND sph.agent_id = #{agentId}
+        </if>
+        <if test="purchaseAgentName != null and purchaseAgentName != ''">
+            <bind name="purchaseAgentNameLike" value="'%'+ purchaseAgentName +'%'"/>
+            AND hpa.purchase_agent_name LIKE #{purchaseAgentNameLike}
+        </if>
+        <if test="supplierSiteId != null">
+            AND sph.supplier_site_id = #{supplierSiteId}
+        </if>
+        <if test="poLineLocationId != null">
+            AND spll.po_line_location_id = #{poLineLocationId}
+        </if>
+        <if test="poTypeId != null">
+            AND sph.po_type_id = #{poTypeId}
+        </if>
+        <if test="erpStatus != null and erpStatus != ''">
+            AND sph.erp_status = #{erpStatus}
+        </if>
+        <if test="itemCode != null and itemCode != ''">
+            <bind name="itemCodeLike" value="'%'+ itemCode +'%'"/>
+            AND spl.item_code LIKE #{itemCodeLike}
+        </if>
+        <if test="itemName != null and itemName != ''">
+            <bind name="itemDescriptionLike" value="'%' + itemName + '%'"/>
+            AND (spl.item_name LIKE #{itemDescriptionLike} OR spl.item_code LIKE #{itemDescriptionLike})
+        </if>
+        <if test="customerItemName != null and customerItemName != ''">
+            <bind name="customerItemNameLike" value="'%'+ customerItemName +'%'"/>
+            AND (
+            CASE
+            WHEN (spl.item_code IS NULL AND spl.item_name IS NULL) THEN hit.item_name
+            ELSE spl.item_name
+            END LIKE #{customerItemNameLike}
+            OR
+            CASE
+            WHEN (spl.item_code IS NULL AND spl.item_name IS NULL) THEN hit.item_code
+            ELSE spl.item_code
+            END LIKE #{customerItemNameLike}
+            )
+        </if>
+        <if test="submittedBy != null">
+            <bind name="submitByLike" value="'%' + submittedBy +'%'"/>
+            AND sph.submitted_by LIKE #{submitByLike}
+        </if>
+        <if test="urgentFlag != null">
+            AND (spll.urgent_flag = #{urgentFlag})
+        </if>
+        <if test="consignedFlag != null">
+            AND (spl.consigned_flag = #{consignedFlag}
+            <if test="consignedFlag == 0">
+                OR spl.consigned_flag IS NULL
+            </if>)
+        </if>
+        <if test="returnedFlag != null">
+            AND (spl.returned_flag = #{returnedFlag}
+            <if test="returnedFlag == 0">
+                OR spl.returned_flag IS NULL
+            </if>)
+        </if>
+        <if test="freeFlag != null">
+            AND (spl.free_flag = #{freeFlag}
+            <if test="freeFlag == 0">
+                OR spl.free_flag IS NULL
+            </if>)
+        </if>
+        <if test="immedShippedFlag != null">
+            AND (spl.immed_shipped_flag = #{freeFlag}
+            <if test="immedShippedFlag == 0">
+                OR spl.immed_shipped_flag IS NULL
+            </if>)
+        </if>
+        <if test="prNum != null and prNum!= ''">
+            <bind name="poReqNumLike" value="'%' + prNum + '%'"/>
+            AND spl.display_pr_num LIKE #{poReqNumLike}
+        </if>
+        <if test="confirmUpdateFlag != null">
+            AND (sph.confirm_update_flag = #{confirmUpdateFlag}
+            <if test="confirmUpdateFlag == 0">
+                OR sph.confirm_update_flag IS NULL
+            </if>)
+        </if>
+        <if test="agentIds != null and agentIds != '' ">
+            and hpa.purchase_agent_id in (
+            <foreach collection="agentIds.split(',') " separator="," item="agentIdItem">
+                #{agentIdItem}
+            </foreach>)
+        </if>
+        <if test="purchaseOrgIds != null and purchaseOrgIds != ''">
+            and hpo.purchase_org_id in (
+            <foreach collection="purchaseOrgIds.split(',') " separator="," item="purchaseOrgIdItem">
+                #{purchaseOrgIdItem}
+            </foreach>)
+        </if>
+        <if test="cancelledFlag !=null">
+            <!--未取消-->
+            <if test="cancelledFlag==0">
+                and spll.cancelled_flag=0
+            </if>
+            <!--已取消-->
+            <if test="cancelledFlag==1">
+                and spll.cancelled_flag=1
+            </if>
+            <!--部分取消-->
+            <if test="cancelledFlag==2">
+                and (sph.status_code = 'CANCELLED_PARTIAL' AND spll.cancelled_flag=0)
+            </if>
+        </if>
+        /*可关闭 头状态=已确认，净接收数量!=0 且 不存在未取消/未关闭的送货单行*/
+        <if test="closeSelect != null">
+            AND spll.net_received_quantity>0
+            AND spl.closed_flag!=1
+            AND (spl.cancelled_flag = 0 AND sph.status_code != 'CANCELED')
+            AND (sph.po_source_platform IS NULL OR sph.po_source_platform != 'E-COMMERCE')
+            AND sph.source_code = 'SRM'
+            AND NOT EXISTS(
+            SELECT
+            1
+            FROM
+            sodr_po_line pl
+            LEFT JOIN sodr_po_line_location pll ON pl.po_line_id = pll.po_line_id
+            LEFT JOIN sinv_asn_line sal on sal.po_line_location_id= pll.po_line_location_id
+            LEFT JOIN sinv_asn_header sah on sah.asn_header_id=sal.asn_header_id
+            WHERE
+            pl.po_line_id = spll.po_line_id
+            and sal.closed_flag!=1
+            and sal.cancelled_flag!=1
+            )
+        </if>
+        /*可取消-来源平台电商和erp不能取消，来源是erp
+        净接收数量和净入库数量为0且不存在未取消的送货单行*/
+        <if test="operateType == 'cancel' ">
+            AND (CASE WHEN sph.po_source_platform = 'CATALOGUE' THEN spl.freight_line_flag ELSE 0 END  != 1)
+        </if>
+        <if test="cancelSelect != null">
+            AND (sph.po_source_platform IS NULL OR sph.po_source_platform != 'E-COMMERCE')
+            AND (sph.po_source_platform IS NULL OR sph.po_source_platform != 'ERP')
+            AND sph.source_code = 'SRM'
+            AND spll.net_received_quantity=0
+            AND spll.net_deliver_quantity=0
+            AND NOT EXISTS(
+            SELECT
+            1
+            FROM
+            sodr_po_line pl
+            LEFT JOIN sodr_po_line_location pll ON pl.po_line_id = pll.po_line_id
+            LEFT JOIN sinv_asn_line sal on sal.po_line_location_id= pll.po_line_location_id
+            LEFT JOIN sinv_asn_header sah on sah.asn_header_id=sal.asn_header_id
+            WHERE
+            pl.po_line_id = spll.po_line_id
+            and sal.closed_flag!=1
+            and sal.cancelled_flag!=1
+            )
+        </if>
+        <!--流程控制-->
+        <if test="processControlSelect != null">
+            AND (sph.po_source_platform IS NULL OR sph.po_source_platform != 'E-COMMERCE')
+            AND sph.source_code = 'SRM'
+        </if>
+        <!-- 虚拟状态查询处理 -->
+        <if test="statusCodes != null and statusCodes.size() > 0">
+            <foreach collection="statusCodes" item="queryStatus" open="AND (" close=")" separator="OR">
+                <choose>
+                    <when test="queryStatus == 'PENDING'">
+                        sph.status_code = 'PENDING'
+                    </when>
+                    <when test="queryStatus == 'SUBMITTED'">
+                        sph.status_code = 'SUBMITTED'
+                    </when>
+                    <when test="queryStatus == 'SUBMITTED_WFL'">
+                        sph.status_code = 'SUBMITTED_WFL'
+                    </when>
+                    <when test="queryStatus == 'APPROVED'">
+                        sph.status_code = 'APPROVED'
+                    </when>
+                    <when test="queryStatus == 'CANCELLED_PARTIAL'">
+                        (sph.status_code = 'CANCELLED_PARTIAL' AND spll.cancelled_flag=0)
+                    </when>
+                    <when test="queryStatus == 'CONFIRM_UNSHIP'">
+                        (sph.status_code = 'PUBLISHED' AND sph.confirmed_flag = 1 AND spll.cancelled_flag=0 AND not EXISTS(SELECT 1 from sinv_asn_line sal WHERE sal.po_line_location_id=spll.po_line_location_id))
+                    </when>
+                    <when test="queryStatus == 'ONLY_APPROVED'">
+                        (sph.status_code = 'APPROVED' AND spll.cancelled_flag=0)
+                    </when>
+                    <when test="queryStatus == 'ONLY_REJECTED'">
+                        (sph.status_code = 'REJECTED' AND spll.cancelled_flag=0)
+                    </when>
+                    <when test="queryStatus == 'ONLY_PUBLISHED'">
+                        (sph.status_code = 'PUBLISHED' AND spll.cancelled_flag=0)
+                    </when>
+                    <when test="queryStatus == 'ONLY_DELIVERY_DATE_REVIEW'">
+                        (sph.status_code = 'DELIVERY_DATE_REVIEW' AND spll.cancelled_flag=0)
+                    </when>
+                    <when test="queryStatus == 'ONLY_DELIVERY_DATE_REJECT'">
+                        (sph.status_code = 'DELIVERY_DATE_REJECT' AND spll.cancelled_flag=0)
+                    </when>
+                    <when test="queryStatus == 'REJECTED'">
+                        sph.status_code = 'REJECTED'
+                    </when>
+                    <when test="queryStatus == 'PUBLISHED'">
+                        (sph.status_code = 'PUBLISHED' AND sph.confirmed_flag = 0 AND spll.cancelled_flag = 0 AND spll.closed_flag =0)
+                    </when>
+                    <when test="queryStatus == 'DELIVERY_DATE_REVIEW'">
+                        (sph.status_code = 'DELIVERY_DATE_REVIEW' AND spll.cancelled_flag = 0 AND spll.closed_flag =0)
+                    </when>
+                    <when test="queryStatus == 'DELIVERY_DATE_REJECT'">
+                        (sph.status_code = 'DELIVERY_DATE_REJECT' AND spll.cancelled_flag = 0 AND spll.closed_flag =0)
+                    </when>
+                    <when test="queryStatus == 'CONFIRMED'">
+                        (sph.status_code = 'PUBLISHED' AND sph.confirmed_flag = 1 AND spll.cancelled_flag = 0 AND spll.closed_flag =0 )
+                    </when>
+                    <when test="queryStatus == 'PUBLISH_CANCEL'">
+                        sph.publish_cancel_flag = 1
+                    </when>
+                    <when test="queryStatus == 'CANCELED'">
+                        spll.cancelled_flag = 1
+                    </when>
+                    <when test="queryStatus == 'CLOSED'">
+                        spll.closed_flag = 1
+                    </when>
+                    <otherwise>
+                        1 = 2
+                    </otherwise>
+                </choose>
+            </foreach>
+        </if>
+        <!-- 订单头快照/正式版标志 -->
+        <if test="releaseFlag != null">
+            AND sph.release_flag = #{releaseFlag}
+        </if>
+        <if test="snapshotFlag != null">
+            AND sph.snapshot_flag = #{snapshotFlag}
+        </if>
+        <!-- 导出时发运行ID处理 -->
+        <if test="poLineLocationIds != null and poLineLocationIds.size() > 0">
+            AND spll.po_line_location_id IN
+            <foreach collection="poLineLocationIds" open="(" close=")" separator="," item="id">
+                #{id}
+            </foreach>
+        </if>
+        <if test="closedFlag != null">
+            and spll.closed_flag=#{closedFlag}
+        </if>
+        <if test="sourceCode != null">
+            AND sph.source_code = 'SRM'
+        </if>
+        <if test="evaluationFlag != null">
+            and sph.evaluation_flag=#{evaluationFlag}
+            and sph.po_source_platform &lt;&gt; 'E-COMMERCE'
+        </if>
+        <if test="purReqNum != null and purReqNum != ''">
+            and (spl.display_pr_num = #{purReqNum}
+            OR sps.source_code= #{purReqNum}
+            OR sprh.display_pr_num= #{purReqNum}
+            OR srlipc.pr_num= #{purReqNum}
+            OR sblipc.pr_num= #{purReqNum}
+            OR srli.pr_num= #{purReqNum}
+            OR sbli.pr_num= #{purReqNum})
+        </if>
+        <if test="fromDocumentNum != null and fromDocumentNum != ''">
+            and (spl.display_pr_num = #{fromDocumentNum} or spch.pc_num = #{fromDocumentNum} or sps.source_code =  #{fromDocumentNum} or ssr.source_num = #{fromDocumentNum}
+            OR sps.source_code= #{fromDocumentNum}
+            OR sprh.display_pr_num= #{fromDocumentNum}
+            OR srlipc.pr_num= #{fromDocumentNum}
+            OR sblipc.pr_num= #{fromDocumentNum}
+            OR srli.pr_num= #{fromDocumentNum}
+            OR sbli.pr_num= #{fromDocumentNum})
+        </if>
+        <!-- 根据是否延期标识查询 -->
+        <if test="delayFlag != null and delayFlag == 1">
+            AND spll.need_by_date = spll.promise_delivery_date
+        </if>
+        <if test="delayFlag != null and delayFlag == 0">
+            AND (spll.promise_delivery_date IS NULL OR spll.need_by_date IS NULL OR spll.need_by_date != spll.promise_delivery_date)
+        </if>
+        <if test="tempKey != null">
+            AND (
+            CASE WHEN sph.supplier_company_id IS NULL AND sph.supplier_id IS NOT NULL THEN CONCAT('sc', sph.supplier_id)
+            WHEN sph.supplier_company_id IS NOT NULL AND sph.supplier_id IS NULL THEN CONCAT(sph.supplier_company_id, 's')
+            ELSE CONCAT(sph.supplier_company_id, sph.supplier_id) END
+            ) = #{tempKey}
+        </if>
+        <!-- 部门 -->
+        <if test = "unitName != null and unitName != ''">
+            <bind name = "unitNameLike" value = "'%'+  unitName + '%'"></bind>
+            and sprh.unit_name like #{unitNameLike}
+        </if>
+    </select>
+
+
+</mapper>
