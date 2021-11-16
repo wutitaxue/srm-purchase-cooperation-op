@@ -76,6 +76,10 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
         //需要校验导入模板中的物料名称、规格、型号、单位和物料基本信息中（smdm_item）数据是否一致
         if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
             PrLine prLineVO = this.prImportMapper.queryCategoryInfo(prLineImportVO);
+            if(ObjectUtils.isEmpty(prLineVO)){
+                this.addErrorMsg("sprm.pr_line_import.category_error", prLineImportVO, null);
+                return false;
+            }
             String checkVarchar = prLineVO.getAttributeVarchar15();
             List<PrLine> prLines = this.prImportMapper.queryItemInfo(prLineImportVO);
             prLineVO = prLines.get(0);
