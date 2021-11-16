@@ -11,7 +11,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.imported.infra.validator.annotation.ImportService;
 import org.hzero.core.base.BaseConstants;
-import org.hzero.core.base.BaseConstants.Flag;
 import org.hzero.core.convert.CommonConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -132,14 +131,15 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                 prLineTmp = prLines.get(0);
                 prLine.setItemId(prLineTmp.getItemId());
                 prLine.setItemAbcClass(prLineTmp.getItemAbcClass());
-                prLine.setUomId(prLineTmp.getUomId());
-                String itemOrgUomFlag = this.customizeSettingHelper.queryBySettingCode(tenantId, "000112");
-                if (StringUtils.isNotBlank(itemOrgUomFlag) && String.valueOf(Flag.YES).equals(itemOrgUomFlag)) {
-                    Long uomId = this.prImportMapper.selectItemOrgUom(prLine);
-                    if (uomId != null) {
-                        prLine.setUomId(uomId);
-                    }
-                }
+                Long uomId = this.prImportMapper.queryUomInfo(prLineImportVO).getUomId();
+                prLine.setUomId(uomId);
+                //String itemOrgUomFlag = this.customizeSettingHelper.queryBySettingCode(tenantId, "000112");
+                //if (StringUtils.isNotBlank(itemOrgUomFlag) && String.valueOf(Flag.YES).equals(itemOrgUomFlag)) {
+                //    Long uomId = this.prImportMapper.selectItemOrgUom(prLine);
+                //    if (uomId != null) {
+                //        prLine.setUomId(uomId);
+                //    }
+                //}
                 //导入行的物料名称、规格、型号、单位有值的话，物料名称、规格、型号以导入模板的为准，
                 //单位需校验在系统中存在；如果模板中没有值，那么导入之后，系统自动根据物料编码带出。
                 if (StringUtils.equals(checkVarchar, BaseConstants.Flag.YES.toString())) {
@@ -152,7 +152,7 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                     if (StringUtils.isEmpty(prLine.getItemModel())) {
                         prLine.setItemModel(prLineTmp.getItemModel());
                     }
-                    if (StringUtils.isEmpty(prLineImportVO.getUomCode())) {
+                    if (ObjectUtils.isEmpty(prLine.getUomId())) {
                         prLine.setUomId(prLineTmp.getUomId());
                     }
                     if (prLines.size() == 1) {
@@ -167,8 +167,6 @@ public class RcwlPrLineImportServiceImpl extends PrLineImportServiceImpl {
                         prLine.setCategoryId(prLineTmp.getCategoryId());
                     }
                 }
-            } else {
-                prLine.setUomId(this.prImportMapper.queryUomInfo(prLineImportVO).getUomId());
             }
 
             if (StringUtils.isNotEmpty(prLineImportVO.getCategoryCode()) && Objects.isNull(prLine.getCategoryId())) {
