@@ -8,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.choerodon.core.exception.CommonException;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
@@ -280,8 +281,9 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
      *
      * @return
      */
+    @SneakyThrows
     @Override
-    public String getToken() {
+    public String getToken(){
         RCWLTokenGetRequestDTO requestDTO = new RCWLTokenGetRequestDTO();
         requestDTO.setOpenid(RCWLConstants.InterfaceInitValue.OPEN_ID);
         RequestPayloadDTO payload = new RequestPayloadDTO();
@@ -290,6 +292,12 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         payload.setHeaderParamMap(headerMap);
         payload.setPayload(JSON.toJSONString(requestDTO));
         payload.setMediaType("application/json");
+
+        ObjectMapper mapper = new ObjectMapper();
+        logger.info("token获取报文1+" + requestDTO);
+        logger.info("token获取报文2+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO));
+        logger.info("token获取报文3+" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
+
         ResponsePayloadDTO responsePayloadDTO = interfaceInvokeSdk.invoke(NAME_SPACE,
                 SERVE_CODE,
                 RCWL_BUDGET_TOKEN_GET,
