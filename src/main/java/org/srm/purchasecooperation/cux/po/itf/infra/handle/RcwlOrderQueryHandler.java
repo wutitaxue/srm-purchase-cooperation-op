@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import io.choerodon.core.exception.CommonException;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
@@ -70,8 +71,14 @@ public class RcwlOrderQueryHandler implements IJobHandler {
         queryDTO.setUpdateTimeBegin(calendar.getTime().getTime());
         //获取订单列表
         String orderListString = map.get("orderIdList");
-        if (StringUtils.isNotBlank(orderListString)) {
-            String[] strArrays = orderListString.split(",");
+        LOGGER.info("获取到的String:{}",orderListString);
+        //去除转义
+        String orderString = StringEscapeUtils.unescapeJava(orderListString);
+        //去除左右的中括号
+        orderString = orderString.substring(1,orderString.length() - 1);
+        LOGGER.info("拆分后的String:{}",orderString);
+        if (StringUtils.isNotBlank(orderString)) {
+            String[] strArrays = orderString.split(",");
             List<String> orderList = Arrays.asList(strArrays);
             queryDTO.setOrderIdList(orderList);
         }
@@ -161,7 +168,7 @@ public class RcwlOrderQueryHandler implements IJobHandler {
                 rcwlSodrHzpoHeaderRepository.batchUpdateOptional(updateHeaders, "statusCode", "confirmedDate", "firstShippingDate", "confirmReceiptDate");
             }
         } catch (Exception e) {
-            throw new CommonException("调用接口失败! {0}", e.toString());
+            throw new CommonException("调用接口失败!"+ e.toString());
         }
         return ReturnT.SUCCESS;
     }
