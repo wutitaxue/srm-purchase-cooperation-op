@@ -166,7 +166,7 @@ public class RcwlPrToBpmServiceImpl implements RcwlPrToBpmService {
         PrToBpmDTO prToBpmDTO = new PrToBpmDTO();
         Employee employee = EmployeeHelper.getEmployee(header.getCreatedBy(), header.getTenantId());
         // ------------------------ add by wangjie PM接口需要增加传输字段：采购员、本年预算占用总金额 begin --------------------------
-        PrToBpmDTO prToBpmPrDataDTO = rcwlBudgetDistributionMapper.selectPrBPMResult(RcwlBudgetDistributionDTO.builder().prHeaderId(header.getPrHeaderId()).tenantId(header.getTenantId()).currentYear(Calendar.getInstance().get(Calendar.YEAR)).changeSubmit("预算变更".equals(typeStr) ? 1 : null).build());
+        PrToBpmDTO prToBpmPrDataDTO = rcwlBudgetDistributionMapper.selectPrBPMResult(RcwlBudgetDistributionDTO.builder().prHeaderId(header.getPrHeaderId()).tenantId(header.getTenantId()).currentYear(Calendar.getInstance().get(Calendar.YEAR)).build());
         prToBpmDTO.setPurchaseAgent(prToBpmPrDataDTO.getPurchaseAgent());
         prToBpmDTO.setPresentBudgetSum(prToBpmPrDataDTO.getPresentBudgetSum());
         // ------------------------ add by wangjie PM接口需要增加传输字段：采购员、本年预算占用总金额 end --------------------------
