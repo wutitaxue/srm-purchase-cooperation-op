@@ -228,7 +228,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // -------------------------add by wangjie 校验当前采购申请所有行的【需求开始日期】及【需求结束日期】不为空 begin--------------------------
         this.judgeDateNull(prHeader);
         // -------------------------add by wangjie 校验当前采购申请所有行的【需求开始日期】及【需求结束日期】不为空 end--------------------------
-        List<PrLine> prLines = prHeader.getPrLines();
+        List<PrLine> prLines = prHeader.getPrLineList();
         //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
         PrLine prLineOrg = this.prImportMapper.queryInvOrganizationInfoByCompanyId(prHeader.getCompanyId());
         if(!ObjectUtils.isEmpty(prLineOrg)){
