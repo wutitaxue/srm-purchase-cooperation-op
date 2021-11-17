@@ -74,8 +74,8 @@ public class RcwlOrderQueryHandler implements IJobHandler {
         LOGGER.info("获取到的String:{}",orderListString);
         //去除转义
         String orderString = StringEscapeUtils.unescapeJava(orderListString);
-        //去除左右的中括号
-        orderString = orderString.substring(1,orderString.length() - 1);
+        //去除左右的中括号和双引号
+        orderString = orderString.substring(1,orderString.length() - 1).replace("\"","");
         LOGGER.info("拆分后的String:{}",orderString);
         if (StringUtils.isNotBlank(orderString)) {
             String[] strArrays = orderString.split(",");
