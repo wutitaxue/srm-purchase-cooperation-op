@@ -182,7 +182,7 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         prHeader.createValidateNonNull();
         prHeader.validUniqueIndex(this.prHeaderRepository);
         prHeader.setLocalCurrency(this.prHeaderRepository.selectPrLocalCurrencyCode(prHeader.getTenantId(), prHeader.getCompanyId()));
-        List<PrLine> prLines = prHeader.getPrLines();
+        List<PrLine> prLines = prHeader.getPrLineList();
         //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
         PrLine prLineOrg = this.prImportMapper.queryInvOrganizationInfoByCompanyId(prHeader.getCompanyId());
         if(!ObjectUtils.isEmpty(prLineOrg)){
