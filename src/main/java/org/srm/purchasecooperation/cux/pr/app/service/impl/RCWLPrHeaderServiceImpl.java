@@ -185,9 +185,11 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         List<PrLine> prLines = prHeader.getPrLines();
         //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
         PrLine prLineOrg = this.prImportMapper.queryInvOrganizationInfoByCompanyId(prHeader.getCompanyId());
-        for(PrLine prLine : prLines){
-            prLine.setInvOrganizationId(prLineOrg.getInvOrganizationId());
-            prLine.setInvOrganizationName(prLineOrg.getInvOrganizationName());
+        if(!ObjectUtils.isEmpty(prLineOrg)){
+            for(PrLine prLine : prLines){
+                prLine.setInvOrganizationId(prLineOrg.getInvOrganizationId());
+                prLine.setInvOrganizationName(prLineOrg.getInvOrganizationName());
+            }
         }
         prHeader.setPrLineList(this.prLineService.updatePrLines(prHeader));
         String tenantNum = TenantInfoHelper.selectByTenantId(prHeader.getTenantId()).getTenantNum();
