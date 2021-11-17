@@ -45,6 +45,8 @@ import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
 import org.srm.common.util.StringToNumberUtils;
 import org.srm.mq.service.producer.MessageProducer;
+import org.srm.purchasecooperation.asn.domain.vo.AsnDetailLineVO;
+import org.srm.purchasecooperation.asn.infra.mapper.AsnLineMapper;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.common.utils.LogUtils;
 import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmDTO;
@@ -219,6 +221,10 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private MessageProducer messageProducer;
     @Autowired
     private RcwlPoSubmitBpmService rcwlPoSubmitBpmService;
+    @Autowired
+    private AsnLineMapper asnLineMapper;
+    @Autowired
+    private GeneratorPoByPcDomainService generatorPoByPcDomainService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
@@ -1450,20 +1456,6 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
 
-//                //零星申请下订单，预算释放成功后，释放申请数量
-//                if ("PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())){
-//                    //查询头行数据
-//                    PoLine poLineQuery = new PoLine();
-//                    poLineQuery.setPoHeaderId(poHeader.getPoHeaderId());
-//                    poLineQuery.setTenantId(poHeader.getTenantId());
-//                    List<PoLine> poLineList = poLineRepository.select(poLineQuery);
-//                    PoHeader poHeaderQuery = new PoHeader();
-//                    poHeaderQuery.setPoHeaderId(poHeader.getPoHeaderId());
-//                    poHeaderQuery.setTenantId(poHeader.getTenantId());
-//                    PoHeader poHeaderInDB = poHeaderRepository.selectOne(poHeaderQuery);
-//                    generatorPoByPrDomainService.releasePr(poLineList, poHeaderInDB);
-//                }
-
                 poHeaderSet.add(poHeader.getPoHeaderId());
                 List<PoLineLocation> poLineLocations = this.poLineLocationMapper.selectByPoHeaderId(poHeader.getPoHeaderId(), poHeader.getTenantId());
                 if (CollectionUtils.isNotEmpty(poLineLocations)) {
@@ -1504,6 +1496,97 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             }
         }
         return new returnMsgDto(successCancel, errorCancel);
+    }
+
+    public void cancelPoHeader(ArrayList<PoHeader> poHeaders) {
+        poHeaders.forEach(poHeader -> {
+            List<AsnDetailLineVO> asnDetailLineVOs = this.asnLineMapper.selectAsnCanceled(poHeader.getPoHeaderId());
+            poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeader);
+            if (!asnDetailLineVOs.isEmpty()) {
+                List<AsnDetailLineVO> lineLocationNums = (List<AsnDetailLineVO>)asnDetailLineVOs.stream()
+                        .filter((asn) -> StringUtils.isNotEmpty(asn.getDisplayLineLocationNum())).collect(Collectors.toList());
+                LOGGER.debug("lineLocationNums size is {}", Integer.valueOf(lineLocationNums.size()));
+                throw new CommonException("error.order.not_cancelable_line_exist", new Object[] { CollectionUtils.isEmpty(lineLocationNums) ? ((AsnDetailLineVO)asnDetailLineVOs.get(0)).getDisplayAsnLineNum() : ((AsnDetailLineVO)lineLocationNums.get(0)).getDisplayLineLocationNum() });
+            }
+            if ("PENDING".equals(poHeader.getStatusCode()) || "SUBMITTED".equals(poHeader.getStatusCode()) || "SUBMITTED_WFL".equals(poHeader.getStatusCode()))
+                throw new CommonException("error.order.status_not_suit", new Object[0]);
+            poHeader.wholeCancel();
+            modifyCanCreateDeliveryChargeIdentifying(poHeader);
+            List<PoLine> poLines = this.poLineRepository.select(new PoLine(poHeader.getPoHeaderId()));
+            if (!poLines.isEmpty()) {
+                poLines.forEach((line) -> {
+                    line.setCancelledFlag(BaseConstants.Flag.YES);
+                });
+                this.poLineRepository.batchUpdateOptional(poLines, new String[] { "cancelledFlag" });
+            }
+            if ("PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_DS".equals(poHeader.getSourceBillTypeCode())
+            || "PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_MLH".equals(poHeader.getSourceBillTypeCode())) {
+                boolean ecOrderFlag = "E-COMMERCE".equals(poHeader.getPoSourcePlatform());
+                if (poHeader.isByErpOrSrmPr()) {
+                    this.generatorPoByPrDomainService.releasePr(poLines, poHeader);
+                    this.generatorPoByPcDomainService.releasePc(poLines, poHeader.getTenantId());
+                } else {
+                    if (!poLines.isEmpty()) {
+                        poLines.forEach((line) -> {
+                            if (line.getPrLineId() != null) {
+                                PrLine prLine = (PrLine)this.prLineRepository.selectByPrimaryKey(line.getPrLineId());
+                                prLine.emptyFromPoLine();
+                                prLine.setClosedFlag(BaseConstants.Flag.NO);
+                                if (prLine.getOccupiedQuantity() != null) {
+                                    prLine.setOccupiedQuantity(prLine.getOccupiedQuantity().subtract(line.getQuantity()));
+                                }
+
+                                this.prLineRepository.updateOptional(prLine, new String[]{"executionStatusCode", "occupiedQuantity", "executedBy", "executedDate", "executionBillId", "executionBillNum", "executionHeaderBillId", "executionHeaderBillNum", "closedFlag"});
+                            }
+
+                            if (line.getPrHeaderId() != null) {
+                                PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(line.getPrHeaderId());
+                                prHeader.flushCloseStatus(this.prLineRepository);
+                                this.prHeaderRepository.updateOptional(prHeader, new String[]{"closeStatusCode"});
+                            }
+
+                        });
+                    }
+                    if (poHeader.getPrHeaderId() != null) {
+                        PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(poHeader.getPrHeaderId());
+                        if (ecOrderFlag) {
+                            this.prHeaderService.cancelWholePrNote(poHeader.getTenantId(), Collections.singletonList(prHeader));
+                        } else {
+                            prHeader.emptyFromPoLine();
+                            prHeader.setCloseStatusCode("UNCLOSED");
+                            this.prHeaderRepository.updateOptional(prHeader, new String[] { "executedBy", "executedDate", "executionBillId", "executionBillNum", "executionStatusCode", "closeStatusCode" });
+                        }
+                    }
+                }
+            }
+            if ("CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode()) || "CONTRACT_ORDER_DJ".equals(poHeader.getSourceBillTypeCode())
+            || "CONTRACT_ORDER_WJ".equals(poHeader.getSourceBillTypeCode())){
+                this.generatorPoByPcDomainService.releasePc(poLines, poHeader.getTenantId());
+            }
+
+            handleTheSourceOccupiedQuantity(poLines);
+            poHeader.setAmount(new BigDecimal(0));
+            poHeader.setTaxIncludeAmount(new BigDecimal(0));
+            this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode", "cancelledFlag", "taxIncludeAmount", "amount" });
+            poStatusFlagSync(poHeader, poLines);
+        });
+        try {
+            List<PoDocVO> poDocVOS = new ArrayList<>();
+            for (PoHeader poHeader : poHeaders)
+                poDocVOS.add(this.poHeaderRepository.selectPoDocVO(poHeader.getPoHeaderId(), "CANCELED"));
+            this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "CANCELED", poDocVOS);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    private void modifyCanCreateDeliveryChargeIdentifying(PoHeader poHeader) {
+        List<PoLineLocation> poLineLocations = this.poLineLocationRepository.selectByCondition(Condition.builder(PoLineLocation.class).andWhere(Sqls.custom().andEqualTo("poHeaderId", poHeader.getPoHeaderId())).build());
+        poLineLocations.forEach((poLineLocation) -> {
+            poLineLocation.setCanCreateAsnFlag(BaseConstants.Flag.NO);
+            poLineLocation.setCancelledFlag(BaseConstants.Flag.YES);
+            this.poLineLocationRepository.updateOptional(poLineLocation, new String[]{"canCreateAsnFlag", "cancelledFlag"});
+        });
     }
 
 }
