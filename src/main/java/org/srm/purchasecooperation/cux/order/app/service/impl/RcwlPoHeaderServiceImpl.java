@@ -248,8 +248,6 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private RcwlPoSubmitBpmService rcwlPoSubmitBpmService;
     @Autowired
     private AsnLineMapper asnLineMapper;
-    @Autowired
-    private GeneratorPoByPcDomainService generatorPoByPcDomainService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
