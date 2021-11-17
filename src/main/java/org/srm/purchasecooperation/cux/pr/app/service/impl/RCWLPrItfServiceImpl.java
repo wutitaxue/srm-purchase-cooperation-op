@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.interfaces.sdk.dto.RequestPayloadDTO;
 import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.interfaces.sdk.invoke.InterfaceInvokeSdk;
+import org.hzero.core.base.AopProxy;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ import java.util.stream.Collectors;
  * @createDate: 2021/4/10 13:57
  */
 @Service
-public class RCWLPrItfServiceImpl implements RCWLPrItfService {
+public class RCWLPrItfServiceImpl implements RCWLPrItfService, AopProxy<RCWLPrItfService> {
     @Autowired
     private RCWLPrItfService rcwlPrItfService;
     @Autowired
