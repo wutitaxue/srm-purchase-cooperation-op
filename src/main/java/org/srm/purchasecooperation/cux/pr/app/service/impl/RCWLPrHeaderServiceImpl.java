@@ -2,7 +2,6 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CaseFormat;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -11,13 +10,11 @@ import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
-import org.hzero.boot.customize.service.CustomizeClient;
 import org.hzero.boot.customize.util.CustomizeHelper;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.Attachment;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
-import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.core.message.MessageAccessor;
@@ -42,7 +39,6 @@ import org.srm.boot.common.cache.impl.AbstractKeyGenerator;
 import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
-import org.srm.boot.platform.group.GroupApproveHelper;
 import org.srm.boot.platform.message.MessageHelper;
 import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
@@ -51,7 +47,6 @@ import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.budget.app.service.BudgetService;
 import org.srm.purchasecooperation.common.api.dto.TenantDTO;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
-import org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderServiceImpl2;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
@@ -65,7 +60,7 @@ import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlBudgetChangeActi
 import org.srm.purchasecooperation.cux.pr.domain.repository.RcwlPrLineHisRepository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlCheckPoLineMapper;
-import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
@@ -183,6 +178,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private RcwlBudgetChangeActionRepository rcwlBudgetChangeActionRepository;
     @Autowired
     private RcwlBudgetDistributionService rcwlBudgetDistributionService;
+    @Autowired
+    private RcwlPrImportMapper prImportMapper;
 
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
@@ -231,6 +228,15 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         // -------------------------add by wangjie 校验当前采购申请所有行的【需求开始日期】及【需求结束日期】不为空 begin--------------------------
         this.judgeDateNull(prHeader);
         // -------------------------add by wangjie 校验当前采购申请所有行的【需求开始日期】及【需求结束日期】不为空 end--------------------------
+        List<PrLine> prLines = prHeader.getPrLines();
+        //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
+        PrLine prLineOrg = this.prImportMapper.queryInvOrganizationInfoByCompanyId(prHeader.getCompanyId());
+        if(!ObjectUtils.isEmpty(prLineOrg)){
+            for(PrLine prLine : prLines){
+                prLine.setInvOrganizationId(prLineOrg.getInvOrganizationId());
+                prLine.setInvOrganizationName(prLineOrg.getInvOrganizationName());
+            }
+        }
         prHeader.setPrLineList(this.prLineService.updatePrLines(prHeader));
         String tenantNum = TenantInfoHelper.selectByTenantId(prHeader.getTenantId()).getTenantNum();
 
