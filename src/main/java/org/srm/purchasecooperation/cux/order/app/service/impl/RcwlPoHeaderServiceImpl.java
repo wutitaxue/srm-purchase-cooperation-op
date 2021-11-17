@@ -1519,8 +1519,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 });
                 this.poLineRepository.batchUpdateOptional(poLines, new String[] { "cancelledFlag" });
             }
-            if ("PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_DS".equals(poHeader.getSourceBillTypeCode())
-            || "PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_MLH".equals(poHeader.getSourceBillTypeCode())) {
+            if ("PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())
+            || "PURCHASE_REQUEST_DS".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_MLH".equals(poHeader.getSourceBillTypeCode())) {
                 boolean ecOrderFlag = "E-COMMERCE".equals(poHeader.getPoSourcePlatform());
                 if (poHeader.isByErpOrSrmPr()) {
                     this.generatorPoByPrDomainService.releasePr(poLines, poHeader);
@@ -1559,8 +1559,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     }
                 }
             }
-            if ("CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode()) || "CONTRACT_ORDER_DJ".equals(poHeader.getSourceBillTypeCode())
-            || "CONTRACT_ORDER_WJ".equals(poHeader.getSourceBillTypeCode())){
+            if ("CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode()) || "CONTRACT_ORDER_DJ".equals(poHeader.getSourceBillTypeCode())){
                 this.generatorPoByPcDomainService.releasePc(poLines, poHeader.getTenantId());
             }
 
