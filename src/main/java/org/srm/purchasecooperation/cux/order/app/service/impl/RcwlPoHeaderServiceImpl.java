@@ -2219,8 +2219,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 });
                 this.poLineRepository.batchUpdateOptional(poLines, new String[] { "cancelledFlag" });
             }
-            if ("PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())
-            || "PURCHASE_REQUEST_DS".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_MLH".equals(poHeader.getSourceBillTypeCode())) {
+            if ("PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())) {
                 boolean ecOrderFlag = "E-COMMERCE".equals(poHeader.getPoSourcePlatform());
                 if (poHeader.isByErpOrSrmPr()) {
                     this.generatorPoByPrDomainService.releasePr(poLines, poHeader);
