@@ -2,7 +2,6 @@ package org.srm.purchasecooperation.cux.pr.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CaseFormat;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -11,17 +10,14 @@ import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.servicecomb.pack.omega.context.annotations.SagaStart;
-import org.hzero.boot.customize.service.CustomizeClient;
 import org.hzero.boot.customize.util.CustomizeHelper;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.Attachment;
 import org.hzero.boot.message.entity.Receiver;
 import org.hzero.boot.platform.code.builder.CodeRuleBuilder;
-import org.hzero.boot.workflow.WorkflowClient;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.helper.LanguageHelper;
 import org.hzero.core.message.MessageAccessor;
-import org.hzero.core.redis.RedisHelper;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.slf4j.Logger;
@@ -41,7 +37,6 @@ import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.configcenter.CnfHelper;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
-import org.srm.boot.platform.group.GroupApproveHelper;
 import org.srm.boot.platform.message.MessageHelper;
 import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
@@ -50,7 +45,6 @@ import org.srm.purchasecooperation.asn.infra.utils.CopyUtils;
 import org.srm.purchasecooperation.budget.app.service.BudgetService;
 import org.srm.purchasecooperation.common.api.dto.TenantDTO;
 import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
-import org.srm.purchasecooperation.cux.order.app.service.impl.RcwlPoHeaderServiceImpl2;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlPoHeaderRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.RCWLItemInfoVO;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrItfService;
@@ -59,7 +53,7 @@ import org.srm.purchasecooperation.cux.pr.app.service.RcwlPrheaderService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLItfPrDataRespository;
 import org.srm.purchasecooperation.cux.pr.infra.constant.RCWLConstants;
 import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlCheckPoLineMapper;
-import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrFeignMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrImportMapper;
 import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.ItemListDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
@@ -82,7 +76,6 @@ import org.srm.purchasecooperation.pr.domain.entity.*;
 import org.srm.purchasecooperation.pr.domain.repository.*;
 import org.srm.purchasecooperation.pr.domain.vo.PrCopyFieldsVO;
 import org.srm.purchasecooperation.pr.domain.vo.PrHeaderVO;
-import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import org.srm.web.annotation.Tenant;
@@ -154,6 +147,8 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
     private MessageClient messageClient;
     @Autowired
     private MessageHelper messageHelper;
+    @Autowired
+    private RcwlPrImportMapper prImportMapper;
 
 
     private static final String LOG_MSG_USER = " updatePrHeader ====用户信息:{},采购申请=:{}";
@@ -187,6 +182,13 @@ public class RCWLPrHeaderServiceImpl extends PrHeaderServiceImpl implements Rcwl
         prHeader.createValidateNonNull();
         prHeader.validUniqueIndex(this.prHeaderRepository);
         prHeader.setLocalCurrency(this.prHeaderRepository.selectPrLocalCurrencyCode(prHeader.getTenantId(), prHeader.getCompanyId()));
+        List<PrLine> prLines = prHeader.getPrLines();
+        //系统自动根据采购申请头上的公司给相应公司下的库存组织作为默认值
+        PrLine prLineOrg = this.prImportMapper.queryInvOrganizationInfoByCompanyId(prHeader.getCompanyId());
+        for(PrLine prLine : prLines){
+            prLine.setInvOrganizationId(prLineOrg.getInvOrganizationId());
+            prLine.setInvOrganizationName(prLineOrg.getInvOrganizationName());
+        }
         prHeader.setPrLineList(this.prLineService.updatePrLines(prHeader));
         String tenantNum = TenantInfoHelper.selectByTenantId(prHeader.getTenantId()).getTenantNum();
 
