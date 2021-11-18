@@ -172,17 +172,19 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
         poHeaderCondition.setPoNum(poNum);
         poHeaderCondition.setTenantId(tenantId);
         PoHeader poHeader = poHeaderMapper.selectOne(poHeaderCondition);
+        //SODR.PO_STATUS
+        poHeader.setStatusCode("REJECTED");
+        poHeaderMapper.updateOptional(poHeader, new String[]{"statusCode"});
 
         PoDTO poDTO = new PoDTO();
         BeanUtils.copyProperties(poHeader,poDTO);
         //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
         rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
-
-        //SODR.PO_STATUS
-        poHeader.setStatusCode("REJECTED");
         //释放失败返回错误消息，成功则更新占用标识为0
-        poHeader.setAttributeTinyint1(0);
-        poHeaderMapper.updateOptional(poHeader, new String[]{"statusCode", "attributeTinyint1"});
+        poDTO.setAttributeTinyint1(0);
+        PoHeader ph = new PoHeader();
+        BeanUtils.copyProperties(poDTO, ph);
+        this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
     }
 
 
