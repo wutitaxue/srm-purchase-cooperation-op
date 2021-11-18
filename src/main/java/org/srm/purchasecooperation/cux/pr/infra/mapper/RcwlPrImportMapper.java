@@ -36,5 +36,10 @@ public interface RcwlPrImportMapper extends PrImportMapper {
      */
     PrLine queryInvOrganizationInfoByCompanyId(@Param("companyId") Long companyId);
 
+    /**
+     * 查询业务用途编码对应下级编码个数
+     * @param prLineImportVO
+     * @return
+     */
     Integer queryBudgetAccountNum(RcwlPrLineImportVO prLineImportVO);
 }

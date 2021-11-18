@@ -75,11 +75,9 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
             return false;
         }
         //业务用途编码只能为末级编码
-        if (!StringUtils.isEmpty(prLineImportVO.getBudgetAccountNum())) {
-            if(!this.prImportMapper.queryBudgetAccountNum(prLineImportVO).equals(BaseConstants.Digital.ZERO)){
-                getContext().addErrorMsg("导入的业务用途编码只能为末级编码");
-                return false;
-            }
+        if (!StringUtils.isEmpty(prLineImportVO.getBudgetAccountNum()) && !this.prImportMapper.queryBudgetAccountNum(prLineImportVO).equals(BaseConstants.Digital.ZERO)){
+            getContext().addErrorMsg("导入的业务用途编码只能为末级编码");
+            return false;
         }
         //需要校验导入模板中的物料名称、规格、型号、单位和物料基本信息中（smdm_item）数据是否一致
         if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {
