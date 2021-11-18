@@ -899,9 +899,8 @@ public class RCWLPrItfServiceImpl implements RCWLPrItfService, AopProxy<RCWLPrIt
             //获取行信息
             List<PrLine> prLineList = this.rcwlItfPrDataRespository.selectPrLineListByIdOld(oldPrHeader.getPrHeaderId(), tenantId);
             oldPrHeader.setPrLineList(prLineList);
-            this.invokeBudgetOccupy(oldPrHeader,tenantId,null);
             ((RCWLPrItfService) AopContext.currentProxy()).rejectRollbackBudget(tenantId, oldPrHeader, prLineList);
-
+            this.invokeBudgetOccupy(oldPrHeader,tenantId,null);
         }
     }
 
