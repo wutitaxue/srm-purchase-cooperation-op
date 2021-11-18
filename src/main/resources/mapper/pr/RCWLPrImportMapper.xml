@@ -47,6 +47,16 @@
         hio.organization_code
         FROM hpfm_company hc
         LEFT JOIN hpfm_inv_organization hio ON hc.company_id = hio.organization_id
-        WHERE hc.company_id = #{companyId};
+        WHERE hc.company_id = #{companyId}
+    </select>
+
+    <select id="queryBudgetAccountNum" resultType="java.lang.Integer">
+    SELECT
+	count(1)
+    FROM
+	smdm_budget_account sba
+    WHERE
+	sba.rcwl_parent_budget_code = #{budgetAccountNum}
+	AND enabled_flag = 1
     </select>
 </mapper>
