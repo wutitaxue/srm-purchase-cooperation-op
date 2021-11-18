@@ -215,7 +215,7 @@ public class RcwlPoHeaderController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping({"/po-header/submit"})
     public ResponseEntity<PoDTO> submittedProcess(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody PoOrderSaveDTO poOrderSavaDTO, HttpServletRequest request) {
-        log.info("版本号1：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
+      /*  log.info("版本号1：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
         //提交前自动保存
         poOrderSavaDTO.getPoLineDetailDTOs().forEach((item) -> {
             if (item.getTaxId() != null) {
@@ -255,7 +255,7 @@ public class RcwlPoHeaderController extends BaseController {
             poLineLocation.setTenantId(poLineDetailDTO.getTenantId());
             poLineDetailDTO.setLocationVersionNumber(poLineLocationRepository.selectOne(poLineLocation).getObjectVersionNumber());
         }
-        log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());
+        log.info("版本号3：{}",poOrderSavaDTO.getPoHeaderDetailDTO().getObjectVersionNumber());*/
 
         //提交
         this.validObject(poOrderSavaDTO.getPoHeaderDetailDTO(), new Class[]{PoHeaderDetailDTO.UpdateCheck.class});

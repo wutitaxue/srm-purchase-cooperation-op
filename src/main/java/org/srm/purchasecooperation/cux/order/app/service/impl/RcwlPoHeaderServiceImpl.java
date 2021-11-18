@@ -102,6 +102,7 @@ import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
 import org.srm.purchasecooperation.sinv.domain.service.RcvNodeConfigCommonDomainService;
 import org.srm.purchasecooperation.utils.annotation.EventSendTran;
 import org.srm.purchasecooperation.utils.service.EventSendTranService;
+import org.srm.purchasecooperation.transaction.infra.constant.Constants;
 import org.srm.web.annotation.Tenant;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants.autoTransferOrderFlag;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants.ConstantsOfBigDecimal;
@@ -2295,6 +2296,57 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poLineLocation.setCancelledFlag(BaseConstants.Flag.YES);
             this.poLineLocationRepository.updateOptional(poLineLocation, new String[]{"canCreateAsnFlag", "cancelledFlag"});
         });
+    }
+
+    @Transactional(rollbackFor = {Exception.class})
+    @EventSendTran(rollbackFor = {Exception.class})
+    public PoDTO submittedPo(PoOrderSaveDTO poOrderSavaDTO) {
+        this.poValidateDomainService.validateSubmitStatus(poOrderSavaDTO.getPoHeaderDetailDTO().getPoHeaderId());
+        if (Objects.nonNull(poOrderSavaDTO.getPoHeaderDetailDTO().getSupplierCompanyId())) {
+            SupplierLifeCycleStageVO stageVO = new SupplierLifeCycleStageVO(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId(), poOrderSavaDTO.getPoHeaderDetailDTO().getSupplierCompanyId(), poOrderSavaDTO.getPoHeaderDetailDTO().getCompanyId(), poOrderSavaDTO.getPoHeaderDetailDTO().getSupplierTenantId());
+            this.poValidateDomainService.validateSupplierLifeCycleAllowOrder(stageVO);
+        }
+        PoHeaderDetailDTO poHeaderDetailDTO = poOrderSavaDTO.getPoHeaderDetailDTO();
+        ConfigQueryVO configQueryVO = this.poHeaderMapper.selectConfigParam(poHeaderDetailDTO.getTenantId(), poHeaderDetailDTO.getPoHeaderId());
+        configQueryVO.setConfigCode("SITE.SPUC.PO.REF_PRICE_LIB");
+        String enablePriceLib = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
+        configQueryVO.setConfigCode("SITE.SPUC.PO.PRICE_LIB_STRATEGY");
+        String serviceCode = this.poPriceLibDomainService.queryEnablePriceLib(configQueryVO);
+        String priceLibService = queryEnablePriceLibConfig(poHeaderDetailDTO.getCompanyId(), poHeaderDetailDTO.getOuId(), poHeaderDetailDTO.getPurchaseOrgId(), poHeaderDetailDTO.getTenantId());
+        poOrderSavaDTO.setPoLineMysql(this.poLineMapper.selectByPoHeaderIdList(Arrays.asList(new Long[] { poHeaderDetailDTO.getPoHeaderId() })));
+        String tenantNum = TenantInfoHelper.selectByTenantId(poOrderSavaDTO.getPoHeaderDetailDTO().getTenantId()).getTenantNum();
+        try {
+            TaskResultBox taskResultBox = AdaptorTaskHelper.executeAdaptorTask("SPUC_ORDER_PRICE_SOURCE_TYPE", tenantNum, poOrderSavaDTO);
+            LOGGER.info("submittedPo taskResultBox:{}", JSONObject.toJSONString(taskResultBox));
+            poOrderSavaDTO = (PoOrderSaveDTO)taskResultBox.get(0, PoOrderSaveDTO.class);
+            LOGGER.info("submittedPo taskResultBox:{}", JSONObject.toJSONString(poOrderSavaDTO));
+        } catch (TaskNotExistException e) {
+            LOGGER.info("============ORDER_PRICE_SOURCE_TYPE--submittedPo-TaskNotExistException=============={}", new Object[] { tenantNum, e.getMessage(), e.getStackTrace() });
+        }
+        PoDTO poDTO = null;
+        if ((poHeaderDetailDTO.isByErpOrSrmPr() || "PURCHASE_ORDER".equals(poHeaderDetailDTO.getSourceBillTypeCode())) && BaseConstants.Flag.YES.toString().equals(enablePriceLib) && StringUtils.isNotEmpty(priceLibService) && !"NULL".equals(serviceCode)) {
+//            poDTO = ((PoHeaderService)self()).updatePoHeaderAndPoLineSNewPrice(poOrderSavaDTO);
+            poDTO = this.operateOrder(poOrderSavaDTO);
+        } else {
+//            poDTO = ((PoHeaderService)self()).updatePoHeaderAndPoLineS(poOrderSavaDTO);
+            poDTO = this.operateOrder(poOrderSavaDTO);
+            poDTO.setHaveNullFlag(Boolean.valueOf(false));
+            poDTO.setTaxNullFlag(Boolean.valueOf(false));
+        }
+        if (poDTO.getTaxNullFlag() != null && poDTO.getTaxNullFlag().booleanValue())
+            throw new CommonException("error.price_lib_null_tax", new Object[0]);
+        if (poDTO.getHaveNullFlag() != null && poDTO.getHaveNullFlag().booleanValue())
+            throw new CommonException("error.price_lib_price_change", new Object[0]);
+        poDTO = generatePoDto(poDTO.getPoHeaderId());
+        boolean availableUpdate = (("ERP".equals(poDTO.getPoSourcePlatform()) || "SRM".equals(poDTO.getPoSourcePlatform()) || "SHOP".equals(poDTO.getPoSourcePlatform())) && "PURCHASE_REQUEST".equals(poDTO.getSourceBillTypeCode()));
+        if (availableUpdate)
+            validationPoDTO(poDTO);
+        PoHeader poHeader = new PoHeader();
+        BeanUtils.copyProperties(poDTO, poHeader);
+        if (!judgeSupplierFrozen(poHeader).booleanValue())
+            throw new CommonException("error.order.supplier_have_benn_frozen", new Object[0]);
+        poDTO.validPoItemBomNull(poDTO, this.poLineRepository, this.poItemBomRepository);
+        return ((PoHeaderService)self()).submitPlatformDispatchForSaga(poDTO);
     }
 
 }
