@@ -180,10 +180,10 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
         BeanUtils.copyProperties(poHeader,poDTO);
         //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
         rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
-        //释放失败返回错误消息，成功则更新占用标识为0
-        poDTO.setAttributeTinyint1(0);
-        PoHeader ph = new PoHeader();
-        BeanUtils.copyProperties(poDTO, ph);
+        //获取新版本号数据
+        PoHeader ph = poHeaderMapper.selectOne(poHeaderCondition);
+        //释放失败返回错误消息，不更新占用标识，成功则更新占用标识为0
+        ph.setAttributeTinyint1(0);
         this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
     }
 
