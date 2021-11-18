@@ -172,66 +172,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         return rcwlItfPrHeaderDTO;
     }
 
-/*    *//**
-     * 获取接口请求全部数据
-     *
-     * @param poDTO
-     * @param tenantId
-     * @return
-     *//*
-    @Override
-    public RCWLItfPrHeaderDTO getBudgetAccountItfData(PoDTO poDTO, Long tenantId, String flag) {
-        //获取接口所需数据
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, flag);
-        //List<PrLine> lineDetailList = prHeader.getPrLineList();
-        PoLine poLine = new PoLine();
-        poLine.setPoHeaderId(poDTO.getPoHeaderId());
-        List<PoLine> lineDetailList = this.poLineRepository.select(poLine);
-
-        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-        if ("R".equals(flag)) {
-            if (CollectionUtils.isNotEmpty(lineDetailList)) {
-                lineDetailList.forEach(poDetailLine -> {
-                    RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(poDetailLine, tenantId);
-                    if ("R".equals(flag)){
-                        rcwlItfPrLineDetailDTO.setYszyje("0");
-                    }
-                    rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-                });
-            }
-        } else if ("O".equals(flag)) {
-            if (CollectionUtils.isNotEmpty(lineDetailList)) {
-                lineDetailList.forEach(prDetailLine -> {
-                    //根据pr_line_id查找scux_rcwl_budget_change_action数据
-                    List<Integer> budgetDisYears = rcwlItfPrDataRespository.selectBudgetChangeActionDisYear(prDetailLine.getPrLineId());
-                    for(int year : budgetDisYears){
-                        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prDetailLine, tenantId);
-                        rcwlItfPrLineDetailDTO.setYsdate(String.valueOf(year));
-                        //查找budget_group为old的budget_dis_amount
-                        BigDecimal bigDecimal = rcwlItfPrDataRespository.selectBudgetDisAmountByBudgetGroup(prDetailLine.getPrLineId(), year);
-                        if(bigDecimal == null){
-                            rcwlItfPrLineDetailDTO.setYszyje("0");
-                        } else {
-                            rcwlItfPrLineDetailDTO.setYszyje(bigDecimal.toString());
-                        }
-                        rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-                    }
-                });
-            }
-        }
-
-        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = new RCWLItfPrHeaderDTO();
-        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
-        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
-        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
-        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
-        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
-
-
-        rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.initOccupyHeader();
-        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
-        return rcwlItfPrHeaderDTO;
-    }*/
     /**
      * 获取接口请求全部数据
      *
@@ -315,49 +255,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         return token;
     }
 
-
-//    /**
-//     * 将指定行数据封装成报文
-//     *
-//     * @param poLineVOS
-//     * @param tenantId
-//     * @param flag
-//     * @return
-//     */
-//    @Override
-//    public RCWLItfPrHeaderDTO getBudgetItfDataLine(List<PoLineVO> poLineVOS, Long tenantId, String flag) {
-//        Long poHeaderId = poLineVOS.get(0).getPoHeaderId();
-//        PoHeader poHeader = poHeaderRepository.selectByPrimaryKey(poHeaderId);
-//        PoDTO poDTO = new PoDTO();
-//        BeanUtils.copyProperties(poHeader, poDTO);
-//
-//        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.initOccupyHeader();
-//
-//        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
-//
-//        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, flag);
-//
-//        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-//
-//        poLineVOS.forEach(poLineVO -> {
-//            PrLine prLine = new PrLine();
-//            BeanUtils.copyProperties(poLineVO, prLine);
-//            RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initCloseLine(prLine, tenantId, null);
-//            rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-//        });
-//        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
-//        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
-//
-//        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
-//
-//        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
-//
-//        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
-//
-//        return rcwlItfPrHeaderDTO;
-//    }
-
-
     private RCWLItfPrLineDetailDTO initCloseLine(PrLine prDetailLine, Long tenantId, String from) {
         RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = new RCWLItfPrLineDetailDTO();
         if ("create".equals(from)) {
@@ -407,44 +304,6 @@ public class RcwlPoBudgetItfServiceImpl implements RcwlPoBudgetItfService {
         rcwlItfPrLineDetailDTO.setLine(prDetailLine.getLineNum().toString());
         return rcwlItfPrLineDetailDTO;
     }
-
-/*
-    */
-/**
-     * 获取行数据
-     *
-     * @param
-     * @return
-     *//*
-
-    @Override
-    public RCWLItfPrHeaderDTO getBudgetItfDataLineDTO(PrLineDTO prLineDTO, Long tenantId, String r) {
-        Long prHeaderId = prLineDTO.getPrHeaderId();
-        PrHeader prHeader = prHeaderRepository.selectByPrimaryKey(prHeaderId);
-        RCWLItfPrHeaderDTO rcwlItfPrHeaderDTO = rcwlPoBudgetItfService.initOccupyHeader();
-        RCWLItfPrDataDTO rcwlItfPrDataDTO = new RCWLItfPrDataDTO();
-        PoDTO poDTO = new PoDTO();
-        BeanUtils.copyProperties(prHeader, poDTO);
-        RCWLItfPrLineDTO rcwlItfPrLineDTO = this.initOccupy(poDTO, tenantId, r);
-        List<RCWLItfPrLineDetailDTO> rcwlItfPrLineDetailDTOS = new ArrayList<>();
-        PoLine poLine = new PoLine();
-        BeanUtils.copyProperties(prLineDTO, poLine);
-        RCWLItfPrLineDetailDTO rcwlItfPrLineDetailDTO = this.initOccupyDetail(prLine, tenantId);
-        rcwlItfPrLineDetailDTOS.add(rcwlItfPrLineDetailDTO);
-
-        rcwlItfPrDataDTO.setYszy(rcwlItfPrLineDTO);
-        rcwlItfPrDataDTO.setYszyzb(rcwlItfPrLineDetailDTOS);
-
-
-        List<RCWLItfPrDataDTO> rcwlItfPrDataDTOS = new ArrayList<>();
-
-
-        rcwlItfPrDataDTOS.add(rcwlItfPrDataDTO);
-
-        rcwlItfPrHeaderDTO.setData(rcwlItfPrDataDTOS);
-        return rcwlItfPrHeaderDTO;
-    }
-*/
 
 
     private RCWLItfPrLineDetailDTO initOccupyDetail(PoBudgetOccupyLineVO poDetailLine, Long tenantId, String occupyFlag) {
