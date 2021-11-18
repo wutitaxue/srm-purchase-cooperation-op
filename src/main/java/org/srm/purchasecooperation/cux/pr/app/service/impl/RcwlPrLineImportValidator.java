@@ -75,7 +75,7 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
             return false;
         }
         //业务用途编码只能为末级编码
-        if (!StringUtils.isEmpty(prLineImportVO.getBudgetAccountNum()) && !this.prImportMapper.queryBudgetAccountNum(prLineImportVO).equals(BaseConstants.Digital.ZERO)){
+        if (!StringUtils.isEmpty(prLineImportVO.getBudgetAccountNum()) && !((Integer)BaseConstants.Digital.ZERO).equals(this.prImportMapper.queryBudgetAccountNum(prLineImportVO))){
             getContext().addErrorMsg("导入的业务用途编码只能为末级编码");
             return false;
         }
