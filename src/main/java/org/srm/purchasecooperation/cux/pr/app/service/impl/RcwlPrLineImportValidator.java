@@ -5,6 +5,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidator;
 import org.hzero.boot.imported.infra.validator.annotation.ImportValidators;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.message.MessageAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
@@ -72,6 +73,13 @@ public class RcwlPrLineImportValidator extends PrLineImportValidator {
         if (prLineImportVO.getNeededDate().isBefore(prLineImportVO.getStartDate())) {
             getContext().addErrorMsg("需求结束日期不可小于需求开始日期");
             return false;
+        }
+        //业务用途编码只能为末级编码
+        if (!StringUtils.isEmpty(prLineImportVO.getBudgetAccountNum())) {
+            if(!this.prImportMapper.queryBudgetAccountNum(prLineImportVO).equals(BaseConstants.Digital.ZERO)){
+                getContext().addErrorMsg("导入的业务用途编码只能为末级编码");
+                return false;
+            }
         }
         //需要校验导入模板中的物料名称、规格、型号、单位和物料基本信息中（smdm_item）数据是否一致
         if (StringUtils.isNotEmpty(prLineImportVO.getItemCode())) {

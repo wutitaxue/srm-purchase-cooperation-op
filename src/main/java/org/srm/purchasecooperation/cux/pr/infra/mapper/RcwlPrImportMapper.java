@@ -35,4 +35,6 @@ public interface RcwlPrImportMapper extends PrImportMapper {
      * @return
      */
     PrLine queryInvOrganizationInfoByCompanyId(@Param("companyId") Long companyId);
+
+    Integer queryBudgetAccountNum(RcwlPrLineImportVO prLineImportVO);
 }
