@@ -290,14 +290,19 @@ public class RcwlPoHeaderController extends BaseController {
     @DeleteMapping({"/po-header"})
     public ResponseEntity delete(@Encrypt @RequestBody List<PoHeader> poHeaderList, HttpServletRequest request) {
         SecurityTokenHelper.validToken(poHeaderList);
+        //删除操作、根据占用标识释放预算
         //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
         for (PoHeader poHeader:poHeaderList){
-            PoDTO poDTO = new PoDTO();
-            BeanUtils.copyProperties(poHeader, poDTO);
-            try {
-                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poHeader.getTenantId(), "02");
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
+            PoHeader poHeaderInDB  = this.poHeaderRepository.selectOne(poHeader);
+            LOGGER.info("预算占用状态标识:" + poHeaderInDB.getAttributeTinyint1());
+            if (Integer.valueOf(1).equals(poHeaderInDB.getAttributeTinyint1())){
+                PoDTO poDTO = new PoDTO();
+                BeanUtils.copyProperties(poHeader, poDTO);
+                try {
+                    rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poHeader.getTenantId(), "02");
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             }
         }
         //删除订单

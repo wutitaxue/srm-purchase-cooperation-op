@@ -25,14 +25,6 @@ public interface RcwlPoBudgetItfService {
      */
     RCWLItfPrHeaderDTO initOccupyHeader();
 
-//    /**
-//     *获取数据
-//     * @param poDTO
-//     * @param tenantId
-//     * @param flag(占用释放标识)
-//     * @return
-//     */
-//    RCWLItfPrHeaderDTO getBudgetAccountItfData(PoDTO poDTO, Long tenantId, String flag);
     /**
      *获取数据
      * @param poDTO
@@ -47,25 +39,5 @@ public interface RcwlPoBudgetItfService {
      * @return
      */
     String getToken();
-
-
-//    /**
-//     * 将指定行数据封装成报文
-//     * @param poLineVOS
-//     * @param tenantId
-//     * @param flag
-//     * @return
-//     */
-//    RCWLItfPrHeaderDTO getBudgetItfDataLine(List<PoLineVO> poLineVOS, Long tenantId, String flag);
-//
-//
-//    /**
-//     * 获取行数据
-//     * @param prLineDTO
-//     * @param tenantId
-//     * @param r
-//     * @return
-//     */
-//    RCWLItfPrHeaderDTO getBudgetItfDataLineDTO(PrLineDTO prLineDTO, Long tenantId, String r);
 
 }

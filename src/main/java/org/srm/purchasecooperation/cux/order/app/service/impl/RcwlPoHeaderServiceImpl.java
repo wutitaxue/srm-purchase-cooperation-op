@@ -1284,6 +1284,12 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+                //占用失败返回错误消息，成功则更新占用标识为1
+                poDTO.setAttributeTinyint1(1);
+                PoHeader ph = new PoHeader();
+                BeanUtils.copyProperties(poDTO, ph);
+                this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
+
                 //预算占用成功，推送数据到bpm
                 dataToBpmUrl = this.poDataToBpm(poDTO);
 
@@ -1413,6 +1419,11 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     && !"CONTRACT_ORDER".equals(poDTO.getSourceBillTypeCode())){
                 //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+                //占用失败返回错误消息，成功则更新占用标识为1
+                poDTO.setAttributeTinyint1(1);
+                PoHeader ph = new PoHeader();
+                BeanUtils.copyProperties(poDTO, ph);
+                this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
             }
 
             //预算占用成功，推送数据到bpm
@@ -1636,6 +1647,11 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 BeanUtils.copyProperties(poHeader,poDTO);
                 //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
+                //释放失败返回错误消息，成功则更新占用标识为0
+                poDTO.setAttributeTinyint1(0);
+                PoHeader ph = new PoHeader();
+                BeanUtils.copyProperties(poDTO, ph);
+                this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
 
                 poHeaderSet.add(poHeader.getPoHeaderId());
                 List<PoLineLocation> poLineLocations = this.poLineLocationMapper.selectByPoHeaderId(poHeader.getPoHeaderId(), poHeader.getTenantId());
