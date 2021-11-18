@@ -71,16 +71,18 @@ public class RcwlOrderQueryHandler implements IJobHandler {
         queryDTO.setUpdateTimeBegin(calendar.getTime().getTime());
         //获取订单列表
         String orderListString = map.get("orderIdList");
-        LOGGER.info("获取到的String:{}",orderListString);
-        //去除转义
-        String orderString = StringEscapeUtils.unescapeJava(orderListString);
-        //去除左右的中括号和双引号
-        orderString = orderString.substring(1,orderString.length() - 1).replace("\"","");
-        LOGGER.info("拆分后的String:{}",orderString);
-        if (StringUtils.isNotBlank(orderString)) {
-            String[] strArrays = orderString.split(",");
-            List<String> orderList = Arrays.asList(strArrays);
-            queryDTO.setOrderIdList(orderList);
+        LOGGER.info("获取到的String:{}", orderListString);
+        if(StringUtils.isNotBlank(orderListString)) {
+            //去除转义
+            String orderString = StringEscapeUtils.unescapeJava(orderListString);
+            //去除左右的中括号和双引号
+            orderString = orderString.substring(1, orderString.length() - 1).replace("\"", "");
+            LOGGER.info("拆分后的String:{}", orderString);
+            if (StringUtils.isNotBlank(orderString)) {
+                String[] strArrays = orderString.split(",");
+                List<String> orderList = Arrays.asList(strArrays);
+                queryDTO.setOrderIdList(orderList);
+            }
         }
         //构建header参数
         long cutTime = System.currentTimeMillis();
