@@ -1103,18 +1103,15 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
 
                 //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
-                //占用失败返回错误消息，成功则更新占用标识为1
-                poDTO.setAttributeTinyint1(1);
-                PoHeader ph = new PoHeader();
-                BeanUtils.copyProperties(poDTO, ph);
-                this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
 
                 //预算占用成功，推送数据到bpm
                 dataToBpmUrl = this.poDataToBpm(poDTO);
 
 //                poHeader.setStatusCode("SUBMITTED");
                 poHeader.setApproveMethod("EXTERNAL_SYSTEM");
-                this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode", "approveMethod"});
+                //占用失败返回错误消息，成功则更新占用标识为1
+                poHeader.setAttributeTinyint1(1);
+                this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode", "approveMethod", "attributeTinyint1"});
             }
 
 //            poHeader.setStatusCode("CATALOGUE".equals(poHeader.getPoSourcePlatform()) ? "SUBMITTED" : "APPROVED");
@@ -1240,9 +1237,6 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                 rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
                 //占用失败返回错误消息，成功则更新占用标识为1
                 poDTO.setAttributeTinyint1(1);
-                PoHeader ph = new PoHeader();
-                BeanUtils.copyProperties(poDTO, ph);
-                this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
             }
 
             //预算占用成功，推送数据到bpm
@@ -1255,7 +1249,7 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             poDTO.setApproveMethod("EXTERNAL_SYSTEM");
             PoHeader poHeader = new PoHeader();
             BeanUtils.copyProperties(poDTO, poHeader);
-            this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode", "submittedDate", "submittedBy", "approveMethod" });
+            this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode", "submittedDate", "submittedBy", "approveMethod", "attributeTinyint1"});
             BeanUtils.copyProperties(poHeader, poDTO);
         } else {
             poDTO.setStatusCode("APPROVED");
