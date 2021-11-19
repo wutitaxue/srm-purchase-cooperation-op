@@ -200,15 +200,12 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     private OrderTypeRepository orderTypeRepository;
     @Autowired
     private RcwlSpcmPcSubjectMapper rcwlSpcmPcSubjectMapper;
-
     @Autowired
     private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
     @Autowired
     private ProfileClient profileClient;
     @Autowired
     private RcwlPrToBpmMapper rcwlPrToBpmMapper;
-    @Autowired
-    private PoLineMapper poLineMapper;
     @Autowired
     private WorkflowClient workflowClient;
     @Autowired
