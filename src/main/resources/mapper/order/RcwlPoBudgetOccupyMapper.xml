@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoBudgetOccupyMapper">
+
+
+    <select id="selectBudgetDistributionByLine" resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PoBudgetOccupyLineVO">
+        SELECT
+            srbd.budget_line_id,
+            srbd.budget_dis_year,
+            srbd.budget_dis_amount,
+            srbd.budget_dis_gap,
+            spl.*
+        FROM
+            sodr_po_line spl
+            LEFT JOIN scux_rcwl_budget_distribution srbd ON srbd.po_header_id = spl.po_header_id
+            AND srbd.po_line_id = spl.po_line_id
+        WHERE
+            srbd.tenant_id = #{tenantId}
+            AND spl.po_header_id = #{poHeaderId}
+        ORDER BY
+            srbd.budget_dis_year
+    </select>
+
+    <select id="selectNoBudgetDistributionPoLine"
+            resultType="org.srm.purchasecooperation.cux.pr.domain.vo.PoBudgetOccupyLineVO">
+        SELECT
+            spl.*
+        FROM
+            sodr_po_line spl
+        WHERE
+            spl.tenant_id = #{tenantId}
+          AND spl.po_header_id = #{poHeaderId}
+    </select>
+
+</mapper>

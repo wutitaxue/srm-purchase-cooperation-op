@@ -24,6 +24,18 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @ApiModelProperty("业务用途Meanings")
     @Transient
     private String budgetAccountName;
+    @ApiModelProperty("税率描述")
+    @Transient
+    private String taxDescription;
+    @ApiModelProperty("库存组织名称")
+    @Transient
+    private String invOrganizationName;
+    @ApiModelProperty("库房名称")
+    @Transient
+    private String inventoryName;
+    @ApiModelProperty("协议名称")
+    @Transient
+    private String pcName;
 
     @Override
     public String getAttributeVarchar21() {
@@ -59,6 +71,42 @@ public class RCWLPoLineDetailDTO extends PoLineDetailDTO {
     @Override
     public void setAttributeVarchar10(String attributeVarchar10) {
         this.attributeVarchar10 = attributeVarchar10;
+    }
+
+    public String getTaxDescription() {
+        return taxDescription;
+    }
+
+    public void setTaxDescription(String taxDescription) {
+        this.taxDescription = taxDescription;
+    }
+
+    @Override
+    public String getInventoryName() {
+        return inventoryName;
+    }
+
+    @Override
+    public void setInventoryName(String inventoryName) {
+        this.inventoryName = inventoryName;
+    }
+
+    @Override
+    public String getInvOrganizationName() {
+        return invOrganizationName;
+    }
+
+    @Override
+    public void setInvOrganizationName(String invOrganizationName) {
+        this.invOrganizationName = invOrganizationName;
+    }
+
+    public String getPcName() {
+        return pcName;
+    }
+
+    public void setPcName(String pcName) {
+        this.pcName = pcName;
     }
 
     @Override

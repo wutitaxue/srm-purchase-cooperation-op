@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoToBpmMapper">
+
+    <select id="selectPoTobpmline" resultType="org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO">
+        SELECT
+            spll.need_by_date,
+            st.description tax_description,
+            hio.organization_name inv_organization_name,
+            hi.inventory_name,
+            sba.budget_account_name,
+            spc.pc_num,
+	        spc.pc_name,
+            spl.*
+        FROM
+            sodr_po_line AS spl
+        LEFT JOIN  sodr_po_line_location spll ON spll.po_header_id = spl.po_header_id AND spll.po_line_id = spl.po_line_id
+        LEFT JOIN  smdm_tax st ON st.tax_id = spl.tax_id
+        LEFT JOIN  hpfm_inv_organization hio ON hio.organization_id = spl.inv_organization_id
+        LEFT JOIN  hpfm_inventory hi ON hi.inventory_id = spll.inv_inventory_id
+        LEFT JOIN  smdm_budget_account sba ON sba.budget_account_num = spl.attribute_varchar21
+        LEFT JOIN spcm_pc_header spc ON spc.pc_header_id = spl.pc_header_id
+        WHERE
+            spl.po_header_id  = #{poHeaderId}
+            AND spl.tenant_id = #{tenantId}
+    </select>
+
+    <select id="selectOrderTypeName" resultType="java.lang.String">
+        SELECT
+            sot.order_type_name
+        FROM
+            sodr_order_type sot
+        WHERE
+            sot.tenant_id = #{tenantId}
+            and sot.order_type_id = #{orderTypeId}
+    </select>
+
+    <select id="selectEsPurchaseOrgName" resultType="java.lang.String">
+        SELECT
+            hpo.organization_name
+        FROM
+            hpfm_purchase_organization hpo
+        WHERE
+            hpo.tenant_id = #{tenantId}
+            AND hpo.purchase_org_id = #{purchaseOrgId}
+    </select>
+
+    <select id="selectBudgetAccountName" resultType="java.lang.String">
+        SELECT
+            sba.budget_account_name
+        FROM
+            smdm_budget_account sba
+        WHERE
+            sba.tenant_id = #{tenantId}
+            and sba.budget_account_num = #{budgetAccountNum}
+    </select>
+
+    <select id="selectAgentName" resultType="java.lang.String">
+        SELECT
+            hpa.purchase_agent_name
+        FROM
+            hpfm_purchase_agent hpa
+        WHERE
+            hpa.tenant_id = #{tenantId}
+            and hpa.purchase_agent_id = #{agentId}
+    </select>
+
+    <select id="selectCompanyName" resultType="java.lang.String">
+        SELECT
+            hc.company_name
+        FROM
+            hpfm_company hc
+        WHERE
+            hc.tenant_id = #{tenantId}
+          and hc.company_id = #{companyId}
+    </select>
+
+    <select id="selectSupplierName" resultType="java.lang.String">
+        SELECT
+            ssb.company_name
+        FROM
+            sslm_supplier_basic ssb
+        WHERE
+            ssb.tenant_id = #{tenantId}
+          and ssb.company_num = #{supplierCode}
+    </select>
+
+</mapper>

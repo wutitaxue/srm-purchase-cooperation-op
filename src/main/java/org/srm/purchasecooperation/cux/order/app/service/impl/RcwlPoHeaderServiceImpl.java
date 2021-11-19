@@ -2,17 +2,28 @@ package org.srm.purchasecooperation.cux.order.app.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import gxbpm.dto.RCWLGxBpmStartDataDTO;
+import gxbpm.service.RCWLGxBpmInterfaceService;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.boot.interfaces.sdk.dto.ResponsePayloadDTO;
 import org.hzero.boot.platform.lov.adapter.LovAdapter;
 import org.hzero.boot.platform.lov.dto.LovValueDTO;
+import org.hzero.boot.platform.plugin.hr.EmployeeHelper;
+import org.hzero.boot.platform.profile.ProfileClient;
+import org.hzero.boot.workflow.WorkflowClient;
+import org.hzero.boot.workflow.entity.ActivityInstanceHistory;
+import org.hzero.boot.workflow.entity.ProcessInstanceHistory;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
 import org.hzero.mybatis.domian.Condition;
@@ -22,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -29,15 +41,31 @@ import org.springframework.util.ObjectUtils;
 import org.srm.boot.adaptor.client.AdaptorTaskHelper;
 import org.srm.boot.adaptor.client.result.TaskResultBox;
 import org.srm.boot.platform.configcenter.CnfHelper;
+import org.srm.boot.event.service.sender.EventSender;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
+import org.srm.boot.platform.message.MessageHelper;
+import org.srm.boot.platform.message.entity.SpfmMessageSender;
 import org.srm.common.TenantInfoHelper;
 import org.srm.common.util.StringToNumberUtils;
+import org.srm.mq.service.producer.MessageProducer;
+import org.srm.purchasecooperation.asn.domain.vo.AsnDetailLineVO;
+import org.srm.purchasecooperation.asn.infra.mapper.AsnLineMapper;
 import org.srm.purchasecooperation.common.app.MdmService;
+import org.srm.purchasecooperation.common.utils.LogUtils;
+import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmDTO;
+import org.srm.purchasecooperation.cux.order.api.dto.PoToBpmLineDTO;
+import org.srm.purchasecooperation.cux.order.api.dto.RCWLPoLineDetailDTO;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoBudgetItfService;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoSubmitBpmService;
 import org.srm.purchasecooperation.cux.order.domain.repository.RcwlSpcmPcSubjectRepository;
 import org.srm.purchasecooperation.cux.order.domain.vo.PcHeaderVO;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyCostMapper;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlSpcmPcSubjectMapper;
 import org.srm.purchasecooperation.cux.order.util.TennantValue;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPoToBpmMapper;
+import org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrToBpmMapper;
+import org.srm.purchasecooperation.cux.pr.utils.DateTimeUtil;
+import org.srm.purchasecooperation.cux.pr.utils.constant.PrConstant;
 import org.srm.purchasecooperation.order.api.dto.*;
 import org.srm.purchasecooperation.order.app.service.*;
 import org.srm.purchasecooperation.order.app.service.impl.PoHeaderServiceImpl;
@@ -45,10 +73,20 @@ import org.srm.purchasecooperation.order.domain.entity.*;
 import org.srm.purchasecooperation.order.domain.repository.*;
 import org.srm.purchasecooperation.order.domain.service.*;
 import org.srm.purchasecooperation.order.domain.vo.*;
+import org.srm.purchasecooperation.order.infra.constant.MessageCode;
+import org.srm.purchasecooperation.order.infra.constant.PoConstants;
+import org.srm.purchasecooperation.order.infra.feign.HwfpRemoteService;
+import org.srm.purchasecooperation.order.infra.feign.SmalRemoteService;
 import org.srm.purchasecooperation.order.infra.mapper.PoHeaderMapper;
+import org.srm.purchasecooperation.order.infra.mapper.PoLineLocationMapper;
+import org.srm.purchasecooperation.order.infra.mapper.PoLineMapper;
 import org.srm.purchasecooperation.order.infra.utils.FieldUtils;
+import org.srm.purchasecooperation.order.infra.utils.PoApproveRuleEnum;
+import org.srm.purchasecooperation.order.infra.utils.ReceiverUtils;
+import org.srm.purchasecooperation.plan.app.service.PlanService;
 import org.srm.purchasecooperation.pr.api.dto.PrHeaderChangeDto;
 import org.srm.purchasecooperation.pr.api.dto.PrLineChangeDto;
+import org.srm.purchasecooperation.pr.api.dto.ProductItemRefDTO;
 import org.srm.purchasecooperation.pr.app.service.PrHeaderService;
 import org.srm.purchasecooperation.pr.domain.entity.AccountAssignType;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
@@ -56,8 +94,12 @@ import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.repository.AccountAssignTypeLineRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrHeaderRepository;
 import org.srm.purchasecooperation.pr.domain.repository.PrLineRepository;
+import org.srm.purchasecooperation.pr.infra.feign.ScecRemoteService;
 import org.srm.purchasecooperation.pr.infra.mapper.PrLineMapper;
-import org.srm.purchasecooperation.transaction.infra.constant.Constants;
+import org.srm.purchasecooperation.sinv.app.service.SinvRcvTrxHeaderService;
+import org.srm.purchasecooperation.sinv.domain.service.RcvNodeConfigCommonDomainService;
+import org.srm.purchasecooperation.utils.annotation.EventSendTran;
+import org.srm.purchasecooperation.utils.service.EventSendTranService;
 import org.srm.web.annotation.Tenant;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants.autoTransferOrderFlag;
 import org.srm.purchasecooperation.order.infra.constant.PoConstants.ConstantsOfBigDecimal;
@@ -66,6 +108,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -149,6 +192,55 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
     @Autowired
     private RcwlSpcmPcSubjectMapper rcwlSpcmPcSubjectMapper;
 
+    @Autowired
+    private RCWLGxBpmInterfaceService rcwlGxBpmInterfaceService;
+    @Autowired
+    private ProfileClient profileClient;
+    @Autowired
+    private RcwlPrToBpmMapper rcwlPrToBpmMapper;
+    @Autowired
+    private PoLineMapper poLineMapper;
+    @Autowired
+    private WorkflowClient workflowClient;
+    @Autowired
+    private HwfpRemoteService hwfpRemoteService;
+    @Autowired
+    private EventSender eventSender;
+    @Autowired
+    private PoStatusSyncMallRecordService poStatusSyncMallRecordService;
+    @Autowired
+    private MessageHelper messageHelper;
+    @Autowired
+    private SmalRemoteService smalRemoteService;
+    @Autowired
+    private ScecRemoteService scecRemoteService;
+    @Autowired
+    private EventSendTranService eventsendTranService;
+    @Autowired
+    private PoChangeRecordRepository poChangeRecordRepository;
+    @Autowired
+    private PoProcessActionRepository poProcessActionRepository;
+    @Autowired
+    private PoApproveRuleService poApproveRuleService;
+    @Autowired
+    @Lazy
+    private SinvRcvTrxHeaderService sinvRcvTrxHeaderService;
+    @Autowired
+    private RcwlPoToBpmMapper rcwlPoToBpmMapper;
+    @Autowired
+    private RcwlPoBudgetItfService rcwlPoBudgetItfService;
+    @Autowired
+    private PoLineLocationMapper poLineLocationMapper;
+    @Autowired
+    private RcvNodeConfigCommonDomainService rcvNodeConfigCommonDomainService;
+    @Autowired
+    private PlanService planService;
+    @Autowired
+    private MessageProducer messageProducer;
+    @Autowired
+    private RcwlPoSubmitBpmService rcwlPoSubmitBpmService;
+    @Autowired
+    private AsnLineMapper asnLineMapper;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RcwlPoHeaderServiceImpl.class);
 
@@ -1235,6 +1327,686 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
         poDTO.setObjectVersionNumber(poHeader.getObjectVersionNumber());
         this.poHeaderDomainService.initPoMessage(poDTO);
         return poDTO;
+    }
+
+    private void sendMessage(Set<String> loginNameSet, Long tenantId, Long poHeaderId) {
+        if (!loginNameSet.isEmpty()) {
+            List<User> users = this.userRepository.selectByCondition(Condition.builder(User.class).andWhere(Sqls.custom().andIn("loginName", loginNameSet)).build());
+            HashMap<String, String> templateMap = new HashMap();
+            PoHeader poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeaderId);
+            templateMap.put("DISPLAYPONUM", String.valueOf(poHeader.getDisplayPoNum()));
+            Iterator var7 = users.iterator();
+
+            while(var7.hasNext()) {
+                User user = (User)var7.next();
+                SpfmMessageSender spfmMessageSender = new SpfmMessageSender(tenantId, MessageCode.TERMINATION.getMessageCode(), ReceiverUtils.buildAppointUser(user.getId(), templateMap));
+                this.messageHelper.sendMessage(spfmMessageSender);
+            }
+        }
+    }
+
+    void itemMapping(Long tenantId, List<PoHeader> poHeaderList) {
+        if (!CollectionUtils.isEmpty(poHeaderList)) {
+            poHeaderList.stream().filter((x) -> {
+                return "CATALOGUE".equals(x.getPoSourcePlatform()) || "E-COMMERCE".equals(x.getPoSourcePlatform());
+            }).forEach((poHeader) -> {
+                if (!Objects.nonNull(poHeader.getOriginalPoHeaderId())) {
+                    Long poHeaderId = poHeader.getPoHeaderId();
+                    PoLine poLine = new PoLine();
+                    poLine.setPoHeaderId(poHeaderId);
+                    List<PoLine> poLines = this.poLineRepository.select(poLine);
+                    List<org.srm.purchasecooperation.pr.api.dto.ProductItemRefDTO> productItemRefDTOS = new ArrayList();
+                    poLines.stream().forEach((poL) -> {
+                        org.srm.purchasecooperation.pr.api.dto.ProductItemRefDTO productItemRefDTO = new ProductItemRefDTO();
+                        productItemRefDTO.setProductItemId(poL.getProductId());
+                        productItemRefDTO.setItemId(poL.getItemId());
+                        productItemRefDTO.setCompanyId(poHeader.getCompanyId());
+                        productItemRefDTO.setInvOrganizationId(poL.getInvOrganizationId());
+                        productItemRefDTO.setPrSourcePlatformCode(poHeader.getPoSourcePlatform());
+                        productItemRefDTO.setRemark(poL.getRemark());
+                        productItemRefDTO.setCategoryId(poL.getCategoryId());
+                        if (null != productItemRefDTO.getProductItemId()) {
+                            productItemRefDTOS.add(productItemRefDTO);
+                        }
+
+                    });
+                    productItemRefDTOS.forEach((productItemRefDTO) -> {
+                        productItemRefDTO.setFlag(1);
+                    });
+                    if (poHeader.getPrHeaderId() != null) {
+                        PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(poHeader.getPrHeaderId());
+                        if (prHeader != null && BaseConstants.Flag.YES.equals(prHeader.getNewMallFlag())) {
+                            this.smalRemoteService.productItemRefs(productItemRefDTOS, poHeader.getTenantId(), "PO");
+                        } else {
+                            this.scecRemoteService.productItemRefs(productItemRefDTOS, poHeader.getTenantId(), "PO");
+                        }
+                    } else {
+                        List<PoLine> poLineList = this.poLineRepository.select("poHeaderId", poHeader.getPoHeaderId());
+                        if (poLineList != null && !poLineList.isEmpty()) {
+                            Long prHeaderId = (Long)poLineList.stream().filter((x) -> {
+                                return x.getPrHeaderId() != null;
+                            }).map(PoLine::getPrHeaderId).distinct().findFirst().get();
+                            if (prHeaderId != null) {
+                                PrHeader prHeaderx = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(prHeaderId);
+                                if (prHeaderx != null && BaseConstants.Flag.YES.equals(prHeaderx.getNewMallFlag())) {
+                                    this.smalRemoteService.productItemRefs(productItemRefDTOS, poHeader.getTenantId(), "PO");
+                                } else {
+                                    this.scecRemoteService.productItemRefs(productItemRefDTOS, poHeader.getTenantId(), "PO");
+                                }
+                            }
+                        }
+                    }
+
+                }
+            });
+        }
+    }
+
+    private void sendMessageByType(CustomUserDetails userDetail, Long poHeaderId, String operateType) {
+        LOGGER.debug("24497====[sendMessageByType] poHeaderId is:{}", poHeaderId);
+        LOGGER.debug("24497====[sendMessageByType] userDetails is:{}", userDetail.toString());
+        if (userDetail.getTenantId() == null || userDetail.getTenantId() == 0L) {
+            PoHeader poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeaderId);
+            userDetail.setTenantId(poHeader.getTenantId());
+        }
+
+        List<PoMessageDetailDTO> poMessageDetailDTOS = new ArrayList();
+        LOGGER.debug("===>sendMessageByType operateType : {}", operateType);
+        PoMessageDetailDTO poMessageDetailDTO;
+        if ("CONFIRMED".equals(operateType)) {
+            poMessageDetailDTO = new PoMessageDetailDTO(poHeaderId, userDetail.getUserId(), userDetail.getTenantId(), userDetail.getOrganizationId(), "CONFIRMED", "ORDER");
+            poMessageDetailDTOS.add(poMessageDetailDTO);
+
+            try {
+                this.eventsendTranService.fireEvent("PO", "SODR_PO_MESSAGE", PoConstants.DEFAULT_TENANT_ID, "CONFIRMED", poMessageDetailDTOS);
+            } catch (Exception var9) {
+                LOGGER.error("send poMessageDetailDTOS has failed: ", var9);
+            }
+        } else if ("PUBLISH".equals(operateType)) {
+            poMessageDetailDTO = new PoMessageDetailDTO(poHeaderId, userDetail.getUserId(), userDetail.getTenantId(), userDetail.getOrganizationId(), "PUBLISH", "ORDER");
+            poMessageDetailDTOS.add(poMessageDetailDTO);
+
+            try {
+                this.eventsendTranService.fireEvent("PO", "SODR_PO_MESSAGE", PoConstants.DEFAULT_TENANT_ID, "PUBLISHED", poMessageDetailDTOS);
+            } catch (Exception var8) {
+                LOGGER.error("send poMessageDetailDTOS has failed: ", var8);
+            }
+        } else if ("DELIVERY_DATE_SUBMIT".equals(operateType)) {
+            poMessageDetailDTO = new PoMessageDetailDTO(poHeaderId, userDetail.getUserId(), userDetail.getTenantId(), userDetail.getOrganizationId(), "DELIVERY_DATE_SUBMIT", "ORDER");
+            poMessageDetailDTOS.add(poMessageDetailDTO);
+
+            try {
+                this.eventSender.fireEvent("PO", "SODR_PO_MESSAGE", PoConstants.DEFAULT_TENANT_ID, "DELIVERY_DATE_SUBMIT", poMessageDetailDTOS);
+            } catch (Exception var7) {
+                LOGGER.error("send poMessageDetailDTOS has failed: ", var7);
+            }
+        }
+    }
+
+    private PoHeader publishOrderForECommerce(PoHeader poHeader) {
+        poHeader.setReleasedDate(new Date());
+        poHeader.setReleasedFlag(BaseConstants.Flag.YES);
+        poHeader.setStatusCode("PUBLISHED");
+        if ("E-COMMERCE".equals(poHeader.getPoSourcePlatform())) {
+            this.sinvRcvTrxHeaderService.checkEcPoExistAsnStrategy(poHeader.getTenantId(), poHeader.getPoHeaderId());
+        }
+
+        this.poProcessActionService.insert(poHeader.getPoHeaderId(), "PUBLISH");
+        this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode", "releasedDate", "releasedFlag"});
+        if ("CATALOGUE".equals(poHeader.getPoSourcePlatform())) {
+            this.poStatusSyncMallRecordService.catalogueOrderStatusCallBack(new PoStatusSyncMallRecord("PO", poHeader.getPoHeaderId(), "PUBLISHED", poHeader.getTenantId()));
+        }
+
+        CustomUserDetails userDetail = DetailsHelper.getUserDetails();
+        this.sendMessageByType(userDetail, poHeader.getPoHeaderId(), "PUBLISH");
+        return poHeader;
+    }
+
+    @Override
+    public PoDTO submitPlatformDispatch(PoDTO poDTO) {
+//        return !"E-COMMERCE".equals(poDTO.getPoSourcePlatform()) && !"CATALOGUE".equals(poDTO.getPoSourcePlatform()) ? this.submittedProcess(poDTO) : this.submittedProcessForECommerceAndCatalogue(poDTO);
+        return this.submittedProcess(poDTO);
+    }
+
+    @Override
+    @SneakyThrows
+    @Transactional(rollbackFor = {Exception.class})
+    @EventSendTran(rollbackFor = {Exception.class})
+    public PoDTO submittedProcessForECommerceAndCatalogueNoSaga(PoDTO poDTO) {
+        String dataToBpmUrl = null;
+        PoHeader poHeader = new PoHeader();
+        BeanUtils.copyProperties(poDTO, poHeader);
+        poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeader);
+        LOGGER.debug("===>submittedProcessForECommerceAndCatalogueNoSaga poHeader : {}", poHeader);
+        String approveCode = this.poHeaderRepository.getPoConfigCodeValue(poDTO.getTenantId(), poDTO.getPoHeaderId(), "SITE.SPUC.PO.APPROVING_METHOD");
+        boolean enableSrmReview = Objects.equals("FUNCTIONAL", approveCode);
+        if (StringUtils.isEmpty(poHeader.getStatusCode()) || "PENDING".equals(poHeader.getStatusCode())) {
+            if (enableSrmReview && "FUNCTIONAL".equals(approveCode) && "E-COMMERCE".equals(poHeader.getPoSourcePlatform())) {
+                poHeader.setStatusCode("SUBMITTED");
+                this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode"});
+
+                try {
+                    if ("E-COMMERCE".equals(poHeader.getPoSourcePlatform())) {
+                        PoDocVO poDocVO = this.poHeaderRepository.selectPoDocVO(poDTO.getPoHeaderId(), "SUBMITTED");
+                        this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "SUBMITTED", Collections.singletonList(poDocVO));
+                    }
+                } catch (Exception var8) {
+                    LOGGER.error("send poDocVO has failed: ", var8);
+                }
+
+                return poDTO;
+            }
+
+            if ("WORKFLOW".equals(approveCode)) {
+                poHeader.setStatusCode("SUBMITTED_WFL");
+                ((PoHeaderService)this.self()).orderWorkflowApproveStartUp(poDTO);
+                this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode"});
+                return poDTO;
+            }
+
+            if ("EXTERNAL_SYSTEM".equals(approveCode)) {
+//                ResponseDTO poToOaResponse = ((PoHeaderService)this.self()).poApproveByExternalSystem(Arrays.asList(poDTO));
+//                if ("FAIL".equals(poToOaResponse.getResponseStatus())) {
+//                    throw new CommonException("error.order.external.oa_approve_error", new Object[]{poToOaResponse.getResponseMessage()});
+//                }
+
+                //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
+                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+
+                //预算占用成功，推送数据到bpm
+                dataToBpmUrl = this.poDataToBpm(poDTO);
+
+//                poHeader.setStatusCode("SUBMITTED");
+                poHeader.setApproveMethod("EXTERNAL_SYSTEM");
+                //占用失败返回错误消息，成功则更新占用标识为1
+                poHeader.setAttributeTinyint1(1);
+                this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode", "approveMethod", "attributeTinyint1"});
+            }
+
+//            poHeader.setStatusCode("CATALOGUE".equals(poHeader.getPoSourcePlatform()) ? "SUBMITTED" : "APPROVED");
+//            if (poHeader.getStatusCode().equals("APPROVED")) {
+//                List<PoHeader> poHeaderList = new ArrayList();
+//                poHeaderList.add(poHeader);
+//                this.itemMapping(poHeader.getTenantId(), poHeaderList);
+//            }
+//
+//            this.poHeaderRepository.updateOptional(poHeader, new String[]{"statusCode"});
+        }
+
+        List<PoLineLocation> lineLocationList = this.poLineLocationRepository.select("poHeaderId", poHeader.getPoHeaderId());
+        if (!"SRM".equals(poHeader.getSourceCode())) {
+            boolean prToPoCheckPass = this.checkChangePoWithPr(poHeader, lineLocationList);
+            if (!prToPoCheckPass) {
+                BeanUtils.copyProperties(poHeader, poDTO);
+                return "CATALOGUE".equals(poHeader.getPoSourcePlatform()) ? this.submittedProcess(poDTO) : poDTO;
+            }
+        }
+
+        this.clearPoIncorrect(poHeader);
+        poDTO.setObjectVersionNumber(poHeader.getObjectVersionNumber());
+        if (!"PUBLISHED".equals(poHeader.getStatusCode())) {
+            if ("CATALOGUE".equals(poHeader.getPoSourcePlatform())) {
+                return this.submittedProcess(poDTO);
+            }
+
+            this.publishOrderForECommerce(poHeader);
+            String promiseDeliveryDateNotNullFlag = String.valueOf(this.poApproveRuleService.selectPoApproveRule(DetailsHelper.getUserDetails().getTenantId(), PoApproveRuleEnum.COMMITTED_DELIVERY_DATE.name()).isPromiseDeliveryDateNotNull());
+            if (String.valueOf(BaseConstants.Flag.YES).equals(promiseDeliveryDateNotNullFlag)) {
+                lineLocationList.forEach((lineLocation) -> {
+                    lineLocation.setPromiseDeliveryDate(lineLocation.getNeedByDate());
+                });
+            }
+
+            try {
+                if ("E-COMMERCE".equals(poHeader.getPoSourcePlatform())) {
+                    PoDocVO poDocVO = this.poHeaderRepository.selectPoDocVO(poDTO.getPoHeaderId(), "PUBLISHED");
+                    this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "PUBLISHED", Collections.singletonList(poDocVO));
+                }
+            } catch (Exception var9) {
+                LOGGER.error("send poDocVO has failed: ", var9);
+            }
+
+            poHeader = this.confirmOrderForECommerce(poHeader, lineLocationList);
+        }
+
+        BeanUtils.copyProperties(poHeader, poDTO);
+        this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), poDTO.getTenantId(), "UPDATE");
+        poDTO.setAttributeVarchar37(dataToBpmUrl);
+        return poDTO;
+    }
+
+
+    @Override
+    @SneakyThrows
+    @Transactional(rollbackFor = {Exception.class})
+    @EventSendTran(rollbackFor = {Exception.class})
+    public PoDTO submittedProcess(PoDTO poDTO) {
+        processOriginalQuantity(Collections.singletonList(poDTO.getPoHeaderId()));
+        String code = this.poHeaderRepository.getPoConfigCodeValue(poDTO.getTenantId(), poDTO.getPoHeaderId(), "SITE.SPUC.PO.APPROVING_METHOD");
+        boolean enableSrmReview = Objects.equals("FUNCTIONAL", code);
+        boolean enableWfleview = Objects.equals("WORKFLOW", code);
+        boolean enableEsReview = Objects.equals("EXTERNAL_SYSTEM", code);
+        if (enableSrmReview || enableWfleview) {
+            this.poProcessActionService.insert(poDTO.getPoHeaderId(), "SUBMIT");
+            poDTO.setStatusCode("SUBMITTED");
+            poDTO.setSubmittedDate(new Date());
+            poDTO.setSubmittedBy(DetailsHelper.getUserDetails().getUserId());
+            if ("WORKFLOW".equals(code)) {
+                poDTO.setStatusCode("SUBMITTED_WFL");
+                String businessKey = generatePoApprovePoBusinessKey(poDTO.getTenantId(), poDTO.getPoHeaderId());
+                ResponseEntity<List<ProcessInstanceHistory>> listResponseEntity = this.workflowClient.listTaskHistory(poDTO.getTenantId().longValue(), businessKey, null);
+                List<ProcessInstanceHistory> body = (List<ProcessInstanceHistory>)listResponseEntity.getBody();
+                if (body != null && body.size() != 0) {
+                    ProcessInstanceHistory processInstanceHistory = body.get(body.size() - 1);
+                    List<ActivityInstanceHistory> activityInstanceList = processInstanceHistory.getActivityInstanceList();
+                    try {
+                        this.hwfpRemoteService.endProc(poDTO.getTenantId(), processInstanceHistory.getProcessInstanceId());
+                    } catch (Exception e) {
+                        LOGGER.info("End processInstance failed, or processInstance has been terminated. tenantId = {}, procId = {}", poDTO
+                                .getTenantId(), processInstanceHistory.getProcessInstanceId());
+                    }
+                    Set<String> names = new HashSet<>();
+                    for (ActivityInstanceHistory activityInstanceHistory : activityInstanceList) {
+                        LOGGER.info("审批人是:" + activityInstanceHistory.getAssigneeName() + "(" + activityInstanceHistory.getAssignee() + ")——" + activityInstanceHistory.getActivityName());
+                        if (activityInstanceHistory.getAssignee() != null) {
+                            names.add(activityInstanceHistory.getAssignee());
+                        }
+                    }
+                    LOGGER.info("要发消息的人是：" + names.toString());
+                    sendMessage(names, poDTO.getTenantId(), poDTO.getPoHeaderId());
+                }
+                Long userId = DetailsHelper.getUserDetails().getUserId();
+                String employeeNum = EmployeeHelper.getEmployeeNum(userId.longValue(), poDTO.getTenantId().longValue());
+                poDTO.setEmployeeNumber(employeeNum);
+                ((PoHeaderService)self()).orderWorkflowApproveStartUp(poDTO);
+            }
+            PoHeader poHeader = new PoHeader();
+            BeanUtils.copyProperties(poDTO, poHeader);
+            this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode", "submittedDate", "submittedBy" });
+            BeanUtils.copyProperties(poHeader, poDTO);
+            try {
+                if (!"WORKFLOW".equals(code)) {
+                    PoDocVO poDocVO = this.poHeaderRepository.selectPoDocVO(poDTO.getPoHeaderId(), "SUBMITTED");
+                    LogUtils.debug(LOGGER, "Submit PoDOC: {}", new Object[] { poDocVO });
+                    this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "SUBMITTED", Collections.singletonList(poDocVO));
+                }
+            } catch (Exception e) {
+                LOGGER.error("send poDocVO has failed: ", e);
+            }
+        } else if (enableEsReview) {
+//            ResponseDTO poToOaResponse = ((PoHeaderService)self()).poApproveByExternalSystem(Arrays.asList(new PoDTO[] { poDTO }));
+//            if ("FAIL".equals(poToOaResponse.getResponseStatus())){
+//                throw new CommonException("error.order.external.oa_approve_error", new Object[] { poToOaResponse.getResponseMessage() });
+//            }
+
+            //零星申请、其他采购申请、总价合同订单无需占预算
+            if (!"PURCHASE_REQUEST".equals(poDTO.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poDTO.getSourceBillTypeCode())
+                    && !"CONTRACT_ORDER".equals(poDTO.getSourceBillTypeCode())){
+                //调用占预算接口，占用标识（01占用，02释放）,当前释放逻辑：占用金额固定为0，清空占用金额
+                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "01");
+                //占用失败返回错误消息，成功则更新占用标识为1
+                poDTO.setAttributeTinyint1(1);
+            }
+
+            //预算占用成功，推送数据到bpm
+            String dataToBpmUrl = this.poDataToBpm(poDTO);
+            poDTO.setAttributeVarchar37(dataToBpmUrl);
+            this.poProcessActionService.insert(poDTO.getPoHeaderId(), "SUBMIT");
+//            poDTO.setStatusCode("SUBMITTED");
+            poDTO.setSubmittedDate(new Date());
+            poDTO.setSubmittedBy(DetailsHelper.getUserDetails().getUserId());
+            poDTO.setApproveMethod("EXTERNAL_SYSTEM");
+            PoHeader poHeader = new PoHeader();
+            BeanUtils.copyProperties(poDTO, poHeader);
+            this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode", "submittedDate", "submittedBy", "approveMethod", "attributeTinyint1"});
+            BeanUtils.copyProperties(poHeader, poDTO);
+        } else {
+            poDTO.setStatusCode("APPROVED");
+            PoHeader poHeaderInDB = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
+            if (Objects.nonNull(poHeaderInDB) && "CATALOGUE".equals(poHeaderInDB.getPoSourcePlatform())) {
+                itemMapping(poHeaderInDB.getTenantId(), Arrays.asList(new PoHeader[] { poHeaderInDB }));
+            }
+            PoHeader poHeader1 = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
+            PoHeaderDetailDTO poHeaderDetailDTO = new PoHeaderDetailDTO();
+            BeanUtils.copyProperties(poHeader1, poHeaderDetailDTO);
+            String syncTime = querySyncConfirm(poHeaderDetailDTO, poDTO.getTenantId());
+            if ("ORDER_APPROVE".equals(syncTime)) {
+                posyncERP(poHeaderDetailDTO, poDTO.getTenantId());
+                PoHeader poHeaderNew = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
+                poDTO.setObjectVersionNumber(poHeaderNew.getObjectVersionNumber());
+            }
+            try {
+                PoDocVO poDocVO = this.poHeaderRepository.selectPoDocVO(poDTO.getPoHeaderId(), "APPROVED");
+                this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "APPROVED", Collections.singletonList(poDocVO));
+            } catch (Exception e) {
+                LOGGER.error("send poDocVO has failed: ", e);
+            }
+            boolean manualPublish = Objects.equals(String.valueOf(BaseConstants.Flag.YES), this.poHeaderRepository.getPoConfigCodeValue(poDTO.getTenantId(), poDTO.getPoHeaderId(), "SITE.SPUC.PO.MANUAL_PUBLISH"));
+            String approvalStatusReturn = this.customizeSettingHelper.queryBySettingCode(poDTO.getTenantId(), "010212");
+            LOGGER.info("25855 manualPublish:" + manualPublish);
+            LOGGER.info("25855 approvalStatusReturn:" + approvalStatusReturn);
+            if ("SRM".equals(poDTO.getSourceCode()) || !String.valueOf(BaseConstants.Flag.YES).equals(approvalStatusReturn) || BaseConstants.Flag.YES.equals(poDTO.getUpdateFlag())) {
+                LOGGER.info("25855 manualPublish:" + poDTO.toString());
+                if (poDTO.canAutoPublish(manualPublish)) {
+                    poDTO.autoPublish(manualPublish, this.poProcessActionService, this.poHeaderRepository);
+                    LOGGER.debug("prod-bug-5973-PoHeaderServiceImpl-submittedProcess-step2-syncTime-" + syncTime);
+                    LOGGER.debug("prod-bug-5973-PoHeaderServiceImpl-submittedProcess-manualPublish-" + poDTO.canAutoPublish(manualPublish));
+                    if ("ORDER_PUBLISH".equals(syncTime)) {
+                        PoHeader poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeaderDetailDTO.getPoHeaderId());
+                        poHeaderDetailDTO.setObjectVersionNumber(poHeader.getObjectVersionNumber());
+                        posyncERP(poHeaderDetailDTO, poDTO.getTenantId());
+                        PoHeader poHeaderNew = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeaderDetailDTO.getPoHeaderId());
+                        poDTO.setObjectVersionNumber(poHeaderNew.getObjectVersionNumber());
+                    }
+                }
+                LOGGER.info("25855 manualPublish:" + poDTO.toString());
+                if ("PUBLISHED".equals(poDTO.getStatusCode())) {
+                    CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+                    sendMessageByType(userDetails, poDTO.getPoHeaderId(), "PUBLISH");
+                }
+                String autoConfirmFlag = this.poHeaderRepository.getPoConfigCodeValue(poDTO.getTenantId(), poDTO.getPoHeaderId(), "SITE.SPUC.PO.AUTO_CONFIRM_STRATEGY");
+                List<PoHeader> poHeaderList = new ArrayList<>();
+                PoHeader po = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId());
+                if (po.getStatusCode().equals("PUBLISHED")) {
+                    poHeaderList.add(po);
+                    if ("CATALOGUE".equals(po.getPoSourcePlatform())) {
+                        this.poStatusSyncMallRecordService.catalogueOrderStatusCallBack(new PoStatusSyncMallRecord("PO", po.getPoHeaderId(), "PUBLISHED", po.getTenantId()));
+                        cataloguePoSendMQ(po.getTenantId(), Collections.singletonList(po.getPoHeaderId()), "PUBLISHED");
+                    }
+                    if ("SHOP".equals(po.getPoSourcePlatform())) {
+                        shopPoSendMQ(po.getTenantId(), Collections.singletonList(po.getPoHeaderId()), "PUBLISHED");
+                    }
+                    if ("0".equals(autoConfirmFlag)) {
+                        autoConfirmOrder(poHeaderList, poDTO.getTenantId());
+                        poDTO.setObjectVersionNumber(((PoHeader)this.poHeaderRepository.selectByPrimaryKey(poDTO.getPoHeaderId())).getObjectVersionNumber());
+                    }
+                }
+                try {
+                    PoDocVO poDocVO = this.poHeaderRepository.selectPoDocVO(poDTO.getPoHeaderId(), "PUBLISHED");
+                    this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "PUBLISHED", Collections.singletonList(poDocVO));
+                } catch (Exception e) {
+                    LOGGER.error("send poDocVO has failed: ", e);
+                }
+            }
+            if (poDTO.canAutoPublish(manualPublish)) {
+                PoHeader poHeader = PoDTO.mergeSnapShot(poDTO.getPoHeaderId(), this.poHeaderRepository, this.poLineRepository, this.poLineLocationRepository, this.poChangeRecordRepository, this.poProcessActionRepository, this.poItemBomRepository, poDTO.getStatusCode());
+                BeanUtils.copyProperties(poHeader, poDTO);
+            } else {
+                PoHeader poHeader = new PoHeader();
+                BeanUtils.copyProperties(poDTO, poHeader);
+                PoHeader poHeaderOld = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeader.getPoHeaderId());
+                poHeader.setObjectVersionNumber(poHeaderOld.getObjectVersionNumber());
+                this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode" });
+                poDTO.setObjectVersionNumber(poHeader.getObjectVersionNumber());
+            }
+            //无需审批自动发布、电商商城数据自动确认
+            rcwlPoSubmitBpmService.approveProcess(poHeaderInDB.getTenantId(), poHeaderInDB, 0);
+        }
+        this.poHeaderSendApplyMqService.sendApplyMq(poDTO.getPoHeaderId(), poDTO.getTenantId(), "UPDATE");
+        return poDTO;
+    }
+
+    /**
+     * @param poDTO
+     * @return
+     */
+    public String poDataToBpm(PoDTO poDTO) {
+        log.info("采购订单数据：{}",poDTO);
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        String reSrcSys = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.REQ_SRC_SYS_CODE);
+        String reqTarSys = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.REQ_TAR_CODE);
+        String reqIp = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), PrConstant.BpmCodes.REQ_URL_CODE);
+        String zYunUrl = this.profileClient.getProfileValueByOptions(userDetails.getTenantId(), userDetails.getUserId(), userDetails.getRoleId(), "RCWL_PO_TO_BPM_URL");
+
+        //采购订单行数据
+//        List<PoLine> poLineList = this.poLineRepository.select(new PoLine(poDTO.getPoHeaderId()));
+        List<RCWLPoLineDetailDTO> poLineList = rcwlPoToBpmMapper.selectPoTobpmline(poDTO.getTenantId(), poDTO.getPoHeaderId());
+        List<PoToBpmLineDTO> poToBpmLineDTOS = new ArrayList<>();
+        poLineList.forEach(line -> {
+            PoToBpmLineDTO poToBpmLineDTO = this.setPoLineDataMap(line);
+            poToBpmLineDTOS.add(poToBpmLineDTO);
+        });
+
+        //采购订单头数据
+        PoToBpmDTO poToBpmDTO = this.setPoHeaderDataMap(poDTO, poLineList);
+        poToBpmDTO.setzYunUrl(zYunUrl + poDTO.getPoHeaderId());
+        poToBpmDTO.setPoToBpmLineDTOList(poToBpmLineDTOS);
+        String data = JSONObject.toJSON(poToBpmDTO).toString();
+        log.info("=========================json data===========================>" + data);
+
+        RCWLGxBpmStartDataDTO rcwlGxBpmStartDataDTO = new RCWLGxBpmStartDataDTO();
+
+        //设置传输值
+        rcwlGxBpmStartDataDTO.setReSrcSys(reSrcSys);
+        rcwlGxBpmStartDataDTO.setReqTarSys(reqTarSys);
+        rcwlGxBpmStartDataDTO.setUserId(userDetails.getUsername());
+        rcwlGxBpmStartDataDTO.setBtid("RCWLSRMCGDD");
+        rcwlGxBpmStartDataDTO.setBoid(poDTO.getPoNum());
+        //流程实例id
+        String procinstId = poDTO.getAttributeVarchar36();
+        rcwlGxBpmStartDataDTO.setProcinstId(StringUtils.isNotBlank(procinstId) ? procinstId : "0");
+        rcwlGxBpmStartDataDTO.setData(data);
+        String bpmUrl = "http://" + reqIp + "/Workflow/MTStart2.aspx?BSID=WLCGGXPT&BTID=RCWLSRMCGDD&BOID=" + poDTO.getPoNum();
+        log.info("=========================bpmUrl ===========================>" + bpmUrl);
+
+        // 调用bpm接口
+        try {
+            ResponsePayloadDTO responsePayloadDTO = rcwlGxBpmInterfaceService.RcwlGxBpmInterfaceRequestData(rcwlGxBpmStartDataDTO);
+            log.info("=========================return ===========================>" + responsePayloadDTO.toString());
+        } catch (Exception e) {
+            throw new CommonException("bpm.interface.error");
+        }
+        return bpmUrl;
+    }
+
+    private PoToBpmLineDTO setPoLineDataMap(RCWLPoLineDetailDTO line) {
+        PoToBpmLineDTO poToBpmLineDTO = new PoToBpmLineDTO();
+        String costName = this.rcwlPrToBpmMapper.selectCost(line.getTenantId(), line.getCostId());
+        String wbsName = this.rcwlPrToBpmMapper.selectWbs(line.getTenantId(), line.getWbsCode());
+        LovAdapter lovAdapter = (LovAdapter) ApplicationContextHelper.getContext().getBean(LovAdapter.class);
+        String cancelledFlagMeaning = lovAdapter.queryLovMeaning("SPUC.CANCEL_FLAG", line.getTenantId(), line.getCancelledFlag().toString());
+
+        poToBpmLineDTO.setCancelledFlag(cancelledFlagMeaning);
+        poToBpmLineDTO.setDisplayLineNum(line.getDisplayLineNum());
+        poToBpmLineDTO.setItemId(line.getItemCode());
+        poToBpmLineDTO.setItemName(line.getItemName());
+        poToBpmLineDTO.setSpecifications(line.getSpecifications());
+        poToBpmLineDTO.setModel(line.getModel());
+        poToBpmLineDTO.setQuantity(String.valueOf(line.getQuantity().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        poToBpmLineDTO.setUomId(this.rcwlPrToBpmMapper.selectUomName(line.getTenantId(), line.getUomId()));
+        poToBpmLineDTO.setCategoryName(this.rcwlPrToBpmMapper.selectCategoryName(line.getTenantId(), line.getCategoryId()));
+        //订单开始日期
+        poToBpmLineDTO.setAttributeDate1(Objects.nonNull(line.getAttributeDate1())?new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getAttributeDate1()):null);
+        //订单发运行结束日期
+        poToBpmLineDTO.setNeedByDate(new SimpleDateFormat(DateTimeUtil.PATTERN_DAY).format(line.getNeedByDate()));
+        poToBpmLineDTO.setUnitPrice(String.valueOf(line.getUnitPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        poToBpmLineDTO.setTax(line.getTaxDescription());
+        poToBpmLineDTO.setEnteredTaxIncludedPrice(String.valueOf(line.getEnteredTaxIncludedPrice().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        poToBpmLineDTO.setTaxInclueLineAmount(String.valueOf(line.getTaxIncludedLineAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        poToBpmLineDTO.setInvInventoryId(line.getInventoryName());
+        poToBpmLineDTO.setInvOrganizationId(line.getInvOrganizationName());
+        poToBpmLineDTO.setAttributeVarchar21(line.getBudgetAccountName());
+        poToBpmLineDTO.setCostId(costName);
+        poToBpmLineDTO.setWbs(wbsName);
+        poToBpmLineDTO.setRemark(line.getRemark());
+        return poToBpmLineDTO;
+    }
+
+    private PoToBpmDTO setPoHeaderDataMap(PoDTO poDTO, List<RCWLPoLineDetailDTO> poLineList) {
+        PoToBpmDTO poToBpmDTO = new PoToBpmDTO();
+        poToBpmDTO.setDisplayPoNum(poDTO.getDisplayPoNum());
+        poToBpmDTO.setErpContractNum(poLineList.get(0).getPcNum());
+        poToBpmDTO.setErpContractName(poLineList.get(0).getPcName());
+        poToBpmDTO.setAmount(String.valueOf(poDTO.getAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        poToBpmDTO.setTaxIncludeAmount(String.valueOf(poDTO.getTaxIncludeAmount().setScale(2, BigDecimal.ROUND_HALF_UP)));
+        poToBpmDTO.setCurrencyCode(poDTO.getCurrencyCode());
+        poToBpmDTO.setCompanyId(StringUtils.isNotBlank(poDTO.getCompanyName())?poDTO.getCompanyName():this.rcwlPoToBpmMapper.selectCompanyName(poDTO.getTenantId(),poDTO.getCompanyId()));
+        poToBpmDTO.setTempKey(StringUtils.isNotBlank(poDTO.getSupplierName())?poDTO.getSupplierName():this.rcwlPoToBpmMapper.selectSupplierName(poDTO.getTenantId(),poDTO.getSupplierCode()));
+        poToBpmDTO.setEsPurchaseOrgId(this.rcwlPoToBpmMapper.selectEsPurchaseOrgName(poDTO.getTenantId(),poDTO.getPurchaseOrgId()));
+        poToBpmDTO.setPoTypeId(this.rcwlPoToBpmMapper.selectOrderTypeName(poDTO.getTenantId(),poDTO.getPoTypeId()));
+        poToBpmDTO.setAttributeVarchar1(poDTO.getAttributeVarchar1());
+        poToBpmDTO.setEsAgentName(StringUtils.isNotBlank(poDTO.getAgentName())?poDTO.getAgentName():this.rcwlPoToBpmMapper.selectAgentName(poDTO.getTenantId(),poDTO.getAgentId()));
+        poToBpmDTO.setPoDate(new SimpleDateFormat(DateTimeUtil.PATTERN_SECOND).format(poDTO.getCreationDate()));
+        poToBpmDTO.setRemark(poDTO.getRemark());
+        poToBpmDTO.setfSubject("采购订单" + poDTO.getDisplayPoNum());
+        return poToBpmDTO;
+    }
+
+
+    @SneakyThrows
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    @EventSendTran(rollbackFor = {Exception.class})
+    public returnMsgDto cancel(List<PoHeader> poHeaders) {
+        int errorCancel = 0;
+        int successCancel = 0;
+        Set<Long> poHeaderSet = new HashSet<>();
+        for (PoHeader poHeader : poHeaders) {
+            if (((PoHeaderService)self()).cancelSingle(poHeader)) {
+                successCancel++;
+
+                //零星申请、其他采购申请、总价合同订单无需释放预算
+                if (!"PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())
+                        && !"CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode())){
+                    PoDTO poDTO = new PoDTO();
+                    BeanUtils.copyProperties(poHeader,poDTO);
+                    //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
+                    rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
+                    //释放失败返回错误消息，成功则更新占用标识为0
+                    poHeader.setAttributeTinyint1(0);
+                    this.poHeaderRepository.updateOptional(poHeader, new String[] { "attributeTinyint1"});
+                }
+
+                poHeaderSet.add(poHeader.getPoHeaderId());
+                List<PoLineLocation> poLineLocations = this.poLineLocationMapper.selectByPoHeaderId(poHeader.getPoHeaderId(), poHeader.getTenantId());
+                if (CollectionUtils.isNotEmpty(poLineLocations)) {
+                    this.planService.cancelOrCloseByPoLineLocationIds((List)poLineLocations.stream().map(PoLineLocation::getPoLineLocationId).collect(Collectors.toList()), "CANCEL");
+                }
+                if ("CATALOGUE".equals(poHeader.getPoSourcePlatform())) {
+                    this.poStatusSyncMallRecordService.catalogueOrderStatusCallBack(new PoStatusSyncMallRecord("PO", poHeader.getPoHeaderId(), "CANCELED", poHeader.getTenantId()));
+                }
+                LOGGER.info("21424-订单取消事务节点清除：" + poHeader);
+                this.rcvNodeConfigCommonDomainService.afterPoCancel(poHeader.getPoHeaderId());
+                this.poHeaderSendApplyMqService.sendApplyMq(poHeader.getPoHeaderId(), poHeader.getTenantId(), "RELEASE");
+                continue;
+            }
+            errorCancel++;
+        }
+        if (!CollectionUtils.isEmpty(poHeaderSet)) {
+            List<String> list = (List<String>)poHeaderSet.stream().map(x -> x + "").collect(Collectors.toList());
+            String poHeaderId = list.stream().distinct().collect(Collectors.joining(","));
+            List<PoHeader> poHeaderList = this.poHeaderRepository.selectByIds(poHeaderId);
+            List<MessageDTO> messageDTOList = new ArrayList<>();
+            SimpleDateFormat tempDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            poHeaderList.forEach(poHeader -> {
+                if ("CATALOGUE".equals(poHeader.getPoSourcePlatform()) || "SHOP".equals(poHeader.getPoSourcePlatform())) {
+                    MessageDTO messageDTO = new MessageDTO();
+                    Map<Object, Object> map = new HashMap<>();
+                    messageDTO.setUserId(DetailsHelper.getUserDetails().getUserId());
+                    messageDTO.setSendDate(tempDate.format(new Date()));
+                    messageDTO.setTenantId(poHeader.getTenantId());
+                    messageDTO.setType("SRM_ORDER_CANCEL_BY_SRM");
+                    map.put("tenantId", poHeader.getTenantId());
+                    map.put("srmOrderCode", poHeader.getDisplayPoNum());
+                    messageDTO.setData(map);
+                    messageDTOList.add(messageDTO);
+                }
+            });
+            if (messageDTOList.size() > 0) {
+                Boolean bool = Boolean.valueOf(this.messageProducer.sendMessageAfterTransactionCommit(((MessageDTO)messageDTOList.get(0)).getTenantId(), "sodr-message-topic", "", "SMODR", messageDTOList));
+            }
+        }
+        return new returnMsgDto(successCancel, errorCancel);
+    }
+
+    public void cancelPoHeader(ArrayList<PoHeader> poHeaders) {
+        poHeaders.forEach(poHeader -> {
+            List<AsnDetailLineVO> asnDetailLineVOs = this.asnLineMapper.selectAsnCanceled(poHeader.getPoHeaderId());
+            poHeader = (PoHeader)this.poHeaderRepository.selectByPrimaryKey(poHeader);
+            if (!asnDetailLineVOs.isEmpty()) {
+                List<AsnDetailLineVO> lineLocationNums = (List<AsnDetailLineVO>)asnDetailLineVOs.stream()
+                        .filter((asn) -> StringUtils.isNotEmpty(asn.getDisplayLineLocationNum())).collect(Collectors.toList());
+                LOGGER.debug("lineLocationNums size is {}", Integer.valueOf(lineLocationNums.size()));
+                throw new CommonException("error.order.not_cancelable_line_exist", new Object[] { CollectionUtils.isEmpty(lineLocationNums) ? ((AsnDetailLineVO)asnDetailLineVOs.get(0)).getDisplayAsnLineNum() : ((AsnDetailLineVO)lineLocationNums.get(0)).getDisplayLineLocationNum() });
+            }
+            if ("PENDING".equals(poHeader.getStatusCode()) || "SUBMITTED".equals(poHeader.getStatusCode()) || "SUBMITTED_WFL".equals(poHeader.getStatusCode()))
+                throw new CommonException("error.order.status_not_suit", new Object[0]);
+            poHeader.wholeCancel();
+            modifyCanCreateDeliveryChargeIdentifying(poHeader);
+            List<PoLine> poLines = this.poLineRepository.select(new PoLine(poHeader.getPoHeaderId()));
+            if (!poLines.isEmpty()) {
+                poLines.forEach((line) -> {
+                    line.setCancelledFlag(BaseConstants.Flag.YES);
+                });
+                this.poLineRepository.batchUpdateOptional(poLines, new String[] { "cancelledFlag" });
+            }
+            if ("PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) || "PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())) {
+                boolean ecOrderFlag = "E-COMMERCE".equals(poHeader.getPoSourcePlatform());
+                if (poHeader.isByErpOrSrmPr()) {
+                    this.generatorPoByPrDomainService.releasePr(poLines, poHeader);
+                    this.generatorPoByPcDomainService.releasePc(poLines, poHeader.getTenantId());
+                } else {
+                    if (!poLines.isEmpty()) {
+                        poLines.forEach((line) -> {
+                            if (line.getPrLineId() != null) {
+                                PrLine prLine = (PrLine)this.prLineRepository.selectByPrimaryKey(line.getPrLineId());
+                                prLine.emptyFromPoLine();
+                                prLine.setClosedFlag(BaseConstants.Flag.NO);
+                                if (prLine.getOccupiedQuantity() != null) {
+                                    prLine.setOccupiedQuantity(prLine.getOccupiedQuantity().subtract(line.getQuantity()));
+                                }
+
+                                this.prLineRepository.updateOptional(prLine, new String[]{"executionStatusCode", "occupiedQuantity", "executedBy", "executedDate", "executionBillId", "executionBillNum", "executionHeaderBillId", "executionHeaderBillNum", "closedFlag"});
+                            }
+
+                            if (line.getPrHeaderId() != null) {
+                                PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(line.getPrHeaderId());
+                                prHeader.flushCloseStatus(this.prLineRepository);
+                                this.prHeaderRepository.updateOptional(prHeader, new String[]{"closeStatusCode"});
+                            }
+
+                        });
+                    }
+                    if (poHeader.getPrHeaderId() != null) {
+                        PrHeader prHeader = (PrHeader)this.prHeaderRepository.selectByPrimaryKey(poHeader.getPrHeaderId());
+                        if (ecOrderFlag) {
+                            this.prHeaderService.cancelWholePrNote(poHeader.getTenantId(), Collections.singletonList(prHeader));
+                        } else {
+                            prHeader.emptyFromPoLine();
+                            prHeader.setCloseStatusCode("UNCLOSED");
+                            this.prHeaderRepository.updateOptional(prHeader, new String[] { "executedBy", "executedDate", "executionBillId", "executionBillNum", "executionStatusCode", "closeStatusCode" });
+                        }
+                    }
+                }
+            }
+            if ("CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode()) || "CONTRACT_ORDER_DJ".equals(poHeader.getSourceBillTypeCode())
+                    || "CONTRACT_ORDER_WJ".equals(poHeader.getSourceBillTypeCode())){
+                this.generatorPoByPcDomainService.releasePc(poLines, poHeader.getTenantId());
+            }
+
+            handleTheSourceOccupiedQuantity(poLines);
+            poHeader.setAmount(new BigDecimal(0));
+            poHeader.setTaxIncludeAmount(new BigDecimal(0));
+            this.poHeaderRepository.updateOptional(poHeader, new String[] { "statusCode", "cancelledFlag", "taxIncludeAmount", "amount" });
+            poStatusFlagSync(poHeader, poLines);
+        });
+        try {
+            List<PoDocVO> poDocVOS = new ArrayList<>();
+            for (PoHeader poHeader : poHeaders)
+                poDocVOS.add(this.poHeaderRepository.selectPoDocVO(poHeader.getPoHeaderId(), "CANCELED"));
+            this.eventSender.fireEvent("PO", "SORD_PO", PoConstants.DEFAULT_TENANT_ID, "CANCELED", poDocVOS);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    private void modifyCanCreateDeliveryChargeIdentifying(PoHeader poHeader) {
+        List<PoLineLocation> poLineLocations = this.poLineLocationRepository.selectByCondition(Condition.builder(PoLineLocation.class).andWhere(Sqls.custom().andEqualTo("poHeaderId", poHeader.getPoHeaderId())).build());
+        poLineLocations.forEach((poLineLocation) -> {
+            poLineLocation.setCanCreateAsnFlag(BaseConstants.Flag.NO);
+            poLineLocation.setCancelledFlag(BaseConstants.Flag.YES);
+            this.poLineLocationRepository.updateOptional(poLineLocation, new String[]{"canCreateAsnFlag", "cancelledFlag"});
+        });
     }
 
 }
