@@ -1456,15 +1456,17 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
             if (((PoHeaderService)self()).cancelSingle(poHeader)) {
                 successCancel++;
 
-                PoDTO poDTO = new PoDTO();
-                BeanUtils.copyProperties(poHeader,poDTO);
-                //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
-                rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
-                //释放失败返回错误消息，成功则更新占用标识为0
-                poDTO.setAttributeTinyint1(0);
-                PoHeader ph = new PoHeader();
-                BeanUtils.copyProperties(poDTO, ph);
-                this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
+                //零星申请、其他采购申请、总价合同订单无需释放预算
+                if (!"PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())
+                        && !"CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode())){
+                    PoDTO poDTO = new PoDTO();
+                    BeanUtils.copyProperties(poHeader,poDTO);
+                    //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
+                    rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
+                    //释放失败返回错误消息，成功则更新占用标识为0
+                    poHeader.setAttributeTinyint1(0);
+                    this.poHeaderRepository.updateOptional(poHeader, new String[] { "attributeTinyint1"});
+                }
 
                 poHeaderSet.add(poHeader.getPoHeaderId());
                 List<PoLineLocation> poLineLocations = this.poLineLocationMapper.selectByPoHeaderId(poHeader.getPoHeaderId(), poHeader.getTenantId());
@@ -1568,7 +1570,8 @@ public class RcwlPoHeaderServiceImpl extends PoHeaderServiceImpl {
                     }
                 }
             }
-            if ("CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode()) || "CONTRACT_ORDER_DJ".equals(poHeader.getSourceBillTypeCode())){
+            if ("CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode()) || "CONTRACT_ORDER_DJ".equals(poHeader.getSourceBillTypeCode())
+                    || "CONTRACT_ORDER_WJ".equals(poHeader.getSourceBillTypeCode())){
                 this.generatorPoByPcDomainService.releasePc(poLines, poHeader.getTenantId());
             }
 
