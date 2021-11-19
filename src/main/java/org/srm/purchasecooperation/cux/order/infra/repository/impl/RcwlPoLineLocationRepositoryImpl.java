@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.srm.purchasecooperation.common.api.dto.SmdmCurrencyDTO;
 import org.srm.purchasecooperation.common.app.MdmService;
 import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlMyPoHeaderMapper;
+import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineLocationMapper;
 import org.srm.purchasecooperation.order.domain.entity.PoHeader;
 import org.srm.purchasecooperation.order.domain.entity.PoLineLocation;
 import org.srm.purchasecooperation.order.domain.vo.PoLineLocationVO;
@@ -30,6 +31,8 @@ public class RcwlPoLineLocationRepositoryImpl extends PoLineLocationRepositoryIm
     @Autowired
     private PoLineLocationMapper poLineLocationMapper;
     @Autowired
+    private RcwlPoLineLocationMapper rcwlPoLineLocationMapper;
+    @Autowired
     private MdmService mdmService;
     @Autowired
     private RcwlMyPoHeaderMapper rcwlMyPoHeaderMapper;
@@ -43,7 +46,8 @@ public class RcwlPoLineLocationRepositoryImpl extends PoLineLocationRepositoryIm
     public Page<PoLineLocationVO> pagePoLineLocation(PageRequest pageRequest, PoLineLocation poLineLocation) {
         poLineLocation.setNowDate(LocalDate.now().toDate());
         Page<PoLineLocationVO> poLineLocationVOSPage = PageHelper.doPageAndSort(pageRequest, () -> {
-            Page<PoLineLocationVO> page = (Page<PoLineLocationVO>) poLineLocationMapper.selectPoLineLocation(poLineLocation);
+//            Page<PoLineLocationVO> page = (Page<PoLineLocationVO>) poLineLocationMapper.selectPoLineLocation(poLineLocation);
+            Page<PoLineLocationVO> page = (Page<PoLineLocationVO>) rcwlPoLineLocationMapper.selectPoLineLocation(poLineLocation);
             List<PoLineLocationVO> collect = page.stream().map(m -> {
                 m.setAttributeVarchar40(rcwlMyPoHeaderMapper.rcwlSelect(m.getPoHeaderId()));
                 return m;

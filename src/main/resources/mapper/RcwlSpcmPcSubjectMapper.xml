@@ -16,4 +16,15 @@
             g.cost_code,
             g.WBS from sprm_pr_line g where g.pr_line_id = #{prLineId}
     </select>
+
+    <select id="selectSpcmPcHeader"  resultType="org.srm.purchasecooperation.cux.order.domain.vo.PcHeaderVO">
+        SELECT
+            *
+        FROM
+            spcm_pc_header sph
+        WHERE
+            sph.pc_header_id = #{pcHeaderId}
+          AND sph.tenant_id = #{tenantId}
+    </select>
+
 </mapper>

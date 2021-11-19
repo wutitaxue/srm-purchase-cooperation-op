@@ -237,7 +237,9 @@
         spll.expect_ship_date,
         spl.ladder_quotation_flag,
         /*需求物料描述*/
-        spl.attribute_varchar10
+        spl.attribute_varchar10,
+        spl.pc_header_id,
+        spl.pc_num
         FROM
         sodr_po_line_location spll
         JOIN sodr_po_line spl ON spl.po_line_id = spll.po_line_id
@@ -418,7 +420,14 @@
         OR ( sph.pc_status_code = 'CONFIRMED' AND sph.electric_sign_flag = 0 )
         OR sph.pc_status_code = 'ARCHIVE'
         )
-        AND sph.pc_kind_code = 'NORMAL'
+        <choose>
+            <when test="contractResult.pcKindCode != null and contractResult.pcKindCode != ''">
+                AND sph.pc_kind_code = #{contractResult.pcKindCode}
+            </when>
+            <otherwise>
+                AND sph.pc_kind_code = 'NORMAL'
+            </otherwise>
+        </choose>
         AND ((spt.effective_time_flag=1 AND sph.end_date_active >= #{contractResult.currencyDateToDate}) OR spt.effective_time_flag=0)
         AND ((spt.order_quantity_flag=1 and (spc.quantity - spc.chanage_order_quantity)>0) OR spt.order_quantity_flag=0)
         /*过滤已经进入到收货执行里面的数据*/
@@ -445,10 +454,10 @@
             AND sph.company_id = #{contractResult.companyId}
         </if>
 
-        /* 协议性质*/
-        <if test="contractResult.pcKindCode != null">
-            AND sph.pc_kind_code = #{contractResult.pcKindCode}
-        </if>
+<!--        /* 协议性质*/-->
+<!--        <if test="contractResult.pcKindCode != null">-->
+<!--            AND sph.pc_kind_code = #{contractResult.pcKindCode}-->
+<!--        </if>-->
         /* 创建日期从*/
         <if test="contractResult.creationDateFrom != null">
             AND sph.creation_date &gt;= #{contractResult.creationDateFrom}
@@ -474,6 +483,96 @@
             AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
         </if>
         AND (sph.pc_source_code != 'PURCHASE_ORDER' OR sph.pc_source_code is null )
+        order by sph.pc_num desc
+    </select>
+
+    <select id="selectNoPriceContract" resultType="org.srm.purchasecooperation.order.api.dto.ContractResultDTO">
+        SELECT
+        sph.pc_header_id,
+        sph.pc_num,
+        sph.pc_name,
+        sph.pc_status_code,
+        sph.company_id,
+        CASE
+        WHEN sph.company_num IS NULL THEN
+        hc.company_num ELSE sph.company_num
+        END AS company_num,
+
+        CASE
+        WHEN sph.company_name IS NULL THEN
+        hc.company_name ELSE sph.company_name
+        END AS company_name,
+
+        iu.real_name AS CREATED_by_name,
+        sph.creation_date,
+        hou.ou_id,
+        hou.ou_name,
+        hpo.organization_name AS purchase_org_name,
+        hpa.purchase_agent_name AS agent_name,
+        hpo.purchase_org_id,
+        sph1.pc_num AS main_pc_num,
+        hpa.purchase_agent_id AS agent_id,
+        sph.pc_kind_code,
+        sph.supplier_id,
+        sph.pc_type_id,
+        CASE
+        WHEN sph.supplier_num IS NULL THEN
+        sec.supplier_num ELSE sph.supplier_num
+        END AS supplier_num,
+
+        CASE
+        WHEN sph.supplier_name IS NULL THEN
+        sec.supplier_name ELSE sph.supplier_name
+        END AS supplier_name,
+        sph.supplier_company_id,
+        sph.supplier_company_num,
+        sph.supplier_company_name,
+        sph.supplier_tenant_id,
+        spt.order_quantity_flag,
+        spt.order_type_id
+        FROM
+        spcm_pc_header sph
+        LEFT JOIN spcm_pc_header sph1 ON sph1.pc_header_id=sph.main_contract_id
+        LEFT JOIN hpfm_company hc ON hc.company_id = sph.company_id
+        LEFT JOIN sslm_external_supplier sec ON sec.supplier_id = sph.supplier_id
+        LEFT JOIN iam_user iu ON iu.id = sph.created_by
+        LEFT JOIN hpfm_operation_unit hou ON sph.ou_id = hou.ou_id
+        LEFT JOIN hpfm_purchase_agent hpa ON hpa.purchase_agent_id = sph.purchase_agent_id
+        LEFT JOIN hpfm_purchase_organization hpo ON hpo.purchase_org_id = sph.purchase_org_id
+        INNER JOIN spcm_pc_type spt ON sph.pc_type_id = spt.pc_type_id
+        WHERE
+        sph.tenant_id = #{tenantId}
+        AND sph.pc_status_code IN ('APPROVED', 'ARCHIVE', 'CONFIRMED')
+        AND sph.pc_kind_code = 'ATTACHMENT'
+        <if test="contractResult.pcNum != null and  contractResult.pcNum != ''">
+            <bind name="pcNumLike" value="'%'+contractResult.pcNum +'%'"></bind>
+            AND sph.pc_num like #{pcNumLike}
+        </if>
+        <if test="contractResult.pcName != null and  contractResult.pcName != ''">
+            <bind name="pcNameLike" value="'%'+contractResult.pcName +'%'"></bind>
+            AND sph.pc_name like #{pcNameLike}
+        </if>
+        <if test="contractResult.companyId != null">
+            AND sph.company_id = #{contractResult.companyId}
+        </if>
+        <if test="contractResult.creationDateFrom != null">
+            AND sph.creation_date &gt;= #{contractResult.creationDateFrom}
+        </if>
+        <if test="contractResult.creationDateTo != null">
+            AND sph.creation_date &lt; #{contractResult.creationDateTo}
+        </if>
+        <if test="contractResult.pcTypeId != null">
+            AND sph.pc_type_id = #{contractResult.pcTypeId}
+        </if>
+        <if test="contractResult.createdByName != null">
+            AND iu.real_name = #{contractResult.createdByName}
+        </if>
+        <if test="contractResult.pcHeaderId != null">
+            AND sph.pc_header_id = #{contractResult.pcHeaderId}
+        </if>
+        <if test="contractResult.supplierCompanyId != null">
+            AND sph.supplier_company_id = #{contractResult.supplierCompanyId}
+        </if>
         order by sph.pc_num desc
     </select>
 

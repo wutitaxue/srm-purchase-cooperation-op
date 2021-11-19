@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.Api;
@@ -21,9 +22,13 @@ import org.springframework.web.bind.annotation.*;
 import org.srm.boot.platform.customizesetting.CustomizeSettingHelper;
 import org.srm.boot.platform.print.PrintHelper;
 import org.srm.common.annotation.PurchaserPowerCron;
+import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderCreateService;
 import org.srm.purchasecooperation.cux.order.app.service.RcwlPoHeaderItemService;
+import org.srm.purchasecooperation.cux.order.infra.mapper.RcwlPoLineMapper;
+import org.srm.purchasecooperation.order.api.dto.ContractResultDTO;
 import org.srm.purchasecooperation.order.api.dto.PoDTO;
 import org.srm.purchasecooperation.order.api.dto.PoHeaderAccordingToLineOfReferenceDTO;
+import org.srm.purchasecooperation.order.api.dto.PoHeaderSingleReferenceDTO;
 import org.srm.purchasecooperation.order.api.dto.PoOrderSaveDTO;
 import org.srm.purchasecooperation.order.app.service.PoChangeByContractService;
 import org.srm.purchasecooperation.order.app.service.PoHeaderService;
@@ -34,6 +39,7 @@ import org.srm.purchasecooperation.order.domain.repository.PoHeaderRepository;
 import org.srm.purchasecooperation.order.domain.repository.PoLineLocationRepository;
 import org.srm.purchasecooperation.order.domain.service.PoHeaderDomainService;
 import org.srm.purchasecooperation.order.domain.vo.PoHeaderAccordingToLineOfReferenceVO;
+import org.srm.purchasecooperation.order.domain.vo.PoHeaderSingleReferenceVO;
 import org.srm.web.annotation.Tenant;
 
 import java.util.Collections;
@@ -76,6 +82,10 @@ public class RcwlPoHeaderController {
     private ObjectMapper objectMapper;
     @Autowired
     private RcwlPoHeaderItemService rcwlPoHeaderItemService;
+    @Autowired
+    private RcwlPoLineMapper rcwlPoLineMapper;
+    @Autowired
+    private RcwlPoHeaderCreateService rcwlPoHeaderCreateService;
 
     @ApiOperation("手工审批通过采购订单")
     @Permission(
@@ -138,5 +148,48 @@ public class RcwlPoHeaderController {
             @Encrypt PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO){
         poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
         return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
+    }
+
+    @ApiOperation("采购申请整单引用汇总查询")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping({"/po-header/from-pr/header"})
+    public ResponseEntity<Page<PoHeaderSingleReferenceVO>> queryReferPrHeaderSummary(@PathVariable Long organizationId,
+                                                                                     PageRequest pageRequest,
+                                                                                     @Encrypt PoHeaderSingleReferenceDTO referenceDTO) {
+        return Results.success(this.poHeaderService.queryReferPrHeaderSummary(organizationId, pageRequest, referenceDTO));
+    }
+
+    @ApiOperation(value = "采购申请按行引用零星申请查询")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/po-header/from-pr-sporadic/line")
+    public ResponseEntity<Page<PoHeaderAccordingToLineOfReferenceVO>> selectSporadicAccording(
+            @PathVariable Long organizationId,
+            PageRequest pageRequest,
+            @Encrypt PoHeaderAccordingToLineOfReferenceDTO poHeaderAccordingToLineOfReferenceDTO){
+        poHeaderAccordingToLineOfReferenceDTO.setTenantId(organizationId);
+        //申请类型为零星申请
+        poHeaderAccordingToLineOfReferenceDTO.setPrTypeId(4L);
+        return Results.success(poLineService.selectAccordingToLineOfReference(pageRequest, poHeaderAccordingToLineOfReferenceDTO));
+    }
+
+    @ApiOperation("无价格合同按头引用汇总")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping({"/po-header/from-contract/no-price"})
+    public ResponseEntity<Page<ContractResultDTO>> selectNoPriceContract(@PathVariable("organizationId") Long tenantId, PageRequest pageRequest, @Encrypt ContractResultDTO contractResultDTO) {
+        return Results.success(PageHelper.doPageAndSort(pageRequest, () -> {
+            return this.rcwlPoLineMapper.selectNoPriceContract(tenantId, contractResultDTO);
+        }));
+    }
+
+    @ApiOperation("无价格合同按头引用")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping({"/po-header/from-contract-result/no-price"})
+    public ResponseEntity<PoDTO> createOrderOnNoPriceContract(@PathVariable("organizationId") Long tenantId, @Encrypt @RequestBody List<ContractResultDTO> contractResultDTOList) {
+        contractResultDTOList.forEach((contractResult) -> {
+            contractResult.setTenantId(tenantId);
+        });
+        this.poHeaderDomainService.setPcAttribute(contractResultDTOList);
+
+        return Results.success(this.rcwlPoHeaderCreateService.createAnOrderBasedOnContract(tenantId, contractResultDTOList));
     }
 }
