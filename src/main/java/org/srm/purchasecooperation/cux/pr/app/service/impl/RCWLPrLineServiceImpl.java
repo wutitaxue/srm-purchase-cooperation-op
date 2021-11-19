@@ -25,8 +25,11 @@ import org.srm.purchasecooperation.cux.acp.infra.constant.RCWLAcpConstant;
 import org.srm.purchasecooperation.cux.pr.app.service.RCWLPrLineService;
 import org.srm.purchasecooperation.cux.pr.domain.repository.RCWLPrLineRepository;
 import org.srm.purchasecooperation.cux.pr.domain.vo.RCWLPrLineVO;
+import org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO;
+import org.srm.purchasecooperation.order.domain.repository.RcwlBudgetDistributionRepository;
 import org.srm.purchasecooperation.pr.api.dto.PrLineAssignDTO;
 import org.srm.purchasecooperation.pr.app.service.impl.PrLineServiceImpl;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.entity.PrLineSupplier;
 import org.srm.purchasecooperation.pr.domain.entity.SupplierHideRole;
 import org.srm.purchasecooperation.pr.domain.repository.*;
@@ -59,6 +62,8 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
     private SupplierHideRoleRepository supplierHideRoleRepository;
     @Autowired
     private RCWLPrLineRepository rcwlPrLineRepository;
+    @Autowired
+    private RcwlBudgetDistributionRepository rcwlBudgetDistributionRepository;
 //
 
     @Override
@@ -310,5 +315,15 @@ public class RCWLPrLineServiceImpl extends PrLineServiceImpl implements RCWLPrLi
         this.accountAssignTypeRequiredFieldHandler(prLineVOS);
         this.jointExecutor(tenantId, prLineVOS);
         return prLineVOList;
+    }
+
+    @Override
+    public void deleteLines(Long prHeaderId, List<PrLine> prLines) {
+        super.deleteLines(prHeaderId, prLines);
+        // 行删除之后需要预算信息
+        List<Long> prLineIds = prLines.stream().map(PrLine::getPrLineId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(prLineIds)) {
+            rcwlBudgetDistributionRepository.deleteBudgetDistributionNotAcrossYear(prLines.get(0).getTenantId(), RcwlBudgetDistributionDTO.builder().prHeaderId(prHeaderId).prLineIds(prLineIds).build());
+        }
     }
 }

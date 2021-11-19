@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlBudgetChangeActionMapper">
+
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction">
+        <!--@Table -->
+        <result property="budgetChangeId" column="budget_change_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="prHeaderId" column="pr_header_id" jdbcType="INTEGER"/>
+        <result property="prLineId" column="pr_line_id" jdbcType="INTEGER"/>
+        <result property="prActionId" column="pr_action_id" jdbcType="INTEGER"/>
+        <result property="budgetDisYear" column="budget_dis_year" jdbcType="INTEGER"/>
+        <result property="budgetDisAmount" column="budget_dis_amount" jdbcType="OTHER"/>
+        <result property="budgetGroup" column="budget_group" jdbcType="VARCHAR"/>
+        <result property="enabledFlag" column="enabled_flag" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="BaseSql">
+        srbca.budget_change_id,
+        srbca.tenant_id,
+        srbca.pr_header_id,
+        srbca.pr_line_id,
+        srbca.pr_action_id,
+        srbca.budget_dis_year,
+        srbca.budget_dis_amount,
+        srbca.budget_group,
+        srbca.enabled_flag
+    </sql>
+
+    <select id="selectList" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction">
+        select
+        <include refid="BaseSql"/>
+        from scux_rcwl_budget_change_action srbca
+        <where>
+            <if test="budgetChangeId !=null">
+                and srbca.budgetChangeId = #{budgetChangeId,jdbcType = INTEGER}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectMaxPrActionData" parameterType="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction" resultType="org.srm.purchasecooperation.cux.pr.domain.entity.RcwlBudgetChangeAction">
+        SELECT
+            srbca.*
+        FROM
+            scux_rcwl_budget_change_action srbca,
+            ( SELECT pr_header_id, pr_line_id, MAX( pr_action_id ) pr_action_id FROM scux_rcwl_budget_change_action WHERE pr_header_id = #{prHeaderId} AND tenant_id = #{tenantId} GROUP BY pr_header_id, pr_line_id ) temp
+        WHERE
+            srbca.pr_header_id = temp.pr_header_id
+          AND srbca.pr_line_id = temp.pr_line_id
+          AND srbca.pr_action_id = temp.pr_action_id
+          AND srbca.budget_group = 'old'
+    </select>
+</mapper>

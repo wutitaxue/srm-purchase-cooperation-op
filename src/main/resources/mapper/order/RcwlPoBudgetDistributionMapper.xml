@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.order.infra.mapper.RcwlBudgetDistributionMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO">
+        <result column="budget_line_id" property="budgetLineId" jdbcType="DECIMAL"/>
+        <result column="po_header_id" property="poHeaderId" jdbcType="DECIMAL"/>
+        <result column="po_line_id" property="poLineId" jdbcType="DECIMAL"/>
+        <result column="pr_header_id" property="prHeaderId" jdbcType="DECIMAL"/>
+        <result column="pr_line_id" property="prLineId" jdbcType="DECIMAL"/>
+        <result column="line_num" property="lineNum" jdbcType="INTEGER"/>
+        <result column="budget_dis_year" property="budgetDisYear" jdbcType="DECIMAL"/>
+        <result column="budget_dis_amount" property="budgetDisAmount" jdbcType="DECIMAL"/>
+        <result column="budget_dis_gap" property="budgetDisGap" jdbcType="DECIMAL"/>
+        <result column="item_code" property="itemCode" jdbcType="VARCHAR"/>
+        <result column="item_name" property="itemName" jdbcType="VARCHAR"/>
+        <result column="line_amount" property="lineAmount" jdbcType="DECIMAL"/>
+        <result column="attribute_date1" property="attributeDate1" jdbcType="DATE"/>
+        <result column="needed_date" property="neededDate" jdbcType="DATE"/>
+        <result column="tenant_id" property="tenantId" jdbcType="DECIMAL"/>
+        <result column="needed_date_year" property="neededDateYear" jdbcType="DECIMAL"/>
+        <result column="needed_date_month" property="neededDateMonth" jdbcType="DECIMAL"/>
+        <result column="attribute_date1_year" property="attributeDate1Year" jdbcType="DECIMAL"/>
+        <result column="attribute_date1_month" property="attributeDate1Month" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <select id="selectBudgetDistributionByPrLine" parameterType="org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO" resultMap="BaseResultMap">
+        SELECT
+        spl.tenant_id,
+        spl.pr_line_id,
+        spl.pr_header_id,
+        spl.item_code,
+        spl.item_name,
+        <if test="lineAmount != null">
+            #{lineAmount} AS line_amount,
+        </if>
+        <if test="lineAmount == null">
+            spl.line_amount,
+        </if>
+        <if test="attributeDate1 != null">
+            #{attributeDate1} AS attribute_date1,
+            DATE_FORMAT( #{attributeDate1}, '%Y' ) attribute_date1_year,
+            DATE_FORMAT( #{attributeDate1}, '%c' ) attribute_date1_month,
+        </if>
+        <if test="attributeDate1 == null">
+            spl.attribute_date1,
+            DATE_FORMAT( spl.attribute_date1, '%Y' ) attribute_date1_year,
+            DATE_FORMAT( spl.attribute_date1, '%c' ) attribute_date1_month,
+        </if>
+        <if test="neededDate != null">
+            #{neededDate} AS needed_date,
+            DATE_FORMAT( #{neededDate}, '%Y' ) needed_date_year,
+            DATE_FORMAT( #{neededDate}, '%c' ) needed_date_month,
+            12- DATE_FORMAT( #{attributeDate1}, '%c' )+ DATE_FORMAT( #{neededDate}, '%c' )+(
+            DATE_FORMAT( #{neededDate}, '%Y' )- DATE_FORMAT( #{attributeDate1}, '%Y' )- 1
+            ) * 12 budget_dis_gap,
+        </if>
+        <if test="neededDate == null">
+            spl.needed_date,
+            DATE_FORMAT( spl.needed_date, '%Y' ) needed_date_year,
+            DATE_FORMAT( spl.needed_date, '%c' ) needed_date_month,
+            12- DATE_FORMAT( spl.attribute_date1, '%c' )+ DATE_FORMAT( spl.needed_date, '%c' )+(
+            DATE_FORMAT( spl.needed_date, '%Y' )- DATE_FORMAT( spl.attribute_date1, '%Y' )- 1
+            ) * 12 budget_dis_gap,
+        </if>
+        spl.line_num
+        FROM
+        sprm_pr_line spl
+        WHERE 1 = 1
+        <choose>
+            <when test="neededDate != null and attributeDate1 != null">
+                AND !ISNULL( #{neededDate} )
+                AND !ISNULL( #{attributeDate1} )
+                <if test="changeSubmit == null or changeSubmit !=1">
+                    AND DATE_FORMAT( #{neededDate}, '%Y' ) != DATE_FORMAT( #{attributeDate1},'%Y' )
+                </if>
+            </when>
+            <otherwise>
+                AND !ISNULL( spl.needed_date )
+                AND !ISNULL( spl.attribute_date1 )
+                <if test="changeSubmit == null or changeSubmit !=1">
+                    AND DATE_FORMAT( spl.needed_date, '%Y' ) != DATE_FORMAT( spl.attribute_date1,'%Y' )
+                </if>
+            </otherwise>
+        </choose>
+        AND spl.pr_header_id = #{prHeaderId}
+        <if test="tenantId != null">
+            AND spl.tenant_id = #{tenantId}
+        </if>
+        <if test="prLineId != null">
+            AND spl.pr_line_id = #{prLineId}
+        </if>
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND spl.pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectBudgetDistribution" parameterType="org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO" resultMap="BaseResultMap">
+        SELECT
+        srbd.*,
+        spl.item_code,
+        spl.item_name,
+        spl.line_num,
+        spl.line_amount,
+        spl.attribute_date1,
+        spl.needed_date
+        FROM
+        <if test="changeSubmit == null or changeSubmit !=1">
+            scux_rcwl_budget_distribution srbd,
+        </if>
+        <if test="changeSubmit == 1">
+            scux_rcwl_budget_change_action srbd,
+        </if>
+        sprm_pr_line spl
+        WHERE
+        srbd.pr_header_id = spl.pr_header_id
+        AND srbd.pr_line_id = spl.pr_line_id
+        AND srbd.pr_header_id = #{prHeaderId}
+        <if test="tenantId != null">
+            AND srbd.tenant_id = #{tenantId}
+        </if>
+        <if test="prLineId != null">
+            AND srbd.pr_line_id = #{prLineId}
+        </if>
+        <if test="budgetDisYears != null and budgetDisYears.size() > 0">
+            AND srbd.budget_dis_year IN
+            <foreach collection="budgetDisYears" item="budgetDisYear" open="(" close=")" separator=",">
+                #{budgetDisYear}
+            </foreach>
+        </if>
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND srbd.pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
+        ORDER BY srbd.pr_header_id,srbd.pr_line_id,srbd.budget_dis_year
+    </select>
+
+    <select id="selectBudgetDistributionNotAcrossYear" parameterType="org.srm.purchasecooperation.order.api.dto.RcwlBudgetDistributionDTO" resultType="org.srm.purchasecooperation.order.domain.entity.RcwlBudgetDistribution">
+        SELECT
+        spl.tenant_id,
+        spl.pr_line_id,
+        spl.pr_header_id,
+        spl.line_amount AS budget_dis_amount,
+        spl.line_num,
+        spl.needed_date,
+        DATE_FORMAT( spl.needed_date, '%Y' ) budget_dis_year,
+        12- DATE_FORMAT( spl.attribute_date1, '%c' )+ DATE_FORMAT( spl.needed_date, '%c' )+(
+        DATE_FORMAT( spl.needed_date, '%Y' )- DATE_FORMAT( spl.attribute_date1, '%Y' )- 1
+        ) * 12 budget_dis_gap
+        FROM
+        sprm_pr_line spl
+        WHERE
+        ! ISNULL( spl.needed_date )
+        AND ! ISNULL( spl.attribute_date1 )
+        AND DATE_FORMAT( spl.needed_date, '%Y' ) = DATE_FORMAT(spl.attribute_date1,'%Y')
+        AND spl.pr_header_id = #{prHeaderId}
+        <if test="tenantId != null">
+            AND spl.tenant_id = #{tenantId}
+        </if>
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND spl.pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectPoAndPoLineNum" resultType="java.lang.String">
+        SELECT
+            CONCAT( sph.po_num, '|', spl.line_num ),
+            sph.po_num,
+            spl.line_num
+        FROM
+            sodr_po_header sph
+            LEFT JOIN sodr_po_line spl ON sph.po_header_id = spl.po_header_id
+        WHERE
+            sph.tenant_id = #{tenantId}
+            AND spl.po_header_id = #{poHeaderId}
+            AND spl.po_line_id = #{poLineId}
+    </select>
+
+    <delete id="deleteBudgetDistributionNotAcrossYear">
+        DELETE
+        FROM
+        <if test="changeSubmit == null or changeSubmit !=1">
+            scux_rcwl_budget_distribution
+        </if>
+        <if test="changeSubmit == 1">
+            scux_rcwl_budget_change_action
+        </if>
+        WHERE
+            pr_header_id = #{prHeaderId}
+        AND tenant_id = #{tenantId}
+        <if test="prLineId != null">
+            AND pr_line_id = #{prLineId}
+        </if>
+        <if test="prLineIds != null and prLineIds.size() > 0">
+            AND pr_line_id IN
+            <foreach collection="prLineIds" item="prLineId" open="(" close=")" separator=",">
+                #{prLineId}
+            </foreach>
+        </if>
+        <if test="enabledFlag != null">
+            AND enabled_flag = #{enabledFlag}
+        </if>
+        <if test="budgetGroup != null and changeSubmit == 1">
+            AND budget_group = #{budgetGroup}
+        </if>
+    </delete>
+</mapper>

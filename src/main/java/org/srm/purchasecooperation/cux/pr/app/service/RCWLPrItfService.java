@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.srm.purchasecooperation.pr.api.dto.PrLineDTO;
 import org.srm.purchasecooperation.cux.pr.api.dto.RCWLItfPrHeaderDTO;
 import org.srm.purchasecooperation.pr.domain.entity.PrHeader;
+import org.srm.purchasecooperation.pr.domain.entity.PrLine;
 import org.srm.purchasecooperation.pr.domain.vo.PrLineVO;
 
 import java.util.List;
@@ -114,4 +115,13 @@ public interface RCWLPrItfService {
      */
 
     void invokeBudgetOccupyClose(PrHeader prHeader, Long tenantId,String from) throws JsonProcessingException;
+
+    /**
+     * 审批拒绝还原预算
+     *
+     * @param tenantId
+     * @param oldPrHeader 头
+     * @param prLineList 行
+     */
+    void rejectRollbackBudget (Long tenantId, PrHeader oldPrHeader,  List<PrLine> prLineList);
 }

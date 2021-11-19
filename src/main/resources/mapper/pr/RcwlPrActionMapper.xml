@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.srm.purchasecooperation.cux.pr.infra.mapper.RcwlPrActionMapper">
+    <select id="pagePrChangeAction" resultType="org.srm.purchasecooperation.pr.api.dto.PrActionDTO">
+        SELECT * FROM
+        (SELECT
+        spa.action_id,
+        spa.tenant_id,
+        spa.pr_header_id,
+        spa.display_pr_num,
+        spa.pr_line_id,
+        spa.display_line_num,
+        spa.process_type_code,
+        spa.process_remark,
+        spa.processed_date,
+        spa.process_user_id,
+        spa.process_user_name,
+        spa.change_field,
+        spa.old_value,
+        spa.old_value_num,
+        spa.old_value_date,
+        spa.new_value,
+        spa.new_value_num,
+        spa.new_value_date,
+        spa.object_version_number,
+        spa.creation_date,
+        spa.created_by,
+        spa.last_updated_by,
+        spa.last_update_date
+        FROM
+        sprm_pr_action spa
+        WHERE spa.process_type_code = 'CHANGE'
+        <if test="tenantId != null">
+            AND spa.tenant_id = #{tenantId}
+        </if>
+        <if test="prHeaderId != null">
+            AND spa.pr_header_id = #{prHeaderId}
+        </if>
+        <if test="displayPrNum != null">
+            AND spa.display_pr_num = #{displayPrNum}
+        </if>
+        <if test="prLineId != null">
+            AND spa.pr_line_id = #{prLineId}
+        </if>
+        <if test="displayLineNum != null">
+            AND (spa.display_line_num = #{displayLineNum} OR spa.display_line_num is null)
+        </if>
+        UNION
+        SELECT
+        spa.action_id,
+        spa.tenant_id,
+        spa.pr_header_id,
+        spa.display_pr_num,
+        spa.pr_line_id,
+        spa.display_line_num,
+        spa.process_type_code,
+        spa.process_remark,
+        spa.processed_date,
+        spa.process_user_id,
+        spa.process_user_name,
+        spa.change_field,
+        oldBudgetTable.sumBudget old_value,
+        spa.old_value_num,
+        spa.old_value_date,
+        newBudgetTable.sumBudget new_value,
+        spa.new_value_num,
+        spa.new_value_date,
+        spa.object_version_number,
+        spa.creation_date,
+        spa.created_by,
+        spa.last_updated_by,
+        spa.last_update_date
+        FROM
+        sprm_pr_action spa,(
+        SELECT
+        srbca.pr_line_id,
+        srbca.pr_header_id,
+        srbca.pr_action_id,
+        group_concat( CONCAT( '[', srbca.budget_dis_year, ']', srbca.budget_dis_amount ) ORDER BY srbca.budget_dis_year
+        SEPARATOR ';' ) sumBudget,
+        srbca.budget_group
+        FROM
+        scux_rcwl_budget_change_action srbca
+        WHERE
+        srbca.budget_group = 'old'
+        GROUP BY
+        srbca.pr_header_id,
+        srbca.pr_line_id,
+        srbca.pr_action_id
+        ) oldBudgetTable,
+        (
+        SELECT
+        srbca.pr_line_id,
+        srbca.pr_header_id,
+        srbca.pr_action_id,
+        group_concat( CONCAT( '[', srbca.budget_dis_year, ']', srbca.budget_dis_amount ) ORDER BY srbca.budget_dis_year
+        SEPARATOR ';' ) sumBudget,
+        srbca.budget_group
+        FROM
+        scux_rcwl_budget_change_action srbca
+        WHERE
+        srbca.budget_group = 'new'
+        GROUP BY
+        srbca.pr_header_id,
+        srbca.pr_line_id,
+        srbca.pr_action_id
+        ) newBudgetTable
+        WHERE
+        spa.action_id = oldBudgetTable.pr_action_id
+        AND spa.pr_header_id = oldBudgetTable.pr_header_id
+        AND spa.pr_line_id = oldBudgetTable.pr_line_id
+        AND spa.action_id = newBudgetTable.pr_action_id
+        AND spa.pr_header_id = newBudgetTable.pr_header_id
+        AND spa.pr_line_id = newBudgetTable.pr_line_id
+        AND spa.process_type_code = 'UPDATE'
+        AND change_field = 'budget_dis'
+        <if test="tenantId != null">
+            AND spa.tenant_id = #{tenantId}
+        </if>
+        <if test="prHeaderId != null">
+            AND spa.pr_header_id = #{prHeaderId}
+        </if>
+        <if test="displayPrNum != null">
+            AND spa.display_pr_num = #{displayPrNum}
+        </if>
+        <if test="prLineId != null">
+            AND spa.pr_line_id = #{prLineId}
+        </if>
+        <if test="displayLineNum != null">
+            AND (spa.display_line_num = #{displayLineNum} OR spa.display_line_num is null)
+        </if> ) temp
+    </select>
+</mapper>
