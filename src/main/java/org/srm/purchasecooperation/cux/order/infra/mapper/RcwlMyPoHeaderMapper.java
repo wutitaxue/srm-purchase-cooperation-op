@@ -10,10 +10,13 @@ import java.util.List;
 
 
 public interface RcwlMyPoHeaderMapper {
+
     PoHeaderDetailDTO rcwlSelectHeaderdetail(Long tenantId, Long poHeaderId);
 
     String rcwlSelect (Long poHeaderId);
 
     List<PoHeaderSingleReferenceVO> selectPrHeader(@Param("tenantId") Long tenantId, @Param("dto") PoHeaderSingleReferenceDTO referenceDTO);
+
+    List<PoHeader> selectPoHeader(PoHeader poHeader);
 
 }
