@@ -176,15 +176,19 @@ public class RcwlPoSubmitBpmServiceImpl implements RcwlPoSubmitBpmService {
         poHeader.setStatusCode("REJECTED");
         poHeaderMapper.updateOptional(poHeader, new String[]{"statusCode"});
 
-        PoDTO poDTO = new PoDTO();
-        BeanUtils.copyProperties(poHeader,poDTO);
-        //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
-        rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
-        //获取新版本号数据
-        PoHeader ph = poHeaderMapper.selectOne(poHeaderCondition);
-        //释放失败返回错误消息，不更新占用标识，成功则更新占用标识为0
-        ph.setAttributeTinyint1(0);
-        this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
+        //零星申请、其他采购申请、总价合同订单无需释放预算
+        if (!"PURCHASE_REQUEST".equals(poHeader.getSourceBillTypeCode()) && !"PURCHASE_REQUEST_LX".equals(poHeader.getSourceBillTypeCode())
+                && !"CONTRACT_ORDER".equals(poHeader.getSourceBillTypeCode())){
+            PoDTO poDTO = new PoDTO();
+            BeanUtils.copyProperties(poHeader,poDTO);
+            //调用占预算接口释放预算，占用标识（01占用，02释放），当前释放逻辑：占用金额固定为0，清空占用金额
+            rcwlPoBudgetItfService.invokeBudgetOccupy(poDTO, poDTO.getTenantId(), "02");
+            //获取新版本号数据
+            PoHeader ph = poHeaderMapper.selectOne(poHeaderCondition);
+            //释放失败返回错误消息，不更新占用标识，成功则更新占用标识为0
+            ph.setAttributeTinyint1(0);
+            this.poHeaderRepository.updateOptional(ph, new String[] { "attributeTinyint1"});
+        }
     }
 
 
