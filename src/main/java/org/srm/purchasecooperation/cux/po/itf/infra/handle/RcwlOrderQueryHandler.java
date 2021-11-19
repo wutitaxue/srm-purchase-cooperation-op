@@ -45,7 +45,7 @@ public class RcwlOrderQueryHandler implements IJobHandler {
     private static final String INTERFACECODE = "STATUS_QUERY";
     private static final String TENANTNUM = "SRM-RCWL";
     private static final String APPID = "SUNAC";
-    private static final String APPKEY = "79a2b87a5dd035617f9c838d44503e2f";\
+    private static final String APPKEY = "79a2b87a5dd035617f9c838d44503e2f";
     private static final String ITFFAIL = "fail";
     /**
      * 日志打印对象
